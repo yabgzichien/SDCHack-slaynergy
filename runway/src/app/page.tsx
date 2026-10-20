@@ -25,7 +25,7 @@ function Intro() {
         <Btn variant="ghost" onClick={() => demo("hafiz")} disabled={busy || !catalog} className="min-h-12 px-6 text-base">Try it as Hafiz</Btn>
       </div>
       <p className="mt-3 text-sm text-muted">
-        Hafiz is made up: 27, a bank operations executive with five months to find work.{" "}
+        Hafiz is made up: 27, a bank operations executive in Kedah with five months to find work.{" "}
         {catalog && <>Or try {catalog.personas.filter((p) => p.id !== "hafiz").map((p, i, a) => (
           <span key={p.id}><button onClick={() => demo(p.id)} disabled={busy} className="underline decoration-control underline-offset-2 hover:text-ink">{p.name}</button>{i < a.length - 2 ? ", " : i === a.length - 2 ? " or " : "."}</span>
         ))}</>}

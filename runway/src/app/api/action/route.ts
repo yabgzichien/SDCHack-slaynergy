@@ -4,6 +4,7 @@ import { computeWorld } from "@/lib/engine/world";
 import { skillById, personas, occupationById, roleById, INTERESTS } from "@/lib/engine/data";
 import { initialState, type Profile, type SessionState } from "@/lib/engine/state";
 import { normaliseOverride } from "@/lib/engine/futures";
+import { stateById } from "@/lib/engine/geo";
 import { respond } from "@/lib/server/respond";
 import { getSessionId } from "@/lib/server/session";
 import { loadState, logEvent, resetState, saveState } from "@/lib/server/store";
@@ -25,6 +26,7 @@ function cleanProfile(raw: Record<string, unknown>): Profile | string {
   return {
     personaId: raw.personaId ? String(raw.personaId) : undefined,
     name: String(raw.name ?? "You").slice(0, 40) || "You",
+    state: typeof raw.state === "string" && stateById[raw.state] ? raw.state : null,
     age: raw.age === null || raw.age === undefined || raw.age === "" ? null : Math.round(num(raw.age, 16, 80, 0)) || null,
     occupationId: occ,
     education: raw.education === "degree" || raw.education === "spm" || raw.education === "diploma" ? raw.education : occupationById[occ].education,
@@ -56,7 +58,7 @@ export async function POST(req: Request) {
       const p = personas.find((x) => x.id === body.personaId);
       if (!p) return bad("Unknown demo profile.");
       const o = occupationById[p.occupation];
-      state = { ...initialState(), profile: { personaId: p.id, name: p.name, age: p.age, occupationId: p.occupation, education: p.education, years: p.years, skills: o.skills, interests: p.interests, months: p.months, hoursPerWeek: p.hoursPerWeek, budget: "free", synthetic: true } };
+      state = { ...initialState(), profile: { personaId: p.id, name: p.name, age: p.age, state: p.state ?? null, occupationId: p.occupation, education: p.education, years: p.years, skills: o.skills, interests: p.interests, months: p.months, hoursPerWeek: p.hoursPerWeek, budget: "free", synthetic: true } };
       await logEvent("profile", sid, { synthetic: true, persona: p.id, months: p.months });
       break;
     }
@@ -97,6 +99,13 @@ export async function POST(req: Request) {
         settled: after.world.settledEvents.map((e) => { const s = e.strikes.find((x) => x.base)!; return { id: e.id, outcome: s.settled!.outcome, crowd: +s.close.toFixed(3) }; }),
         futures: { before: before.world.futures.map((f) => +f.weight.toFixed(3)), after: after.world.futures.map((f) => +f.weight.toFixed(3)) },
       });
+      break;
+    }
+    case "homeState": {
+      // Changing your state changes only the job map, so the plan and its approval are kept.
+      if (!state.profile) return bad("Make a profile first.");
+      const st = typeof body.state === "string" && stateById[body.state] ? body.state : null;
+      state = { ...state, profile: { ...state.profile, state: st } };
       break;
     }
     case "goals": {

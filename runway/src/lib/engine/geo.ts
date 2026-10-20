@@ -1,0 +1,88 @@
+import statesJson from "../../../data/states.json";
+import type { SectorId } from "./data";
+
+// Where the work is, state by state. Everything here is computed from public, dated data (data/states.json):
+//   - workers by industry and state (DOSM, latest year 2021), scaled to today by each state's employment (OpenDOSM LFS, 2026 Q2)
+//   - unemployment by state (OpenDOSM LFS, 2026 Q2) and median monthly wage by state (OpenDOSM, 2025)
+// Malaysia publishes no open data on job ads by state AND occupation, so "jobs like this" is measured by how many people
+// work in the industries a job belongs to. The app labels these numbers as estimates.
+
+export type StateId = string;
+export type StateRow = {
+  id: StateId; name: string; short: string;
+  lfs: { quarter: string; labourForce: number; employed: number; unemployed: number; uRate: number; uRateYearAgo: number };
+  wages: { year: number; median: number; mean: number };
+  industry: Record<string, number>;
+};
+type StatesFile = { generatedAt: string; sources: { id: string; name: string; url: string; latest: string; licence: string }[]; industryYear: number; nationalIndustry: Record<string, number>; states: StateRow[] };
+export const geo = statesJson as unknown as StatesFile;
+export const STATES = geo.states;
+export const stateById: Record<string, StateRow> = Object.fromEntries(STATES.map((s) => [s.id, s]));
+
+export const INDUSTRY_LABEL: Record<string, string> = {
+  finance: "finance and insurance", professional: "professional, scientific and technical services", admin: "administrative and support services",
+  public: "public administration", ict: "information and communication", manufacturing: "manufacturing", construction: "construction",
+  health: "health and social work", trade: "wholesale and retail trade", accommodation: "hotels and food service", transport: "transport and storage",
+  utilities: "electricity and gas", education: "education",
+};
+
+// Which industries each sector's jobs are found in, and roughly in what mix. Stated openly and shown in the app.
+export const SECTOR_INDUSTRIES: Record<SectorId, { key: string; weight: number }[]> = {
+  finance: [{ key: "finance", weight: 1 }],
+  business: [{ key: "professional", weight: 0.5 }, { key: "admin", weight: 0.3 }, { key: "public", weight: 0.2 }],
+  computing: [{ key: "ict", weight: 0.7 }, { key: "professional", weight: 0.3 }],
+  engineering: [{ key: "manufacturing", weight: 0.5 }, { key: "construction", weight: 0.3 }, { key: "professional", weight: 0.2 }],
+  science: [{ key: "professional", weight: 0.5 }, { key: "manufacturing", weight: 0.3 }, { key: "health", weight: 0.2 }],
+  health: [{ key: "health", weight: 1 }],
+  service: [{ key: "trade", weight: 0.6 }, { key: "accommodation", weight: 0.4 }],
+  logistics: [{ key: "transport", weight: 0.7 }, { key: "trade", weight: 0.3 }],
+  trades: [{ key: "construction", weight: 0.5 }, { key: "manufacturing", weight: 0.4 }, { key: "utilities", weight: 0.1 }],
+  education: [{ key: "education", weight: 1 }],
+};
+export const kindOfWork = (sector: SectorId) => SECTOR_INDUSTRIES[sector].map((p) => INDUSTRY_LABEL[p.key]).join(", ");
+
+const total2021 = (s: StateRow) => Object.values(s.industry).reduce((a, b) => a + b, 0);
+
+export type StateJobs = {
+  id: StateId; name: string; short: string;
+  workers: number;   // estimated workers in this kind of work today, in thousands
+  share: number;     // share of Malaysia's workers in this kind of work (0..1)
+  lq: number;        // concentration: this state's share of its own jobs in this kind of work, against Malaysia's (1 = average)
+  uRate: number; medianWage: number; employed: number;
+};
+
+// Workers in a sector's industries, per state, scaled from the industry year to the latest labour force quarter.
+export function stateJobs(sector: SectorId): StateJobs[] {
+  const mix = SECTOR_INDUSTRIES[sector];
+  const rows = STATES.map((s) => {
+    const scale = s.lfs.employed / Math.max(1e-9, total2021(s));
+    const workers = mix.reduce((a, p) => a + p.weight * (s.industry[p.key] ?? 0), 0) * scale;
+    return { s, workers };
+  });
+  const totalWorkers = rows.reduce((a, r) => a + r.workers, 0);
+  const totalEmployed = STATES.reduce((a, s) => a + s.lfs.employed, 0);
+  return rows.map(({ s, workers }) => ({
+    id: s.id, name: s.name, short: s.short, workers, share: workers / totalWorkers,
+    lq: (workers / s.lfs.employed) / (totalWorkers / totalEmployed),
+    uRate: s.lfs.uRate, medianWage: s.wages.median, employed: s.lfs.employed,
+  }));
+}
+
+export type Move = { to: StateJobs; from: StateJobs | null; times: number | null; wageGap: number | null; uGap: number | null };
+// What moving from home to another state would mean for one job: how many times as many jobs like it, pay and unemployment.
+export function compareMove(sector: SectorId, home: StateId | null | undefined, to: StateId): Move {
+  const all = stateJobs(sector);
+  const dest = all.find((x) => x.id === to)!;
+  const from = home ? all.find((x) => x.id === home) ?? null : null;
+  return {
+    to: dest, from,
+    times: from && from.workers > 0 ? dest.workers / from.workers : null,
+    wageGap: from ? dest.medianWage - from.medianWage : null,
+    uGap: from ? dest.uRate - from.uRate : null,
+  };
+}
+
+// Best states for a job, outside home: the most jobs like it, then lower unemployment.
+export function bestStates(sector: SectorId, home: StateId | null | undefined, n = 3): StateJobs[] {
+  return stateJobs(sector).filter((x) => x.id !== home).sort((a, b) => b.workers - a.workers || a.uRate - b.uRate).slice(0, n);
+}

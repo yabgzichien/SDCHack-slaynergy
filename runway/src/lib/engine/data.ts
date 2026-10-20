@@ -42,7 +42,7 @@ export type Course = {
 export type Occupation = { id: string; title: string; isco: string; iscoTitle: string; skills: string[]; education: Education; sector: SectorId };
 export type Persona = {
   id: string; name: string; label: string; age: number; occupation: string; years: number; months: number;
-  hoursPerWeek: number; interests: string[]; synthetic: boolean; education: Education;
+  hoursPerWeek: number; interests: string[]; synthetic: boolean; education: Education; state?: string;
 };
 export const INTERESTS: { id: string; label: string }[] = [
   { id: "numbers", label: "Numbers and analysis" }, { id: "people", label: "Working with people" },

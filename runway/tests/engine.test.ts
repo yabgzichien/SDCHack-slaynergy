@@ -382,3 +382,38 @@ describe("leaderboard: influence follows accuracy", () => {
     expect(avg(bottom)).toBeLessThan(1);
   });
 });
+
+import { STATES, stateJobs, compareMove, bestStates, SECTOR_INDUSTRIES } from "@/lib/engine/geo";
+
+describe("job map: states from public data", () => {
+  it("covers all 16 states and federal territories with labour force, wages and industry figures", () => {
+    expect(STATES.length).toBe(16);
+    for (const s of STATES) {
+      expect(s.lfs.quarter).toBe("2026Q2");
+      expect(s.lfs.employed).toBeGreaterThan(0);
+      expect(s.wages.median).toBeGreaterThan(1000);
+      expect(Object.values(s.industry).reduce((a, b) => a + b, 0)).toBeGreaterThan(0);
+    }
+  });
+  it("shares add up to 100% for every sector, and concentration averages out to 1 across Malaysia", () => {
+    for (const sector of Object.keys(SECTOR_INDUSTRIES) as (keyof typeof SECTOR_INDUSTRIES)[]) {
+      const rows = stateJobs(sector);
+      expect(rows.reduce((a, r) => a + r.share, 0)).toBeCloseTo(1, 6);
+      const employed = rows.reduce((a, r) => a + r.employed, 0);
+      expect(rows.reduce((a, r) => a + r.lq * r.employed, 0) / employed).toBeCloseTo(1, 6);
+    }
+  });
+  it("finance work is concentrated in Kuala Lumpur and Selangor, so moving from Kedah shows more jobs", () => {
+    const top = bestStates("finance", "MY-02", 2).map((s) => s.id).sort();
+    expect(top).toEqual(["MY-10", "MY-14"]);
+    const m = compareMove("finance", "MY-02", "MY-14");
+    expect(m.times!).toBeGreaterThan(3);
+    expect(m.wageGap!).toBeGreaterThan(0);
+  });
+  it("your home state never changes your job matches", () => {
+    const a = hafiz(), b = hafiz();
+    a.profile = { ...a.profile!, state: "MY-02" };
+    b.profile = { ...b.profile!, state: "MY-14" };
+    expect(JSON.stringify(computeView(a).matches.map((m) => [m.roleId, m.score]))).toBe(JSON.stringify(computeView(b).matches.map((m) => [m.roleId, m.score])));
+  });
+});

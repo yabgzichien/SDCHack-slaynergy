@@ -11,6 +11,7 @@ const JOURNEY: Item[] = [
   { href: "/skills", label: "Your skills", needsProfile: true },
   { href: "/forecast", label: "The forecast", match: ["/forecast", "/futures"] },
   { href: "/jobs", label: "Jobs", match: ["/jobs", "/goals"], needsProfile: true },
+  { href: "/map", label: "Job map", needsProfile: true },
   { href: "/plan", label: "Your plan", needsProfile: true },
 ];
 const FORECASTING: Item[] = [

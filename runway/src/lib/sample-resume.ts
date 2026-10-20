@@ -1,7 +1,7 @@
 // A made-up resume. The .test domain is reserved for examples (RFC 2606), so no real address is used.
 export const SAMPLE_RESUME = `HAFIZ BIN ROSLI
 Bank Operations Executive
-Kuala Lumpur · hafiz.rosli@mail.test · 012-345 6789
+Alor Setar, Kedah · hafiz.rosli@mail.test · 012-345 6789
 
 PROFILE
 Bank operations executive with 5 years of experience in loan processing and branch operations. Detail oriented and reliable.

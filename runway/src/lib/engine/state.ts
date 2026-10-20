@@ -8,6 +8,8 @@ export type Profile = {
   name: string;
   // Optional. Shown to the counsellor only; never an input to matching (see pickInputs and the fairness test).
   age?: number | null;
+  // Optional home state (ISO 3166-2:MY code, e.g. "MY-02"). Used only by the job map; never an input to matching.
+  state?: string | null;
   occupationId: string;
   education: Education;
   years: number;

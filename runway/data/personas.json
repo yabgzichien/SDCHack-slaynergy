@@ -2,7 +2,7 @@
  {
   "id": "hafiz",
   "name": "Hafiz",
-  "label": "Hafiz, 27 \u00b7 bank operations executive \u00b7 laid off in November",
+  "label": "Hafiz, 27 · bank operations executive · laid off in November",
   "age": 27,
   "occupation": "bank_ops",
   "years": 5,
@@ -13,12 +13,13 @@
    "technology"
   ],
   "synthetic": true,
-  "education": "diploma"
+  "education": "diploma",
+  "state": "MY-02"
  },
  {
   "id": "aina",
   "name": "Aina",
-  "label": "Aina, 25 \u00b7 accounts payable clerk \u00b7 3 years",
+  "label": "Aina, 25 · accounts payable clerk · 3 years",
   "age": 25,
   "occupation": "ap_ar_clerk",
   "years": 3,
@@ -29,12 +30,13 @@
    "sustainability"
   ],
   "synthetic": true,
-  "education": "diploma"
+  "education": "diploma",
+  "state": "MY-03"
  },
  {
   "id": "meiling",
   "name": "Mei Ling",
-  "label": "Mei Ling, 31 \u00b7 payroll clerk \u00b7 8 years",
+  "label": "Mei Ling, 31 · payroll clerk · 8 years",
   "age": 31,
   "occupation": "payroll_clerk",
   "years": 8,
@@ -45,12 +47,13 @@
    "teaching"
   ],
   "synthetic": true,
-  "education": "diploma"
+  "education": "diploma",
+  "state": "MY-08"
  },
  {
   "id": "daniel",
   "name": "Daniel",
-  "label": "Daniel, 24 \u00b7 data entry clerk \u00b7 2 years",
+  "label": "Daniel, 24 · data entry clerk · 2 years",
   "age": 24,
   "occupation": "data_entry",
   "years": 2,
@@ -61,6 +64,7 @@
    "justice"
   ],
   "synthetic": true,
-  "education": "spm"
+  "education": "spm",
+  "state": "MY-12"
  }
 ]

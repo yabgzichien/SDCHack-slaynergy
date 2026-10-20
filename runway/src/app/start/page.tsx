@@ -5,20 +5,21 @@ import { useRouter } from "next/navigation";
 import { useApp, type Catalog } from "@/components/AppProvider";
 import { Btn, Skeleton } from "@/components/ui";
 import { SAMPLE_RESUME } from "@/lib/sample-resume";
+import { STATES } from "@/lib/engine/geo";
 
 // Onboarding: one question per screen. Nothing is saved until the last screen; the draft lives in this tab only.
 type Draft = {
-  name: string; age: string; occupationId: string; education: string; years: number; skills: string[];
+  name: string; age: string; state: string; occupationId: string; education: string; years: number; skills: string[];
   months: number; hours: number; interests: string[];
   resume: null | { score: number; band: string; occupation: string | null; found: number; fixes: string[]; sample?: boolean };
   touched: { education?: boolean; skills?: boolean };
 };
 const KEY = "runway-onboarding-v1";
-const STEPS = ["name", "age", "resume", "job", "education", "years", "skills", "months", "hours", "interests", "review"] as const;
+const STEPS = ["name", "age", "state", "resume", "job", "education", "years", "skills", "months", "hours", "interests", "review"] as const;
 type Step = (typeof STEPS)[number];
 
 const blank = (cat: Catalog): Draft => ({
-  name: "", age: "", occupationId: "", education: cat.education[1]?.id ?? "", years: 2, skills: [], months: 6, hours: 10, interests: [], resume: null, touched: {},
+  name: "", age: "", state: "", occupationId: "", education: cat.education[1]?.id ?? "", years: 2, skills: [], months: 6, hours: 10, interests: [], resume: null, touched: {},
 });
 
 export default function StartPage() {
@@ -38,7 +39,7 @@ function Wizard({ cat }: { cat: Catalog }) {
   const [d, setD] = useState<Draft>(() => {
     if (saved) return { ...blank(cat), ...saved.d };
     const p = state?.profile;
-    if (p && !p.synthetic) return { ...blank(cat), name: p.name === "You" ? "" : p.name, age: p.age ? String(p.age) : "", occupationId: p.occupationId, education: p.education, years: p.years, skills: p.skills, months: p.months, hours: p.hoursPerWeek, interests: p.interests, touched: { education: true, skills: true } };
+    if (p && !p.synthetic) return { ...blank(cat), name: p.name === "You" ? "" : p.name, age: p.age ? String(p.age) : "", state: p.state ?? "", occupationId: p.occupationId, education: p.education, years: p.years, skills: p.skills, months: p.months, hours: p.hoursPerWeek, interests: p.interests, touched: { education: true, skills: true } };
     return blank(cat);
   });
   useEffect(() => { try { sessionStorage.setItem(KEY, JSON.stringify({ d, i })); } catch { /* ignore */ } }, [d, i]);
@@ -51,13 +52,13 @@ function Wizard({ cat }: { cat: Catalog }) {
     setD((x) => ({ ...x, occupationId: id, education: x.touched.education ? x.education : o.education, skills: x.touched.skills ? x.skills : [...new Set([...o.skills, ...(x.resume ? x.skills : [])])] }));
   };
   const canGo: Record<Step, boolean> = {
-    name: true, age: d.age === "" || (Number(d.age) >= 16 && Number(d.age) <= 80), resume: true, job: !!occ, education: !!d.education, years: true,
+    name: true, state: true, age: d.age === "" || (Number(d.age) >= 16 && Number(d.age) <= 80), resume: true, job: !!occ, education: !!d.education, years: true,
     skills: d.skills.length > 0, months: true, hours: true, interests: true, review: !!occ && d.skills.length > 0,
   };
   const go = (n: number) => setI(Math.max(0, Math.min(STEPS.length - 1, n)));
   const next = () => { if (canGo[step]) go(i + 1); };
   const finish = async () => {
-    const r = await act("setProfile", { profile: { name: d.name.trim() || "You", age: d.age ? Number(d.age) : null, occupationId: d.occupationId, education: d.education, years: d.years, skills: d.skills, interests: d.interests, months: d.months, hoursPerWeek: d.hours, budget: "free", synthetic: !!d.resume?.sample } });
+    const r = await act("setProfile", { profile: { name: d.name.trim() || "You", age: d.age ? Number(d.age) : null, state: d.state || null, occupationId: d.occupationId, education: d.education, years: d.years, skills: d.skills, interests: d.interests, months: d.months, hoursPerWeek: d.hours, budget: "free", synthetic: !!d.resume?.sample } });
     if (r) { try { sessionStorage.removeItem(KEY); } catch { /* ignore */ } router.push("/skills"); }
   };
 
@@ -92,6 +93,11 @@ function Wizard({ cat }: { cat: Catalog }) {
           <Q title={`How old are you${d.name ? `, ${d.name}` : ""}?`} help="Optional. Only your counsellor sees it. Your age is never used to choose or rank jobs, and an automatic test checks this.">
             <TextInput value={d.age} onChange={(v) => set({ age: v.replace(/[^0-9]/g, "").slice(0, 2) })} placeholder="For example, 27" label="Age in years" inputMode="numeric" />
             {!canGo.age && <p className="mt-2 text-sm text-negative">Enter an age between 16 and 80, or leave it empty.</p>}
+          </Q>
+        )}
+        {step === "state" && (
+          <Q title="Which state do you live in?" help="Optional. It lets the job map compare your state with others if you would consider moving. It is never used to choose or rank jobs.">
+            <Options value={d.state} onPick={(v) => set({ state: v })} cols={3} options={STATES.map((s) => ({ id: s.id, label: s.short }))} />
           </Q>
         )}
         {step === "resume" && <ResumeStep d={d} setD={setD} cat={cat} onDone={() => go(i + 1)} />}
@@ -148,14 +154,15 @@ function Wizard({ cat }: { cat: Catalog }) {
               {[
                 ["Name", d.name || "Not given", 0],
                 ["Age", d.age || "Not given", 1],
-                ["Resume", d.resume ? `Scanned, ${d.resume.score} out of 100` : "Not scanned", 2],
-                ["Last job", occ?.title ?? "Not chosen", 3],
-                ["Qualification", cat.education.find((e) => e.id === d.education)?.label ?? "Not chosen", 4],
-                ["Experience", `${d.years} ${d.years === 1 ? "year" : "years"}`, 5],
-                ["Skills", `${d.skills.length} skills`, 6],
-                ["Time to find a job", `${d.months} months`, 7],
-                ["Study time", `${d.hours} hours a week`, 8],
-                ["Interests", d.interests.length ? d.interests.map((x) => cat.interests.find((y) => y.id === x)?.label).join(", ") : "None picked", 9],
+                ["State", STATES.find((s) => s.id === d.state)?.short ?? "Not given", 2],
+                ["Resume", d.resume ? `Scanned, ${d.resume.score} out of 100` : "Not scanned", 3],
+                ["Last job", occ?.title ?? "Not chosen", 4],
+                ["Qualification", cat.education.find((e) => e.id === d.education)?.label ?? "Not chosen", 5],
+                ["Experience", `${d.years} ${d.years === 1 ? "year" : "years"}`, 6],
+                ["Skills", `${d.skills.length} skills`, 7],
+                ["Time to find a job", `${d.months} months`, 8],
+                ["Study time", `${d.hours} hours a week`, 9],
+                ["Interests", d.interests.length ? d.interests.map((x) => cat.interests.find((y) => y.id === x)?.label).join(", ") : "None picked", 10],
               ].map(([k, v, n]) => (
                 <div key={k as string} className="flex min-h-14 items-center justify-between gap-3 py-2">
                   <dt className="text-sm text-muted">{k}</dt>
@@ -170,7 +177,7 @@ function Wizard({ cat }: { cat: Catalog }) {
         <div className="mt-10 flex items-center justify-between gap-3">
           {i > 0 ? <Btn variant="quiet" onClick={() => go(i - 1)}>Back</Btn> : <Link href="/" className="text-sm underline decoration-control underline-offset-2">Cancel</Link>}
           <div className="flex items-center gap-2">
-            {(step === "name" || step === "age" || step === "interests") && <Btn variant="quiet" onClick={() => { if (step === "age") set({ age: "" }); if (step === "name") set({ name: "" }); go(i + 1); }}>Skip</Btn>}
+            {(step === "name" || step === "age" || step === "state" || step === "interests") && <Btn variant="quiet" onClick={() => { if (step === "age") set({ age: "" }); if (step === "name") set({ name: "" }); if (step === "state") set({ state: "" }); go(i + 1); }}>Skip</Btn>}
             {step === "review"
               ? <Btn type="submit" disabled={busy || !canGo.review} className="min-h-12 px-6 text-base">Show my results</Btn>
               : step !== "resume" && <Btn type="submit" disabled={!canGo[step]} className="min-h-12 px-6 text-base">Continue</Btn>}

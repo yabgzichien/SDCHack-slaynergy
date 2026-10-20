@@ -37,6 +37,18 @@ The user confirms the skills and the app builds their profile from them. The sca
 `src/lib/engine/resume.ts`), runs in memory for the request, and never stores the text: the session keeps only the
 score, the findings (titles and fixes, no quoted lines) and the skill ids. The plan page then shows resume tips for the chosen job.
 
+## Job map (Malaysia)
+
+`/map` shows where jobs like the one you picked are, state by state, on a map of Malaysia you can drag and zoom
+(quick views: all Malaysia, Peninsular, Sabah and Sarawak). Colours can show jobs like this, unemployment or median pay.
+Pick your state and "Would you move for work?" to compare your state with any other ("Selangor has 5.3× as many jobs like
+this as Kedah"). Your state is optional, only used by the map, and a test checks it never changes your matches.
+
+Malaysia publishes no open data on job ads by state and occupation, so "jobs like this" counts workers in the industries
+the job belongs to (DOSM employed persons by industry and state, 2021, scaled to each state's 2026 Q2 employment). It is
+labelled as an estimate. Unemployment (2026 Q2) and median wages (2025) are from OpenDOSM. Boundaries: geoBoundaries
+(OpenStreetMap, ODbL), drawn without a third-party base map. Rebuild with `npm run data:build` (`scripts/build-geo.mjs`).
+
 ## Prediction market (Kalshi-style)
 
 Each question is an **event** with a ladder of three **strikes** (for example "rises by more than 1.5 / 3.0 / 4.5 points").

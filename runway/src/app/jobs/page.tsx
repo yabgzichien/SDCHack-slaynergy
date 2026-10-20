@@ -76,6 +76,11 @@ export default function JobsPage() {
             </Card>
           )}
           <Card>
+            <h2 className="text-base font-semibold">Would you move for work?</h2>
+            <p className="mt-1 text-sm">See on a map of Malaysia where jobs like {best.title.toLowerCase()} are, with each state&apos;s unemployment and pay.</p>
+            <Link href="/map" className="mt-2 inline-block text-sm underline decoration-control underline-offset-2 hover:text-ink">Open the job map</Link>
+          </Card>
+          <Card>
             <h2 className="text-base font-semibold">Goals that matter to you</h2>
             <p className="mt-1 text-sm">{goals || "None picked yet."} Picking a UN Sustainable Development Goal moves jobs that serve it up the list, and shows what it costs you in training time.</p>
             <Link href="/goals" className="mt-2 inline-block text-sm underline decoration-control underline-offset-2 hover:text-ink">{goals ? "Change goals" : "Choose goals"}</Link>

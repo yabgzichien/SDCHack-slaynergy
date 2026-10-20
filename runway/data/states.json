@@ -1,0 +1,698 @@
+{
+ "generatedAt": "2026-10-20",
+ "sources": [
+  {
+   "id": "lfs_state",
+   "name": "OpenDOSM: Quarterly Principal Labour Force Statistics by State (lfs_qtr_state)",
+   "url": "https://open.dosm.gov.my/data-catalogue/lfs_qtr_state",
+   "latest": "2026Q2",
+   "licence": "CC BY 4.0"
+  },
+  {
+   "id": "wages_state",
+   "name": "OpenDOSM: Annual Salaries & Wages by State (wages_state)",
+   "url": "https://open.dosm.gov.my/data-catalogue/wages_state",
+   "latest": "2025",
+   "licence": "CC BY 4.0"
+  },
+  {
+   "id": "industry_state",
+   "name": "DOSM via data.gov.my: Employed persons by industry and state, 1982-2021",
+   "url": "https://archive.data.gov.my/data/dataset/employed-persons-by-industry-and-state",
+   "latest": "2021",
+   "licence": "CC BY"
+  },
+  {
+   "id": "boundaries",
+   "name": "geoBoundaries gbOpen MYS ADM1 (simplified), from OpenStreetMap",
+   "url": "https://www.geoboundaries.org/countryDownloads.html",
+   "latest": "2017 boundaries",
+   "licence": "ODbL 1.0"
+  }
+ ],
+ "industryYear": 2021,
+ "nationalIndustry": {
+  "agriculture": 1550,
+  "mining": 81.9,
+  "manufacturing": 2501.4,
+  "utilities": 77.7,
+  "water": 85.5,
+  "construction": 1159.6,
+  "trade": 2826.5,
+  "transport": 704.5,
+  "accommodation": 1535.5,
+  "ict": 235.1,
+  "finance": 386.5,
+  "realestate": 83.4,
+  "professional": 358.9,
+  "admin": 846,
+  "public": 725.1,
+  "education": 924.3,
+  "health": 582.2,
+  "arts": 60.5,
+  "otherservices": 274.7,
+  "households": 64.6
+ },
+ "states": [
+  {
+   "id": "MY-01",
+   "name": "Johor",
+   "short": "Johor",
+   "lfs": {
+    "quarter": "2026Q2",
+    "labourForce": 2194.4,
+    "employed": 2143.1,
+    "unemployed": 51.3,
+    "uRate": 2.3,
+    "uRateYearAgo": 2.2
+   },
+   "wages": {
+    "year": 2025,
+    "median": 2688,
+    "mean": 3609
+   },
+   "industry": {
+    "agriculture": 161,
+    "mining": 9.8,
+    "manufacturing": 425.9,
+    "utilities": 10.3,
+    "water": 10.5,
+    "construction": 109.7,
+    "trade": 325,
+    "transport": 95,
+    "accommodation": 161,
+    "ict": 11.9,
+    "finance": 40.3,
+    "realestate": 12.3,
+    "professional": 44.2,
+    "admin": 81.1,
+    "public": 55.8,
+    "education": 107.8,
+    "health": 46.7,
+    "arts": 13.3,
+    "otherservices": 36.3,
+    "households": 6.7
+   }
+  },
+  {
+   "id": "MY-02",
+   "name": "Kedah",
+   "short": "Kedah",
+   "lfs": {
+    "quarter": "2026Q2",
+    "labourForce": 1001.1,
+    "employed": 976.4,
+    "unemployed": 24.7,
+    "uRate": 2.5,
+    "uRateYearAgo": 2.4
+   },
+   "wages": {
+    "year": 2025,
+    "median": 2255,
+    "mean": 3148
+   },
+   "industry": {
+    "agriculture": 99.1,
+    "mining": 1.3,
+    "manufacturing": 173.3,
+    "utilities": 3.6,
+    "water": 7.3,
+    "construction": 74.1,
+    "trade": 164.6,
+    "transport": 38.4,
+    "accommodation": 92.4,
+    "ict": 4.7,
+    "finance": 12.7,
+    "realestate": 2.5,
+    "professional": 11.7,
+    "admin": 50.1,
+    "public": 63.5,
+    "education": 82.7,
+    "health": 33.1,
+    "arts": 1.2,
+    "otherservices": 15.9,
+    "households": 2.1
+   }
+  },
+  {
+   "id": "MY-03",
+   "name": "Kelantan",
+   "short": "Kelantan",
+   "lfs": {
+    "quarter": "2026Q2",
+    "labourForce": 743.7,
+    "employed": 713,
+    "unemployed": 30.7,
+    "uRate": 4.1,
+    "uRateYearAgo": 4
+   },
+   "wages": {
+    "year": 2025,
+    "median": 1860,
+    "mean": 3214
+   },
+   "industry": {
+    "agriculture": 73.2,
+    "mining": 2.5,
+    "manufacturing": 64.8,
+    "utilities": 2.4,
+    "water": 1,
+    "construction": 81.3,
+    "trade": 155.8,
+    "transport": 26.6,
+    "accommodation": 69.5,
+    "ict": 2.6,
+    "finance": 8.3,
+    "realestate": 0.6,
+    "professional": 9.6,
+    "admin": 44,
+    "public": 44.5,
+    "education": 54.9,
+    "health": 33.7,
+    "arts": 1.1,
+    "otherservices": 12.7,
+    "households": 0.5
+   }
+  },
+  {
+   "id": "MY-04",
+   "name": "Melaka",
+   "short": "Melaka",
+   "lfs": {
+    "quarter": "2026Q2",
+    "labourForce": 522.3,
+    "employed": 512,
+    "unemployed": 10.3,
+    "uRate": 2,
+    "uRateYearAgo": 1.7
+   },
+   "wages": {
+    "year": 2025,
+    "median": 2773,
+    "mean": 3549
+   },
+   "industry": {
+    "agriculture": 12.2,
+    "mining": 2.6,
+    "manufacturing": 95.3,
+    "utilities": 1.5,
+    "water": 1.6,
+    "construction": 30.9,
+    "trade": 76.9,
+    "transport": 17.6,
+    "accommodation": 35.1,
+    "ict": 3.8,
+    "finance": 10.3,
+    "realestate": 1.4,
+    "professional": 11.7,
+    "admin": 29.4,
+    "public": 37.8,
+    "education": 32.9,
+    "health": 21.9,
+    "arts": 0.9,
+    "otherservices": 10.8,
+    "households": 0.5
+   }
+  },
+  {
+   "id": "MY-05",
+   "name": "Negeri Sembilan",
+   "short": "N. Sembilan",
+   "lfs": {
+    "quarter": "2026Q2",
+    "labourForce": 581,
+    "employed": 566.9,
+    "unemployed": 14.1,
+    "uRate": 2.4,
+    "uRateYearAgo": 2.7
+   },
+   "wages": {
+    "year": 2025,
+    "median": 2710,
+    "mean": 3730
+   },
+   "industry": {
+    "agriculture": 24.6,
+    "mining": 3.8,
+    "manufacturing": 75.6,
+    "utilities": 2.4,
+    "water": 4.4,
+    "construction": 43.2,
+    "trade": 78.9,
+    "transport": 26,
+    "accommodation": 50.9,
+    "ict": 5,
+    "finance": 11.4,
+    "realestate": 2.3,
+    "professional": 11.3,
+    "admin": 26.7,
+    "public": 36.9,
+    "education": 29.5,
+    "health": 18,
+    "arts": 1.7,
+    "otherservices": 14.2,
+    "households": 1
+   }
+  },
+  {
+   "id": "MY-06",
+   "name": "Pahang",
+   "short": "Pahang",
+   "lfs": {
+    "quarter": "2026Q2",
+    "labourForce": 774.7,
+    "employed": 759.3,
+    "unemployed": 15.4,
+    "uRate": 2,
+    "uRateYearAgo": 1.8
+   },
+   "wages": {
+    "year": 2025,
+    "median": 2578,
+    "mean": 3434
+   },
+   "industry": {
+    "agriculture": 134.8,
+    "mining": 4.9,
+    "manufacturing": 65.7,
+    "utilities": 3.3,
+    "water": 7.3,
+    "construction": 49.6,
+    "trade": 124.5,
+    "transport": 28.5,
+    "accommodation": 53.4,
+    "ict": 3.4,
+    "finance": 9.6,
+    "realestate": 4.3,
+    "professional": 12.4,
+    "admin": 37.4,
+    "public": 59.8,
+    "education": 57.3,
+    "health": 28.8,
+    "arts": 2.7,
+    "otherservices": 15.8,
+    "households": 2
+   }
+  },
+  {
+   "id": "MY-07",
+   "name": "Pulau Pinang",
+   "short": "Penang",
+   "lfs": {
+    "quarter": "2026Q2",
+    "labourForce": 950.7,
+    "employed": 925.6,
+    "unemployed": 25.1,
+    "uRate": 2.6,
+    "uRateYearAgo": 2.3
+   },
+   "wages": {
+    "year": 2025,
+    "median": 3107,
+    "mean": 3912
+   },
+   "industry": {
+    "agriculture": 17.5,
+    "mining": 1.4,
+    "manufacturing": 299.2,
+    "utilities": 4.6,
+    "water": 3.4,
+    "construction": 55.9,
+    "trade": 125.5,
+    "transport": 53.2,
+    "accommodation": 78.4,
+    "ict": 10.4,
+    "finance": 24.7,
+    "realestate": 4.1,
+    "professional": 25.3,
+    "admin": 38.1,
+    "public": 29.1,
+    "education": 42.7,
+    "health": 26.2,
+    "arts": 2.2,
+    "otherservices": 11.1,
+    "households": 4
+   }
+  },
+  {
+   "id": "MY-08",
+   "name": "Perak",
+   "short": "Perak",
+   "lfs": {
+    "quarter": "2026Q2",
+    "labourForce": 1238.2,
+    "employed": 1197.4,
+    "unemployed": 40.8,
+    "uRate": 3.3,
+    "uRateYearAgo": 3.2
+   },
+   "wages": {
+    "year": 2025,
+    "median": 2173,
+    "mean": 3233
+   },
+   "industry": {
+    "agriculture": 85.5,
+    "mining": 7.4,
+    "manufacturing": 192.9,
+    "utilities": 6.5,
+    "water": 5.7,
+    "construction": 74.3,
+    "trade": 218.9,
+    "transport": 41.8,
+    "accommodation": 114,
+    "ict": 6.5,
+    "finance": 21.2,
+    "realestate": 3.2,
+    "professional": 17.6,
+    "admin": 49.2,
+    "public": 48.5,
+    "education": 81.7,
+    "health": 40.5,
+    "arts": 3,
+    "otherservices": 21.7,
+    "households": 2.6
+   }
+  },
+  {
+   "id": "MY-09",
+   "name": "Perlis",
+   "short": "Perlis",
+   "lfs": {
+    "quarter": "2026Q2",
+    "labourForce": 136.2,
+    "employed": 131.8,
+    "unemployed": 4.4,
+    "uRate": 3.2,
+    "uRateYearAgo": 3.5
+   },
+   "wages": {
+    "year": 2025,
+    "median": 2013,
+    "mean": 3401
+   },
+   "industry": {
+    "agriculture": 12.6,
+    "mining": 0.2,
+    "manufacturing": 7.9,
+    "utilities": 0.3,
+    "water": 1.2,
+    "construction": 9.8,
+    "trade": 18,
+    "transport": 3.2,
+    "accommodation": 13.2,
+    "ict": 0.6,
+    "finance": 1.3,
+    "realestate": 0.2,
+    "professional": 1.7,
+    "admin": 7.2,
+    "public": 11.2,
+    "education": 11.5,
+    "health": 4.4,
+    "arts": 0.3,
+    "otherservices": 3.4,
+    "households": 0.3
+   }
+  },
+  {
+   "id": "MY-10",
+   "name": "Selangor",
+   "short": "Selangor",
+   "lfs": {
+    "quarter": "2026Q2",
+    "labourForce": 4132.9,
+    "employed": 4047.7,
+    "unemployed": 85.2,
+    "uRate": 2.1,
+    "uRateYearAgo": 2.3
+   },
+   "wages": {
+    "year": 2025,
+    "median": 3547,
+    "mean": 4258
+   },
+   "industry": {
+    "agriculture": 187.9,
+    "mining": 15,
+    "manufacturing": 574.3,
+    "utilities": 21.1,
+    "water": 19.2,
+    "construction": 240.2,
+    "trade": 726.1,
+    "transport": 213.3,
+    "accommodation": 435.7,
+    "ict": 121,
+    "finance": 121.1,
+    "realestate": 30.9,
+    "professional": 88.4,
+    "admin": 278,
+    "public": 74.2,
+    "education": 140.6,
+    "health": 148.2,
+    "arts": 13.1,
+    "otherservices": 61.9,
+    "households": 8.3
+   }
+  },
+  {
+   "id": "MY-11",
+   "name": "Terengganu",
+   "short": "Terengganu",
+   "lfs": {
+    "quarter": "2026Q2",
+    "labourForce": 512.2,
+    "employed": 497.6,
+    "unemployed": 14.6,
+    "uRate": 2.9,
+    "uRateYearAgo": 2.8
+   },
+   "wages": {
+    "year": 2025,
+    "median": 2195,
+    "mean": 3208
+   },
+   "industry": {
+    "agriculture": 33.1,
+    "mining": 6.8,
+    "manufacturing": 54.9,
+    "utilities": 2.2,
+    "water": 4.5,
+    "construction": 69.4,
+    "trade": 97.1,
+    "transport": 16.3,
+    "accommodation": 53.4,
+    "ict": 2.6,
+    "finance": 4.5,
+    "realestate": 0.8,
+    "professional": 7,
+    "admin": 30.7,
+    "public": 26.2,
+    "education": 35.2,
+    "health": 18.7,
+    "arts": 2.1,
+    "otherservices": 8,
+    "households": 0.4
+   }
+  },
+  {
+   "id": "MY-12",
+   "name": "Sabah",
+   "short": "Sabah",
+   "lfs": {
+    "quarter": "2026Q2",
+    "labourForce": 1898.6,
+    "employed": 1791.9,
+    "unemployed": 106.6,
+    "uRate": 5.6,
+    "uRateYearAgo": 6.7
+   },
+   "wages": {
+    "year": 2025,
+    "median": 2482,
+    "mean": 3421
+   },
+   "industry": {
+    "agriculture": 481.6,
+    "mining": 9.2,
+    "manufacturing": 232.6,
+    "utilities": 8.4,
+    "water": 6.6,
+    "construction": 114.4,
+    "trade": 316.9,
+    "transport": 61.2,
+    "accommodation": 216.3,
+    "ict": 9.1,
+    "finance": 20.9,
+    "realestate": 4.8,
+    "professional": 25.7,
+    "admin": 73.6,
+    "public": 83,
+    "education": 100,
+    "health": 42.5,
+    "arts": 3.9,
+    "otherservices": 22.7,
+    "households": 23.2
+   }
+  },
+  {
+   "id": "MY-13",
+   "name": "Sarawak",
+   "short": "Sarawak",
+   "lfs": {
+    "quarter": "2026Q2",
+    "labourForce": 1267.3,
+    "employed": 1225.8,
+    "unemployed": 41.5,
+    "uRate": 3.3,
+    "uRateYearAgo": 3.2
+   },
+   "wages": {
+    "year": 2025,
+    "median": 2707,
+    "mean": 3645
+   },
+   "industry": {
+    "agriculture": 213.5,
+    "mining": 11.6,
+    "manufacturing": 167.7,
+    "utilities": 8.7,
+    "water": 7.6,
+    "construction": 137.8,
+    "trade": 231.3,
+    "transport": 50,
+    "accommodation": 85.5,
+    "ict": 9.3,
+    "finance": 20.8,
+    "realestate": 4.2,
+    "professional": 22.5,
+    "admin": 55.1,
+    "public": 92.6,
+    "education": 90,
+    "health": 42.1,
+    "arts": 2.3,
+    "otherservices": 24.6,
+    "households": 1.2
+   }
+  },
+  {
+   "id": "MY-14",
+   "name": "W.P. Kuala Lumpur",
+   "short": "Kuala Lumpur",
+   "lfs": {
+    "quarter": "2026Q2",
+    "labourForce": 1210.5,
+    "employed": 1168.7,
+    "unemployed": 41.8,
+    "uRate": 3.5,
+    "uRateYearAgo": 2.9
+   },
+   "wages": {
+    "year": 2025,
+    "median": 3938,
+    "mean": 4955
+   },
+   "industry": {
+    "agriculture": 11.7,
+    "mining": 0.9,
+    "manufacturing": 66.8,
+    "utilities": 2,
+    "water": 4.4,
+    "construction": 64.1,
+    "trade": 159.3,
+    "transport": 30.5,
+    "accommodation": 70.2,
+    "ict": 43.7,
+    "finance": 77.2,
+    "realestate": 10.4,
+    "professional": 67.8,
+    "admin": 45.5,
+    "public": 37.9,
+    "education": 51.3,
+    "health": 74.1,
+    "arts": 12.1,
+    "otherservices": 13.5,
+    "households": 11.7
+   }
+  },
+  {
+   "id": "MY-15",
+   "name": "W.P. Labuan",
+   "short": "Labuan",
+   "lfs": {
+    "quarter": "2026Q2",
+    "labourForce": 47.3,
+    "employed": 45,
+    "unemployed": 2.3,
+    "uRate": 4.8,
+    "uRateYearAgo": 5.7
+   },
+   "wages": {
+    "year": 2025,
+    "median": 2688,
+    "mean": 3887
+   },
+   "industry": {
+    "agriculture": 0.7,
+    "mining": 4.6,
+    "manufacturing": 4,
+    "utilities": 0.1,
+    "water": 0.3,
+    "construction": 3.9,
+    "trade": 5.7,
+    "transport": 1.9,
+    "accommodation": 4.9,
+    "ict": 0.2,
+    "finance": 1.2,
+    "realestate": 0,
+    "professional": 0.7,
+    "admin": 3,
+    "public": 5.6,
+    "education": 4.2,
+    "health": 2,
+    "arts": 0.5,
+    "otherservices": 0.8,
+    "households": 0.1
+   }
+  },
+  {
+   "id": "MY-16",
+   "name": "W.P. Putrajaya",
+   "short": "Putrajaya",
+   "lfs": {
+    "quarter": "2026Q2",
+    "labourForce": 64.7,
+    "employed": 63.9,
+    "unemployed": 0.8,
+    "uRate": 1.3,
+    "uRateYearAgo": 1.4
+   },
+   "wages": {
+    "year": 2025,
+    "median": 4828,
+    "mean": 5417
+   },
+   "industry": {
+    "agriculture": 1,
+    "mining": 0,
+    "manufacturing": 0.5,
+    "utilities": 0.1,
+    "construction": 1,
+    "trade": 2,
+    "transport": 1.1,
+    "accommodation": 1.7,
+    "ict": 0.4,
+    "finance": 1.1,
+    "realestate": 1.3,
+    "professional": 1.3,
+    "admin": 1.9,
+    "public": 18.5,
+    "education": 1.9,
+    "health": 1.3,
+    "arts": 0.1,
+    "otherservices": 1.5,
+    "households": 1.5,
+    "water": 0
+   }
+  }
+ ]
+}
