@@ -1,5 +1,5 @@
 import { makeQuestions, LAST_BEFORE, LIVE_QUARTER, NEXT_QUARTER, type Question } from "./questions";
-import { FORECASTERS, runMarket, updateWeights, brier, logLik, type MarketRun, type Weights } from "./market";
+import { FORECASTERS, runMarket, updateWeights, brier, logLik, type Kind, type MarketRun, type Weights } from "./market";
 import { FUTURE_IDS, UPDATE_STRENGTH, FADE_PER_QUARTER, type FutureId } from "./futures-def";
 import { quarterIndex } from "./data";
 
@@ -22,6 +22,8 @@ export type ReplayStats = {
   brierLmsr: number;
   brierWeightedMean: number;
   brierUnweighted: number;
+  brierCoin: number; // always saying 50%
+  brierBaseRate: number; // always saying "the share of past questions that came true"
   perQuarter: { q: string; n: number; brierLmsr: number; brierUnweighted: number }[];
 };
 
@@ -30,6 +32,8 @@ export type Replay = {
   scores: Scores; // futures' stored scores at the start of the live quarter
   stats: ReplayStats;
   agentBrier: Record<string, { sum: number; n: number }>;
+  // average influence of each forecaster type after every replayed quarter (starts equal at 1)
+  influenceHistory: { q: string; byKind: Record<Kind, number> }[];
 };
 
 let cache: Replay | null = null;
@@ -42,7 +46,13 @@ export function replayHistory(): Replay {
   let w: Weights = Object.fromEntries(FORECASTERS.map((f) => [f.id, 1]));
   let S = zeroScores();
   const agentBrier: Record<string, { sum: number; n: number }> = Object.fromEntries(FORECASTERS.map((f) => [f.id, { sum: 0, n: 0 }]));
-  let sumL = 0, sumW = 0, sumU = 0, n = 0;
+  let sumL = 0, sumW = 0, sumU = 0, sumB = 0, yes = 0, n = 0;
+  const kinds = [...new Set(FORECASTERS.map((f) => f.kind))];
+  const byKind = (w: Weights) => Object.fromEntries(kinds.map((k) => {
+    const m = FORECASTERS.filter((f) => f.kind === k);
+    return [k, m.reduce((a, f) => a + w[f.id], 0) / m.length];
+  })) as Record<Kind, number>;
+  const influenceHistory: Replay["influenceHistory"] = [{ q: "start", byKind: byKind(w) }];
   const perQuarter: ReplayStats["perQuarter"] = [];
   for (const qt of quarters) {
     const runs = all.filter((q) => q.quarter === qt).map((q) => runMarket(q, w));
@@ -50,17 +60,20 @@ export function replayHistory(): Replay {
     for (const r of runs) {
       const o = r.q.outcome!;
       const wm = FORECASTERS.reduce((a, f) => a + w[f.id] * r.beliefs[f.id], 0) / FORECASTERS.reduce((a, f) => a + w[f.id], 0);
-      sumL += brier(r.price, o); sumW += brier(wm, o); sumU += brier(r.unweightedMean, o); n++;
+      const baseRate = n ? yes / n : 0.5;
+      sumL += brier(r.price, o); sumW += brier(wm, o); sumU += brier(r.unweightedMean, o); sumB += brier(baseRate, o); n++;
       ql += brier(r.price, o); qu += brier(r.unweightedMean, o);
       for (const f of FORECASTERS) { agentBrier[f.id].sum += brier(r.beliefs[f.id], o); agentBrier[f.id].n++; }
     }
     perQuarter.push({ q: qt, n: runs.length, brierLmsr: ql / runs.length, brierUnweighted: qu / runs.length });
+    for (const r of runs) if (r.q.outcome) yes++;
     S = updateScores(S, runs);
     w = updateWeights(w, runs);
+    influenceHistory.push({ q: qt, byKind: byKind(w) });
   }
   cache = {
-    weights: w, scores: S, agentBrier,
-    stats: { questions: n, brierLmsr: sumL / n, brierWeightedMean: sumW / n, brierUnweighted: sumU / n, perQuarter },
+    weights: w, scores: S, agentBrier, influenceHistory,
+    stats: { questions: n, brierLmsr: sumL / n, brierWeightedMean: sumW / n, brierUnweighted: sumU / n, brierCoin: 0.25, brierBaseRate: sumB / n, perQuarter },
   };
   return cache;
 }

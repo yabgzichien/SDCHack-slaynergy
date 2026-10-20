@@ -1,20 +1,21 @@
 import { newMarket, price, tradeToward, payout, cost, type Trade } from "./lmsr";
 import { clamp, gaussian, hashString, logit, mulberry32, sigmoid } from "./math";
 import { FUTURES, FUTURE_IDS, type FutureId } from "./futures-def";
-import { futureProbs, type Question } from "./questions";
+import { futureProbs, trendProb, type Question } from "./questions";
 
 // ---- ~200 simulated forecasters (always labelled "simulated" in the UI) ----
-export type Kind = "optimist" | "sceptic" | "expert" | "noisy";
+export type Kind = "optimist" | "sceptic" | "expert" | "chaser" | "noisy";
 export type Forecaster = { id: string; kind: Kind; mix: Record<FutureId, number>; noise: number; bias: number };
 
 const KIND_SPEC: { kind: Kind; n: number; mix: [number, number, number]; noise: number }[] = [
-  { kind: "optimist", n: 50, mix: [0.1, 0.3, 0.6], noise: 0.5 },
-  { kind: "sceptic", n: 50, mix: [0.6, 0.3, 0.1], noise: 0.5 },
+  { kind: "optimist", n: 45, mix: [0.1, 0.3, 0.6], noise: 0.5 },
+  { kind: "sceptic", n: 45, mix: [0.6, 0.3, 0.1], noise: 0.5 },
   { kind: "expert", n: 40, mix: [0.25, 0.5, 0.25], noise: 0.25 },
-  { kind: "noisy", n: 60, mix: [0.34, 0.33, 0.33], noise: 1.1 },
+  { kind: "chaser", n: 20, mix: [0.25, 0.5, 0.25], noise: 0.4 },
+  { kind: "noisy", n: 50, mix: [0.34, 0.33, 0.33], noise: 1.1 },
 ];
 export const KIND_LABEL: Record<Kind, string> = {
-  optimist: "AI optimist", sceptic: "AI sceptic", expert: "careful expert", noisy: "noisy guesser",
+  optimist: "AI optimist", sceptic: "AI sceptic", expert: "careful expert", chaser: "trend chaser", noisy: "noisy guesser",
 };
 
 export const FORECASTERS: Forecaster[] = (() => {
@@ -36,8 +37,10 @@ export const FORECASTERS: Forecaster[] = (() => {
 export const forecasterName = (f: Forecaster) => `Simulated forecaster ${f.id.slice(1)} · ${KIND_LABEL[f.kind]}`;
 
 export function belief(f: Forecaster, q: Question, probs = futureProbs(q)): number {
+  // What each type reads: experts allow for scores near 100% slowing down; trend chasers repeat last quarter's change;
+  // the others lean towards the future they believe in. Chasers blend their trend with the middle view.
   const own = f.kind === "expert" ? futureProbs(q, { saturation: true }) : probs;
-  const mixed = FUTURE_IDS.reduce((a, id) => a + f.mix[id] * own[id], 0);
+  const mixed = f.kind === "chaser" ? 0.5 * trendProb(q) + 0.5 * own.medium : FUTURE_IDS.reduce((a, id) => a + f.mix[id] * own[id], 0);
   const rng = mulberry32(hashString(`${f.id}|${q.id}`));
   return clamp(sigmoid(logit(mixed) + f.bias + f.noise * gaussian(rng)), 0.03, 0.97);
 }
@@ -57,6 +60,7 @@ export type MarketRun = {
 };
 
 const BUDGET_PER_UNIT = 25;
+const ROUNDS = 2;
 const B = 60;
 
 export function runMarket(q: Question, w: Weights): MarketRun {
@@ -68,9 +72,14 @@ export function runMarket(q: Question, w: Weights): MarketRun {
   // Deterministic order, different for each question.
   const order = [...FORECASTERS].sort((a, b) => hashString(`${a.id}|${q.id}|order`) - hashString(`${b.id}|${q.id}|order`));
   for (const f of FORECASTERS) beliefs[f.id] = belief(f, q, probs);
-  for (const f of order) {
-    const t = tradeToward(m, beliefs[f.id], BUDGET_PER_UNIT * (w[f.id] ?? 1));
-    if (t) { trades[f.id] = t; events.push({ agent: f.id, side: t.side, shares: t.shares, spent: t.spent, price: price(m) }); }
+  // Two rounds at half budget, so the closing price depends on everyone's view and not on who traded last.
+  for (let round = 0; round < ROUNDS; round++) {
+    for (const f of order) {
+      const t = tradeToward(m, beliefs[f.id], (BUDGET_PER_UNIT / ROUNDS) * (w[f.id] ?? 1));
+      if (!t) continue;
+      trades[f.id] = t; // the forecaster's latest trade
+      events.push({ agent: f.id, side: t.side, shares: t.shares, spent: t.spent, price: price(m) });
+    }
   }
   const mean = FORECASTERS.reduce((a, f) => a + beliefs[f.id], 0) / FORECASTERS.length;
   return { q, events, price: price(m), beliefs, trades, unweightedMean: mean, probs, state: { qy: m.qy, qn: m.qn, b: m.b } };
@@ -83,19 +92,27 @@ export { payout };
 // Brier loss of a probability against an outcome.
 export const brier = (p: number, outcome: boolean) => (p - (outcome ? 1 : 0)) ** 2;
 
-// ---- multiplicative-weights update of influence ----
-const ETA = 3;
-export function updateWeights(w: Weights, runs: MarketRun[]): Weights {
-  const next: Weights = {};
+// ---- influence follows accuracy: the Hedge (multiplicative weights) online-learning rule ----
+// After each settled round, every forecaster's influence is multiplied by exp(-ETA x Brier loss) and the crowd is
+// rescaled to an average of 1. Accurate forecasters gain influence; inaccurate ones lose it. Influence is the
+// size of the budget a forecaster trades with, so it sets how far they can move the price.
+export const ETA = 3;
+export const INFLUENCE_MIN = 0.05, INFLUENCE_MAX = 6;
+export type Guest = { id: string; prev: number; loss: number };
+export function updateWeights(w: Weights, runs: MarketRun[], guests: Guest[] = []): Weights {
+  const raw: Weights = {};
   for (const f of FORECASTERS) {
     let loss = 0;
     for (const r of runs) loss += brier(r.beliefs[f.id], r.q.outcome!);
-    next[f.id] = (w[f.id] ?? 1) * Math.exp(-ETA * loss);
+    raw[f.id] = (w[f.id] ?? 1) * Math.exp(-ETA * loss);
   }
-  const avg = FORECASTERS.reduce((a, f) => a + next[f.id], 0) / FORECASTERS.length;
-  for (const f of FORECASTERS) next[f.id] = clamp(next[f.id] / avg, 0.05, 6);
+  // The crowd's average sets the scale; guests (you) are scored by the same rule but do not move the scale.
+  const avg = FORECASTERS.reduce((a, f) => a + raw[f.id], 0) / FORECASTERS.length;
+  const next: Weights = {};
+  for (const f of FORECASTERS) next[f.id] = clamp(raw[f.id] / avg, INFLUENCE_MIN, INFLUENCE_MAX);
   const avg2 = FORECASTERS.reduce((a, f) => a + next[f.id], 0) / FORECASTERS.length;
   for (const f of FORECASTERS) next[f.id] /= avg2;
+  for (const g of guests) next[g.id] = clamp((g.prev * Math.exp(-ETA * g.loss)) / avg, INFLUENCE_MIN, INFLUENCE_MAX) / avg2;
   return next;
 }
 

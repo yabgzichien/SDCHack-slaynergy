@@ -136,6 +136,20 @@ export function futureProbs(q: Question, opts: { saturation?: boolean } = {}): R
   return res;
 }
 
+// A trend chaser's own signal: it ignores the three futures and assumes the last quarter's change repeats.
+// It reads the same public data in a different way, so the crowd combines more than one view.
+export function trendProb(q: Question): number {
+  if (q.kind === "dosm") {
+    const ch = dosmChanges(prevQuarter(q.quarter)).map((x) => x.d);
+    const sigma = Math.max(std(ch.slice(-8)), 0.25);
+    return clamp(normCdf((q.threshold - ch[ch.length - 1]) / sigma), 0.04, 0.96);
+  }
+  const gains = epochGains(q.series, prevQuarter(q.quarter)).map((x) => x.g);
+  const last = gains[gains.length - 1];
+  const sigma = Math.max(std(gains.slice(-8)), 0.5 * Math.abs(last), floorOf(q.series));
+  return clamp(1 - normCdf((q.threshold - last) / sigma), 0.04, 0.96);
+}
+
 // Plain-language real figures for a settled question.
 export function factFor(q: Question): string | null {
   if (q.kind === "dosm") {
