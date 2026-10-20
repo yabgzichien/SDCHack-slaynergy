@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useApp } from "@/components/AppProvider";
-import { ExpiryLegend, ExpiryTrack } from "@/components/ExpiryTrack";
+import { ExpiryAxis, ExpiryLegend, ExpiryTrack } from "@/components/ExpiryTrack";
 import { Btn, Card, Chip, Estimate, NextRow, PageTitle, Skeleton, SourceChip } from "@/components/ui";
 
 // One question: which of my skills will last?
@@ -45,11 +45,12 @@ export default function SkillsPage() {
                     <span className="num w-24 text-right">{s.expiry.durable ? "after 2040" : s.expiry.expected}</span>
                   </div>
                 </div>
-                <div className="mt-2"><ExpiryTrack byFuture={s.expiry.byFuture} expected={s.expiry.expected} durable={s.expiry.durable} /></div>
+                <div className="mt-2"><ExpiryTrack byFuture={s.expiry.byFuture} expected={s.expiry.expected} durable={s.expiry.durable} axis={false} /></div>
               </li>
             );
           })}
         </ul>
+        <div className="mt-1 px-4"><ExpiryAxis /></div>
         <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1">
           {src.slice(0, 2).map((x) => <SourceChip key={x.name} name={x.name} date={x.date} url={x.url} />)}
         </div>

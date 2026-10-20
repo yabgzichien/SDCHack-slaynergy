@@ -104,7 +104,7 @@ function SidebarBody({ onPick }: { onPick?: () => void }) {
       <NavList title="More" items={more} path={path} hasProfile={hasProfile} onPick={onPick} />
       <div className="mt-auto space-y-2 pt-8">
         <ReleaseBox onPick={onPick} />
-        <button onClick={async () => { onPick?.(); await act("reset"); router.push("/"); }} disabled={busy || !view}
+        <button onClick={async () => { onPick?.(); try { sessionStorage.removeItem("runway-onboarding-v1"); } catch { /* ignore */ } await act("reset"); router.push("/"); }} disabled={busy || !view}
           className="press min-h-9 w-full rounded-xl px-3 text-left text-sm text-muted hover:bg-surface hover:text-ink">Start over</button>
       </div>
     </div>
@@ -113,8 +113,7 @@ function SidebarBody({ onPick }: { onPick?: () => void }) {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
-  const path = usePathname();
-  useEffect(() => { setOpen(false); }, [path]);
+  const path = usePathname(); // every menu link closes the sheet itself (onPick)
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };

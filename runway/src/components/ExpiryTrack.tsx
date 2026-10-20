@@ -10,7 +10,7 @@ const yearOf = (label: string): number | null => {
 };
 
 // A skill's shelf life on a 2026–2040 axis: one dot per future, and a bar to the weighted date.
-export function ExpiryTrack({ byFuture, expected, durable }: { byFuture: Record<string, string>; expected: string; durable: boolean }) {
+export function ExpiryTrack({ byFuture, expected, durable, axis = true }: { byFuture: Record<string, string>; expected: string; durable: boolean; axis?: boolean }) {
   const x = (y: number | null) => (y === null ? 100 : Math.max(0, Math.min(100, ((y - FROM) / (TO - FROM)) * 100)));
   return (
     <div>
@@ -22,10 +22,17 @@ export function ExpiryTrack({ byFuture, expected, durable }: { byFuture: Record<
             style={{ left: `${x(yearOf(v))}%`, background: FUTURE_COLOR[k] }} />
         ))}
       </div>
-      <div className="num flex justify-between text-xs text-muted"><span>{FROM}</span><span>2030</span><span>2035</span><span>{TO}+</span></div>
+      {axis && <ExpiryAxis />}
     </div>
   );
 }
+export const ExpiryAxis = () => (
+  <div className="num relative h-4 text-xs text-muted" aria-hidden>
+    {[2026, 2030, 2035, 2040].map((y) => (
+      <span key={y} className="absolute -translate-x-1/2 first:translate-x-0 last:-translate-x-full" style={{ left: `${((y - FROM) / (TO - FROM)) * 100}%` }}>{y === TO ? `${TO}+` : y}</span>
+    ))}
+  </div>
+);
 export const ExpiryLegend = () => (
   <p className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted">
     {(["slow", "medium", "fast"] as const).map((k) => <span key={k} className="inline-flex items-center gap-1"><span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: FUTURE_COLOR[k] }} />{FUTURE_NAME[k]} future</span>)}

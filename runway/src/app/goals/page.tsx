@@ -23,7 +23,7 @@ export default function GoalsPage() {
       <button key={g.target} type="button" aria-pressed={on} onClick={() => toggle(g.target)}
         className={`press flex min-h-16 w-full items-center justify-between gap-4 rounded-2xl px-5 py-3 text-left ${on ? "bg-primary text-primaryink" : "bg-surface hover:bg-surface2"}`}>
         <span><span className="block font-medium">{g.label}</span><span className={`block text-sm ${on ? "opacity-80" : "text-muted"}`}>SDG {g.target} · Goal {g.goal}</span></span>
-        {on && <span aria-hidden>✓</span>}
+        {on && <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
       </button>
     );
   };

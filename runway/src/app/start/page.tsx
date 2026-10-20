@@ -10,7 +10,7 @@ import { SAMPLE_RESUME } from "@/lib/sample-resume";
 type Draft = {
   name: string; age: string; occupationId: string; education: string; years: number; skills: string[];
   months: number; hours: number; interests: string[];
-  resume: null | { score: number; band: string; occupation: string | null; found: number; fixes: string[] };
+  resume: null | { score: number; band: string; occupation: string | null; found: number; fixes: string[]; sample?: boolean };
   touched: { education?: boolean; skills?: boolean };
 };
 const KEY = "runway-onboarding-v1";
@@ -18,8 +18,7 @@ const STEPS = ["name", "age", "resume", "job", "education", "years", "skills", "
 type Step = (typeof STEPS)[number];
 
 const blank = (cat: Catalog): Draft => ({
-  name: "", age: "", occupationId: "", education: "", years: 2, skills: [], months: 6, hours: 10, interests: [], resume: null, touched: {},
-  ...(cat ? {} : {}),
+  name: "", age: "", occupationId: "", education: cat.education[1]?.id ?? "", years: 2, skills: [], months: 6, hours: 10, interests: [], resume: null, touched: {},
 });
 
 export default function StartPage() {
@@ -31,19 +30,17 @@ export default function StartPage() {
 function Wizard({ cat }: { cat: Catalog }) {
   const { act, busy, error, state } = useApp();
   const router = useRouter();
-  const [i, setI] = useState(0);
+  // The wizard mounts only in the browser (after the catalog loads), so the saved draft can be read synchronously.
+  const [saved] = useState<{ d: Draft; i: number } | null>(() => {
+    try { const raw = sessionStorage.getItem(KEY); return raw ? (JSON.parse(raw) as { d: Draft; i: number }) : null; } catch { return null; }
+  });
+  const [i, setI] = useState(() => Math.min(saved?.i ?? 0, STEPS.length - 1));
   const [d, setD] = useState<Draft>(() => {
+    if (saved) return { ...blank(cat), ...saved.d };
     const p = state?.profile;
     if (p && !p.synthetic) return { ...blank(cat), name: p.name === "You" ? "" : p.name, age: p.age ? String(p.age) : "", occupationId: p.occupationId, education: p.education, years: p.years, skills: p.skills, months: p.months, hours: p.hoursPerWeek, interests: p.interests, touched: { education: true, skills: true } };
     return blank(cat);
   });
-  // restore an unfinished draft from this tab
-  useEffect(() => {
-    try {
-      const raw = sessionStorage.getItem(KEY);
-      if (raw) { const x = JSON.parse(raw) as { d: Draft; i: number }; setD(x.d); setI(Math.min(x.i, STEPS.length - 1)); }
-    } catch { /* storage may be blocked; start fresh */ }
-  }, []);
   useEffect(() => { try { sessionStorage.setItem(KEY, JSON.stringify({ d, i })); } catch { /* ignore */ } }, [d, i]);
 
   const step: Step = STEPS[i];
@@ -60,9 +57,21 @@ function Wizard({ cat }: { cat: Catalog }) {
   const go = (n: number) => setI(Math.max(0, Math.min(STEPS.length - 1, n)));
   const next = () => { if (canGo[step]) go(i + 1); };
   const finish = async () => {
-    const r = await act("setProfile", { profile: { name: d.name.trim() || "You", age: d.age ? Number(d.age) : null, occupationId: d.occupationId, education: d.education, years: d.years, skills: d.skills, interests: d.interests, months: d.months, hoursPerWeek: d.hours, budget: "free", synthetic: false } });
+    const r = await act("setProfile", { profile: { name: d.name.trim() || "You", age: d.age ? Number(d.age) : null, occupationId: d.occupationId, education: d.education, years: d.years, skills: d.skills, interests: d.interests, months: d.months, hoursPerWeek: d.hours, budget: "free", synthetic: !!d.resume?.sample } });
     if (r) { try { sessionStorage.removeItem(KEY); } catch { /* ignore */ } router.push("/skills"); }
   };
+
+  // Enter continues from anywhere on the question, not only from inside a text field.
+  const enter = useRef<() => void>(() => {});
+  useEffect(() => { enter.current = () => { if (step === "review") { if (canGo.review && !busy) finish(); } else if (step !== "resume") next(); }; });
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement;
+      if (e.key === "Enter" && !e.isComposing && (t === document.body || t.tagName === "H1")) { e.preventDefault(); enter.current(); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -174,10 +183,12 @@ function Wizard({ cat }: { cat: Catalog }) {
 
 function Q({ title, help, children }: { title: string; help?: string; children: ReactNode }) {
   const ref = useRef<HTMLHeadingElement>(null);
-  useEffect(() => { ref.current?.focus(); }, [title]);
+  const box = useRef<HTMLElement>(null);
+  // Move focus to the new question for screen readers, unless its own field already took it (autoFocus).
+  useEffect(() => { if (!box.current?.contains(document.activeElement)) ref.current?.focus({ preventScroll: true }); }, [title]);
   return (
-    <section>
-      <h1 ref={ref} tabIndex={-1} className="greeting text-[2rem] outline-none sm:text-[2.6rem]">{title}</h1>
+    <section ref={box}>
+      <h1 ref={ref} tabIndex={-1} className="greeting text-[1.75rem] outline-none sm:text-[2.6rem]">{title}</h1>
       {help && <p className="mt-3 text-base text-muted">{help}</p>}
       <div className="mt-8">{children}</div>
     </section>
@@ -200,7 +211,7 @@ function Options({ value, onPick, options, cols = 1 }: { value: string; onPick: 
           <button type="button" role="radio" aria-checked={on} key={o.id} onClick={() => onPick(o.id)}
             className={`press flex min-h-14 items-center justify-between rounded-2xl px-5 text-left text-base ${on ? "bg-primary text-primaryink" : "bg-surface hover:bg-surface2"}`}>
             <span>{o.label}{o.sub && <span className="block text-sm opacity-70">{o.sub}</span>}</span>
-            {on && <span aria-hidden>✓</span>}
+            {on && <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
           </button>
         );
       })}
@@ -278,7 +289,7 @@ function ResumeStep({ d, setD, cat, onDone }: { d: Draft; setD: (f: (x: Draft) =
   const [paste, setPaste] = useState(false);
   const [text, setText] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
-  const scan = async (init: RequestInit) => {
+  const scan = async (init: RequestInit, sample = false) => {
     setBusy(true); setErr(null);
     try {
       const r = await fetch("/api/resume", init);
@@ -291,9 +302,9 @@ function ResumeStep({ d, setD, cat, onDone }: { d: Draft; setD: (f: (x: Draft) =
           ...x,
           occupationId: occ ? occ.id : x.occupationId,
           education: a.education ?? (occ ? occ.education : x.education),
-          years: a.years ?? x.years,
+          years: a.years !== null ? Math.round(a.years) : x.years,
           skills: [...new Set([...a.skills.map((s) => s.id), ...(occ ? occ.skills : [])])],
-          resume: { score: a.score, band: a.band, occupation: occ ? occ.title : null, found: a.skills.length, fixes: a.findings.filter((f) => f.severity === "fix").slice(0, 2).map((f) => f.title) },
+          resume: { score: a.score, band: a.band, occupation: occ ? occ.title : null, found: a.skills.length, fixes: a.findings.filter((f) => f.severity === "fix").slice(0, 2).map((f) => f.title), sample },
           touched: { ...x.touched, education: a.education ? true : x.touched.education },
         };
       });
@@ -301,7 +312,7 @@ function ResumeStep({ d, setD, cat, onDone }: { d: Draft; setD: (f: (x: Draft) =
     finally { setBusy(false); }
   };
   const upload = (f: File) => { const fd = new FormData(); fd.append("file", f); scan({ method: "POST", body: fd }); };
-  const pasteScan = (t: string) => scan({ method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text: t }) });
+  const pasteScan = (t: string, sample = false) => scan({ method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text: t }) }, sample);
 
   if (d.resume) {
     return (
@@ -309,7 +320,7 @@ function ResumeStep({ d, setD, cat, onDone }: { d: Draft; setD: (f: (x: Draft) =
         <dl className="divide-y divide-line rounded-[22px] bg-surface px-5">
           <div className="flex min-h-14 items-center justify-between gap-3"><dt className="text-sm text-muted">Last job found</dt><dd className="text-sm">{d.resume.occupation ?? "Not sure; you will pick it"}</dd></div>
           <div className="flex min-h-14 items-center justify-between gap-3"><dt className="text-sm text-muted">Skills found</dt><dd className="num text-sm">{d.resume.found}</dd></div>
-          {d.resume.fixes.length > 0 && <div className="py-3"><dt className="text-sm text-muted">Fix first</dt><dd className="mt-1 text-sm">{d.resume.fixes.join(". ")}.</dd></div>}
+          {d.resume.fixes.length > 0 && <div className="py-3"><dt className="text-sm text-muted">Fix first</dt><dd className="mt-1 text-sm"><ul className="list-disc pl-5">{d.resume.fixes.map((f) => <li key={f}>{f}</li>)}</ul></dd></div>}
         </dl>
         <p className="mt-3 text-sm text-muted">The full report, with before-and-after examples, is on <Link href="/resume" className="underline decoration-control underline-offset-2">Resume report</Link>. Your resume text was not saved.</p>
         <div className="mt-8 flex flex-wrap gap-2">
@@ -331,7 +342,7 @@ function ResumeStep({ d, setD, cat, onDone }: { d: Draft; setD: (f: (x: Draft) =
           </button>
           <input ref={fileRef} type="file" accept=".pdf,.docx,.txt,.md,application/pdf,text/plain" className="sr-only" onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); }} />
           <button type="button" onClick={() => setPaste(true)} className="press flex min-h-14 items-center rounded-2xl bg-surface px-5 text-left hover:bg-surface2">Paste the text instead</button>
-          <button type="button" onClick={() => pasteScan(SAMPLE_RESUME)} disabled={busy} className="press flex min-h-14 items-center rounded-2xl bg-surface px-5 text-left hover:bg-surface2">Use a made-up sample resume</button>
+          <button type="button" onClick={() => pasteScan(SAMPLE_RESUME, true)} disabled={busy} className="press flex min-h-14 items-center rounded-2xl bg-surface px-5 text-left hover:bg-surface2">Use a made-up sample resume</button>
           <button type="button" onClick={onDone} className="press flex min-h-14 items-center rounded-2xl px-5 text-left underline decoration-control underline-offset-2">No resume, I will answer questions</button>
         </div>
       ) : (

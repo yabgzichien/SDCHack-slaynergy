@@ -81,7 +81,7 @@ function Dashboard() {
         {plan ? `Your plan for ${plan.title} takes ${plan.totalWeeks} of them.` : "Pick a job to plan for."} {fading ? `${fading} of your ${v.profileSkills.length} skills fade before 2031.` : "None of your skills fades before 2031."}
       </PageTitle>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <Stat href="/skills" label="Skills that last past 2034" value={`${lasting} of ${v.profileSkills.length}`} caption={fading ? `${fading} fade before 2031` : "None fades soon"} />
         <Stat href="/forecast" label="Most likely future" value={pct(top.weight)} caption={`${FUTURE_NAME[top.id]} AI progress`} />
         <Stat href="/jobs" label="Jobs you can reach" value={v.matches.length} caption={v.lasting ? `Best lasting: ${v.lasting.title}` : "None that lasts yet"} />

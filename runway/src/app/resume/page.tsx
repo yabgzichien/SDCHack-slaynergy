@@ -239,7 +239,7 @@ function Annotated({ analysis: a }: { analysis: ResumeAnalysis }) {
         <span className="hl-personal px-1.5 py-0.5">Personal detail</span>
         <span className="hl-strong px-1.5 py-0.5">Strong</span>
       </p>
-      <ol className="space-y-1 font-mono text-[13px] leading-relaxed">
+      <ol className="space-y-1 text-sm leading-relaxed">
         {a.lines.map((l) => {
           const cls = l.flags.includes("personal") ? "hl-personal" : l.flags.includes("weak") ? "hl-weak" : l.flags.includes("long") ? "hl-long" : l.flags.includes("strong") && l.flags.includes("number") ? "hl-strong" : "";
           return (

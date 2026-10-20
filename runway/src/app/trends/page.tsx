@@ -20,7 +20,7 @@ export default function TrendsPage() {
         <H sub={w.release ? "Real DOSM figures, including the 2026 Q2 release." : "Real DOSM figures. The 2026 Q2 release is held back."}>Clerical support&apos;s share of online job ads (%)</H>
         <div className="h-56" role="img" aria-label="Line chart of the clerical support share of online job ads by quarter">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={hist} margin={{ left: -16, right: 8, top: 8 }}>
+            <LineChart data={hist} margin={{ left: -16, right: 16, top: 8 }}>
               <CartesianGrid stroke="var(--line)" vertical={false} />
               <XAxis dataKey="q" tick={{ fontSize: 11, fill: "var(--muted)" }} interval={3} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 11, fill: "var(--muted)" }} domain={["auto", "auto"]} axisLine={false} tickLine={false} />

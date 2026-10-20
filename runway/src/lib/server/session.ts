@@ -2,15 +2,17 @@ import crypto from "node:crypto";
 import { cookies } from "next/headers";
 
 const COOKIE = "runway_sid";
-// Without SESSION_SECRET, each server start makes its own random secret (sessions reset on restart).
-let fallback: string | null = null;
+// Without SESSION_SECRET: a fixed secret in development, and in production a random one per server process
+// (sessions then reset on restart). Kept on globalThis so hot reloads do not sign everyone out.
+const g = globalThis as unknown as { __runwaySecret?: string };
 const secret = () => {
   if (process.env.SESSION_SECRET) return process.env.SESSION_SECRET;
-  if (!fallback) {
-    fallback = crypto.randomBytes(32).toString("hex");
-    if (process.env.NODE_ENV === "production") console.warn("SESSION_SECRET is not set; using a random per-process secret.");
+  if (process.env.NODE_ENV !== "production") return "runway-local-development-only";
+  if (!g.__runwaySecret) {
+    g.__runwaySecret = crypto.randomBytes(32).toString("hex");
+    console.warn("SESSION_SECRET is not set; using a random per-process secret.");
   }
-  return fallback;
+  return g.__runwaySecret;
 };
 const sign = (id: string) => crypto.createHmac("sha256", secret()).update(id).digest("hex").slice(0, 24);
 

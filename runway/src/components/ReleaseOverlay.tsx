@@ -10,6 +10,9 @@ const STAGES = [
   "Recomputing skill dates, job ranking and your plan",
 ];
 
+// A real overlay floating over the page, so it may carry a shadow.
+const PANEL = "rounded-[22px] border border-line bg-raised p-4 shadow-[0_12px_32px_-12px_rgb(0_0_0/0.25)]"; // taste-skill-ignore
+
 // While the release runs: the five steps the server just did, shown one by one.
 // When it ends: one line that leads to the full list of changes.
 export function ReleaseOverlay() {
@@ -17,7 +20,7 @@ export function ReleaseOverlay() {
   if (stage === 0 && !showChanges) return null;
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 p-3 sm:bottom-6 sm:left-auto sm:right-6 sm:w-[26rem]" role="status" aria-live="polite">
-      <div className="rounded-[22px] border border-line bg-raised p-4 shadow-[0_12px_32px_-12px_rgb(0_0_0/0.25)]">
+      <div className={PANEL}>
         {stage > 0 ? (
           <>
             <p className="font-medium">New data released</p>
@@ -27,7 +30,7 @@ export function ReleaseOverlay() {
                 const st = n < stage ? "done" : n === stage ? "now" : "todo";
                 return (
                   <li key={s} className={`flex items-start gap-2 text-sm ${st === "todo" ? "text-muted" : "text-ink"}`}>
-                    <span aria-hidden className={`mt-1.5 inline-block h-2 w-2 shrink-0 rounded-full ${st === "done" ? "bg-accent" : st === "now" ? "animate-pulse bg-ink" : "bg-control"}`} />
+                    <span aria-hidden className={`mt-1.5 inline-block h-2 w-2 shrink-0 rounded-full ${st === "done" ? "bg-accent" : st === "now" ? "bg-ink" : "bg-control"}`} />
                     <span className={st === "now" ? "font-medium" : ""}>{s}</span>
                   </li>
                 );

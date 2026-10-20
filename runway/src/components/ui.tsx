@@ -27,7 +27,7 @@ export function PageTitle({ title, children, aside }: { step?: string; title: Re
   return (
     <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
       <div className="max-w-3xl">
-        <h1 className="greeting text-[2rem] sm:text-[2.75rem]">{title}</h1>
+        <h1 className="greeting text-[1.75rem] sm:text-[2.75rem]">{title}</h1>
         {children && <p className="mt-3 text-base text-muted">{children}</p>}
       </div>
       {aside}
@@ -85,7 +85,7 @@ export function FutureBar({ futures, height = 12 }: { futures: { id: string; wei
 
 export function Skeleton({ lines = 3 }: { lines?: number }) {
   return (
-    <div className="animate-pulse space-y-3" aria-busy="true" aria-label="Loading">
+    <div className="space-y-3" aria-busy="true" aria-label="Loading">
       <div className="h-10 w-2/3 rounded-full bg-surface" />
       {Array.from({ length: lines }).map((_, i) => <div key={i} className="h-5 rounded-full bg-surface" style={{ width: `${90 - i * 12}%` }} />)}
     </div>

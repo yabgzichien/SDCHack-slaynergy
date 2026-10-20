@@ -38,42 +38,7 @@ export default function LeaderboardPage() {
         The more accurate a forecaster has been, the more weight their trades carry. {worst.label[0].toUpperCase()}{worst.label.slice(1)}s, the least accurate, are down to {worst.influence.toFixed(2)}×.
       </PageTitle>
 
-      <div className="grid gap-4 lg:grid-cols-12">
-        <Card className="min-w-0 lg:col-span-8">
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-base font-semibold">Ranked by accuracy</h2>
-            <DemoLabel />
-          </div>
-          <div className="scroll-x -mx-1 mb-3 flex gap-1.5 px-1 pb-1" role="group" aria-label="Filter by type">
-            {[{ id: "all", label: "Everyone" }, { id: "you", label: "You" }, ...lb.kinds.map((k) => ({ id: k.kind, label: `${k.label}s` }))].map((f) => (
-              <button key={f.id} onClick={() => { setKind(f.id); setAll(false); }} aria-pressed={kind === f.id}
-                className={`press min-h-9 shrink-0 whitespace-nowrap rounded-full px-3 text-sm ${kind === f.id ? "bg-primary text-primaryink" : "bg-surface2 hover:bg-control/60"}`}>{f.label}</button>
-            ))}
-          </div>
-          <div className="scroll-x">
-            <table className="w-full min-w-[34rem] text-sm">
-              <caption className="sr-only">Forecasters ranked by Brier score, lowest first</caption>
-              <thead>
-                <tr className="text-left text-xs text-muted">
-                  <th className="py-2 pr-2 font-normal">Rank</th>
-                  <th className="py-2 pr-2 font-normal">Forecaster</th>
-                  <th className="py-2 pr-2 text-right font-normal">Accuracy (Brier)</th>
-                  <th className="py-2 pr-2 text-right font-normal">Questions</th>
-                  <th className="py-2 pr-2 font-normal">Influence</th>
-                  {lb.released && <th className="py-2 text-right font-normal">Change</th>}
-                </tr>
-              </thead>
-              <tbody>
-                {kind === "all" && !shown.includes(you) && <RowView r={you} released={lb.released} max={6} />}
-                {shown.map((r) => <RowView key={r.id} r={r} released={lb.released} max={6} />)}
-              </tbody>
-            </table>
-          </div>
-          {rows.length > 25 && <div className="mt-3"><Btn variant="quiet" onClick={() => setAll(!all)}>{all ? "Show the top 25" : `Show all ${rows.length}`}</Btn></div>}
-          <p className="mt-3 text-sm text-muted">Brier score: the average squared gap between the chance given and what happened (0 is perfect; always saying 50% scores 0.25). Simulated forecasters are scored on {lb.rows[0]?.questions ?? 0} questions, replayed from real past releases{lb.released ? " plus the 2026 Q2 release" : ""}.</p>
-        </Card>
-
-        <div className="space-y-4 lg:col-span-4">
+      <div className="mb-4 grid gap-4 lg:grid-cols-2">
           <Card>
             <H>How influence works</H>
             <ol className="list-decimal space-y-2 pl-5 text-sm">
@@ -99,6 +64,42 @@ export default function LeaderboardPage() {
             <div className="mt-3"><Btn href="/market" variant="ghost">Make a forecast</Btn></div>
           </Card>
         </div>
+
+      <div>
+        <Card className="min-w-0">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-base font-semibold">Ranked by accuracy</h2>
+            <DemoLabel />
+          </div>
+          <div className="scroll-x -mx-1 mb-3 flex gap-1.5 px-1 pb-1" role="group" aria-label="Filter by type">
+            {[{ id: "all", label: "Everyone" }, { id: "you", label: "You" }, ...lb.kinds.map((k) => ({ id: k.kind, label: `${k.label}s` }))].map((f) => (
+              <button key={f.id} onClick={() => { setKind(f.id); setAll(false); }} aria-pressed={kind === f.id}
+                className={`press min-h-9 shrink-0 whitespace-nowrap rounded-full px-3 text-sm ${kind === f.id ? "bg-primary text-primaryink" : "bg-surface2 hover:bg-control/60"}`}>{f.label}</button>
+            ))}
+          </div>
+          <div className="scroll-x">
+            <table className="w-full text-sm">
+              <caption className="sr-only">Forecasters ranked by Brier score, lowest first</caption>
+              <thead>
+                <tr className="text-left text-xs text-muted">
+                  <th className="py-2 pr-2 font-normal">Rank</th>
+                  <th className="py-2 pr-2 font-normal">Forecaster</th>
+                  <th className="py-2 pr-2 text-right font-normal">Brier</th>
+                  <th className="hidden py-2 pr-2 text-right font-normal sm:table-cell">Questions</th>
+                  <th className="py-2 pr-2 font-normal">Influence</th>
+                  {lb.released && <th className="hidden py-2 text-right font-normal sm:table-cell">Change</th>}
+                </tr>
+              </thead>
+              <tbody>
+                {kind === "all" && !shown.includes(you) && <RowView r={you} released={lb.released} max={6} />}
+                {shown.map((r) => <RowView key={r.id} r={r} released={lb.released} max={6} />)}
+              </tbody>
+            </table>
+          </div>
+          {rows.length > 25 && <div className="mt-3"><Btn variant="quiet" onClick={() => setAll(!all)}>{all ? "Show the top 25" : `Show all ${rows.length}`}</Btn></div>}
+          <p className="mt-3 text-sm text-muted">Brier score (lower is better): the average squared gap between the chance given and what happened (0 is perfect; always saying 50% scores 0.25). Simulated forecasters are scored on {lb.rows[0]?.questions ?? 0} questions, replayed from real past releases{lb.released ? " plus the 2026 Q2 release" : ""}.</p>
+        </Card>
+
       </div>
 
       <Card className="mt-4">
@@ -144,14 +145,14 @@ function RowView({ r, released, max }: { r: LeaderRow; released: boolean; max: n
         <p className="text-xs text-muted">{r.you ? "Untraded questions count as 50%" : r.kind}</p>
       </td>
       <td className="num py-2.5 pr-2 text-right">{r.brier === null ? "–" : r.brier.toFixed(3)}</td>
-      <td className="num py-2.5 pr-2 text-right">{r.questions}</td>
+      <td className="num hidden py-2.5 pr-2 text-right sm:table-cell">{r.questions}</td>
       <td className="py-2.5 pr-2">
         <div className="flex items-center gap-2">
-          <div className="h-1.5 w-20 rounded-full bg-surface2" aria-hidden><div className="h-full rounded-full bg-accent" style={{ width: `${Math.min(1, r.influence / max) * 100}%` }} /></div>
+          <div className="hidden h-1.5 w-20 rounded-full bg-surface2 sm:block" aria-hidden><div className="h-full rounded-full bg-accent" style={{ width: `${Math.min(1, r.influence / max) * 100}%` }} /></div>
           <span className="num">{r.influence.toFixed(2)}×</span>
         </div>
       </td>
-      {released && <td className={`num py-2.5 text-right ${Math.abs(d) < 0.005 ? "text-muted" : d > 0 ? "text-rise" : "text-fall"}`}>{Math.abs(d) < 0.005 ? "0.00" : `${d > 0 ? "+" : "−"}${Math.abs(d).toFixed(2)}`}</td>}
+      {released && <td className={`num hidden py-2.5 text-right sm:table-cell ${Math.abs(d) < 0.005 ? "text-muted" : d > 0 ? "text-rise" : "text-fall"}`}>{Math.abs(d) < 0.005 ? "0.00" : `${d > 0 ? "+" : "−"}${Math.abs(d).toFixed(2)}`}</td>}
     </tr>
   );
 }

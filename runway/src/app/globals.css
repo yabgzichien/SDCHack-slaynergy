@@ -92,6 +92,7 @@ h1, h2, h3 { letter-spacing: -0.01em; }
 /* The greeting: one serif line per screen that answers the screen's question. */
 .greeting { font-family: var(--font-serif); font-weight: 400; line-height: 1.05; letter-spacing: -0.02em; }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 8px; }
+h1[tabindex="-1"]:focus, h1[tabindex="-1"]:focus-visible { outline: none; }
 button, a, input, select, textarea { font: inherit; }
 .num { font-variant-numeric: tabular-nums; }
 .press { transition: transform 120ms cubic-bezier(0.22, 1, 0.36, 1), background-color 150ms ease, color 150ms ease, border-color 150ms ease; }
