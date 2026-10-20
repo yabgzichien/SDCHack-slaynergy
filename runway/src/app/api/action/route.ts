@@ -72,8 +72,8 @@ export async function POST(req: Request) {
       const action = body.action === "sell" ? "sell" : "buy";
       const amount = Number(body.amount);
       if (!Number.isFinite(amount) || amount <= 0) return bad("Enter an amount greater than zero.");
-      if (amount > 500) return bad("The most you can trade in one order is 500.");
       const w = computeWorld(state);
+      if (amount > w.you.maxOrder) return bad(`Your influence lets you trade up to ${w.you.maxOrder} points in one order.`);
       if (w.events.some((e) => e.settled)) return bad("That market has already settled.");
       const strike = w.events.flatMap((e) => e.strikes).find((s) => s.marketId === market);
       if (!strike) return bad("That market is not open.");

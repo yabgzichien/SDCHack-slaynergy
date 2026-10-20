@@ -1,9 +1,10 @@
 import { series } from "./data";
 import { FUTURES, FUTURE_IDS, type FutureId } from "./futures-def";
 import { crowdTilt, futureWeights, normaliseOverride, type Weights3 } from "./futures";
-import { FORECASTERS, KIND_LABEL, brier, forecasterName, updateWeights, START_BALANCE, type MarketRun, type Weights } from "./market";
+import { FORECASTERS, KIND_LABEL, brier, forecasterName, updateWeights, START_BALANCE, type Kind, type MarketRun, type Weights } from "./market";
 import { liveQuestions, replayHistory, updateScores } from "./replay";
 import { eventTitle, factFor, ladder, type Question, type Strike } from "./questions";
+import { ETA } from "./market";
 import type { SessionState } from "./state";
 import { baseRun, runTape, type Execution, type TapeResult } from "./tape";
 import { mean } from "./math";
@@ -20,6 +21,13 @@ export type EventView = {
   id: string; quarter: string; title: string; short: string; text: string; source: { name: string; url: string }; settles: string; reason: string;
   phase: "live" | "next"; strikes: StrikeView[]; clockStart: number; nowT: number; fact: string | null; settled: boolean;
 };
+// You are scored like every simulated forecaster: on each question's headline line (the middle strike).
+// Your forecast there is the chance you left the market at after your last trade; no trade counts as 50%.
+export const MAX_ORDER = 500;
+export type YouStats = {
+  forecasts: { eventId: string; title: string; forecast: number | null; outcome: boolean | null }[];
+  brier: number | null; scored: number; influenceBefore: number; influence: number; maxOrder: number;
+};
 export type ForecasterRow = { id: string; name: string; kind: string; influence: number; brier: number | null; roi: number | null };
 
 export type World = {
@@ -35,10 +43,13 @@ export type World = {
   forecasters: ForecasterRow[];
   kindSummary: { kind: string; count: number; influence: number }[];
   user: { balance: number; netCash: number; won: number; rank: number | null; of: number; roi: number | null; orders: number; positionValue: number };
-  replay: { questions: number; brierLmsr: number; brierWeighted: number; brierUnweighted: number };
+  replay: { questions: number; brierLmsr: number; brierWeighted: number; brierUnweighted: number; brierCoin: number; brierBaseRate: number };
+  you: YouStats;
+  agentRoi: Record<string, number>; // points won per point spent on settled markets, per simulated forecaster
   clericalHistory: { q: string; share: number }[];
 };
 
+export const YOU = "you";
 const top20 = (w: Weights) => [...FORECASTERS].sort((a, b) => (w[b.id] ?? 1) - (w[a.id] ?? 1)).slice(0, 20).map((f) => f.id);
 
 type Phase = { events: { q: Question; strikes: Strike[]; tapes: TapeResult[] }[]; nowT: number; t0: number };
@@ -66,10 +77,21 @@ export function computeWorld(state: SessionState, nowMs: number = Date.now()): W
   let W: Weights = W0;
   let S = base.scores;
   const baseRuns0: MarketRun[] = p0.events.map((e) => baseRun(e.strikes[1], W0, "W0"));
+  const yourForecasts = p0.events.map((e) => {
+    const ex = e.tapes[1].executions;
+    return { eventId: e.q.id, title: eventTitle(e.q), forecast: ex.length ? ex[ex.length - 1].priceAfter : null, outcome: released ? e.strikes[1].outcome ?? null : null };
+  });
+  const yourLoss = released ? yourForecasts.reduce((a, f) => a + brier(f.forecast ?? 0.5, f.outcome!), 0) : 0;
   if (released) {
-    W = updateWeights(W0, baseRuns0);
+    W = updateWeights(W0, baseRuns0, [{ id: YOU, prev: 1, loss: yourLoss }]);
     S = updateScores(base.scores, baseRuns0);
   }
+  const scored = yourForecasts.filter((f) => f.forecast !== null && f.outcome !== null);
+  const you: YouStats = {
+    forecasts: yourForecasts, scored: scored.length,
+    brier: scored.length ? scored.reduce((a, f) => a + brier(f.forecast!, f.outcome!), 0) / scored.length : null,
+    influenceBefore: 1, influence: W[YOU] ?? 1, maxOrder: Math.round(MAX_ORDER * Math.min(2, W[YOU] ?? 1)),
+  };
   const p1: Phase | null = released ? { events: tapesFor(liveQuestions("next"), W, "W1", state, nowT1, false), nowT: nowT1, t0: t1 } : null;
   const open = released ? p1! : p0;
 
@@ -162,7 +184,51 @@ export function computeWorld(state: SessionState, nowMs: number = Date.now()): W
     weights, usingOverride: !!state.override, scores: S, forecasters, kindSummary,
     user: { balance: START_BALANCE + netCash + won, netCash, won, rank, of: Object.keys(roi).length + 1, roi: userRoi, orders, positionValue },
     clericalHistory: series.dosm.quarters.filter((d) => d.q >= "2023Q1" && d.q <= asOfQuarter).map((d) => ({ q: d.q, share: d.clerical_share })),
-    replay: { questions: base.stats.questions, brierLmsr: base.stats.brierLmsr, brierWeighted: base.stats.brierWeightedMean, brierUnweighted: base.stats.brierUnweighted },
+    replay: { questions: base.stats.questions, brierLmsr: base.stats.brierLmsr, brierWeighted: base.stats.brierWeightedMean, brierUnweighted: base.stats.brierUnweighted, brierCoin: base.stats.brierCoin, brierBaseRate: base.stats.brierBaseRate },
+    you, agentRoi: roi,
   };
 }
 export { FUTURE_IDS };
+
+// ---------- leaderboard: every forecaster, ranked by accuracy ----------
+export type LeaderRow = {
+  id: string; name: string; kind: string; you: boolean;
+  brier: number | null; questions: number; influenceBefore: number; influence: number; roi: number | null; rank: number | null;
+};
+export type Leaderboard = {
+  released: boolean; rows: LeaderRow[]; eta: number;
+  history: { q: string; byKind: Record<Kind, number> }[]; kinds: { kind: Kind; label: string; count: number; brier: number; influence: number }[];
+  baselines: { coin: number; baseRate: number; market: number; weighted: number; unweighted: number };
+};
+
+export function computeLeaderboard(state: SessionState, nowMs: number = Date.now()): Leaderboard {
+  const w = computeWorld(state, nowMs);
+  const base = replayHistory();
+  const released = state.release === 1;
+  const W0 = base.weights;
+  const live = liveQuestions("live");
+  const runs = live.map((q) => baseRun(ladder(q)[1], W0, "W0"));
+  const W = released ? updateWeights(W0, runs, [{ id: YOU, prev: 1, loss: w.you.forecasts.reduce((a, f) => a + brier(f.forecast ?? 0.5, f.outcome!), 0) }]) : W0;
+  const roiById = w.agentRoi;
+  const rows: LeaderRow[] = FORECASTERS.map((f) => {
+    let { sum, n } = base.agentBrier[f.id];
+    if (released) for (const r of runs) { sum += brier(r.beliefs[f.id], r.q.outcome!); n++; }
+    return { id: f.id, name: forecasterName(f), kind: KIND_LABEL[f.kind], you: false, brier: n ? sum / n : null, questions: n, influenceBefore: W0[f.id], influence: W[f.id], roi: roiById[f.id] ?? null, rank: null };
+  });
+  rows.push({ id: YOU, name: "You", kind: "you", you: true, brier: w.you.brier, questions: w.you.scored, influenceBefore: 1, influence: w.you.influence, roi: w.user.roi, rank: null });
+  rows.sort((a, b) => (a.brier ?? 9) - (b.brier ?? 9) || b.influence - a.influence);
+  let k = 0;
+  for (const r of rows) if (r.brier !== null) r.rank = ++k;
+  const kindIds = [...new Set(FORECASTERS.map((f) => f.kind))];
+  const kinds = kindIds.map((kind) => {
+    const m = rows.filter((r) => !r.you && FORECASTERS.find((f) => f.id === r.id)!.kind === kind);
+    return { kind, label: KIND_LABEL[kind], count: m.length, brier: mean(m.map((r) => r.brier ?? 0)), influence: mean(m.map((r) => r.influence)) };
+  });
+  const history = released
+    ? [...base.influenceHistory, { q: "2026Q2", byKind: Object.fromEntries(kinds.map((x) => [x.kind, x.influence])) as Record<Kind, number> }]
+    : base.influenceHistory;
+  return {
+    released, rows, eta: ETA, history, kinds,
+    baselines: { coin: base.stats.brierCoin, baseRate: base.stats.brierBaseRate, market: base.stats.brierLmsr, weighted: base.stats.brierWeightedMean, unweighted: base.stats.brierUnweighted },
+  };
+}

@@ -328,3 +328,37 @@ describe("sectors and qualifications", () => {
     expect(b.every((id) => a.includes(id))).toBe(true);
   });
 });
+
+import { computeLeaderboard, YOU } from "@/lib/engine/world";
+
+describe("leaderboard: influence follows accuracy", () => {
+  // Real 2026 Q2 outcomes of the headline lines: DOSM yes, SWE-bench yes, the others no.
+  const truth: Record<string, boolean> = { "dosm-2026Q2": true, "swe-2026Q2": true, "hle-2026Q2": false, "metr-2026Q2": false, "tbench-2026Q2": false };
+  const bets = (right: boolean): SessionState => ({
+    ...initialState(), release: 1, clock: { t0: T0, t1: T1 },
+    orders: Object.entries(truth).map(([ev, o], i) => ({ id: `o${i}`, market: `${ev}~1`, t: 30 + i, side: (o === right ? "yes" : "no") as "yes" | "no", action: "buy" as const, amount: 300 })),
+  });
+  it("ranks every simulated forecaster and you by Brier score, lowest first", () => {
+    const lb = computeLeaderboard(bets(true), Date.parse(T1) + 1000);
+    expect(lb.rows.length).toBe(201);
+    const scored = lb.rows.filter((r) => r.brier !== null);
+    for (let i = 1; i < scored.length; i++) expect(scored[i].brier!).toBeGreaterThanOrEqual(scored[i - 1].brier!);
+    expect(lb.rows.find((r) => r.id === YOU)!.questions).toBe(5);
+  });
+  it("gives you more influence when your forecasts were right and less when they were wrong", () => {
+    const good = computeLeaderboard(bets(true), Date.parse(T1) + 1000).rows.find((r) => r.you)!;
+    const bad = computeLeaderboard(bets(false), Date.parse(T1) + 1000).rows.find((r) => r.you)!;
+    expect(good.brier!).toBeLessThan(bad.brier!);
+    expect(good.influence).toBeGreaterThan(1);
+    expect(bad.influence).toBeLessThan(1);
+    expect(good.rank!).toBeLessThan(bad.rank!);
+    expect(computeWorld(bets(true), Date.parse(T1) + 1000).you.maxOrder).toBeGreaterThan(500);
+  });
+  it("the more accurate a simulated forecaster, the more influence it ends with", () => {
+    const rows = computeLeaderboard(bets(true), Date.parse(T1) + 1000).rows.filter((r) => !r.you);
+    const top = rows.slice(0, 20), bottom = rows.slice(-20);
+    const avg = (xs: typeof rows) => xs.reduce((a, r) => a + r.influence, 0) / xs.length;
+    expect(avg(top)).toBeGreaterThan(1);
+    expect(avg(bottom)).toBeLessThan(1);
+  });
+});
