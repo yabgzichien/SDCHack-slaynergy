@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useApp } from "@/components/AppProvider";
-import { Btn, Card, DemoLabel, H, PageTitle, Skeleton } from "@/components/ui";
+import { Btn, Card, DemoLabel, H, More, PageTitle, Skeleton } from "@/components/ui";
 import type { Leaderboard, LeaderRow } from "@/lib/engine/world";
 
 const KIND_TONE: Record<string, string> = { expert: "var(--accent)", sceptic: "var(--ink)", chaser: "var(--muted)", optimist: "var(--control)", noisy: "var(--control)" };
@@ -41,22 +41,20 @@ export default function LeaderboardPage() {
       <div className="mb-4 grid gap-4 lg:grid-cols-2">
           <Card>
             <H>How influence works</H>
-            <ol className="list-decimal space-y-2 pl-5 text-sm">
-              <li>Everyone starts with influence 1.</li>
-              <li>When a question settles, each forecaster&apos;s influence is multiplied by e<sup>−{lb.eta}×Brier</sup>: a confident right answer keeps almost all of it, a confident wrong one loses most.</li>
-              <li>Influences are rescaled so the crowd averages 1, and extreme values are capped so no one forecaster can dominate.</li>
-              <li>Influence is the budget a forecaster trades with, so accurate forecasters move prices more.</li>
-            </ol>
-            <p className="mt-3 text-sm text-muted">This is the Hedge rule, an online-learning method for combining forecasters.</p>
+            <p className="text-sm">Everyone starts equal. Each time real figures come out, forecasters who were confidently right keep their influence and those who were confidently wrong lose most of theirs. More influence means a bigger budget to bet with, so accurate forecasters move the chances more.</p>
+            <More summary="The formula">
+              <p>Each forecaster&apos;s influence is multiplied by e<sup>−{lb.eta}×Brier</sup> when a question settles, then rescaled so the crowd averages 1. Extreme values are capped so no one forecaster can dominate. This is the Hedge rule, an online-learning method for combining forecasters.</p>
+              <p>Brier score: the average squared gap between the chance given and what happened. 0 is perfect; always saying 50% scores 0.25.</p>
+            </More>
           </Card>
           <Card tone={you.rank ? "accent" : undefined}>
             <H>You</H>
             {you.brier === null ? (
-              <p className="text-sm">Your forecasts are scored when the new data is released. Your forecast on a question is the chance you leave its headline line at after your last trade. A question you do not trade counts as 50%.</p>
+              <p className="text-sm">Your forecasts are scored when the new data is released. Your forecast on a question is the chance on its main line after your last bet. A question you skip counts as 50%.</p>
             ) : (
               <dl className="num space-y-1.5 text-sm">
-                <div className="flex justify-between"><dt className="text-muted">Accuracy (Brier)</dt><dd>{you.brier.toFixed(3)}</dd></div>
-                <div className="flex justify-between"><dt className="text-muted">Questions you traded</dt><dd>{view.world.you.traded} of {you.questions}</dd></div>
+                <div className="flex justify-between"><dt className="text-muted">Error score (lower is better)</dt><dd>{you.brier.toFixed(3)}</dd></div>
+                <div className="flex justify-between"><dt className="text-muted">Questions you bet on</dt><dd>{view.world.you.traded} of {you.questions}</dd></div>
                 <div className="flex justify-between"><dt className="text-muted">Influence</dt><dd>{you.influence.toFixed(2)}×</dd></div>
                 <div className="flex justify-between"><dt className="text-muted">Largest order allowed</dt><dd>{view.world.you.maxOrder} points</dd></div>
               </dl>
@@ -142,7 +140,7 @@ function RowView({ r, released, max }: { r: LeaderRow; released: boolean; max: n
       <td className="num py-2.5 pr-2">{r.rank ?? "–"}</td>
       <td className="py-2.5 pr-2">
         <p className={r.you ? "font-medium" : ""}>{r.you ? "You" : `Forecaster ${r.id.slice(1)}`}</p>
-        <p className="text-xs text-muted">{r.you ? "Untraded questions count as 50%" : r.kind}</p>
+        <p className="text-xs text-muted">{r.you ? "Skipped questions count as 50%" : r.kind}</p>
       </td>
       <td className="num py-2.5 pr-2 text-right">{r.brier === null ? "–" : r.brier.toFixed(3)}</td>
       <td className="num hidden py-2.5 pr-2 text-right sm:table-cell">{r.questions}</td>

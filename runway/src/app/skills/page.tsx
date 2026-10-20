@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useApp } from "@/components/AppProvider";
 import { ExpiryAxis, ExpiryLegend, ExpiryTrack } from "@/components/ExpiryTrack";
-import { Btn, Card, Chip, Estimate, NextRow, PageTitle, Skeleton, SourceChip } from "@/components/ui";
+import { Btn, Card, Chip, Estimate, More, NextRow, PageTitle, Skeleton, SourceChip } from "@/components/ui";
 
 // One question: which of my skills will last?
 export default function SkillsPage() {
@@ -25,7 +25,7 @@ export default function SkillsPage() {
   return (
     <div>
       <PageTitle title={fading.length ? `${fading.length} of your ${mine.length} skills fade before 2031.` : `None of your ${mine.length} skills fades before 2031.`}>
-        A skill&apos;s date is when AI is expected to do most of that work and be in common use for it. {lasting.length ? `Your longest-lasting: ${lasting.slice(0, 2).map((s) => s.name.toLowerCase()).join(" and ")}.` : ""} That is a reason to plan, not to worry.
+        The date is when AI is likely to do most of that skill&apos;s work. {lasting.length ? `Your longest-lasting: ${lasting.slice(0, 2).map((s) => s.name.toLowerCase()).join(" and ")}.` : ""} That is a reason to plan, not to worry.
       </PageTitle>
 
       <Card>
@@ -55,21 +55,13 @@ export default function SkillsPage() {
           {src.slice(0, 2).map((x) => <SourceChip key={x.name} name={x.name} date={x.date} url={x.url} />)}
         </div>
         <div className="mt-2"><Estimate /></div>
+        <More summary="Why three dots?">
+          <p>Nobody knows how fast AI will improve, so each dot is one possible future: slow, medium or fast. The bar ends at the most likely date. <Link href="/forecast" className="underline decoration-control underline-offset-2 hover:text-ink">How likely is each future?</Link></p>
+          <p>The dates come from how much of each skill&apos;s work AI can already do (ILO 2025 and the Anthropic Economic Index) and how fast AI test scores are rising.</p>
+        </More>
       </Card>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
-        <Card>
-          <h2 className="text-base font-semibold">Why do the dates spread out?</h2>
-          <p className="mt-1 text-sm">Each dot is one possible future: slow, medium or fast AI progress. The bar ends at the date weighted by how likely each future is. Those weights come from a prediction market tested on real data releases.</p>
-          <Link href="/forecast" className="mt-3 inline-block text-sm underline decoration-control underline-offset-2 hover:text-ink">See the forecast</Link>
-        </Card>
-        <Card>
-          <h2 className="text-base font-semibold">What is changing in the job market?</h2>
-          <p className="mt-1 text-sm">Which jobs are growing in Malaysian online job ads, and which back-office jobs are most exposed to AI.</p>
-          <Link href="/trends" className="mt-3 inline-block text-sm underline decoration-control underline-offset-2 hover:text-ink">See job market trends</Link>
-        </Card>
-      </div>
-      <NextRow back="/start" next="/forecast" nextLabel="Next: how sure are we?" />
+      <NextRow back="/start" next="/forecast" nextLabel="Next: the forecast" />
     </div>
   );
 }

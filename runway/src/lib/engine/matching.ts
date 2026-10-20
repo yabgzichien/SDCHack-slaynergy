@@ -1,4 +1,4 @@
-import { roles, roleById, skillById, series, courses, courseById, GROUP_LABEL, EDUCATION_RANK, type Education, type SectorId, type GroupKey, type Role, type Course } from "./data";
+import { roles, roleById, skillById, series, courses, courseById, GROUP_LABEL, EDUCATION_RANK, isEducation, type Education, type SectorId, type GroupKey, type Role, type Course } from "./data";
 import { expiryFor, durability, fmtYear, type SkillExpiry } from "./expiry";
 import type { Weights3 } from "./futures";
 import { clamp } from "./math";
@@ -15,7 +15,7 @@ export function pickInputs(p: Record<string, unknown> & Partial<MatchInput>): Ma
     hoursPerWeek: Number(p.hoursPerWeek ?? 10),
     interests: [...(p.interests ?? [])].sort(),
     goals: [...(p.goals ?? [])].sort(),
-    education: p.education === "degree" || p.education === "spm" ? p.education : "diploma",
+    education: isEducation(p.education) ? p.education : "diploma",
     field: p.field,
   };
 }

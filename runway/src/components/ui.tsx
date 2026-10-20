@@ -4,6 +4,21 @@ import type { ReactNode } from "react";
 
 export const FUTURE_COLOR: Record<string, string> = { slow: "var(--slow)", medium: "var(--medium)", fast: "var(--fast)" };
 export const FUTURE_NAME: Record<string, string> = { slow: "Slow", medium: "Medium", fast: "Fast" };
+// What each forecast question measures, in everyday words. Keyed by the question id's prefix (dosm-2026Q2, swe-2026Q2, ...).
+export const QUESTION_PLAIN: Record<string, string> = {
+  dosm: "How many Malaysian job ads are for clerical and office-admin jobs",
+  metr: "How long a task AI can finish on its own",
+  swe: "How well AI fixes real software bugs",
+  hle: "How well AI answers very hard expert questions",
+  tbench: "How well AI handles everyday computer tasks",
+};
+export const questionPlain = (eventId: string) => QUESTION_PLAIN[eventId.split("-")[0]] ?? null;
+// The three futures in everyday words. The model's exact settings stay in each future's own blurb.
+export const FUTURE_PLAIN: Record<string, string> = {
+  slow: "AI improves more slowly than lately, and companies are slow to use it. Office work changes gradually.",
+  medium: "AI keeps improving at its recent pace, and companies follow. Routine office tasks shrink steadily.",
+  fast: "AI improves faster than lately, and companies rush to use it. Routine office tasks shrink quickly.",
+};
 export const pct = (x: number, d = 0) => `${(x * 100).toFixed(d)}%`;
 
 // A tonal panel: one step off the white ground, no border, no shadow. tone="raised" is the one white card on a screen.
@@ -40,7 +55,7 @@ export function Chip({ children, tone = "neutral", title }: { children: ReactNod
   return <span title={title} className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${t}`}>{children}</span>;
 }
 
-export const DemoLabel = () => <Chip tone="demo" title="Simulated forecasters are demo data, not real people">Simulated forecasters, demo data</Chip>;
+export const DemoLabel = () => <Chip tone="demo" title="The other forecasters are simulated for this demo, not real people">Simulated forecasters (demo)</Chip>;
 
 export function SourceChip({ name, date, url }: { name: string; date: string; url?: string }) {
   const inner = <>Source: {name}, {date}</>;
@@ -48,8 +63,32 @@ export function SourceChip({ name, date, url }: { name: string; date: string; ur
   return url ? <a href={url} target="_blank" rel="noreferrer" className={`${cls} hover:text-ink`}>{inner}</a> : <span className="text-xs text-muted">{inner}</span>;
 }
 
+// Short names for the 17 UN Sustainable Development Goals, so a chip reads "Decent work" rather than "SDG 8.5".
+export const SDG_SHORT: Record<string, string> = {
+  "1": "No poverty", "2": "Zero hunger", "3": "Good health", "4": "Quality education", "5": "Gender equality", "6": "Clean water",
+  "7": "Clean energy", "8": "Decent work", "9": "Industry and innovation", "10": "Fewer inequalities", "11": "Sustainable cities",
+  "12": "Responsible consumption", "13": "Climate action", "14": "Life below water", "15": "Life on land", "16": "Peace and justice", "17": "Partnerships",
+};
+export const sdgName = (target: string) => SDG_SHORT[target.split(".")[0]] ?? `Goal ${target}`;
+
+// The chip names the goal in words; the exact UN target number sits in the tooltip and the accessible name.
 export function SdgTag({ target, why }: { target: string; why?: string }) {
-  return <span title={why} className="inline-flex items-center rounded-full bg-accentsoft px-2.5 py-0.5 text-xs font-medium text-accent">SDG {target}</span>;
+  const goal = target.split(".")[0];
+  const tip = `UN Sustainable Development Goal ${goal}, target ${target}${why ? `. ${why}` : ""}`;
+  return <span title={tip} aria-label={tip} className="inline-flex items-center rounded-full bg-accentsoft px-2.5 py-0.5 text-xs font-medium text-accent">UN goal {goal} · {sdgName(target)}</span>;
+}
+
+// Detail most people can skip: the method, the formula, the source codes. Closed by default.
+export function More({ summary = "How we worked this out", children, className = "" }: { summary?: string; children: ReactNode; className?: string }) {
+  return (
+    <details className={`group mt-3 text-sm ${className}`}>
+      <summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 text-muted underline decoration-control underline-offset-2 hover:text-ink [&::-webkit-details-marker]:hidden">
+        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden className="transition-transform group-open:rotate-90"><path d="M4.5 2.5L8 6l-3.5 3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        {summary}
+      </summary>
+      <div className="mt-2 space-y-2 text-muted">{children}</div>
+    </details>
+  );
 }
 
 export function Bar({ value, color = "var(--accent)", label, height = 6 }: { value: number; color?: string; label?: string; height?: number }) {
@@ -93,7 +132,7 @@ export function Skeleton({ lines = 3 }: { lines?: number }) {
 }
 
 export function Estimate() {
-  return <p className="text-sm text-muted" role="note">These are estimates, not predictions of certainty.</p>;
+  return <p className="text-sm text-muted" role="note">These are estimates, not certainties.</p>;
 }
 
 // "Next" row at the foot of a screen: one way back, one way on.

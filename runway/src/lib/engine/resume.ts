@@ -174,7 +174,14 @@ export function analyseResume(raw: string, weights: Weights3): ResumeAnalysis {
   const inferred = occ ? occ.skills.filter((s) => !detected.some((d) => d.id === s)).map((id) => ({ id, name: skillById[id].name })) : [];
 
   const expText = rawLines.filter((_, i) => sectionOfLine[i] === "experience").join("\n");
-  const education: Education | null = /\b(bachelor|b\.?eng|b\.?sc|degree|master|m\.?sc|phd|sarjana)\b/i.test(text) ? "degree" : /\bdiploma\b/i.test(text) ? "diploma" : /\b(spm|stpm|sijil|certificate)\b/i.test(text) ? "spm" : null;
+  const education: Education | null =
+    /\b(ph\.?d|doctorate|doktor falsafah)\b/i.test(text) ? "phd"
+    : /\b(master'?s?|m\.?sc|mba|m\.?eng|sarjana(?! muda))\b/i.test(text) ? "master"
+    : /\b(bachelor|b\.?eng|b\.?sc|b\.?a\b|degree|ijazah|sarjana muda)\b/i.test(text) ? "degree"
+    : /\bdiploma\b/i.test(text) ? "diploma"
+    : /\b(stpm|matriculation|matrikulasi|foundation|asasi|a-levels?)\b/i.test(text) ? "stpm"
+    : /\b(skm|sijil kemahiran)\b/i.test(text) ? "skm"
+    : /\b(spm|sijil|certificate)\b/i.test(text) ? "spm" : null;
   const months = monthsOf(expText || text);
   const years = months === null ? null : Math.round((months / 12) * 2) / 2;
 

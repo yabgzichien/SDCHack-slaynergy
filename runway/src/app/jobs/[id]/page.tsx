@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useApp } from "@/components/AppProvider";
 import { Score, whyFits } from "@/components/JobBits";
-import { Bar, Btn, Card, Chip, Estimate, H, PageTitle, SdgTag, Skeleton, SourceChip } from "@/components/ui";
+import { Bar, Btn, Card, Chip, Estimate, H, More, PageTitle, SdgTag, Skeleton, SourceChip } from "@/components/ui";
 
 // One question: why does this job score what it does, and what am I missing?
 export default function JobDetailPage() {
@@ -35,18 +35,23 @@ export default function JobDetailPage() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <H sub="Five parts, each from 0 to 100, weighted and added up.">Why this score</H>
+          <H sub="Each part is out of 100. Longer bars help more.">Why this score</H>
           <ul className="space-y-3">
             {m.parts.map((p) => (
               <li key={p.key}>
-                <div className="flex justify-between text-sm"><span>{p.label} <span className="text-muted">· weight {Math.round(p.weight * 100)}%</span></span><span className="num">{Math.round(p.value * 100)}</span></div>
+                <div className="flex justify-between text-sm"><span>{p.label}</span><span className="num">{Math.round(p.value * 100)}</span></div>
                 <div className="mt-1"><Bar value={p.value} label={`${p.label} ${Math.round(p.value * 100)} out of 100`} /></div>
               </li>
             ))}
           </ul>
-          {m.penalty > 0.001 && <p className="num mt-3 text-sm">Minus {(m.penalty * 100).toFixed(1)} points because some of its skills fade soon.</p>}
-          {m.sdgMatch && <p className="num mt-1 text-sm">Plus 12 points because it serves a goal you picked.</p>}
-          <p className="mt-3 text-sm text-muted">Job demand: {m.demand.label.toLowerCase()} were {m.demand.recent.toFixed(1)}% of online job ads in {m.demand.latest.replace("Q", " Q")}, {m.demand.trend >= 0 ? "up" : "down"} {Math.abs(m.demand.trend * 100).toFixed(0)}% on their average for {m.demand.period.replace(/Q/g, " Q")} (adjusted for the few quarters available).</p>
+          {m.penalty > 0.001 && <p className="num mt-3 text-sm">Minus {Math.round(m.penalty * 100)} because some of its skills fade soon.</p>}
+          {m.sdgMatch && <p className="num mt-1 text-sm">Plus 12 because it serves a goal you picked.</p>}
+          <p className="mt-3 text-sm">Job ads for work like this are {Math.abs(m.demand.trend) < 0.03 ? "steady" : m.demand.trend > 0 ? `up ${Math.abs(m.demand.trend * 100).toFixed(0)}%` : `down ${Math.abs(m.demand.trend * 100).toFixed(0)}%`} compared with earlier months.</p>
+          <More>
+            <p>The score adds up the parts above, weighted: {m.parts.map((p) => `${p.label.toLowerCase()} ${Math.round(p.weight * 100)}%`).join(", ")}.</p>
+            <p>Job demand: {m.demand.label.toLowerCase()} were {m.demand.recent.toFixed(1)}% of online job ads in {m.demand.latest.replace("Q", " Q")}, against their average for {m.demand.period.replace(/Q/g, " Q")}, adjusted for the few quarters available.</p>
+            <p>Job code: O*NET-SOC {m.onet}{m.closest ? " (closest match to this title)" : ""}, as listed in the Anthropic Economic Index.</p>
+          </More>
           <div className="mt-1"><SourceChip name="DOSM Job Market Insights" date={`to ${view.world.asOfQuarter.replace("Q", " Q")}`} url="https://www.dosm.gov.my/portal-main/release-content/big-data-analytics-job-market-insights-q22026" /></div>
         </Card>
 
@@ -63,7 +68,6 @@ export default function JobDetailPage() {
           <div className="mt-4 flex flex-wrap gap-1.5"><SdgTag target={m.sdgTarget} why={m.sdgWhy} /><Chip>About {m.weeks} weeks to get ready</Chip>{m.atRisk && <Chip tone="fall">Some skills fade soon</Chip>}</div>
           <p className="mt-2 text-sm">{m.sdgWhy}</p>
           {m.tradeoff && <p className="mt-2 text-sm text-muted">{m.tradeoff}</p>}
-          <p className="mt-3 text-xs text-muted">O*NET-SOC {m.onet}{m.closest ? " (closest match to this title)" : ""}, as listed in the Anthropic Economic Index.</p>
         </Card>
       </div>
       <div className="mt-4"><Estimate /></div>

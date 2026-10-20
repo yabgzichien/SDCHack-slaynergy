@@ -14,9 +14,15 @@ export type EpochSeries = { name: string; unit: string; short: string; replayOnl
 export type Source = { id: string; name: string; url: string; retrieved: string; latest: string; licence: string; next?: string };
 
 export type Skill = { id: string; name: string; ilo: string | null; onet: string[]; sdg: { target: string; why: string }; complement: boolean };
-export type Education = "spm" | "diploma" | "degree";
-export const EDUCATION_RANK: Record<Education, number> = { spm: 0, diploma: 1, degree: 2 };
-export const EDUCATION_LABEL: Record<Education, string> = { spm: "SPM or certificate", diploma: "Diploma", degree: "Degree" };
+// A person's highest qualification. Jobs only ever require spm, diploma or degree; the other levels map onto those three
+// for the entry check (a master's or PhD meets a degree requirement). Qualification is never a ranking input.
+export type Education = "spm" | "skm" | "stpm" | "diploma" | "degree" | "master" | "phd";
+export const EDUCATION_RANK: Record<Education, number> = { spm: 0, skm: 0, stpm: 0, diploma: 1, degree: 2, master: 2, phd: 2 };
+export const EDUCATION_LABEL: Record<Education, string> = {
+  spm: "SPM", skm: "Skills certificate (SKM)", stpm: "STPM, Matriculation or Foundation", diploma: "Diploma",
+  degree: "Bachelor's degree", master: "Master's degree", phd: "PhD",
+};
+export const isEducation = (x: unknown): x is Education => typeof x === "string" && x in EDUCATION_RANK;
 export type SectorId = "finance" | "business" | "computing" | "engineering" | "science" | "health" | "service" | "logistics" | "trades" | "education";
 export const SECTORS: { id: SectorId; label: string; blurb: string }[] = [
   { id: "computing", label: "Computing and IT", blurb: "Software, testing, networks, data" },

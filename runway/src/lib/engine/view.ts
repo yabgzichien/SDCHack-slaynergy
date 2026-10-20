@@ -183,7 +183,7 @@ function diffViews(a: View, b: View, state: SessionState): Change[] {
   const moved = kb.map((k) => ({ k: k.kind, d: k.influence - ka.find((z) => z.kind === k.kind)!.influence })).sort((x, y) => Math.abs(y.d) - Math.abs(x.d))[0];
   out.push({
     kind: "forecasters", text: `Influence moved most for simulated ${moved.k}s (${moved.d > 0 ? "up" : "down"} ${Math.abs(moved.d).toFixed(2)}x on average).`,
-    why: "Forecasters whose probabilities were closer to the real outcomes gained influence (Brier score).", source: epochSrc,
+    why: "Forecasters whose chances were closer to what really happened gained influence.", source: epochSrc,
   });
   if (state.profile) {
     const shifts = b.profileSkills.map((s) => {

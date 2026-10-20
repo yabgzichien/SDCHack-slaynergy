@@ -65,7 +65,7 @@ export function buildPlan(m: RoleMatch, hoursPerWeek: number): Plan {
     steps,
     summary: {
       layer1,
-      layer2: `Your new job as ${m.title} serves SDG ${m.sdgTarget}: ${m.sdgWhy}`,
+      layer2: `Your new job as ${m.title} serves UN goal ${m.sdgTarget.split(".")[0]} (target ${m.sdgTarget}): ${m.sdgWhy}`,
     },
     note: "A plan is a suggestion. You choose, and your counsellor reviews and approves it.",
   };

@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useApp } from "@/components/AppProvider";
-import { Bar, Btn, Card, Chip, DemoLabel, Estimate, FutureBar, H, PageTitle, SdgTag, Skeleton, pct } from "@/components/ui";
+import { Bar, Btn, Card, Chip, DemoLabel, Estimate, FutureBar, H, PageTitle, SdgTag, Skeleton, pct, sdgName } from "@/components/ui";
 
 export default function CounsellorPage() {
   const { view, state, catalog, act, busy } = useApp();
@@ -50,7 +50,7 @@ export default function CounsellorPage() {
             <dt className="text-muted">Experience</dt><dd>{p.years} years</dd>
             <dt className="text-muted">Time to find work</dt><dd>{p.months} months</dd>
             <dt className="text-muted">Study time</dt><dd>{p.hoursPerWeek} hours a week</dd>
-            <dt className="text-muted">Goals picked</dt><dd>{state.goals.length ? state.goals.map((g) => `SDG ${g}`).join(", ") : "none"}</dd>
+            <dt className="text-muted">Goals picked</dt><dd>{state.goals.length ? state.goals.map((g) => `${sdgName(g)} (${g})`).join(", ") : "none"}</dd>
           </dl>
           <p className="mt-3 text-sm font-semibold">Skills (confirmed by the worker)</p>
           <ul className="mt-1 space-y-1 text-sm">{view.profileSkills.map((s) => <li key={s.skillId} className="flex justify-between gap-2"><span>{s.name}</span><span className={s.expiry.durable ? "text-rise" : "text-fall"}>{s.expiry.durable ? "lasts" : `≈ ${s.expiry.expected}`}</span></li>)}</ul>

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useApp } from "@/components/AppProvider";
 import { MarketBoard } from "@/components/MarketBoard";
-import { Btn, PageTitle, Skeleton } from "@/components/ui";
+import { Btn, PageTitle, Skeleton, questionPlain } from "@/components/ui";
 
 // One question: should I buy Yes or No on this release?
 export default function MarketEventPage() {
@@ -23,7 +23,7 @@ export default function MarketEventPage() {
   return (
     <div>
       <Link href="/market" className="mb-4 inline-block text-sm text-muted underline decoration-control underline-offset-2 hover:text-ink">All questions</Link>
-      <PageTitle title={ev.title}>{ev.text}</PageTitle>
+      <PageTitle title={ev.title}>{questionPlain(ev.id) ? `${questionPlain(ev.id)}. ` : ""}{ev.text}</PageTitle>
       <MarketBoard key={`${ev.id}-${ev.settled}`} event={ev} />
     </div>
   );

@@ -2,7 +2,7 @@
 import { useApp } from "@/components/AppProvider";
 import { Btn, Card, PageTitle, Skeleton, SourceChip } from "@/components/ui";
 
-const KIND: Record<string, string> = { market: "Settled questions", futures: "The three futures", forecasters: "Forecasters", skills: "Your skills", jobs: "Your jobs", plan: "Your plan", demand: "Job demand" };
+const KIND: Record<string, string> = { market: "Questions answered", futures: "The three futures", forecasters: "Forecasters", skills: "Your skills", jobs: "Your jobs", plan: "Your plan", demand: "Job demand" };
 const ORDER = ["plan", "jobs", "skills", "futures", "market", "forecasters", "demand"];
 
 // One question: what did the new data change for me, and why?
@@ -13,7 +13,7 @@ export default function ChangesPage() {
   if (!changes) {
     return (
       <div>
-        <PageTitle title="Nothing has changed yet.">The 2026 Q2 data is held back. Release it from the menu and this page lists every change it makes, each with its source.</PageTitle>
+        <PageTitle title="Nothing has changed yet.">Load the new figures from the menu, and this page lists every change they make, each with its source.</PageTitle>
         <Btn href="/forecast" variant="ghost">See the forecast</Btn>
       </div>
     );
@@ -23,7 +23,7 @@ export default function ChangesPage() {
   return (
     <div>
       <PageTitle title={plan ? plan.text.replace(/\.$/, ".") : "The new data is in."}>
-        DOSM&apos;s 2026 Q2 job-ad release (published 18 Aug 2026) and Epoch AI&apos;s benchmark results settled {view.world.settledEvents.length} questions. Here is everything that moved, most personal first.
+        New job-ad figures for April to June 2026 (published 18 Aug 2026) and new AI test scores answered {view.world.settledEvents.length} questions. Here is what moved, starting with what matters most to you.
       </PageTitle>
       <div className="space-y-4">
         {groups.map((g) => (

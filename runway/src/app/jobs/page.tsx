@@ -3,7 +3,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/components/AppProvider";
 import { Score, whyFits } from "@/components/JobBits";
-import { Btn, Card, Chip, Estimate, LinkRow, NextRow, PageTitle, SdgTag, Skeleton } from "@/components/ui";
+import { ChevronRight, HandHeart, MapPin } from "lucide-react";
+import { Btn, Card, Chip, LinkRow, NextRow, PageTitle, SdgTag, Skeleton, sdgName } from "@/components/ui";
 
 // One question: which job should I aim for?
 export default function JobsPage() {
@@ -16,7 +17,7 @@ export default function JobsPage() {
   const bridge = view.bridge;
   const others = view.matches.filter((m) => m.roleId !== best?.roleId && m.roleId !== bridge?.roleId).slice(0, 4);
   const choose = async (id: string) => { if (await act("chooseRole", { roleId: id })) router.push("/plan"); };
-  const goals = state.goals.map((g) => `SDG ${g}`).join(", ");
+  const goals = [...new Set(state.goals.map(sdgName))].join(", ");
 
   if (!best) {
     return (
@@ -38,7 +39,6 @@ export default function JobsPage() {
             <h2 className="text-xl font-medium">{best.title}</h2>
             <div className="mt-2 flex flex-wrap gap-1.5">
               <SdgTag target={best.sdgTarget} why={best.sdgWhy} />
-              <Chip>About {best.weeks} weeks to get ready</Chip>
               {best.sdgMatch && <Chip tone="rise">Matches your goals</Chip>}
             </div>
             <p className="mt-3">{whyFits(best)}</p>
@@ -60,7 +60,7 @@ export default function JobsPage() {
               <li key={m.roleId}>
                 <LinkRow href={`/jobs/${m.roleId}`} aside={<p className="num text-xl">{Math.round(m.score * 100)}</p>}>
                   <p className="font-medium">{m.title}</p>
-                  <p className="text-sm text-muted">About {m.weeks} weeks · SDG {m.sdgTarget}{m.atRisk ? " · skills may fade" : ""}</p>
+                  <p className="text-sm text-muted">About {m.weeks} weeks · {sdgName(m.sdgTarget)}{m.atRisk ? " · skills may fade" : ""}</p>
                 </LinkRow>
               </li>
             ))}
@@ -76,18 +76,20 @@ export default function JobsPage() {
             </Card>
           )}
           <Card>
-            <h2 className="text-base font-semibold">Would you move for work?</h2>
-            <p className="mt-1 text-sm">See on a map of Malaysia where jobs like {best.title.toLowerCase()} are, with each state&apos;s unemployment and pay.</p>
-            <Link href="/map" className="mt-2 inline-block text-sm underline decoration-control underline-offset-2 hover:text-ink">Open the job map</Link>
-          </Card>
-          <Card>
-            <h2 className="text-base font-semibold">Goals that matter to you</h2>
-            <p className="mt-1 text-sm">{goals || "None picked yet."} Picking a UN Sustainable Development Goal moves jobs that serve it up the list, and shows what it costs you in training time.</p>
-            <Link href="/goals" className="mt-2 inline-block text-sm underline decoration-control underline-offset-2 hover:text-ink">{goals ? "Change goals" : "Choose goals"}</Link>
+            <h2 className="text-base font-semibold">Make it fit you</h2>
+            <ul className="mt-3 space-y-2">
+              <li><LinkRow href="/goals" aside={<ChevronRight size={18} className="text-muted" aria-hidden />}>
+                <p className="flex items-center gap-2 font-medium"><HandHeart size={18} strokeWidth={1.8} aria-hidden />Causes you care about</p>
+                <p className="text-sm text-muted">{goals ? goals : "Jobs that serve them move up"}</p>
+              </LinkRow></li>
+              <li><LinkRow href="/map" aside={<ChevronRight size={18} className="text-muted" aria-hidden />}>
+                <p className="flex items-center gap-2 font-medium"><MapPin size={18} strokeWidth={1.8} aria-hidden />Would you move for work?</p>
+                <p className="text-sm text-muted">Where these jobs are in Malaysia</p>
+              </LinkRow></li>
+            </ul>
           </Card>
         </div>
       </div>
-      <div className="mt-4"><Estimate /></div>
       <NextRow back="/forecast" next="/plan" nextLabel="Next: your plan" />
     </div>
   );

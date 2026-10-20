@@ -36,6 +36,6 @@ export const ExpiryAxis = () => (
 export const ExpiryLegend = () => (
   <p className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted">
     {(["slow", "medium", "fast"] as const).map((k) => <span key={k} className="inline-flex items-center gap-1"><span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: FUTURE_COLOR[k] }} />{FUTURE_NAME[k]} future</span>)}
-    <span className="inline-flex items-center gap-1"><span className="inline-block h-1 w-4 rounded-full bg-fall" />weighted date</span>
+    <span className="inline-flex items-center gap-1"><span className="inline-block h-1 w-4 rounded-full bg-fall" />most likely date</span>
   </p>
 );

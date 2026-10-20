@@ -129,7 +129,7 @@ function Result({ analysis: a, fileName, onAgain }: { analysis: ResumeAnalysis; 
       months: 6, hours: 10, interests: [], touched: { education: !!a.education, skills: true },
       resume: { score: a.score, band: a.band, occupation: o?.title ?? null, found: a.skills.length, fixes: fixes.slice(0, 2).map((f) => f.title) },
     };
-    try { sessionStorage.setItem("runway-onboarding-v1", JSON.stringify({ d: draft, i: 0 })); } catch { /* the onboarding starts blank */ }
+    try { sessionStorage.setItem("runway-onboarding-v2", JSON.stringify({ d: draft, i: 1 })); } catch { /* the onboarding starts blank */ }
     router.push("/start");
   };
 

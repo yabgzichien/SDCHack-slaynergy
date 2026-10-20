@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { computeView } from "@/lib/engine/view";
 import { computeWorld } from "@/lib/engine/world";
-import { skillById, personas, occupationById, roleById, INTERESTS } from "@/lib/engine/data";
+import { skillById, personas, occupationById, roleById, INTERESTS, isEducation } from "@/lib/engine/data";
 import { initialState, type Profile, type SessionState } from "@/lib/engine/state";
 import { normaliseOverride } from "@/lib/engine/futures";
 import { stateById } from "@/lib/engine/geo";
@@ -29,7 +29,7 @@ function cleanProfile(raw: Record<string, unknown>): Profile | string {
     state: typeof raw.state === "string" && stateById[raw.state] ? raw.state : null,
     age: raw.age === null || raw.age === undefined || raw.age === "" ? null : Math.round(num(raw.age, 16, 80, 0)) || null,
     occupationId: occ,
-    education: raw.education === "degree" || raw.education === "spm" || raw.education === "diploma" ? raw.education : occupationById[occ].education,
+    education: isEducation(raw.education) ? raw.education : occupationById[occ].education,
     years: Math.round(num(raw.years, 0, 40, 2)),
     skills,
     interests: (Array.isArray(raw.interests) ? raw.interests.map(String) : []).filter((i) => INTEREST_IDS.includes(i)).slice(0, 3),

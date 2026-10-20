@@ -131,7 +131,7 @@ export function MarketBoard({ event }: { event: EventView }) {
                   <div className="flex items-center justify-between gap-3">
                     <button onClick={() => setSel(i)} className="press min-w-0 flex-1 text-left" aria-pressed={active}>
                       <p className="font-medium leading-snug">{s.label}</p>
-                      <p className="text-xs text-muted">{pos ? `You hold ${s.position.yes > 1e-6 ? `${s.position.yes.toFixed(0)} Yes` : ""}${s.position.yes > 1e-6 && s.position.no > 1e-6 ? ", " : ""}${s.position.no > 1e-6 ? `${s.position.no.toFixed(0)} No` : ""}` : i === 1 ? "Headline line: scores your accuracy" : "Extra line"}</p>
+                      <p className="text-xs text-muted">{pos ? `You hold ${s.position.yes > 1e-6 ? `${s.position.yes.toFixed(0)} Yes` : ""}${s.position.yes > 1e-6 && s.position.no > 1e-6 ? ", " : ""}${s.position.no > 1e-6 ? `${s.position.no.toFixed(0)} No` : ""}` : i === 1 ? "Main question: counts towards your accuracy" : "Extra question"}</p>
                     </button>
                     <p className="num text-xl">{pct(yes)}</p>
                   </div>
@@ -176,7 +176,7 @@ export function MarketBoard({ event }: { event: EventView }) {
           </div>
 
           <label className="mt-4 block text-sm">
-            {mode === "buy" ? `Points to spend (up to ${maxOrder})` : `Contracts to sell (you hold ${held.toFixed(1)})`}
+            {mode === "buy" ? `Points to spend (up to ${maxOrder})` : `Shares to sell (you hold ${held.toFixed(1)})`}
             <input inputMode="decimal" value={amount} onChange={(e) => { setAmount(e.target.value.replace(/[^0-9.]/g, "")); setMsg(null); }} disabled={settled}
               className="num mt-1 min-h-12 w-full rounded-2xl border border-control bg-raised px-4 text-right text-xl" />
           </label>
@@ -189,17 +189,17 @@ export function MarketBoard({ event }: { event: EventView }) {
 
           <dl className="num mt-4 space-y-1.5 text-sm">
             <Row k={mode === "buy" ? "Average price" : "Average sale price"} v={q.shares > 0 ? cents(q.avg) : "–"} />
-            <Row k="Contracts" v={q.shares > 0 ? q.shares.toFixed(1) : "–"} />
+            <Row k="Shares" v={q.shares > 0 ? q.shares.toFixed(1) : "–"} />
             {mode === "buy" ? <Row k="Paid out if right" v={q.shares > 0 ? `${q.maxPayout.toFixed(1)} points` : "–"} strong /> : <Row k="You receive" v={q.shares > 0 ? `${q.points.toFixed(1)} points` : "–"} strong />}
             <Row k="Price moves" v={q.shares > 0 ? `${cents(side === "yes" ? q.priceBefore : 1 - q.priceBefore)} to ${cents(side === "yes" ? q.priceAfter : 1 - q.priceAfter)}` : "–"} />
           </dl>
           <div className="mt-4">
             <Btn onClick={place} disabled={!canPlace} className="min-h-12 w-full text-base">
-              {settled ? "Market settled" : tooBig ? `Up to ${maxOrder} points per order` : insufficient ? (mode === "buy" ? "Not enough points" : "Not enough contracts") : `${mode === "buy" ? "Buy" : "Sell"} ${side === "yes" ? "Yes" : "No"}`}
+              {settled ? "Market settled" : tooBig ? `Up to ${maxOrder} points per order` : insufficient ? (mode === "buy" ? "Not enough points" : "Not enough shares") : `${mode === "buy" ? "Buy" : "Sell"} ${side === "yes" ? "Yes" : "No"}`}
             </Btn>
           </div>
           {msg && <p role="status" className={`mt-2 text-sm ${msg.ok ? "text-rise" : "text-negative"}`}>{msg.text}</p>}
-          <p className="mt-3 text-xs text-muted">A contract pays 1 point if you are right and nothing if not. Points only, never money.</p>
+          <p className="mt-3 text-xs text-muted">A share pays 1 point if you are right and nothing if not. Points only, never money.</p>
         </Card>
 
         <Card>

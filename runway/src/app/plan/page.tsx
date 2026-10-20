@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useApp } from "@/components/AppProvider";
 import { RunwayStrip } from "@/components/RunwayStrip";
-import { Btn, Card, Chip, H, PageTitle, SdgTag, Skeleton, SourceChip } from "@/components/ui";
+import { Btn, Card, Chip, H, More, PageTitle, SdgTag, Skeleton, SourceChip } from "@/components/ui";
 
 // One question: what do I do next?
 export default function PlanPage() {
@@ -64,14 +64,15 @@ export default function PlanPage() {
       <div className="mt-4 grid gap-4 lg:grid-cols-12">
         <Card className="lg:col-span-7" tone={a.status === "approved" ? "rise" : undefined}>
           <H>Counsellor review</H>
-          {a.status === "draft" && (<><p className="text-sm">Send the plan to a counsellor, for example an employment officer. They review it, add a note and approve it. No partnership with any agency is implied.</p><div className="mt-3"><Btn onClick={() => act("submit")} disabled={busy}>Send to my counsellor</Btn></div></>)}
+          {a.status === "draft" && (<><p className="text-sm">Send the plan to a counsellor, such as an employment officer. They review it, add a note and approve it.</p><p className="mt-1 text-xs text-muted">No partnership with any agency is implied.</p><div className="mt-3"><Btn onClick={() => act("submit")} disabled={busy}>Send to my counsellor</Btn></div></>)}
           {a.status === "submitted" && (<><p className="text-sm">Waiting for your counsellor. For the demo, open the counsellor view and review it as them.</p><div className="mt-3"><Btn href="/counsellor" variant="ghost">Open the counsellor view</Btn></div></>)}
           {a.status === "approved" && (<><p className="text-sm font-medium">Approved by your counsellor.</p>{a.note && <p className="mt-2 rounded-2xl bg-raised p-3 text-sm">&ldquo;{a.note}&rdquo;</p>}</>)}
         </Card>
         <Card className="lg:col-span-5" tone="accent">
-          <H>What this plan does for the SDGs</H>
-          <p className="text-sm">By reskilling you advance {plan.summary.layer1.map((t, i) => <span key={t}>{i ? ", " : ""}<SdgTag target={t} /></span>)}.</p>
-          <p className="mt-2 text-sm">{plan.summary.layer2}</p>
+          <H>How this plan helps the UN goals</H>
+          <p className="text-sm">Retraining for a lasting job supports:</p>
+          <div className="mt-2 flex flex-wrap gap-1.5">{[...new Map(plan.summary.layer1.map((t) => [t.split(".")[0], t])).values()].map((t) => <SdgTag key={t} target={t} />)}</div>
+          <More summary="What the goals say"><p>UN targets {plan.summary.layer1.join(", ")}.</p><p>{plan.summary.layer2}</p></More>
           <div className="mt-2"><SourceChip name="UN SDG targets" date="official text" url="https://sdgs.un.org/goals" /></div>
         </Card>
       </div>

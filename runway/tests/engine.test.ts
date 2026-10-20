@@ -308,10 +308,10 @@ describe("resume scan", () => {
 });
 
 
-import { EDUCATION_RANK, SECTORS } from "@/lib/engine/data";
+import { EDUCATION_RANK, SECTORS, type Education } from "@/lib/engine/data";
 
 describe("sectors and qualifications", () => {
-  const profileFor = (occupationId: string, education: "spm" | "diploma" | "degree"): SessionState => {
+  const profileFor = (occupationId: string, education: Education): SessionState => {
     const o = occupations.find((x) => x.id === occupationId)!;
     return { ...initialState(), profile: { name: "T", occupationId, education, years: 5, skills: o.skills, interests: [], months: 5, hoursPerWeek: 12, budget: "free", synthetic: true } };
   };
@@ -334,6 +334,12 @@ describe("sectors and qualifications", () => {
     expect(qa[0].sector).toBe("computing");
     expect(qa.slice(0, 3).map((m) => m.roleId)).toContain("qa_tester_software");
     expect(computeView(profileFor("lab_analyst", "degree")).matches.slice(0, 3).map((m) => m.sector)).toEqual(["science", "science", "science"]);
+  });
+  it("treats a master's or PhD as meeting a degree requirement, and gives the same ranking as a bachelor's", () => {
+    const ids = (e: Education) => computeView(profileFor("civil_eng_job", e)).matches.map((m) => m.roleId);
+    expect(ids("master")).toEqual(ids("degree"));
+    expect(ids("phd")).toEqual(ids("degree"));
+    expect(ids("stpm")).toEqual(ids("spm"));
   });
   it("a degree is not needed to be shown the same ranking when education is the only difference but roles are not gated", () => {
     const a = computeView(profileFor("civil_eng_job", "degree")).matches.filter((m) => m.requires !== "degree").map((m) => m.roleId);

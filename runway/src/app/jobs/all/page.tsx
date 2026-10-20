@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useApp } from "@/components/AppProvider";
-import { Btn, Card, LinkRow, PageTitle, Skeleton } from "@/components/ui";
+import { Btn, Card, LinkRow, PageTitle, Skeleton, sdgName } from "@/components/ui";
 
 // One question: what else could I do, sector by sector?
 export default function AllJobsPage() {
@@ -29,7 +29,7 @@ export default function AllJobsPage() {
             <li key={m.roleId}>
               <LinkRow href={`/jobs/${m.roleId}`} aside={<p className="num text-xl">{Math.round(m.score * 100)}</p>}>
                 <p className="font-medium">{m.title}</p>
-                <p className="text-sm text-muted">{label(m.sector)} · about {m.weeks} weeks · SDG {m.sdgTarget}{m.atRisk ? " · skills may fade" : ""}</p>
+                <p className="text-sm text-muted">{label(m.sector)} · about {m.weeks} weeks · {sdgName(m.sdgTarget)}{m.atRisk ? " · skills may fade" : ""}</p>
               </LinkRow>
             </li>
           ))}

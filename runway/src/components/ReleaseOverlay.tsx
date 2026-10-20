@@ -3,11 +3,11 @@ import Link from "next/link";
 import { useApp } from "./AppProvider";
 
 const STAGES = [
-  "Loading the real, held-back release: DOSM 2026 Q2, published 18 Aug 2026",
-  "Settling the open questions against the real figures",
-  "Scoring every forecaster, you included, and updating influence",
-  "Re-weighting the three futures",
-  "Recomputing skill dates, job ranking and your plan",
+  "Loading the real April to June 2026 job figures (published 18 Aug 2026)",
+  "Checking every open question against the real figures",
+  "Scoring every forecaster, you included",
+  "Updating how likely each future is",
+  "Updating your skill dates, jobs and plan",
 ];
 
 // A real overlay floating over the page, so it may carry a shadow.
@@ -23,7 +23,7 @@ export function ReleaseOverlay() {
       <div className={PANEL}>
         {stage > 0 ? (
           <>
-            <p className="font-medium">New data released</p>
+            <p className="font-medium">New figures are in</p>
             <ol className="mt-2 space-y-1.5">
               {STAGES.map((s, i) => {
                 const n = i + 1;
