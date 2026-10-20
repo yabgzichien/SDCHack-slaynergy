@@ -5,3 +5,37 @@ handoff.md
 # Local tooling
 .claude/
 .taste-skill/
+
+# Documents: only README.md is committed unless the owner says otherwise
+*.md
+!README.md
+!**/README.md
+docs/
+
+# Secrets and keys
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+secrets/
+*.secret
+
+# PDFs, images and video
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.avif
+*.bmp
+*.svg
+*.ico
+*.mp4
+*.mov
+*.webm
+*.avi
+*.mkv
+*.m4v
