@@ -21,7 +21,7 @@ export default function TrustPage() {
       <Card tone={fair?.pass ? "rise" : undefined}>
         <H>Fairness check</H>
         {fair ? (
-          <p className="text-sm">We tested: the same skills with a different age or gender give the same results. <b className="num">{fair.identical} of {fair.pairs}</b> profile pairs gave identical rankings and scores. {fair.pass ? "Passed." : "FAILED."} Age, gender and background are never inputs to matching. Your highest qualification is used only to check a job's entry requirement. The same test runs automatically in the code repository.</p>
+          <p className="text-sm">We tested: the same skills with a different age or gender give the same results. <b className="num">{fair.identical} of {fair.pairs}</b> profile pairs gave identical rankings and scores. {fair.pass ? "Passed." : "FAILED."} Age, gender and background are never inputs to matching. Your highest qualification is used only to check a job&apos;s entry requirement. The same test runs automatically in the code repository.</p>
         ) : <p className="text-sm text-muted">Running the check…</p>}
       </Card>
 

@@ -44,6 +44,12 @@ export type Persona = {
   id: string; name: string; label: string; age: number; occupation: string; years: number; months: number;
   hoursPerWeek: number; interests: string[]; synthetic: boolean; education: Education;
 };
+export const INTERESTS: { id: string; label: string }[] = [
+  { id: "numbers", label: "Numbers and analysis" }, { id: "people", label: "Working with people" },
+  { id: "technology", label: "Technology" }, { id: "sustainability", label: "Sustainability" },
+  { id: "health", label: "Health" }, { id: "justice", label: "Fairness and justice" }, { id: "teaching", label: "Teaching others" },
+  { id: "building", label: "Building and fixing things" }, { id: "science", label: "Science and lab work" },
+];
 export type GroupKey = "managers" | "professionals" | "technicians" | "clerical" | "service" | "craft" | "operators";
 
 const s = seriesJson as unknown as {

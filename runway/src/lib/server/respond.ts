@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { EDUCATION_LABEL, SECTORS, occupations, personas, roles, sdg, skills } from "../engine/data";
+import { EDUCATION_LABEL, INTERESTS, SECTORS, occupations, personas, roles, sdg, skills } from "../engine/data";
 import type { SessionState } from "../engine/state";
 import { computeView } from "../engine/view";
 
@@ -37,12 +37,7 @@ export const catalog = () => ({
   goals: [...new Set(roles.map((r) => r.sdg.target))]
     .sort((a, b) => parseFloat(a) - parseFloat(b))
     .map((t) => ({ target: t, label: GOAL_LABEL[t] ?? sdg[t].goal, goal: sdg[t].goal, text: sdg[t].text })),
-  interests: [
-    { id: "numbers", label: "Numbers and analysis" }, { id: "people", label: "Working with people" },
-    { id: "technology", label: "Technology" }, { id: "sustainability", label: "Sustainability" },
-    { id: "health", label: "Health" }, { id: "justice", label: "Fairness and justice" }, { id: "teaching", label: "Teaching others" },
-    { id: "building", label: "Building and fixing things" }, { id: "science", label: "Science and lab work" },
-  ],
+  interests: INTERESTS,
 });
 
 export const respond = (state: SessionState) => NextResponse.json({ state, view: computeView(state), catalog: catalog() });

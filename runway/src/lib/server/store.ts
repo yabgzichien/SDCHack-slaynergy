@@ -19,7 +19,8 @@ interface Driver {
   deleteState(id: string): Promise<void>;
   append(type: string, session: string, payload: string): Promise<LogEntry>;
   head(): Promise<LogEntry | null>;
-  all(limit?: number): Promise<LogEntry[]>;
+  all(): Promise<LogEntry[]>;
+  recent(n: number): Promise<LogEntry[]>;
 }
 
 function sqliteDriver(): Driver {
@@ -44,7 +45,8 @@ function sqliteDriver(): Driver {
     async deleteState(id) { db.prepare("DELETE FROM sessions WHERE id=?").run(id); },
     async append(type, session, payload) { return appendTx(type, session, payload); },
     async head() { return (db.prepare("SELECT * FROM log ORDER BY seq DESC LIMIT 1").get() as LogEntry | undefined) ?? null; },
-    async all(limit = 5000) { return db.prepare("SELECT * FROM log ORDER BY seq ASC LIMIT ?").all(limit) as LogEntry[]; },
+    async all() { return db.prepare("SELECT * FROM log ORDER BY seq ASC").all() as LogEntry[]; },
+    async recent(n) { return db.prepare("SELECT * FROM log ORDER BY seq DESC LIMIT ?").all(n) as LogEntry[]; },
   };
 }
 
@@ -77,7 +79,8 @@ function pgDriver(url: string): Driver {
       } catch (err) { await c.query("ROLLBACK"); throw err; } finally { c.release(); }
     },
     async head() { await init(); const r = await pool.query("SELECT * FROM log ORDER BY seq DESC LIMIT 1"); return r.rows[0] ? toEntry(r.rows[0]) : null; },
-    async all(limit = 5000) { await init(); return (await pool.query("SELECT * FROM log ORDER BY seq ASC LIMIT $1", [limit])).rows.map(toEntry); },
+    async all() { await init(); return (await pool.query("SELECT * FROM log ORDER BY seq ASC")).rows.map(toEntry); },
+    async recent(n) { await init(); return (await pool.query("SELECT * FROM log ORDER BY seq DESC LIMIT $1", [n])).rows.map(toEntry); },
   };
 }
 
@@ -95,7 +98,8 @@ export const saveState = (id: string, s: SessionState) => db().putState(id, JSON
 export const resetState = (id: string) => db().deleteState(id);
 export const logEvent = (type: string, sid: string, payload: unknown) => db().append(type, anonymise(sid), JSON.stringify(payload));
 export const logHead = () => db().head();
-export const logAll = (limit?: number) => db().all(limit);
+export const logAll = () => db().all();
+export const logRecent = (n: number) => db().recent(n);
 
 export function verifyChain(entries: LogEntry[]): { ok: boolean; checked: number; brokenAt: number | null } {
   let prev = GENESIS;

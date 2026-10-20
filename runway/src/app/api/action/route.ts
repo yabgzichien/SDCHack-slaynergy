@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { computeView } from "@/lib/engine/view";
 import { computeWorld } from "@/lib/engine/world";
-import { skillById, personas, occupationById, roleById } from "@/lib/engine/data";
+import { skillById, personas, occupationById, roleById, INTERESTS } from "@/lib/engine/data";
 import { initialState, type Profile, type SessionState } from "@/lib/engine/state";
 import { normaliseOverride } from "@/lib/engine/futures";
 import { respond } from "@/lib/server/respond";
@@ -10,7 +10,7 @@ import { loadState, logEvent, resetState, saveState } from "@/lib/server/store";
 
 export const dynamic = "force-dynamic";
 
-const INTERESTS = ["numbers", "people", "technology", "sustainability", "health", "justice", "teaching"];
+const INTEREST_IDS = INTERESTS.map((i) => i.id);
 const bad = (message: string) => NextResponse.json({ error: message }, { status: 400 });
 const num = (x: unknown, lo: number, hi: number, d: number) => {
   const n = Number(x);
@@ -29,7 +29,7 @@ function cleanProfile(raw: Record<string, unknown>): Profile | string {
     education: raw.education === "degree" || raw.education === "spm" || raw.education === "diploma" ? raw.education : occupationById[occ].education,
     years: Math.round(num(raw.years, 0, 40, 2)),
     skills,
-    interests: (Array.isArray(raw.interests) ? raw.interests.map(String) : []).filter((i) => INTERESTS.includes(i)),
+    interests: (Array.isArray(raw.interests) ? raw.interests.map(String) : []).filter((i) => INTEREST_IDS.includes(i)).slice(0, 3),
     months: Math.round(num(raw.months, 1, 6, 6)),
     hoursPerWeek: Math.round(num(raw.hoursPerWeek, 1, 40, 10)),
     budget: raw.budget === "low" || raw.budget === "flexible" ? raw.budget : "free",
