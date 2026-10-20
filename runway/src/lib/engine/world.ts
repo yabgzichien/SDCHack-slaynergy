@@ -26,7 +26,7 @@ export type EventView = {
 export const MAX_ORDER = 500;
 export type YouStats = {
   forecasts: { eventId: string; title: string; forecast: number | null; outcome: boolean | null }[];
-  brier: number | null; scored: number; influenceBefore: number; influence: number; maxOrder: number;
+  brier: number | null; scored: number; traded: number; influenceBefore: number; influence: number; maxOrder: number;
 };
 export type ForecasterRow = { id: string; name: string; kind: string; influence: number; brier: number | null; roi: number | null };
 
@@ -86,10 +86,11 @@ export function computeWorld(state: SessionState, nowMs: number = Date.now()): W
     W = updateWeights(W0, baseRuns0, [{ id: YOU, prev: 1, loss: yourLoss }]);
     S = updateScores(base.scores, baseRuns0);
   }
-  const scored = yourForecasts.filter((f) => f.forecast !== null && f.outcome !== null);
+  // Rank and influence use the same score: every headline question counts, and one you did not trade counts as 50%.
+  const traded = yourForecasts.filter((f) => f.forecast !== null).length;
   const you: YouStats = {
-    forecasts: yourForecasts, scored: scored.length,
-    brier: scored.length ? scored.reduce((a, f) => a + brier(f.forecast!, f.outcome!), 0) / scored.length : null,
+    forecasts: yourForecasts, scored: released ? yourForecasts.length : 0, traded,
+    brier: released ? yourLoss / yourForecasts.length : null,
     influenceBefore: 1, influence: W[YOU] ?? 1, maxOrder: Math.round(MAX_ORDER * Math.min(2, W[YOU] ?? 1)),
   };
   const p1: Phase | null = released ? { events: tapesFor(liveQuestions("next"), W, "W1", state, nowT1, false), nowT: nowT1, t0: t1 } : null;

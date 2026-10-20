@@ -15,13 +15,13 @@ export default function TrustPage() {
     fetch("/api/log").then((r) => r.json()).then(setLog).catch(() => {});
   }, [view?.world.release]);
   return (
-    <div className="space-y-5">
-      <PageTitle title="How we keep this honest">What the app checks about itself, where its data comes from, and what it does not do.</PageTitle>
+    <div className="space-y-4">
+      <PageTitle title={fair?.pass ? "Every fairness check passed." : "How we keep this honest"}>What the app checks about itself, where its data comes from, and what it does not do.</PageTitle>
 
-      <Card tone={fair?.pass ? "rise" : undefined}>
+      <Card tone="raised">
         <H>Fairness check</H>
         {fair ? (
-          <p className="text-sm">We tested: the same skills with a different age or gender give the same results. <b className="num">{fair.identical} of {fair.pairs}</b> profile pairs gave identical rankings and scores. {fair.pass ? "Passed." : "FAILED."} Age, gender and background are never inputs to matching. Your highest qualification is used only to check a job&apos;s entry requirement. The same test runs automatically in the code repository.</p>
+          <p className="text-sm">We tested: the same skills with a different age or gender give the same results. <b className="num">{fair.identical} of {fair.pairs}</b> profile pairs gave identical rankings and scores. {fair.pass ? "Passed." : "FAILED."} Age, gender and background are never inputs to matching, and a second test gives two profiles that differ only in age and name and checks they get the same jobs and plan. Your highest qualification is used only to check a job&apos;s entry requirement. The same test runs automatically in the code repository.</p>
         ) : <p className="text-sm text-muted">Running the check…</p>}
       </Card>
 
@@ -30,7 +30,7 @@ export default function TrustPage() {
         {log ? (
           <>
             <p className="text-sm"><Chip tone={log.ok ? "rise" : "fall"}>{log.ok ? "Chain verified" : `Broken at record ${log.brokenAt}`}</Chip> <span className="num">{log.checked} records checked.</span></p>
-            {log.head && <p className="num mt-2 break-all rounded-lg bg-surface2 p-2 text-xs">Latest fingerprint (record {log.head.seq}): {log.head.hash}</p>}
+            {log.head && <p className="num mt-2 break-all rounded-2xl bg-raised p-3 text-xs">Latest fingerprint (record {log.head.seq}): {log.head.hash}</p>}
             <p className="mt-2 text-sm text-muted">The latest fingerprint is published to the public GitHub repository (<code>anchors/</code>), so no one, including us, can quietly rewrite the record. Only meaningless fingerprints leave the app; no data is stored on a blockchain.</p>
             {log.recent.length > 0 && (
               <ul className="num mt-2 space-y-0.5 text-xs text-muted">{log.recent.slice(0, 6).map((r) => <li key={r.seq}>#{r.seq} · {r.ts.slice(0, 19).replace("T", " ")} · {r.type} · {r.hash.slice(0, 12)}…</li>)}</ul>
@@ -54,7 +54,8 @@ export default function TrustPage() {
         <ul className="list-disc space-y-1 pl-5 text-sm">
           <li>It never invents jobs, courses or statistics. Roles and courses come from fixed, checked lists; scores are computed; explanations are filled from templates with a source and date.</li>
           <li>It uses no real CVs or personal data, and no paid or hosted AI model at run time.</li>
-          <li>It never uses real money. Forecasters earn points and reputation only.</li>
+          <li>It never uses real money. Forecasters earn points, rank and influence only.</li>
+          <li>It uses no language model. Matching and forecasting are statistics you can read in the code: a scoring rule, a market maker (LMSR) and the Hedge rule for influence.</li>
           <li>It never decides for you. You choose; a counsellor reviews and approves. Estimates are not predictions of certainty.</li>
         </ul>
       </Card>

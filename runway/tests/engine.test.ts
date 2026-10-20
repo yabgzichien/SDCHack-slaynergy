@@ -358,6 +358,13 @@ describe("leaderboard: influence follows accuracy", () => {
     for (let i = 1; i < scored.length; i++) expect(scored[i].brier!).toBeGreaterThanOrEqual(scored[i - 1].brier!);
     expect(lb.rows.find((r) => r.id === YOU)!.questions).toBe(5);
   });
+  it("ranks you by the same score that sets your influence, so one lucky trade does not top the board", () => {
+    const one: SessionState = { ...initialState(), release: 1, clock: { t0: T0, t1: T1 }, orders: [{ id: "o1", market: "swe-2026Q2~1", t: 30, side: "yes", action: "buy", amount: 25 }] };
+    const lb = computeLeaderboard(one, Date.parse(T1) + 1000);
+    const you = lb.rows.find((r) => r.you)!;
+    expect(you.influence).toBeLessThan(1);
+    expect(you.rank!).toBeGreaterThan(20);
+  });
   it("gives you more influence when your forecasts were right and less when they were wrong", () => {
     const good = computeLeaderboard(bets(true), Date.parse(T1) + 1000).rows.find((r) => r.you)!;
     const bad = computeLeaderboard(bets(false), Date.parse(T1) + 1000).rows.find((r) => r.you)!;

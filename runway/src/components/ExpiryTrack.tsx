@@ -9,26 +9,26 @@ const yearOf = (label: string): number | null => {
   return Number(m[1]) + (mon >= 0 ? mon / 12 : 0);
 };
 
-// A small timeline: one marker per future, plus a bar for the weighted expected date.
+// A skill's shelf life on a 2026–2040 axis: one dot per future, and a bar to the weighted date.
 export function ExpiryTrack({ byFuture, expected, durable }: { byFuture: Record<string, string>; expected: string; durable: boolean }) {
   const x = (y: number | null) => (y === null ? 100 : Math.max(0, Math.min(100, ((y - FROM) / (TO - FROM)) * 100)));
   return (
     <div>
-      <div className="relative h-8" role="img" aria-label={`Expected expiry ${expected}. ${Object.entries(byFuture).map(([k, v]) => `${FUTURE_NAME[k]}: ${v}`).join("; ")}`}>
-        <div className="absolute left-0 right-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-surface2" />
-        {!durable && <div className="bar-fill absolute top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-fall/70" style={{ left: 0, width: `${x(yearOf(expected))}%` }} />}
+      <div className="relative h-6" role="img" aria-label={`Expected ${expected}. ${Object.entries(byFuture).map(([k, v]) => `${FUTURE_NAME[k]} future: ${v}`).join("; ")}`}>
+        <div className="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-surface2" />
+        {!durable && <div className="bar-fill absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-fall" style={{ left: 0, width: `${x(yearOf(expected))}%` }} />}
         {Object.entries(byFuture).map(([k, v]) => (
-          <span key={k} title={`${FUTURE_NAME[k]}: ${v}`} className="bar-fill absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-surface"
+          <span key={k} title={`${FUTURE_NAME[k]} future: ${v}`} className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-raised"
             style={{ left: `${x(yearOf(v))}%`, background: FUTURE_COLOR[k] }} />
         ))}
       </div>
-      <div className="flex justify-between text-[11px] text-muted"><span>{FROM}</span><span>2030</span><span>2035</span><span>{TO}+</span></div>
+      <div className="num flex justify-between text-xs text-muted"><span>{FROM}</span><span>2030</span><span>2035</span><span>{TO}+</span></div>
     </div>
   );
 }
 export const ExpiryLegend = () => (
-  <p className="flex flex-wrap gap-x-3 text-xs text-muted">
-    {(["slow", "medium", "fast"] as const).map((k) => <span key={k} className="inline-flex items-center gap-1"><span className="inline-block h-3 w-3 rounded-full" style={{ background: FUTURE_COLOR[k] }} />{FUTURE_NAME[k]} future</span>)}
-    <span className="inline-flex items-center gap-1"><span className="inline-block h-1.5 w-4 rounded-full bg-fall/70" />weighted expected date</span>
+  <p className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted">
+    {(["slow", "medium", "fast"] as const).map((k) => <span key={k} className="inline-flex items-center gap-1"><span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: FUTURE_COLOR[k] }} />{FUTURE_NAME[k]} future</span>)}
+    <span className="inline-flex items-center gap-1"><span className="inline-block h-1 w-4 rounded-full bg-fall" />weighted date</span>
   </p>
 );

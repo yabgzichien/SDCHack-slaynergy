@@ -30,7 +30,7 @@ export default function ResumePage() {
   if (!catalog || !state) return <Skeleton lines={5} />;
   return (
     <div>
-      <PageTitle step="Step 1 of 4 · You" title={analysis ? "Here is what we found" : "Scan your resume"}>
+      <PageTitle title={analysis ? "Here is what we found" : "Scan your resume"}>
         {analysis ? "Your score, what to fix first, and the skills we found. Check the details, then build your plan." : "We read it, show you what to improve, and fill in your skills so you do not have to type them."}
       </PageTitle>
       {!analysis ? <Intake scanning={scanning} error={error} onScan={scan} /> : <Result analysis={analysis} fileName={fileName} onAgain={() => { setAnalysis(null); setError(null); }} />}
@@ -53,9 +53,8 @@ function Intake({ scanning, error, onScan }: { scanning: boolean; error: string 
         <div
           onDragOver={(e) => { e.preventDefault(); setDrag(true); }} onDragLeave={() => setDrag(false)}
           onDrop={(e) => { e.preventDefault(); setDrag(false); const f = e.dataTransfer.files?.[0]; if (f) sendFile(f); }}
-          className={`rounded-3xl border-2 border-dashed p-8 text-center transition-transform duration-200 ${drag ? "drop-active border-accent bg-accentsoft" : "border-line bg-surface"}`}>
-          <p aria-hidden className="text-4xl">📄</p>
-          <p className="mt-2 text-lg font-bold">Drop your resume here</p>
+          className={`rounded-[22px] p-8 text-center ${drag ? "drop-active" : "bg-surface"}`}>
+          <p className="text-lg font-medium">Drop your resume here</p>
           <p className="mt-1 text-sm text-muted">PDF, Word (.docx) or text · up to 3 MB</p>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
             <Btn onClick={() => input.current?.click()} disabled={scanning}>Choose a file</Btn>
@@ -109,21 +108,29 @@ function Result({ analysis: a, fileName, onAgain }: { analysis: ResumeAnalysis; 
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("fixes");
   const cat = catalog!;
-  const [occ, setOcc] = useState(a.occupation?.id ?? cat.occupations[0].id);
-  const [years, setYears] = useState(Math.round(a.years ?? 2));
-  const [edu, setEdu] = useState<string>(a.education ?? cat.occupations.find((o) => o.id === (a.occupation?.id ?? cat.occupations[0].id))?.education ?? "diploma");
   const [chosen, setChosen] = useState<string[]>(a.skills.map((s) => s.id));
-  const [months, setMonths] = useState(state?.profile?.months ?? 5);
-  const [hours, setHours] = useState(state?.profile?.hoursPerWeek ?? 10);
+  const inferredOnly = a.inferred.filter((i) => !a.skills.some((s) => s.id === i.id));
   const toggle = (id: string) => setChosen((c) => (c.includes(id) ? c.filter((x) => x !== id) : [...c, id]));
   const fixes = a.findings.filter((f) => f.severity === "fix");
   const potential = Math.min(100 - a.score, Math.round(fixes.slice(0, 3).reduce((x, f) => x + (f.points.of - f.points.got), 0)));
   const bandColor = a.band === "strong" ? "var(--rise)" : a.band === "good" ? "var(--accent)" : "var(--fall)";
-  const inferredOnly = a.inferred.filter((i) => !a.skills.some((s) => s.id === i.id));
 
   const build = async () => {
-    const r = await act("setProfile", { profile: { name: "You", occupationId: occ, education: edu, years, skills: chosen, interests: [], months, hoursPerWeek: hours, budget: "free", synthetic: fileName === "Sample resume" } });
-    if (r) router.push("/skills");
+    const p = state?.profile;
+    if (p) {
+      const r = await act("setProfile", { profile: { ...p, skills: [...new Set([...p.skills, ...chosen])] } });
+      if (r) router.push("/skills");
+      return;
+    }
+    // No profile yet: hand the findings to the onboarding, which asks the remaining questions one at a time.
+    const o = cat.occupations.find((x) => x.id === a.occupation?.id);
+    const draft = {
+      name: "", age: "", occupationId: o?.id ?? "", education: a.education ?? o?.education ?? "", years: Math.round(a.years ?? 2), skills: chosen,
+      months: 6, hours: 10, interests: [], touched: { education: !!a.education, skills: true },
+      resume: { score: a.score, band: a.band, occupation: o?.title ?? null, found: a.skills.length, fixes: fixes.slice(0, 2).map((f) => f.title) },
+    };
+    try { sessionStorage.setItem("runway-onboarding-v1", JSON.stringify({ d: draft, i: 0 })); } catch { /* the onboarding starts blank */ }
+    router.push("/start");
   };
 
   return (
@@ -139,56 +146,20 @@ function Result({ analysis: a, fileName, onAgain }: { analysis: ResumeAnalysis; 
               <div key={k} className="rounded-2xl bg-surface2 p-3"><dd className="num text-xl font-bold">{v}</dd><dt className="text-xs text-muted">{k}</dt></div>
             ))}
           </dl>
-          <p className="mt-3 text-xs text-muted">Scanned: {fileName}. <button onClick={onAgain} className="font-semibold text-accent underline">Scan another</button></p>
+          <p className="mt-3 text-xs text-muted">Scanned: {fileName}. <button onClick={onAgain} className="underline decoration-control underline-offset-2">Scan another</button></p>
         </div>
       </Card>
 
       <Card tone="accent">
-        <H sub="Check what we found. Untick anything that is not true. Then we show which of your skills will last and which jobs you can reach.">Use this to plan your next job</H>
-        <div className="grid gap-4 md:grid-cols-2">
-          <label className="block text-sm font-medium">Your last job
-            <select value={occ} onChange={(e) => setOcc(e.target.value)} className="mt-1 min-h-11 w-full rounded-2xl border border-line bg-surface px-3">
-              {cat.occupations.map((o) => <option key={o.id} value={o.id}>{o.title}</option>)}
-            </select>
-            {a.occupation && !a.occupation.confident && <span className="text-xs text-muted">We were not sure; please check.</span>}
-          </label>
-          <label className="block text-sm font-medium">Highest qualification
-            <select value={edu} onChange={(e) => setEdu(e.target.value)} className="mt-1 min-h-11 w-full rounded-2xl border border-line bg-surface px-3">
-              {cat.education.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
-            </select>
-            <span className="text-xs text-muted">{a.education ? "Found on your resume. " : ""}Some jobs need a diploma or degree, so this decides which jobs we can suggest.</span>
-          </label>
-          <label className="block text-sm font-medium">Years of experience: <b className="num">{years}</b>
-            <input type="range" min={0} max={20} value={years} onChange={(e) => setYears(+e.target.value)} />
-          </label>
-          <label className="block text-sm font-medium">Months to find a job: <b className="num">{months}</b>
-            <input type="range" min={1} max={6} value={months} onChange={(e) => setMonths(+e.target.value)} />
-          </label>
-          <label className="block text-sm font-medium">Study hours a week: <b className="num">{hours}</b>
-            <input type="range" min={2} max={30} value={hours} onChange={(e) => setHours(+e.target.value)} />
-          </label>
+        <H sub={state?.profile ? "Tick the skills that are true. We add them to your profile and keep everything else you told us." : "Tick the skills that are true. Then answer a few short questions, already filled in from your resume."}>Use this to plan your next job</H>
+        <div className="flex flex-wrap gap-2">
+          {[...a.skills, ...inferredOnly].map((s) => (
+            <button type="button" key={s.id} aria-pressed={chosen.includes(s.id)} onClick={() => toggle(s.id)}
+              className={`press min-h-10 rounded-full px-4 text-sm ${chosen.includes(s.id) ? "bg-primary text-primaryink" : "bg-raised"}`}>{s.name}</button>
+          ))}
         </div>
-        <fieldset className="mt-4">
-          <legend className="text-sm font-semibold">Skills on your resume</legend>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {a.skills.map((s) => (
-              <button type="button" key={s.id} aria-pressed={chosen.includes(s.id)} onClick={() => toggle(s.id)}
-                className={`press min-h-10 rounded-full border px-4 text-sm ${chosen.includes(s.id) ? "border-accent bg-accent font-semibold text-accentink" : "border-line bg-surface"}`}>{s.name}</button>
-            ))}
-          </div>
-          {inferredOnly.length > 0 && (
-            <>
-              <p className="mt-3 text-sm font-semibold">Common for your job but not on your resume <span className="font-normal text-muted">(tick only if you have them)</span></p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {inferredOnly.map((s) => (
-                  <button type="button" key={s.id} aria-pressed={chosen.includes(s.id)} onClick={() => toggle(s.id)}
-                    className={`press min-h-10 rounded-full border border-dashed px-4 text-sm ${chosen.includes(s.id) ? "border-accent bg-accent font-semibold text-accentink" : "border-line bg-surface"}`}>{s.name}</button>
-                ))}
-              </div>
-            </>
-          )}
-        </fieldset>
-        <div className="mt-5"><Btn onClick={build} disabled={busy || chosen.length === 0} className="min-h-12 px-6 text-base">Show my skills&apos; shelf life →</Btn></div>
+        {inferredOnly.length > 0 && <p className="mt-2 text-sm text-muted">The last {inferredOnly.length} are common for your job but not on your resume. Tick them only if you have them.</p>}
+        <div className="mt-5"><Btn onClick={build} disabled={busy || chosen.length === 0} className="min-h-12 px-6 text-base">{state?.profile ? "Add these to my profile" : "Continue with these"}</Btn></div>
       </Card>
 
       <div className="flex justify-center"><Segmented label="Result details" value={tab} onChange={setTab} options={[{ id: "fixes", label: `Fixes (${a.findings.filter((f) => f.severity !== "good").length})` }, { id: "resume", label: "Your resume" }, { id: "skills", label: "Skills found" }]} /></div>
@@ -241,8 +212,8 @@ function FindingCard({ f, onJump }: { f: Finding; onJump: () => void }) {
       <p className="mt-2 text-sm"><b>What to do:</b> {f.fix}</p>
       {f.example && (
         <div className="mt-3 grid gap-2 sm:grid-cols-2">
-          <div className="rounded-2xl bg-surface2 p-3 text-sm"><p className="text-xs font-semibold uppercase tracking-wide text-muted">Before</p><p className="mt-1">{f.example.before}</p></div>
-          <div className="rounded-2xl bg-risesoft p-3 text-sm"><p className="text-xs font-semibold uppercase tracking-wide text-rise">After (fill in the brackets)</p><p className="mt-1">{f.example.after}</p></div>
+          <div className="rounded-2xl bg-surface2 p-3 text-sm"><p className="text-sm text-muted">Before</p><p className="mt-1">{f.example.before}</p></div>
+          <div className="rounded-2xl bg-risesoft p-3 text-sm"><p className="text-sm text-rise">After (fill in the brackets)</p><p className="mt-1">{f.example.after}</p></div>
         </div>
       )}
       {f.evidence && f.evidence.length > 0 && (

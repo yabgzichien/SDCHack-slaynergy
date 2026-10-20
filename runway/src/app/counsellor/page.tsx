@@ -19,18 +19,34 @@ export default function CounsellorPage() {
   const top3 = view.matches.slice(0, 3);
   return (
     <div>
-      <PageTitle step="Counsellor view" title={`Review the plan for ${p.name}`}>
-        You see what Runway suggested and why. The worker chooses; you review, correct and approve. Runway never decides, and no hiring decision is automated.
+      <PageTitle title={a.status === "approved" ? `You approved ${p.name}'s plan.` : a.status === "submitted" ? `${p.name} is waiting for your review.` : `${p.name} has not sent a plan yet.`}>
+        Counsellor view. You see what Runway suggested and why. The worker chooses; you review, correct and approve. Runway never decides, and no hiring decision is automated.
       </PageTitle>
       <div className="mb-4 flex flex-wrap gap-2">
         <Chip tone={a.status === "approved" ? "rise" : a.status === "submitted" ? "accent" : "neutral"}>{a.status === "approved" ? "Approved" : a.status === "submitted" ? "Waiting for your review" : "Not yet sent by the worker"}</Chip>
         {p.synthetic && <Chip tone="demo">Made-up profile</Chip>}
       </div>
+        <Card className="mb-4" tone={a.status === "approved" ? "rise" : "raised"}>
+          <H>Your decision</H>
+          {a.status === "approved" ? (
+            <p className="text-sm"><b>Approved</b> {a.approvedAt ? `on ${new Date(a.approvedAt).toLocaleString()}` : ""}.{a.note ? ` Note: “${a.note}”` : ""} The approval is logged in the tamper-evident log and shown to the worker.</p>
+          ) : a.status === "submitted" ? (
+            <>
+              <label className="block text-sm font-medium">Note to the worker (optional)
+                <textarea value={note} onChange={(e) => setNote(e.target.value)} maxLength={500} rows={3} className="mt-1 w-full rounded-2xl border border-control bg-raised p-3" placeholder="For example: check the SQL course first; I can introduce you to a local employer." />
+              </label>
+              <div className="mt-3"><Btn onClick={() => act("approve", { note })} disabled={busy}>Approve this plan</Btn></div>
+            </>
+          ) : (
+            <p className="text-sm text-muted">The worker has not sent the plan yet. In the worker view, open <b>Plan</b> and choose <b>Send to counsellor</b>.</p>
+          )}
+        </Card>
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <H>The worker</H>
           <dl className="grid grid-cols-2 gap-y-1 text-sm">
             <dt className="text-muted">Previous job</dt><dd>{catalog?.occupations.find((o) => o.id === p.occupationId)?.title ?? ""}</dd>
+            <dt className="text-muted">Age</dt><dd>{p.age ?? "Not given"}</dd>
             <dt className="text-muted">Experience</dt><dd>{p.years} years</dd>
             <dt className="text-muted">Time to find work</dt><dd>{p.months} months</dd>
             <dt className="text-muted">Study time</dt><dd>{p.hoursPerWeek} hours a week</dd>
@@ -53,8 +69,8 @@ export default function CounsellorPage() {
           <H sub="Ranked by the match score; the worker can pick any of them.">Top reachable jobs</H>
           <ol className="grid gap-3 md:grid-cols-3">
             {top3.map((m) => (
-              <li key={m.roleId} className="rounded-xl border border-line p-3">
-                <p className="text-xs text-muted">#{m.rank}</p>
+              <li key={m.roleId} className="rounded-2xl bg-raised p-4">
+                <p className="num text-xs text-muted">Rank {m.rank}</p>
                 <p className="font-semibold">{m.title}</p>
                 <div className="mt-1 flex flex-wrap gap-1.5"><SdgTag target={m.sdgTarget} /><Chip>≈ {m.weeks} weeks</Chip>{m.atRisk && <Chip tone="fall">Skills at risk</Chip>}</div>
                 <div className="mt-2"><Bar value={m.score} label={`Match score ${Math.round(m.score * 100)}`} /></div>
@@ -68,30 +84,15 @@ export default function CounsellorPage() {
           <H sub={`${plan.totalWeeks} weeks inside ${plan.deadlineWeeks} available`}>The plan for {plan.title}</H>
           <ol className="space-y-1.5 text-sm">
             {plan.steps.map((s) => (
-              <li key={s.id} className="flex flex-wrap items-baseline justify-between gap-2 border-b border-line pb-1.5">
-                <span><span className="num text-xs font-semibold text-accent">Wk {s.weekStart}{s.weekEnd > s.weekStart ? `–${s.weekEnd}` : ""}</span> {s.title}</span>
+              <li key={s.id} className="flex flex-wrap items-baseline justify-between gap-2 rounded-2xl bg-raised px-4 py-2">
+                <span><span className="num text-xs text-muted">Weeks {s.weekStart}{s.weekEnd > s.weekStart ? `–${s.weekEnd}` : ""}</span> {s.title}</span>
                 <span className="text-xs text-muted">{s.funding}</span>
               </li>
             ))}
           </ol>
-          {plan.steps.some((s) => s.kind === "programme") && <p className="mt-2 rounded-lg bg-fallsoft p-2 text-sm text-fall">Some skills have no vetted free course yet. Please identify a PERKESO-supported or other programme for them.</p>}
+          {plan.steps.some((s) => s.kind === "programme") && <p className="mt-2 text-sm text-fall">Some skills have no vetted free course yet. Please identify a PERKESO-supported or other programme for them.</p>}
         </Card>
 
-        <Card className="lg:col-span-2" tone={a.status === "approved" ? "rise" : "accent"}>
-          <H>Your decision</H>
-          {a.status === "approved" ? (
-            <p className="text-sm"><b>Approved</b> {a.approvedAt ? `on ${new Date(a.approvedAt).toLocaleString()}` : ""}.{a.note ? ` Note: “${a.note}”` : ""} The approval is logged in the tamper-evident log and shown to the worker.</p>
-          ) : a.status === "submitted" ? (
-            <>
-              <label className="block text-sm font-medium">Note to the worker (optional)
-                <textarea value={note} onChange={(e) => setNote(e.target.value)} maxLength={500} rows={3} className="mt-1 w-full rounded-xl border border-line bg-surface p-3" placeholder="For example: check the SQL course first; I can introduce you to a local employer." />
-              </label>
-              <div className="mt-3"><Btn onClick={() => act("approve", { note })} disabled={busy}>Approve this plan</Btn></div>
-            </>
-          ) : (
-            <p className="text-sm text-muted">The worker has not sent the plan yet. In the worker view, open <b>Plan</b> and choose <b>Send to counsellor</b>.</p>
-          )}
-        </Card>
       </div>
     </div>
   );
