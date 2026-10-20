@@ -1,0 +1,12 @@
+# Replit configuration for Runway. The app lives in the runway/ folder.
+run = ["sh", "-c", "cd runway && npm install && npm run dev -- -p 3000 -H 0.0.0.0"]
+modules = ["nodejs-22"]
+
+[deployment]
+build = ["sh", "-c", "cd runway && npm ci && npm run build"]
+run = ["sh", "-c", "cd runway && npm run start -- -p 3000 -H 0.0.0.0"]
+deploymentTarget = "autoscale"
+
+[[ports]]
+localPort = 3000
+externalPort = 80
