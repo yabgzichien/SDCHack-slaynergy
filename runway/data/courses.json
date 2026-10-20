@@ -1027,5 +1027,287 @@
   ],
   "checked": "2026-10-20",
   "linkStatus": "403 to automated checks; open it manually to confirm"
+ },
+ {
+  "id": "alison_payroll",
+  "title": "Payroll Essentials for Small Businesses",
+  "provider": "Alison",
+  "url": "https://alison.com/course/payroll-essentials-for-small-businesses",
+  "hours": 4,
+  "cost": "Free (UK examples; apply the ideas to EPF, SOCSO and PCB)",
+  "funding": "Free",
+  "skills": [
+   "payroll"
+  ],
+  "checked": "2026-10-20",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_ar",
+  "title": "Accounts Receivable Management",
+  "provider": "Alison",
+  "url": "https://alison.com/course/accounts-receivable-management",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "billing",
+   "collections"
+  ],
+  "checked": "2026-10-20",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_credit",
+  "title": "Fundamentals of Credit Control",
+  "provider": "Alison",
+  "url": "https://alison.com/course/fundamentals-of-credit-control",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "collections"
+  ],
+  "checked": "2026-10-20",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_admin",
+  "title": "Administrative Support",
+  "provider": "Alison",
+  "url": "https://alison.com/course/administrative-support",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "office_admin"
+  ],
+  "checked": "2026-10-20",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_cs",
+  "title": "Customer Service Skills",
+  "provider": "Alison",
+  "url": "https://alison.com/course/customer-service-skills",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "customer_service"
+  ],
+  "checked": "2026-10-20",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_cash",
+  "title": "Guide to Effective Cash Handling Techniques",
+  "provider": "Alison",
+  "url": "https://alison.com/course/guide-to-effective-cash-handling-techniques",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "counter_service"
+  ],
+  "checked": "2026-10-20",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_procure",
+  "title": "Effective Practices for Sourcing, Purchasing, and Procurement",
+  "provider": "Alison",
+  "url": "https://alison.com/course/effective-practices-for-sourcing-purchasing-and-procurement",
+  "hours": 4,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "procurement"
+  ],
+  "checked": "2026-10-20",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_legal",
+  "title": "Legal Administrative Assistant Training",
+  "provider": "Alison",
+  "url": "https://alison.com/course/legal-administrative-assistant-training",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "legal_admin"
+  ],
+  "checked": "2026-10-20",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_hvac",
+  "title": "Basics of Air Conditioning and Refrigeration",
+  "provider": "Alison",
+  "url": "https://alison.com/course/basics-of-air-conditioning-and-refrigeration-systems",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "hvac"
+  ],
+  "checked": "2026-10-20",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_weld",
+  "title": "Welding Basics and Safety Precautions",
+  "provider": "Alison",
+  "url": "https://alison.com/course/welding-basics-and-safety-precautions",
+  "hours": 4,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "machining_welding"
+  ],
+  "checked": "2026-10-20",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_machining",
+  "title": "Machining and Machining Processes",
+  "provider": "Alison",
+  "url": "https://alison.com/course/machining-and-machining-processes",
+  "hours": 10,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "machining_welding"
+  ],
+  "checked": "2026-10-20",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_maint",
+  "title": "Introduction to Electrical Maintenance",
+  "provider": "Alison",
+  "url": "https://alison.com/course/introduction-to-electrical-maintenance",
+  "hours": 4,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "industrial_maintenance"
+  ],
+  "checked": "2026-10-20",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_tpm",
+  "title": "Total Productive Maintenance (TPM) for Production and Quality Systems",
+  "provider": "Alison",
+  "url": "https://alison.com/course/total-productive-maintenance-tpm-for-production-and-quality-systems",
+  "hours": 2,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "industrial_maintenance",
+   "process_analysis"
+  ],
+  "checked": "2026-10-20",
+  "linkStatus": "200"
+ },
+ {
+  "id": "coursera_comm",
+  "title": "Improving Communication Skills (Wharton)",
+  "provider": "Coursera",
+  "url": "https://www.coursera.org/learn/wharton-communication-skills",
+  "hours": 10,
+  "cost": "Free to audit",
+  "funding": "Free",
+  "skills": [
+   "communication"
+  ],
+  "checked": "2026-10-20",
+  "linkStatus": "200"
+ },
+ {
+  "id": "coursera_scl",
+  "title": "Supply Chain Logistics (Rutgers)",
+  "provider": "Coursera",
+  "url": "https://www.coursera.org/learn/supply-chain-logistics",
+  "hours": 10,
+  "cost": "Free to audit",
+  "funding": "Free",
+  "skills": [
+   "supply_chain"
+  ],
+  "checked": "2026-10-20",
+  "linkStatus": "200"
+ },
+ {
+  "id": "coursera_hr",
+  "title": "Preparing to Manage Human Resources (Minnesota)",
+  "provider": "Coursera",
+  "url": "https://www.coursera.org/learn/managing-human-resources",
+  "hours": 10,
+  "cost": "Free to audit",
+  "funding": "Free",
+  "skills": [
+   "hr_admin"
+  ],
+  "checked": "2026-10-20",
+  "linkStatus": "200"
+ },
+ {
+  "id": "coursera_comp",
+  "title": "Managing Employee Compensation (Minnesota)",
+  "provider": "Coursera",
+  "url": "https://www.coursera.org/learn/compensation-management",
+  "hours": 12,
+  "cost": "Free to audit",
+  "funding": "Free",
+  "skills": [
+   "comp_benefits"
+  ],
+  "checked": "2026-10-20",
+  "linkStatus": "200"
+ },
+ {
+  "id": "coursera_research",
+  "title": "Understanding Research Methods (University of London)",
+  "provider": "Coursera",
+  "url": "https://www.coursera.org/learn/research-methods",
+  "hours": 6,
+  "cost": "Free to audit",
+  "funding": "Free",
+  "skills": [
+   "research_methods"
+  ],
+  "checked": "2026-10-20",
+  "linkStatus": "200"
+ },
+ {
+  "id": "coursera_ops",
+  "title": "Operations and Process Management (Illinois Tech)",
+  "provider": "Coursera",
+  "url": "https://www.coursera.org/learn/illinois-tech-operations-process-management",
+  "hours": 10,
+  "cost": "Free to audit",
+  "funding": "Free",
+  "skills": [
+   "process_analysis"
+  ],
+  "checked": "2026-10-20",
+  "linkStatus": "200"
+ },
+ {
+  "id": "mitocw_process",
+  "title": "Process Dynamics, Operations, and Control (10.450)",
+  "provider": "MIT OpenCourseWare",
+  "url": "https://ocw.mit.edu/courses/10-450-process-dynamics-operations-and-control-spring-2006/",
+  "hours": 40,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "process_eng"
+  ],
+  "checked": "2026-10-20",
+  "linkStatus": "200"
  }
 ]

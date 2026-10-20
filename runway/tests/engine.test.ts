@@ -55,6 +55,9 @@ describe("closed lists: nothing invented", () => {
       for (const k of c.skills) expect(skillById[k]).toBeTruthy();
     }
     expect(roles.length).toBeGreaterThanOrEqual(80);
+    // every skill has at least one checked free course, so no plan step falls back to an estimate
+    const covered = new Set(courses.flatMap((c) => c.skills));
+    expect(skills.filter((s) => !covered.has(s.id)).map((s) => s.id)).toEqual([]);
   });
 });
 

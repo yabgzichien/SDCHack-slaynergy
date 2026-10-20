@@ -2,6 +2,8 @@ import { skillById, type Course } from "./data";
 import { durability } from "./expiry";
 import type { RoleMatch } from "./matching";
 
+// HRD Corp's free e-learning hub, open to all Malaysians. Used only when no checked course covers a skill.
+export const ELATIH_URL = "https://elatih.hrdcorp.gov.my/";
 export type PlanStep = {
   id: string; kind: "course" | "programme" | "practice" | "apply";
   weekStart: number; weekEnd: number; title: string; provider?: string; url?: string; hours: number;
@@ -32,8 +34,8 @@ export function buildPlan(m: RoleMatch, hoursPerWeek: number): Plan {
     steps.push({
       id: `s${i + 1}`, kind: p.course ? "course" : "programme",
       weekStart: week, weekEnd: week + w - 1,
-      title: p.course ? p.course.title : `Programme for ${sk.map((x) => x.name).join(", ")} (to be identified with your counsellor)`,
-      provider: p.course?.provider, url: p.course?.url, hours: p.hours, skills: sk, shortLived: short,
+      title: p.course ? p.course.title : `Find a free course for ${sk.map((x) => x.name).join(", ")} on e-LATiH, with your counsellor`,
+      provider: p.course?.provider ?? "HRD Corp e-LATiH", url: p.course?.url ?? ELATIH_URL, hours: p.hours, skills: sk, shortLived: short,
       shortLivedNote: short ? "This skill is expected to be automated soon. Learn it for the job, but do not rely on it for the long run." : undefined,
       funding: p.course ? p.course.funding : "PERKESO training support (to confirm with your counsellor)",
       cost: p.course ? p.course.cost : "To be confirmed", course: p.course ?? undefined, checked: p.course?.checked,
