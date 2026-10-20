@@ -31,6 +31,16 @@ describe("fairness: age, gender and background are never inputs", () => {
   });
 });
 
+describe("fairness: the age you give in onboarding never changes your results", () => {
+  it("two profiles that differ only in age and name get the same jobs, scores and plan", () => {
+    const a = hafiz(), b = hafiz();
+    a.profile = { ...a.profile!, age: 23, name: "Aina" };
+    b.profile = { ...b.profile!, age: 57, name: "Muthu" };
+    const pick = (st: SessionState) => { const v = computeView(st); return JSON.stringify([v.matches.map((m) => [m.roleId, m.score]), v.plan]); };
+    expect(pick(a)).toBe(pick(b));
+  });
+});
+
 describe("closed lists: nothing invented", () => {
   it("every role, skill and course id resolves and every role/skill has an SDG target with UN text", () => {
     for (const r of roles) {

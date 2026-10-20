@@ -6,6 +6,8 @@ import type { Education } from "./data";
 export type Profile = {
   personaId?: string;
   name: string;
+  // Optional. Shown to the counsellor only; never an input to matching (see pickInputs and the fairness test).
+  age?: number | null;
   occupationId: string;
   education: Education;
   years: number;

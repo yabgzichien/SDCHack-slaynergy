@@ -28,6 +28,9 @@ export type View = {
   unreachable: { roleId: string; title: string; weeks: number; sector: SectorId; reason: "qualification" | "time"; need: string }[];
   sectors: { id: SectorId; label: string; blurb: string; reachable: number; total: number; bestScore: number | null; bestTitle: string | null; avgOutlook: number | null }[];
   chosen: RoleMatchView | null;
+  // The best job that should last (its skills hold up), and a quicker job to earn while you train, if one exists.
+  lasting: RoleMatchView | null;
+  bridge: RoleMatchView | null;
   plan: Plan | null;
   sdgSummary: { target: string; goal: string; text: string }[];
   resume: ResumeSummary | null;
@@ -114,6 +117,7 @@ function viewCore(state: SessionState, release: 0 | 1): View {
   let unreachable: View["unreachable"] = [];
   let sectors: View["sectors"] = [];
   let chosen: RoleMatchView | null = null;
+  let lasting: RoleMatchView | null = null, bridge: RoleMatchView | null = null;
   let plan: Plan | null = null;
   if (p) {
     const input = pickInputs({ skills: p.skills, months: p.months, hoursPerWeek: p.hoursPerWeek, interests: p.interests, goals: state.goals, education: p.education, field: occupationById[p.occupationId]?.sector });
@@ -130,7 +134,10 @@ function viewCore(state: SessionState, release: 0 | 1): View {
       const inSec = all.filter((m) => m.sector === sec.id), ok = inSec.filter((m) => m.reachable);
       return { ...sec, reachable: ok.length, total: inSec.length, bestScore: ok[0]?.score ?? null, bestTitle: ok[0]?.title ?? null, avgOutlook: ok.length ? mean(ok.map((m) => m.outlook)) : null };
     });
-    const pick = (state.chosenRoleId && matches.find((m) => m.roleId === state.chosenRoleId)) || matches[0] || null;
+    lasting = matches.find((m) => m.outlook >= LASTING_OUTLOOK) ?? null;
+    const quick = Math.min(BRIDGE_WEEKS, Math.floor((matches[0]?.deadlineWeeks ?? 0) / 2));
+    bridge = matches.find((m) => m.outlook < LASTING_OUTLOOK && m.weeks <= quick && m.roleId !== lasting?.roleId) ?? null;
+    const pick = (state.chosenRoleId && matches.find((m) => m.roleId === state.chosenRoleId)) || lasting || matches[0] || null;
     chosen = pick;
     if (pick) plan = buildPlan(all.find((m) => m.roleId === pick.roleId)!, p.hoursPerWeek);
   }
@@ -140,9 +147,11 @@ function viewCore(state: SessionState, release: 0 | 1): View {
   const data = series.sources.map((s) => ({ name: s.name, detail: s.latest, url: s.url, date: s.retrieved, licence: s.licence }));
   const resume = state.resume ?? null;
   const resumeTips = resume && chosen ? tailorTips(resume.skillIds, roleById[chosen.roleId].skills) : null;
-  return { world, radar, profileSkills, matches, unreachable, sectors, chosen, plan, sdgSummary, resume, resumeTips, changes: null, data };
+  return { world, radar, profileSkills, matches, unreachable, sectors, chosen, lasting, bridge, plan, sdgSummary, resume, resumeTips, changes: null, data };
 }
 
+export const LASTING_OUTLOOK = 0.7; // no "fading skills" penalty at or above this outlook
+export const BRIDGE_WEEKS = 8;
 const pct = (x: number) => `${Math.round(x * 100)}%`;
 const monthsBetween = (a: number, b: number) => Math.round((b - a) * 12);
 
