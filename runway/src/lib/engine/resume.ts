@@ -272,7 +272,7 @@ export function analyseResume(raw: string, weights: Weights3): ResumeAnalysis {
   // personal details (no points; privacy and fairness)
   if (personalLines.length) {
     add({ id: "personal", area: "Privacy", severity: "improve", title: "Remove personal details you do not need",
-      why: "ID numbers, date of birth, marital status, religion and similar details add risk and are not needed to judge your skills. Good employers do not need them. Runway never uses them.",
+      why: "ID numbers, date of birth, marital status, religion and similar details add risk and are not needed to judge your skills. Good employers do not need them. Jobbery never uses them.",
       fix: "Delete these lines. Keep your name, phone, email and city.",
       evidence: personalLines.slice(0, 3).map((l) => ({ n: l.n, text: clip(l.text.replace(/\d{6}-?\d{2}-?\d{4}/g, "[ID number hidden]")) })) }, 0, 0);
   }

@@ -9,7 +9,7 @@ export default function PlanPage() {
   const { view, state, act, busy } = useApp();
   if (!view || !state) return <Skeleton lines={6} />;
   const plan = view.plan;
-  if (!state.profile || !plan) return <div><PageTitle title="Your plan">Choose a job first, and Runway lays out the weeks.</PageTitle><Btn href={state.profile ? "/jobs" : "/start"}>{state.profile ? "Choose a job" : "Get started"}</Btn></div>;
+  if (!state.profile || !plan) return <div><PageTitle title="Your plan">Choose a job first, and Jobbery lays out the weeks.</PageTitle><Btn href={state.profile ? "/jobs" : "/start"}>{state.profile ? "Choose a job" : "Get started"}</Btn></div>;
   const prog = state.progress;
   const next = plan.steps.find((s) => !prog[s.id]) ?? null;
   const done = plan.steps.filter((s) => prog[s.id]).length;

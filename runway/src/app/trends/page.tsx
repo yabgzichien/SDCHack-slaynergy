@@ -30,7 +30,7 @@ export default function TrendsPage() {
             </LineChart>
           </ResponsiveContainer>
         </div>
-        <p className="mt-2 text-sm text-muted">DOSM changed what its job-ad series covers from 2025 Q3 and gave no reason, so Runway compares job demand only with quarters since then.</p>
+        <p className="mt-2 text-sm text-muted">DOSM changed what its job-ad series covers from 2025 Q3 and gave no reason, so Jobbery compares job demand only with quarters since then.</p>
         <div className="mt-1"><SourceChip name="DOSM Job Market Insights" date={w.release ? "2026 Q2 release, 18 Aug 2026" : "to 2026 Q1"} url={r.sources.find((s) => s.name.startsWith("DOSM"))?.url} /></div>
       </Card>
 

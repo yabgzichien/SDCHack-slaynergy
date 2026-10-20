@@ -80,7 +80,7 @@ function SidebarBody({ onPick }: { onPick?: () => void }) {
   const extra = changes ? [...EXTRA, { href: "/changes", label: "What changed", count: changes }] : EXTRA;
   return (
     <div className="flex h-full flex-col">
-      <Link href="/" onClick={onPick} className="flex items-center gap-2.5 px-3 pt-1 text-lg font-semibold"><Mark /> Runway</Link>
+      <Link href="/" onClick={onPick} className="flex items-center gap-2.5 px-3 pt-1 text-lg font-semibold"><Mark /> Jobbery</Link>
       <p className="mb-6 mt-1 px-3 text-[13px] text-muted">{p ? `${p.name}${p.synthetic ? ", made-up profile" : ""}` : "No profile yet"}</p>
       <StepRail onPick={onPick} />
       <div className="mt-6 border-t border-line pt-4"><NavList items={extra} path={path} onPick={onPick} /></div>
@@ -102,10 +102,10 @@ export function AppShell({ children }: { children: ReactNode }) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
-  const title = STEPS.find((s) => s.match.some((m) => path === m || path.startsWith(`${m}/`)))?.label ?? [...EXTRA, ...OTHER].find((it) => isActive(path, it))?.label ?? "Runway";
+  const title = STEPS.find((s) => s.match.some((m) => path === m || path.startsWith(`${m}/`)))?.label ?? [...EXTRA, ...OTHER].find((it) => isActive(path, it))?.label ?? "Jobbery";
   return (
     <div className="min-h-screen lg:flex">
-      <aside className="sticky top-0 hidden h-screen w-[240px] shrink-0 overflow-y-auto px-3 py-6 lg:block" aria-label="Main">
+      <aside className="sticky top-0 hidden h-screen w-[252px] shrink-0 overflow-y-auto border-r border-line bg-raised px-3 py-6 lg:block" aria-label="Main">
         <SidebarBody />
       </aside>
 
@@ -117,8 +117,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         <p className="min-w-0 flex-1 truncate text-sm">{title}</p>
       </header>
 
-      <StepBar />
-
       {open && (
         <div className="fixed inset-0 z-50 bg-bg px-4 py-4 lg:hidden" role="dialog" aria-modal="true" aria-label="Menu">
           <button onClick={() => setOpen(false)} className="press absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full hover:bg-surface" aria-label="Close menu">
@@ -127,6 +125,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="h-full overflow-y-auto pb-6"><SidebarBody onPick={() => setOpen(false)} /></div>
         </div>
       )}
+
+      <StepBar />
 
       <div className="min-w-0 flex-1">
         <main id="main" className="mx-auto w-full max-w-[1100px] px-4 pb-16 pt-8 sm:px-8 lg:pt-14">{children}</main>

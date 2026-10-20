@@ -30,32 +30,34 @@ function Intro() {
   const demo = async () => { if (await act("startPersona", { personaId: "hafiz" })) router.push("/skills"); };
   return (
     <div>
-      <PageTitle title="Find a job that lasts, before your time runs out.">
-        For office workers who have just been laid off. Six steps from your last job to a plan.
-      </PageTitle>
-      <div className="flex flex-wrap items-center gap-3">
-        <Btn href="/start" className="min-h-12 px-6 text-base">Get started</Btn>
-        <Btn variant="ghost" onClick={demo} disabled={busy || !catalog} className="min-h-12 px-6 text-base">Try it as Hafiz</Btn>
+      <div className="rounded-[28px] border border-line bg-raised p-6 sm:p-9">
+        <PageTitle title="Find a job that lasts, before your time runs out.">
+          A clearer path from your last role to your next opportunity—built around your skills, time and Malaysia’s job market.
+        </PageTitle>
+        <div className="flex flex-wrap items-center gap-3">
+          <Btn href="/start" className="min-h-12 px-6 text-base">Get started</Btn>
+          <Btn variant="ghost" onClick={demo} disabled={busy || !catalog} className="min-h-12 border border-line px-6 text-base">Try it as Hafiz</Btn>
+        </div>
+        <p className="mt-3 text-sm text-muted">Hafiz is a made-up profile: 27, a bank operations executive in Kedah with five months to find work.</p>
       </div>
-      <p className="mt-3 text-sm text-muted">Hafiz is made up: 27, a bank operations executive in Kedah with five months to find work.</p>
 
-      <ol className="mt-12 grid gap-3 xl:grid-cols-6" aria-label="The six steps">
+      <ol className="mt-7 grid gap-3 xl:grid-cols-6" aria-label="The six steps">
         {STEPS.map((s, i) => {
           const Icon = s.icon;
           return (
-            <li key={s.href} className="relative flex items-center gap-4 rounded-[22px] bg-surface p-4 xl:flex-col xl:items-start xl:gap-3">
-              <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-raised"><Icon size={20} strokeWidth={1.7} aria-hidden /></span>
+            <li key={s.href} className="relative flex items-center gap-4 rounded-[20px] border border-line bg-raised p-4 xl:flex-col xl:items-start xl:gap-3">
+              <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-surface2 text-accent"><Icon size={20} strokeWidth={1.7} aria-hidden /></span>
               <div>
-                <p className="font-medium"><span className="num text-muted">{i + 1}. </span>{s.label}</p>
-                <p className="mt-1 text-sm text-muted">{PROMISE[i]}</p>
+                <p className="font-semibold"><span className="num text-accent">{String(i + 1).padStart(2, "0")}. </span>{s.label}</p>
+                <p className="mt-1 text-sm leading-relaxed text-muted">{PROMISE[i]}</p>
               </div>
             </li>
           );
         })}
       </ol>
 
-      <p className="mt-8 max-w-3xl text-sm text-muted">
-        What makes it different: the forecast is not one fixed score. A crowd of forecasters bets points, never money, on the next official job figures, and the most accurate ones get the most say. Every number shows its source and date, and you stay in charge.
+      <p className="mt-8 max-w-3xl border-l-2 border-accent pl-4 text-sm leading-relaxed text-muted">
+        Jobbery does not give one fixed score. Forecasts are tied to official job data, every number shows its source and date, and you stay in charge of the decision.
       </p>
     </div>
   );

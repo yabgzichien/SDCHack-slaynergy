@@ -10,8 +10,8 @@ const sans = Instrument_Sans({ subsets: ["latin"], variable: "--font-instrument-
 const serif = Instrument_Serif({ subsets: ["latin"], weight: "400", variable: "--font-instrument-serif", display: "swap" });
 
 export const metadata: Metadata = {
-  title: "Runway: find a future-proof job before your time runs out",
-  description: "Runway helps young office workers who have just been laid off find a growing job that AI is unlikely to take soon, using forecasts tested against real data releases.",
+  title: "Jobbery: find a future-proof job before your time runs out",
+  description: "Jobbery helps young office workers who have just been laid off find a growing job that AI is unlikely to take soon, using forecasts tested against real data releases.",
 };
 export const viewport: Viewport = { width: "device-width", initialScale: 1 };
 

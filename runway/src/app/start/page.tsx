@@ -136,7 +136,7 @@ function Wizard({ cat }: { cat: Catalog }) {
           </Q>
         )}
         {step === "time" && (
-          <Q title="How much time do you have?" help="Runway only suggests jobs you can get ready for in this time.">
+          <Q title="How much time do you have?" help="Jobbery only suggests jobs you can get ready for in this time.">
             <Group icon={CalendarClock} label="Months to find a new job" note="Job-seeker support usually lasts 3 to 6 months.">
               <Options value={String(d.months)} onPick={(v) => set({ months: Number(v) })} cols={3}
                 options={[1, 2, 3, 4, 5, 6].map((m) => ({ id: String(m), label: `${m} ${m === 1 ? "month" : "months"}` }))} />

@@ -4,8 +4,8 @@
 // whichever contrasts more with the shade under it.
 export type Measure = "jobs" | "unemployment" | "wage";
 export const RAMPS: Record<"good" | "bad", string[]> = {
-  good: ["#d9eeea", "#a6d6cd", "#68b5a8", "#25766a", "#145a52"],
-  bad: ["#fcebd3", "#f6cd95", "#eaa456", "#c4701f", "#8a4510"],
+  good: ["#f1faee", "#c7e9c0", "#9bcb95", "#6fa66a", "#355c35"],
+  bad: ["#fff0d8", "#f8c982", "#e5ad61", "#bd7b2b", "#7d481d"],
 };
 export const rampFor = (m: Measure) => (m === "unemployment" ? RAMPS.bad : RAMPS.good);
 export const LEGEND_RAMP = RAMPS.good;
@@ -15,7 +15,7 @@ export const colourFor = (v: number, bins: number[], ramp: string[] = RAMPS.good
   return ramp[i === -1 ? ramp.length - 1 : Math.min(ramp.length - 1, i)];
 };
 
-const DARK_TEXT = "#16201e", LIGHT_TEXT = "#ffffff";
+const DARK_TEXT = "#1f421f", LIGHT_TEXT = "#fff0d8";
 const lum = (hex: string) => {
   const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((x) => (x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4));
   return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];

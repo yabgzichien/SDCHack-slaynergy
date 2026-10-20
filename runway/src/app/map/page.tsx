@@ -120,7 +120,7 @@ export default function MapPage() {
                 <li>Pay {cmp.wageGap! >= 0 ? `${rm(cmp.wageGap!)} higher` : `${rm(-cmp.wageGap!)} lower`} a month</li>
                 <li>Unemployment {Math.abs(cmp.uGap!) < 0.05 ? "about the same" : cmp.uGap! < 0 ? `${(-cmp.uGap!).toFixed(1)} points lower` : `${cmp.uGap!.toFixed(1)} points higher`}</li>
               </ul>
-              <p className="mt-2 text-xs text-muted">Higher pay often comes with higher rent. Talk a move through with your counsellor; Runway does not advise on where to live.</p>
+              <p className="mt-2 text-xs text-muted">Higher pay often comes with higher rent. Talk a move through with your counsellor; Jobbery does not advise on where to live.</p>
             </div>
           ) : !home ? <p className="mt-4 text-sm text-muted">Choose your state above to compare it with others.</p> : null}
         </Card>

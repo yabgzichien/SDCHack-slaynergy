@@ -11,7 +11,7 @@ export default function SkillsPage() {
   if (!state.profile) {
     return (
       <div>
-        <PageTitle title="Which of your skills will last?">Answer a few questions first, and Runway gives each of your skills a shelf life.</PageTitle>
+        <PageTitle title="Which of your skills will last?">Answer a few questions first, and Jobbery gives each of your skills a shelf life.</PageTitle>
         <Btn href="/start">Get started</Btn>
       </div>
     );

@@ -16,7 +16,7 @@ export default function ForecastPage() {
   return (
     <div>
       <PageTitle title={`Most likely: ${FUTURE_NAME[top.id].toLowerCase()} AI progress, ${pct(top.weight)}.`}>
-        Nobody knows how fast AI will change office work, so Runway keeps three possible futures. Your skill dates and job scores lean towards the more likely ones.
+        Nobody knows how fast AI will change office work, so Jobbery keeps three possible futures. Your skill dates and job scores lean towards the more likely ones.
       </PageTitle>
 
       <Card tone="raised">
