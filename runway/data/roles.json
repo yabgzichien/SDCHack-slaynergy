@@ -1,0 +1,2102 @@
+[
+ {
+  "id": "accountant",
+  "title": "Accountant",
+  "onet": "13-2011.01",
+  "group": "professionals",
+  "skills": {
+   "accounting": 3,
+   "bookkeeping": 2,
+   "spreadsheets": 2,
+   "tax": 1,
+   "audit": 1,
+   "regulatory": 1,
+   "ai_tools": 1
+  },
+  "sdg": {
+   "target": "8.2",
+   "why": "Accurate accounts help organisations run productively."
+  },
+  "tags": [
+   "numbers"
+  ],
+  "minWeeks": 8,
+  "sector": "finance",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "auditor",
+  "title": "Auditor",
+  "onet": "13-2011.02",
+  "group": "professionals",
+  "skills": {
+   "audit": 3,
+   "accounting": 3,
+   "regulatory": 2,
+   "spreadsheets": 2,
+   "communication": 1
+  },
+  "sdg": {
+   "target": "16.6",
+   "why": "Audit makes institutions more accountable and transparent."
+  },
+  "tags": [
+   "numbers",
+   "justice"
+  ],
+  "minWeeks": 10,
+  "sector": "finance",
+  "requires": "degree",
+  "closest": false
+ },
+ {
+  "id": "financial_analyst",
+  "title": "Financial analyst",
+  "onet": "13-2051.00",
+  "group": "professionals",
+  "skills": {
+   "fin_analysis": 3,
+   "spreadsheets": 3,
+   "accounting": 2,
+   "statistics": 2,
+   "bi_dashboards": 1,
+   "ai_tools": 1
+  },
+  "sdg": {
+   "target": "8.2",
+   "why": "Analysis directs investment to productive uses."
+  },
+  "tags": [
+   "numbers"
+  ],
+  "minWeeks": 8,
+  "sector": "finance",
+  "requires": "degree",
+  "closest": false
+ },
+ {
+  "id": "credit_analyst",
+  "title": "Credit analyst",
+  "onet": "13-2041.00",
+  "group": "professionals",
+  "skills": {
+   "credit_analysis": 3,
+   "fin_analysis": 2,
+   "spreadsheets": 2,
+   "accounting": 2,
+   "loan_docs": 1
+  },
+  "sdg": {
+   "target": "8.10",
+   "why": "Sound credit decisions widen safe access to finance."
+  },
+  "tags": [
+   "numbers"
+  ],
+  "minWeeks": 6,
+  "sector": "finance",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "loan_officer",
+  "title": "Loan officer",
+  "onet": "13-2072.00",
+  "group": "professionals",
+  "skills": {
+   "loan_docs": 3,
+   "credit_analysis": 2,
+   "customer_service": 2,
+   "communication": 2,
+   "fin_inclusion": 1
+  },
+  "sdg": {
+   "target": "8.10",
+   "why": "Lending staff expand access to financial services."
+  },
+  "tags": [
+   "people",
+   "numbers"
+  ],
+  "minWeeks": 4,
+  "sector": "finance",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "financial_examiner",
+  "title": "Financial examiner",
+  "onet": "13-2061.00",
+  "group": "professionals",
+  "skills": {
+   "audit": 3,
+   "regulatory": 3,
+   "accounting": 2,
+   "aml": 1
+  },
+  "sdg": {
+   "target": "16.6",
+   "why": "Examiners keep financial institutions accountable."
+  },
+  "tags": [
+   "justice",
+   "numbers"
+  ],
+  "minWeeks": 10,
+  "sector": "finance",
+  "requires": "degree",
+  "closest": false
+ },
+ {
+  "id": "aml_analyst",
+  "title": "Anti-money-laundering and fraud analyst",
+  "onet": "13-2099.04",
+  "group": "professionals",
+  "skills": {
+   "aml": 3,
+   "regulatory": 2,
+   "spreadsheets": 2,
+   "sql": 1,
+   "communication": 1,
+   "bookkeeping": 1
+  },
+  "sdg": {
+   "target": "16.4",
+   "why": "Detecting illicit financial flows is the core of SDG target 16.4."
+  },
+  "tags": [
+   "justice",
+   "numbers"
+  ],
+  "minWeeks": 6,
+  "sector": "finance",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "compliance_specialist",
+  "title": "Regulatory compliance specialist",
+  "onet": "13-1041.07",
+  "group": "professionals",
+  "skills": {
+   "regulatory": 3,
+   "audit": 1,
+   "communication": 2,
+   "esg": 1
+  },
+  "sdg": {
+   "target": "16.5",
+   "why": "Compliance work reduces corruption and bribery risk."
+  },
+  "tags": [
+   "justice"
+  ],
+  "minWeeks": 6,
+  "sector": "finance",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "esg_assistant",
+  "title": "ESG and sustainability reporting assistant",
+  "onet": "13-1199.05",
+  "group": "professionals",
+  "skills": {
+   "esg": 3,
+   "spreadsheets": 2,
+   "regulatory": 1,
+   "statistics": 1,
+   "communication": 1
+  },
+  "sdg": {
+   "target": "12.6",
+   "why": "Sustainability reporting is the subject of SDG target 12.6."
+  },
+  "tags": [
+   "sustainability",
+   "numbers"
+  ],
+  "minWeeks": 6,
+  "sector": "finance",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "tax_preparer",
+  "title": "Tax preparer",
+  "onet": "13-2082.00",
+  "group": "professionals",
+  "skills": {
+   "tax": 3,
+   "accounting": 2,
+   "spreadsheets": 2,
+   "bookkeeping": 1
+  },
+  "sdg": {
+   "target": "16.6",
+   "why": "Tax compliance funds accountable public institutions."
+  },
+  "tags": [
+   "numbers"
+  ],
+  "minWeeks": 6,
+  "sector": "finance",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "underwriter",
+  "title": "Insurance underwriter",
+  "onet": "13-2053.00",
+  "group": "professionals",
+  "skills": {
+   "underwriting": 3,
+   "credit_analysis": 1,
+   "spreadsheets": 2,
+   "statistics": 1
+  },
+  "sdg": {
+   "target": "1.3",
+   "why": "Insurance spreads risk and supports social protection."
+  },
+  "tags": [
+   "numbers"
+  ],
+  "minWeeks": 8,
+  "sector": "finance",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "claims_admin",
+  "title": "Healthcare claims administrator",
+  "onet": "43-9041.01",
+  "group": "clerical",
+  "skills": {
+   "claims": 3,
+   "data_entry": 1,
+   "customer_service": 1,
+   "health_records": 1,
+   "communication": 1
+  },
+  "sdg": {
+   "target": "3.8",
+   "why": "Claims administration supports financial risk protection in health care."
+  },
+  "tags": [
+   "health",
+   "people"
+  ],
+  "minWeeks": 4,
+  "sector": "finance",
+  "requires": "spm",
+  "closest": false
+ },
+ {
+  "id": "budget_analyst",
+  "title": "Budget analyst",
+  "onet": "13-2031.00",
+  "group": "professionals",
+  "skills": {
+   "budgeting": 3,
+   "spreadsheets": 3,
+   "accounting": 2,
+   "fin_analysis": 1
+  },
+  "sdg": {
+   "target": "8.2",
+   "why": "Budget planning supports productive organisations."
+  },
+  "tags": [
+   "numbers"
+  ],
+  "minWeeks": 6,
+  "sector": "finance",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "fin_inclusion_officer",
+  "title": "Microfinance and financial inclusion officer",
+  "onet": "13-2071.01",
+  "group": "technicians",
+  "skills": {
+   "fin_inclusion": 3,
+   "loan_docs": 2,
+   "customer_service": 2,
+   "communication": 2
+  },
+  "sdg": {
+   "target": "8.10",
+   "why": "Widening access to financial services is SDG target 8.10."
+  },
+  "tags": [
+   "people",
+   "justice"
+  ],
+  "minWeeks": 4,
+  "sector": "finance",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "bi_analyst",
+  "title": "Business intelligence analyst",
+  "onet": "15-1199.08",
+  "group": "technicians",
+  "skills": {
+   "bi_dashboards": 3,
+   "sql": 3,
+   "spreadsheets": 2,
+   "statistics": 2,
+   "python": 1
+  },
+  "sdg": {
+   "target": "8.2",
+   "why": "Data skills support technological upgrading."
+  },
+  "tags": [
+   "technology",
+   "numbers"
+  ],
+  "minWeeks": 12,
+  "sector": "computing",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "management_analyst",
+  "title": "Management analyst",
+  "onet": "13-1111.00",
+  "group": "professionals",
+  "skills": {
+   "process_analysis": 3,
+   "spreadsheets": 2,
+   "communication": 2,
+   "bi_dashboards": 1,
+   "statistics": 1
+  },
+  "sdg": {
+   "target": "8.2",
+   "why": "Process improvement raises productivity."
+  },
+  "tags": [
+   "people",
+   "technology"
+  ],
+  "minWeeks": 10,
+  "sector": "business",
+  "requires": "degree",
+  "closest": false
+ },
+ {
+  "id": "user_support",
+  "title": "IT user support specialist",
+  "onet": "15-1151.00",
+  "group": "technicians",
+  "skills": {
+   "it_support": 3,
+   "customer_service": 2,
+   "communication": 1,
+   "infosec": 1
+  },
+  "sdg": {
+   "target": "8.2",
+   "why": "IT support helps others use technology productively."
+  },
+  "tags": [
+   "technology",
+   "people"
+  ],
+  "minWeeks": 8,
+  "sector": "computing",
+  "requires": "spm",
+  "closest": false
+ },
+ {
+  "id": "procurement_agent",
+  "title": "Procurement officer",
+  "onet": "13-1023.00",
+  "group": "professionals",
+  "skills": {
+   "procurement": 3,
+   "spreadsheets": 2,
+   "communication": 2,
+   "budgeting": 1
+  },
+  "sdg": {
+   "target": "8.2",
+   "why": "Purchasing keeps supply chains productive."
+  },
+  "tags": [
+   "numbers",
+   "people"
+  ],
+  "minWeeks": 6,
+  "sector": "logistics",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "logistics_analyst",
+  "title": "Logistics analyst",
+  "onet": "13-1081.02",
+  "group": "professionals",
+  "skills": {
+   "supply_chain": 3,
+   "spreadsheets": 2,
+   "sql": 1,
+   "process_analysis": 1
+  },
+  "sdg": {
+   "target": "8.2",
+   "why": "Logistics analysis improves productivity."
+  },
+  "tags": [
+   "numbers",
+   "technology"
+  ],
+  "minWeeks": 8,
+  "sector": "logistics",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "hr_specialist",
+  "title": "Human resources specialist",
+  "onet": "13-1071.00",
+  "group": "professionals",
+  "skills": {
+   "hr_admin": 3,
+   "communication": 2,
+   "payroll": 1,
+   "comp_benefits": 1
+  },
+  "sdg": {
+   "target": "8.5",
+   "why": "HR practice supports decent work."
+  },
+  "tags": [
+   "people"
+  ],
+  "minWeeks": 6,
+  "sector": "business",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "comp_benefits_specialist",
+  "title": "Compensation and benefits specialist",
+  "onet": "13-1141.00",
+  "group": "professionals",
+  "skills": {
+   "comp_benefits": 3,
+   "payroll": 2,
+   "hr_admin": 2,
+   "spreadsheets": 2
+  },
+  "sdg": {
+   "target": "8.5",
+   "why": "Fair pay and benefits are part of decent work."
+  },
+  "tags": [
+   "people",
+   "numbers"
+  ],
+  "minWeeks": 6,
+  "sector": "business",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "training_specialist",
+  "title": "Training and development specialist",
+  "onet": "13-1151.00",
+  "group": "professionals",
+  "skills": {
+   "training_design": 3,
+   "communication": 3,
+   "hr_admin": 1,
+   "ai_tools": 1
+  },
+  "sdg": {
+   "target": "4.4",
+   "why": "Training others directly advances SDG target 4.4."
+  },
+  "tags": [
+   "teaching",
+   "people"
+  ],
+  "minWeeks": 8,
+  "sector": "education",
+  "requires": "degree",
+  "closest": false
+ },
+ {
+  "id": "customer_service_rep",
+  "title": "Customer service representative",
+  "onet": "43-4051.00",
+  "group": "clerical",
+  "skills": {
+   "customer_service": 3,
+   "communication": 2,
+   "data_entry": 1
+  },
+  "sdg": {
+   "target": "8.5",
+   "why": "Entry route to formal employment."
+  },
+  "tags": [
+   "people"
+  ],
+  "minWeeks": 2,
+  "sector": "service",
+  "requires": "spm",
+  "closest": false
+ },
+ {
+  "id": "billing_clerk",
+  "title": "Billing and rate clerk",
+  "onet": "43-3021.02",
+  "group": "clerical",
+  "skills": {
+   "billing": 3,
+   "bookkeeping": 2,
+   "data_entry": 2,
+   "spreadsheets": 1
+  },
+  "sdg": {
+   "target": "8.5",
+   "why": "Entry route to formal employment."
+  },
+  "tags": [
+   "numbers"
+  ],
+  "minWeeks": 2,
+  "sector": "finance",
+  "requires": "spm",
+  "closest": false
+ },
+ {
+  "id": "health_records_tech",
+  "title": "Health information technician",
+  "onet": "29-2071.00",
+  "group": "technicians",
+  "skills": {
+   "health_records": 3,
+   "data_entry": 1,
+   "communication": 1
+  },
+  "sdg": {
+   "target": "3.8",
+   "why": "Health information supports quality health-care services."
+  },
+  "tags": [
+   "health"
+  ],
+  "minWeeks": 12,
+  "sector": "health",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "market_research_analyst",
+  "title": "Market research analyst",
+  "onet": "13-1161.00",
+  "group": "professionals",
+  "skills": {
+   "market_research": 3,
+   "statistics": 2,
+   "spreadsheets": 2,
+   "communication": 1
+  },
+  "sdg": {
+   "target": "8.2",
+   "why": "Market insight supports productive enterprises."
+  },
+  "tags": [
+   "numbers",
+   "people"
+  ],
+  "minWeeks": 8,
+  "sector": "business",
+  "requires": "degree",
+  "closest": false
+ },
+ {
+  "id": "office_supervisor",
+  "title": "Office operations supervisor",
+  "onet": "43-1011.00",
+  "group": "clerical",
+  "skills": {
+   "communication": 3,
+   "office_admin": 2,
+   "hr_admin": 1,
+   "process_analysis": 1
+  },
+  "sdg": {
+   "target": "8.5",
+   "why": "Supervisors keep formal workplaces running."
+  },
+  "tags": [
+   "people"
+  ],
+  "minWeeks": 6,
+  "sector": "business",
+  "requires": "spm",
+  "closest": false
+ },
+ {
+  "id": "software_developer",
+  "title": "Software developer",
+  "onet": "15-1132.00",
+  "group": "technicians",
+  "skills": {
+   "python": 3,
+   "sql": 2,
+   "process_analysis": 1,
+   "ai_tools": 1
+  },
+  "sdg": {
+   "target": "8.2",
+   "why": "Software skills drive technological upgrading."
+  },
+  "tags": [
+   "technology"
+  ],
+  "minWeeks": 24,
+  "sector": "computing",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "infosec_analyst",
+  "title": "Information security analyst",
+  "onet": "15-1122.00",
+  "group": "technicians",
+  "skills": {
+   "infosec": 3,
+   "it_support": 1,
+   "python": 1,
+   "regulatory": 1
+  },
+  "sdg": {
+   "target": "16.6",
+   "why": "Secure systems underpin trustworthy institutions."
+  },
+  "tags": [
+   "technology",
+   "justice"
+  ],
+  "minWeeks": 20,
+  "sector": "computing",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "db_admin",
+  "title": "Database administrator",
+  "onet": "15-1141.00",
+  "group": "technicians",
+  "skills": {
+   "sql": 3,
+   "python": 1,
+   "infosec": 1
+  },
+  "sdg": {
+   "target": "8.2",
+   "why": "Data infrastructure supports technological upgrading."
+  },
+  "tags": [
+   "technology"
+  ],
+  "minWeeks": 14,
+  "sector": "computing",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "web_developer",
+  "title": "Web developer",
+  "onet": "15-1134.00",
+  "group": "technicians",
+  "skills": {
+   "web_dev": 3,
+   "programming": 2,
+   "sql": 1,
+   "software_testing": 1,
+   "ai_tools": 1
+  },
+  "sdg": {
+   "target": "8.2",
+   "why": "Web skills support technological upgrading."
+  },
+  "tags": [
+   "technology"
+  ],
+  "minWeeks": 14,
+  "sector": "computing",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "qa_tester_software",
+  "title": "Software QA engineer and tester",
+  "onet": "15-1199.01",
+  "group": "technicians",
+  "skills": {
+   "software_testing": 3,
+   "programming": 2,
+   "sql": 1,
+   "project_coordination": 1,
+   "ai_tools": 1
+  },
+  "sdg": {
+   "target": "8.2",
+   "why": "Testing keeps software reliable for everyone."
+  },
+  "tags": [
+   "technology",
+   "justice"
+  ],
+  "minWeeks": 10,
+  "sector": "computing",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "programmer",
+  "title": "Computer programmer",
+  "onet": "15-1131.00",
+  "group": "technicians",
+  "skills": {
+   "programming": 3,
+   "python": 2,
+   "sql": 1,
+   "software_testing": 1
+  },
+  "sdg": {
+   "target": "8.2",
+   "why": "Programming supports technological upgrading."
+  },
+  "tags": [
+   "technology"
+  ],
+  "minWeeks": 18,
+  "sector": "computing",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "network_admin",
+  "title": "Network and systems administrator",
+  "onet": "15-1142.00",
+  "group": "technicians",
+  "skills": {
+   "networking": 3,
+   "cloud_devops": 2,
+   "infosec": 1,
+   "it_support": 1
+  },
+  "sdg": {
+   "target": "8.2",
+   "why": "Reliable networks keep services running."
+  },
+  "tags": [
+   "technology"
+  ],
+  "minWeeks": 12,
+  "sector": "computing",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "cloud_engineer",
+  "title": "Cloud and systems engineer",
+  "onet": "15-1199.02",
+  "group": "technicians",
+  "skills": {
+   "cloud_devops": 3,
+   "networking": 2,
+   "python": 1,
+   "infosec": 1
+  },
+  "sdg": {
+   "target": "8.2",
+   "why": "Cloud skills support technological upgrading."
+  },
+  "tags": [
+   "technology"
+  ],
+  "minWeeks": 20,
+  "sector": "computing",
+  "requires": "diploma",
+  "closest": true
+ },
+ {
+  "id": "data_analyst_stats",
+  "title": "Data and machine-learning analyst",
+  "onet": "15-2041.00",
+  "group": "professionals",
+  "skills": {
+   "machine_learning": 3,
+   "python": 3,
+   "statistics": 2,
+   "sql": 1
+  },
+  "sdg": {
+   "target": "8.2",
+   "why": "Data skills support technological upgrading."
+  },
+  "tags": [
+   "technology",
+   "numbers"
+  ],
+  "minWeeks": 24,
+  "sector": "computing",
+  "requires": "degree",
+  "closest": true
+ },
+ {
+  "id": "systems_analyst",
+  "title": "Computer systems analyst",
+  "onet": "15-1121.00",
+  "group": "professionals",
+  "skills": {
+   "process_analysis": 3,
+   "sql": 1,
+   "project_coordination": 2,
+   "communication": 2
+  },
+  "sdg": {
+   "target": "8.2",
+   "why": "Systems analysis improves how organisations work."
+  },
+  "tags": [
+   "technology",
+   "people"
+  ],
+  "minWeeks": 14,
+  "sector": "computing",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "it_project_coordinator",
+  "title": "IT project coordinator",
+  "onet": "11-3021.00",
+  "group": "managers",
+  "skills": {
+   "project_coordination": 3,
+   "communication": 2,
+   "process_analysis": 1,
+   "tech_writing": 1
+  },
+  "sdg": {
+   "target": "8.2",
+   "why": "Coordination delivers technology projects on time."
+  },
+  "tags": [
+   "people",
+   "technology"
+  ],
+  "minWeeks": 12,
+  "sector": "computing",
+  "requires": "diploma",
+  "closest": true
+ },
+ {
+  "id": "technical_writer",
+  "title": "Technical writer",
+  "onet": "27-3042.00",
+  "group": "professionals",
+  "skills": {
+   "tech_writing": 3,
+   "communication": 2,
+   "ai_tools": 1
+  },
+  "sdg": {
+   "target": "4.4",
+   "why": "Clear documentation helps people learn and work."
+  },
+  "tags": [
+   "teaching",
+   "technology"
+  ],
+  "minWeeks": 8,
+  "sector": "computing",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "civil_engineer",
+  "title": "Civil engineer",
+  "onet": "17-2051.00",
+  "group": "professionals",
+  "skills": {
+   "structural_civil": 3,
+   "cad_design": 2,
+   "construction_mgmt": 1,
+   "hse_safety": 1,
+   "surveying": 1
+  },
+  "sdg": {
+   "target": "9.1",
+   "why": "Civil engineers build resilient infrastructure. Professional practice needs registration with the Board of Engineers Malaysia."
+  },
+  "tags": [
+   "building",
+   "numbers"
+  ],
+  "minWeeks": 20,
+  "sector": "engineering",
+  "requires": "degree",
+  "closest": false
+ },
+ {
+  "id": "civil_technician",
+  "title": "Civil engineering technician",
+  "onet": "17-3022.00",
+  "group": "technicians",
+  "skills": {
+   "surveying": 2,
+   "cad_design": 2,
+   "structural_civil": 1,
+   "construction_mgmt": 1,
+   "hse_safety": 1
+  },
+  "sdg": {
+   "target": "9.1",
+   "why": "Technicians keep infrastructure projects on track."
+  },
+  "tags": [
+   "building"
+  ],
+  "minWeeks": 10,
+  "sector": "engineering",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "mechanical_engineer",
+  "title": "Mechanical engineer",
+  "onet": "17-2141.00",
+  "group": "professionals",
+  "skills": {
+   "mechanical_eng": 3,
+   "cad_design": 2,
+   "lean_manufacturing": 1,
+   "quality_systems": 1,
+   "hse_safety": 1
+  },
+  "sdg": {
+   "target": "9.4",
+   "why": "Mechanical engineering supports efficient industry."
+  },
+  "tags": [
+   "building",
+   "technology"
+  ],
+  "minWeeks": 20,
+  "sector": "engineering",
+  "requires": "degree",
+  "closest": false
+ },
+ {
+  "id": "mechanical_technician",
+  "title": "Mechanical engineering technician",
+  "onet": "17-3027.00",
+  "group": "technicians",
+  "skills": {
+   "mechanical_eng": 2,
+   "cad_design": 2,
+   "industrial_maintenance": 1,
+   "quality_systems": 1
+  },
+  "sdg": {
+   "target": "9.4",
+   "why": "Technicians keep machines and products to standard."
+  },
+  "tags": [
+   "building"
+  ],
+  "minWeeks": 10,
+  "sector": "engineering",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "electrical_engineer",
+  "title": "Electrical engineer",
+  "onet": "17-2071.00",
+  "group": "professionals",
+  "skills": {
+   "electrical_eng": 3,
+   "cad_design": 1,
+   "hse_safety": 1,
+   "project_coordination": 1,
+   "electronics": 1
+  },
+  "sdg": {
+   "target": "7.2",
+   "why": "Power engineering supports clean, reliable energy."
+  },
+  "tags": [
+   "building",
+   "sustainability"
+  ],
+  "minWeeks": 20,
+  "sector": "engineering",
+  "requires": "degree",
+  "closest": false
+ },
+ {
+  "id": "electronics_engineer",
+  "title": "Electronics engineer",
+  "onet": "17-2072.00",
+  "group": "professionals",
+  "skills": {
+   "electronics": 3,
+   "electrical_eng": 1,
+   "programming": 1,
+   "quality_systems": 1
+  },
+  "sdg": {
+   "target": "9.4",
+   "why": "Electronics skills support industrial innovation."
+  },
+  "tags": [
+   "technology",
+   "building"
+  ],
+  "minWeeks": 20,
+  "sector": "engineering",
+  "requires": "degree",
+  "closest": false
+ },
+ {
+  "id": "electronics_technician",
+  "title": "Electronics engineering technician",
+  "onet": "17-3023.01",
+  "group": "technicians",
+  "skills": {
+   "electronics": 2,
+   "electrical_work": 1,
+   "quality_systems": 1,
+   "industrial_maintenance": 1
+  },
+  "sdg": {
+   "target": "9.4",
+   "why": "Technicians test and repair electronic systems."
+  },
+  "tags": [
+   "building",
+   "technology"
+  ],
+  "minWeeks": 10,
+  "sector": "engineering",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "industrial_engineer",
+  "title": "Industrial engineer",
+  "onet": "17-2112.00",
+  "group": "professionals",
+  "skills": {
+   "lean_manufacturing": 3,
+   "quality_systems": 2,
+   "process_analysis": 2,
+   "statistics": 1,
+   "project_coordination": 1
+  },
+  "sdg": {
+   "target": "9.4",
+   "why": "Industrial engineers raise resource efficiency."
+  },
+  "tags": [
+   "numbers",
+   "building"
+  ],
+  "minWeeks": 16,
+  "sector": "engineering",
+  "requires": "degree",
+  "closest": false
+ },
+ {
+  "id": "qa_engineer_manufacturing",
+  "title": "Quality assurance engineer (manufacturing)",
+  "onet": "17-2112.00",
+  "group": "professionals",
+  "skills": {
+   "quality_systems": 3,
+   "lean_manufacturing": 2,
+   "statistics": 1,
+   "hse_safety": 1,
+   "communication": 1
+  },
+  "sdg": {
+   "target": "9.4",
+   "why": "Quality engineers reduce defects and waste."
+  },
+  "tags": [
+   "numbers",
+   "building"
+  ],
+  "minWeeks": 14,
+  "sector": "engineering",
+  "requires": "degree",
+  "closest": true
+ },
+ {
+  "id": "quality_control_analyst",
+  "title": "Quality control (QA/QC) analyst",
+  "onet": "19-4099.01",
+  "group": "technicians",
+  "skills": {
+   "quality_systems": 3,
+   "lab_techniques": 1,
+   "statistics": 1,
+   "spreadsheets": 1
+  },
+  "sdg": {
+   "target": "9.4",
+   "why": "QC analysts catch defects before customers do."
+  },
+  "tags": [
+   "numbers",
+   "science"
+  ],
+  "minWeeks": 8,
+  "sector": "engineering",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "chemical_engineer",
+  "title": "Chemical engineer",
+  "onet": "17-2041.00",
+  "group": "professionals",
+  "skills": {
+   "process_eng": 3,
+   "hse_safety": 2,
+   "quality_systems": 1,
+   "lean_manufacturing": 1,
+   "analytical_chemistry": 1
+  },
+  "sdg": {
+   "target": "9.4",
+   "why": "Process engineering supports cleaner industry."
+  },
+  "tags": [
+   "science",
+   "building"
+  ],
+  "minWeeks": 20,
+  "sector": "engineering",
+  "requires": "degree",
+  "closest": false
+ },
+ {
+  "id": "environmental_engineer",
+  "title": "Environmental engineer",
+  "onet": "17-2081.00",
+  "group": "professionals",
+  "skills": {
+   "environmental_assessment": 3,
+   "hse_safety": 1,
+   "cad_design": 1,
+   "research_methods": 1,
+   "process_eng": 1
+  },
+  "sdg": {
+   "target": "6.3",
+   "why": "Environmental engineers protect water and land."
+  },
+  "tags": [
+   "sustainability",
+   "science"
+  ],
+  "minWeeks": 18,
+  "sector": "engineering",
+  "requires": "degree",
+  "closest": false
+ },
+ {
+  "id": "surveyor",
+  "title": "Surveyor",
+  "onet": "17-1022.00",
+  "group": "technicians",
+  "skills": {
+   "surveying": 3,
+   "cad_design": 2,
+   "construction_mgmt": 1
+  },
+  "sdg": {
+   "target": "9.1",
+   "why": "Surveyors make infrastructure projects accurate."
+  },
+  "tags": [
+   "building"
+  ],
+  "minWeeks": 12,
+  "sector": "engineering",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "hse_officer",
+  "title": "Health, safety and environment (HSE) officer",
+  "onet": "29-9011.00",
+  "group": "technicians",
+  "skills": {
+   "hse_safety": 3,
+   "communication": 2,
+   "regulatory": 1,
+   "training_design": 1
+  },
+  "sdg": {
+   "target": "8.8",
+   "why": "Safety officers protect workers' rights to a safe workplace."
+  },
+  "tags": [
+   "people",
+   "justice"
+  ],
+  "minWeeks": 10,
+  "sector": "engineering",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "construction_manager",
+  "title": "Construction manager",
+  "onet": "11-9021.00",
+  "group": "managers",
+  "skills": {
+   "construction_mgmt": 3,
+   "project_coordination": 2,
+   "hse_safety": 2,
+   "budgeting": 1
+  },
+  "sdg": {
+   "target": "9.1",
+   "why": "Good site management delivers safe infrastructure."
+  },
+  "tags": [
+   "building",
+   "people"
+  ],
+  "minWeeks": 22,
+  "sector": "engineering",
+  "requires": "degree",
+  "closest": false
+ },
+ {
+  "id": "cost_estimator",
+  "title": "Cost estimator",
+  "onet": "13-1051.00",
+  "group": "professionals",
+  "skills": {
+   "spreadsheets": 3,
+   "budgeting": 2,
+   "construction_mgmt": 1,
+   "cad_design": 1
+  },
+  "sdg": {
+   "target": "9.1",
+   "why": "Accurate estimates keep infrastructure affordable."
+  },
+  "tags": [
+   "numbers",
+   "building"
+  ],
+  "minWeeks": 10,
+  "sector": "engineering",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "cad_drafter",
+  "title": "CAD drafter",
+  "onet": "17-3013.00",
+  "group": "technicians",
+  "skills": {
+   "cad_design": 3,
+   "mechanical_eng": 1,
+   "communication": 1
+  },
+  "sdg": {
+   "target": "9.4",
+   "why": "Drafters turn designs into buildable drawings."
+  },
+  "tags": [
+   "building",
+   "technology"
+  ],
+  "minWeeks": 8,
+  "sector": "engineering",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "chemist",
+  "title": "Chemist",
+  "onet": "19-2031.00",
+  "group": "professionals",
+  "skills": {
+   "analytical_chemistry": 3,
+   "lab_techniques": 2,
+   "research_methods": 2,
+   "hse_safety": 1,
+   "statistics": 1
+  },
+  "sdg": {
+   "target": "3.9",
+   "why": "Chemists detect hazardous substances and pollution."
+  },
+  "tags": [
+   "science"
+  ],
+  "minWeeks": 12,
+  "sector": "science",
+  "requires": "degree",
+  "closest": false
+ },
+ {
+  "id": "chemical_technician",
+  "title": "Chemical technician",
+  "onet": "19-4031.00",
+  "group": "technicians",
+  "skills": {
+   "lab_techniques": 3,
+   "analytical_chemistry": 2,
+   "hse_safety": 1,
+   "quality_systems": 1
+  },
+  "sdg": {
+   "target": "3.9",
+   "why": "Lab technicians test for harmful chemicals."
+  },
+  "tags": [
+   "science"
+  ],
+  "minWeeks": 8,
+  "sector": "science",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "biological_technician",
+  "title": "Biological technician",
+  "onet": "19-4021.00",
+  "group": "technicians",
+  "skills": {
+   "lab_techniques": 3,
+   "microbiology": 1,
+   "research_methods": 1,
+   "statistics": 1
+  },
+  "sdg": {
+   "target": "3.3",
+   "why": "Lab work supports disease control and research."
+  },
+  "tags": [
+   "science",
+   "health"
+  ],
+  "minWeeks": 8,
+  "sector": "science",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "microbiologist",
+  "title": "Microbiologist",
+  "onet": "19-1022.00",
+  "group": "professionals",
+  "skills": {
+   "microbiology": 3,
+   "lab_techniques": 2,
+   "research_methods": 2,
+   "statistics": 1
+  },
+  "sdg": {
+   "target": "3.3",
+   "why": "Microbiologists help control communicable disease."
+  },
+  "tags": [
+   "science",
+   "health"
+  ],
+  "minWeeks": 14,
+  "sector": "science",
+  "requires": "degree",
+  "closest": false
+ },
+ {
+  "id": "environmental_scientist",
+  "title": "Environmental scientist",
+  "onet": "19-2041.00",
+  "group": "professionals",
+  "skills": {
+   "environmental_assessment": 3,
+   "research_methods": 1,
+   "statistics": 1,
+   "esg": 1
+  },
+  "sdg": {
+   "target": "6.3",
+   "why": "Monitoring protects water and land."
+  },
+  "tags": [
+   "sustainability",
+   "science"
+  ],
+  "minWeeks": 14,
+  "sector": "science",
+  "requires": "degree",
+  "closest": false
+ },
+ {
+  "id": "food_scientist",
+  "title": "Food scientist and technologist",
+  "onet": "19-1012.00",
+  "group": "professionals",
+  "skills": {
+   "food_science": 3,
+   "quality_systems": 1,
+   "lab_techniques": 1,
+   "research_methods": 1
+  },
+  "sdg": {
+   "target": "2.1",
+   "why": "Food scientists make food safer."
+  },
+  "tags": [
+   "science",
+   "health"
+  ],
+  "minWeeks": 14,
+  "sector": "science",
+  "requires": "degree",
+  "closest": false
+ },
+ {
+  "id": "food_technician",
+  "title": "Food science technician",
+  "onet": "19-4011.02",
+  "group": "technicians",
+  "skills": {
+   "food_science": 2,
+   "lab_techniques": 2,
+   "quality_systems": 2
+  },
+  "sdg": {
+   "target": "2.1",
+   "why": "Food technicians check safety and quality."
+  },
+  "tags": [
+   "science"
+  ],
+  "minWeeks": 8,
+  "sector": "science",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "medical_lab_technician",
+  "title": "Medical laboratory technician",
+  "onet": "29-2012.00",
+  "group": "technicians",
+  "skills": {
+   "lab_diagnostics": 3,
+   "lab_techniques": 2,
+   "hse_safety": 1,
+   "health_records": 1
+  },
+  "sdg": {
+   "target": "3.3",
+   "why": "Lab tests help diagnose and control disease. May need registration; confirm with your counsellor."
+  },
+  "tags": [
+   "health",
+   "science"
+  ],
+  "minWeeks": 14,
+  "sector": "health",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "pharmacy_technician",
+  "title": "Pharmacy technician",
+  "onet": "29-2052.00",
+  "group": "technicians",
+  "skills": {
+   "pharmacy_support": 3,
+   "patient_support": 1,
+   "health_records": 1,
+   "customer_service": 1
+  },
+  "sdg": {
+   "target": "3.8",
+   "why": "Pharmacy staff widen access to medicines."
+  },
+  "tags": [
+   "health",
+   "people"
+  ],
+  "minWeeks": 10,
+  "sector": "health",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "medical_assistant",
+  "title": "Medical assistant",
+  "onet": "31-9092.00",
+  "group": "technicians",
+  "skills": {
+   "patient_support": 3,
+   "health_records": 2,
+   "customer_service": 1,
+   "communication": 1
+  },
+  "sdg": {
+   "target": "3.8",
+   "why": "Care support widens access to health services."
+  },
+  "tags": [
+   "health",
+   "people"
+  ],
+  "minWeeks": 8,
+  "sector": "health",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "community_health_worker",
+  "title": "Community health worker",
+  "onet": "21-1094.00",
+  "group": "technicians",
+  "skills": {
+   "health_education": 3,
+   "communication": 2,
+   "patient_support": 1
+  },
+  "sdg": {
+   "target": "3.8",
+   "why": "Outreach helps people reach health services."
+  },
+  "tags": [
+   "health",
+   "people",
+   "teaching"
+  ],
+  "minWeeks": 8,
+  "sector": "health",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "health_educator",
+  "title": "Health educator",
+  "onet": "21-1091.00",
+  "group": "professionals",
+  "skills": {
+   "health_education": 3,
+   "training_design": 2,
+   "communication": 1,
+   "research_methods": 1
+  },
+  "sdg": {
+   "target": "3.8",
+   "why": "Health education improves access and outcomes."
+  },
+  "tags": [
+   "health",
+   "teaching"
+  ],
+  "minWeeks": 12,
+  "sector": "health",
+  "requires": "degree",
+  "closest": false
+ },
+ {
+  "id": "retail_salesperson",
+  "title": "Retail salesperson",
+  "onet": "41-2031.00",
+  "group": "service",
+  "skills": {
+   "retail_ops": 2,
+   "customer_service": 3,
+   "sales": 1,
+   "communication": 1
+  },
+  "sdg": {
+   "target": "8.5",
+   "why": "Retail is a large source of entry jobs."
+  },
+  "tags": [
+   "people"
+  ],
+  "minWeeks": 3,
+  "sector": "service",
+  "requires": "spm",
+  "closest": false
+ },
+ {
+  "id": "retail_supervisor",
+  "title": "Retail supervisor",
+  "onet": "41-1011.00",
+  "group": "service",
+  "skills": {
+   "retail_ops": 3,
+   "communication": 2,
+   "hr_admin": 1,
+   "budgeting": 1
+  },
+  "sdg": {
+   "target": "8.5",
+   "why": "Supervisors keep stores running and staff supported."
+  },
+  "tags": [
+   "people"
+  ],
+  "minWeeks": 6,
+  "sector": "service",
+  "requires": "spm",
+  "closest": false
+ },
+ {
+  "id": "sales_rep_technical",
+  "title": "Technical and scientific sales representative",
+  "onet": "41-4011.00",
+  "group": "professionals",
+  "skills": {
+   "sales": 3,
+   "communication": 2,
+   "market_research": 1,
+   "customer_service": 1
+  },
+  "sdg": {
+   "target": "8.2",
+   "why": "Technical sales connects new products to businesses."
+  },
+  "tags": [
+   "people",
+   "technology"
+  ],
+  "minWeeks": 10,
+  "sector": "service",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "sales_rep",
+  "title": "Sales representative",
+  "onet": "41-4012.00",
+  "group": "professionals",
+  "skills": {
+   "sales": 3,
+   "communication": 2,
+   "customer_service": 1
+  },
+  "sdg": {
+   "target": "8.2",
+   "why": "Sales skills connect products to customers."
+  },
+  "tags": [
+   "people"
+  ],
+  "minWeeks": 6,
+  "sector": "service",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "insurance_agent",
+  "title": "Insurance sales agent",
+  "onet": "41-3021.00",
+  "group": "service",
+  "skills": {
+   "sales": 2,
+   "underwriting": 1,
+   "customer_service": 2,
+   "regulatory": 1
+  },
+  "sdg": {
+   "target": "1.3",
+   "why": "Insurance protects families from financial shocks."
+  },
+  "tags": [
+   "people"
+  ],
+  "minWeeks": 10,
+  "sector": "service",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "real_estate_agent",
+  "title": "Real estate sales agent",
+  "onet": "41-9022.00",
+  "group": "service",
+  "skills": {
+   "sales": 3,
+   "communication": 2,
+   "customer_service": 1
+  },
+  "sdg": {
+   "target": "8.5",
+   "why": "Agents help families find homes."
+  },
+  "tags": [
+   "people"
+  ],
+  "minWeeks": 10,
+  "sector": "service",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "travel_consultant",
+  "title": "Travel consultant",
+  "onet": "41-3041.00",
+  "group": "service",
+  "skills": {
+   "hospitality": 2,
+   "sales": 1,
+   "customer_service": 2
+  },
+  "sdg": {
+   "target": "8.9",
+   "why": "Travel work supports sustainable tourism."
+  },
+  "tags": [
+   "people"
+  ],
+  "minWeeks": 6,
+  "sector": "service",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "hotel_front_desk",
+  "title": "Hotel front-desk clerk",
+  "onet": "43-4081.00",
+  "group": "clerical",
+  "skills": {
+   "hospitality": 3,
+   "customer_service": 2,
+   "communication": 1,
+   "data_entry": 1
+  },
+  "sdg": {
+   "target": "8.9",
+   "why": "Hospitality jobs support sustainable tourism."
+  },
+  "tags": [
+   "people"
+  ],
+  "minWeeks": 3,
+  "sector": "service",
+  "requires": "spm",
+  "closest": false
+ },
+ {
+  "id": "food_service_manager",
+  "title": "Food service manager",
+  "onet": "11-9051.00",
+  "group": "managers",
+  "skills": {
+   "food_service": 3,
+   "hr_admin": 1,
+   "budgeting": 1,
+   "customer_service": 1
+  },
+  "sdg": {
+   "target": "2.1",
+   "why": "Well-run kitchens serve safe food."
+  },
+  "tags": [
+   "people"
+  ],
+  "minWeeks": 10,
+  "sector": "service",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "paralegal",
+  "title": "Paralegal and legal assistant",
+  "onet": "23-2011.00",
+  "group": "professionals",
+  "skills": {
+   "legal_admin": 3,
+   "communication": 1,
+   "office_admin": 1,
+   "regulatory": 1
+  },
+  "sdg": {
+   "target": "16.3",
+   "why": "Legal support helps people access justice."
+  },
+  "tags": [
+   "justice",
+   "people"
+  ],
+  "minWeeks": 12,
+  "sector": "business",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "pr_specialist",
+  "title": "Public relations specialist",
+  "onet": "27-3031.00",
+  "group": "professionals",
+  "skills": {
+   "communications_pr": 3,
+   "communication": 2,
+   "market_research": 1,
+   "ai_tools": 1
+  },
+  "sdg": {
+   "target": "8.2",
+   "why": "Clear communication supports organisations."
+  },
+  "tags": [
+   "people"
+  ],
+  "minWeeks": 8,
+  "sector": "business",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "warehouse_clerk",
+  "title": "Shipping and receiving clerk",
+  "onet": "43-5071.00",
+  "group": "clerical",
+  "skills": {
+   "warehouse_ops": 3,
+   "data_entry": 1,
+   "spreadsheets": 1
+  },
+  "sdg": {
+   "target": "8.2",
+   "why": "Inventory control keeps supply chains productive."
+  },
+  "tags": [
+   "numbers"
+  ],
+  "minWeeks": 3,
+  "sector": "logistics",
+  "requires": "spm",
+  "closest": false
+ },
+ {
+  "id": "production_planner",
+  "title": "Production planning clerk",
+  "onet": "43-5061.00",
+  "group": "clerical",
+  "skills": {
+   "dispatch_planning": 3,
+   "spreadsheets": 2,
+   "lean_manufacturing": 1
+  },
+  "sdg": {
+   "target": "9.4",
+   "why": "Planning keeps production on time with less waste."
+  },
+  "tags": [
+   "numbers"
+  ],
+  "minWeeks": 8,
+  "sector": "logistics",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "dispatcher",
+  "title": "Dispatcher",
+  "onet": "43-5032.00",
+  "group": "clerical",
+  "skills": {
+   "dispatch_planning": 3,
+   "communication": 2,
+   "customer_service": 1
+  },
+  "sdg": {
+   "target": "8.2",
+   "why": "Dispatch keeps deliveries and crews on schedule."
+  },
+  "tags": [
+   "people"
+  ],
+  "minWeeks": 4,
+  "sector": "logistics",
+  "requires": "spm",
+  "closest": false
+ },
+ {
+  "id": "electrician",
+  "title": "Electrician",
+  "onet": "47-2111.00",
+  "group": "craft",
+  "skills": {
+   "electrical_work": 3,
+   "hse_safety": 2,
+   "electrical_eng": 1
+  },
+  "sdg": {
+   "target": "7.2",
+   "why": "Electricians connect homes and businesses safely. May need a recognised competency certificate; confirm with your counsellor."
+  },
+  "tags": [
+   "building"
+  ],
+  "minWeeks": 20,
+  "sector": "trades",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "hvac_technician",
+  "title": "HVAC and refrigeration technician",
+  "onet": "49-9021.01",
+  "group": "craft",
+  "skills": {
+   "hvac": 3,
+   "electrical_work": 1,
+   "hse_safety": 1
+  },
+  "sdg": {
+   "target": "7.3",
+   "why": "Efficient cooling systems save energy."
+  },
+  "tags": [
+   "building"
+  ],
+  "minWeeks": 14,
+  "sector": "trades",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "machinist",
+  "title": "Machinist",
+  "onet": "51-4041.00",
+  "group": "operators",
+  "skills": {
+   "machining_welding": 3,
+   "quality_systems": 1,
+   "cad_design": 1
+  },
+  "sdg": {
+   "target": "9.4",
+   "why": "Fabrication skills support industry."
+  },
+  "tags": [
+   "building"
+  ],
+  "minWeeks": 14,
+  "sector": "trades",
+  "requires": "spm",
+  "closest": false
+ },
+ {
+  "id": "welder",
+  "title": "Welder",
+  "onet": "51-4121.06",
+  "group": "operators",
+  "skills": {
+   "machining_welding": 3,
+   "hse_safety": 1
+  },
+  "sdg": {
+   "target": "9.4",
+   "why": "Welders build and repair the things industry relies on."
+  },
+  "tags": [
+   "building"
+  ],
+  "minWeeks": 10,
+  "sector": "trades",
+  "requires": "spm",
+  "closest": false
+ },
+ {
+  "id": "machinery_mechanic",
+  "title": "Industrial machinery mechanic",
+  "onet": "49-9041.00",
+  "group": "craft",
+  "skills": {
+   "industrial_maintenance": 3,
+   "electrical_work": 1,
+   "mechanical_eng": 1,
+   "hse_safety": 1
+  },
+  "sdg": {
+   "target": "9.4",
+   "why": "Maintenance keeps factories running efficiently."
+  },
+  "tags": [
+   "building"
+  ],
+  "minWeeks": 14,
+  "sector": "trades",
+  "requires": "diploma",
+  "closest": false
+ },
+ {
+  "id": "teacher_assistant",
+  "title": "Teacher assistant",
+  "onet": "25-9041.00",
+  "group": "service",
+  "skills": {
+   "instruction_support": 3,
+   "communication": 2,
+   "training_design": 1
+  },
+  "sdg": {
+   "target": "4.1",
+   "why": "Teaching support helps children learn."
+  },
+  "tags": [
+   "teaching",
+   "people"
+  ],
+  "minWeeks": 6,
+  "sector": "education",
+  "requires": "spm",
+  "closest": false
+ },
+ {
+  "id": "instructional_coordinator",
+  "title": "Instructional coordinator",
+  "onet": "25-9031.00",
+  "group": "professionals",
+  "skills": {
+   "training_design": 3,
+   "instruction_support": 2,
+   "research_methods": 1,
+   "communication": 1
+  },
+  "sdg": {
+   "target": "4.4",
+   "why": "Curriculum work directly advances learning for all."
+  },
+  "tags": [
+   "teaching"
+  ],
+  "minWeeks": 12,
+  "sector": "education",
+  "requires": "degree",
+  "closest": false
+ }
+]

@@ -1,0 +1,1042 @@
+[
+ {
+  "id": "data_entry",
+  "name": "Data entry and form processing",
+  "ilo": "4132",
+  "onet": [
+   "43-9021.00",
+   "43-9061.00"
+  ],
+  "sdg": {
+   "target": "8.5",
+   "why": "Routine office work is the entry point to formal employment; reskilling away from it protects it."
+  },
+  "complement": false
+ },
+ {
+  "id": "bookkeeping",
+  "name": "Bookkeeping and ledger reconciliation",
+  "ilo": "4311",
+  "onet": [
+   "43-3031.00"
+  ],
+  "sdg": {
+   "target": "8.5",
+   "why": "Core back-office skill for formal employment in finance."
+  },
+  "complement": false
+ },
+ {
+  "id": "payroll",
+  "name": "Payroll processing",
+  "ilo": "4313",
+  "onet": [
+   "43-3051.00"
+  ],
+  "sdg": {
+   "target": "8.5",
+   "why": "Payroll accuracy underpins decent-work conditions for employees."
+  },
+  "complement": false
+ },
+ {
+  "id": "counter_service",
+  "name": "Cash handling and counter service",
+  "ilo": "4211",
+  "onet": [
+   "43-3071.00"
+  ],
+  "sdg": {
+   "target": "8.10",
+   "why": "Front-line banking service supports access to financial services."
+  },
+  "complement": false
+ },
+ {
+  "id": "office_admin",
+  "name": "Scheduling and office administration",
+  "ilo": "4110",
+  "onet": [
+   "43-6014.00"
+  ],
+  "sdg": {
+   "target": "8.5",
+   "why": "General office skill that supports formal employment."
+  },
+  "complement": false
+ },
+ {
+  "id": "billing",
+  "name": "Billing and invoicing",
+  "ilo": "4312",
+  "onet": [
+   "43-3021.02"
+  ],
+  "sdg": {
+   "target": "8.5",
+   "why": "Core back-office skill for formal employment in finance."
+  },
+  "complement": false
+ },
+ {
+  "id": "loan_docs",
+  "name": "Loan documentation and credit checks",
+  "ilo": "3312",
+  "onet": [
+   "43-4131.00",
+   "43-4041.01"
+  ],
+  "sdg": {
+   "target": "8.10",
+   "why": "Documenting loans is part of widening access to credit."
+  },
+  "complement": false
+ },
+ {
+  "id": "collections",
+  "name": "Collections and customer follow-up",
+  "ilo": "4214",
+  "onet": [
+   "43-3011.00"
+  ],
+  "sdg": {
+   "target": "8.5",
+   "why": "Customer-facing finance skill for formal employment."
+  },
+  "complement": false
+ },
+ {
+  "id": "customer_service",
+  "name": "Customer service",
+  "ilo": "4222",
+  "onet": [
+   "43-4051.00"
+  ],
+  "sdg": {
+   "target": "8.5",
+   "why": "Customer-facing skill for formal employment."
+  },
+  "complement": false
+ },
+ {
+  "id": "spreadsheets",
+  "name": "Spreadsheets (Excel or Sheets)",
+  "ilo": "3313",
+  "onet": [
+   "13-2031.00"
+  ],
+  "sdg": {
+   "target": "4.4",
+   "why": "Digital skill relevant for employment (indicator 4.4.1)."
+  },
+  "complement": false
+ },
+ {
+  "id": "accounting",
+  "name": "Financial accounting and reporting",
+  "ilo": "2411",
+  "onet": [
+   "13-2011.01"
+  ],
+  "sdg": {
+   "target": "8.2",
+   "why": "Accurate financial reporting supports productive enterprises."
+  },
+  "complement": false
+ },
+ {
+  "id": "audit",
+  "name": "Audit and controls testing",
+  "ilo": "3313",
+  "onet": [
+   "13-2011.02"
+  ],
+  "sdg": {
+   "target": "16.6",
+   "why": "Audit supports accountable and transparent institutions."
+  },
+  "complement": false
+ },
+ {
+  "id": "tax",
+  "name": "Tax preparation and compliance",
+  "ilo": "3352",
+  "onet": [
+   "13-2082.00"
+  ],
+  "sdg": {
+   "target": "16.6",
+   "why": "Tax compliance supports effective, accountable institutions."
+  },
+  "complement": false
+ },
+ {
+  "id": "fin_analysis",
+  "name": "Financial analysis and modelling",
+  "ilo": "2413",
+  "onet": [
+   "13-2051.00"
+  ],
+  "sdg": {
+   "target": "8.2",
+   "why": "Analytical finance skills support productive investment."
+  },
+  "complement": false
+ },
+ {
+  "id": "credit_analysis",
+  "name": "Credit risk assessment",
+  "ilo": "3312",
+  "onet": [
+   "13-2041.00"
+  ],
+  "sdg": {
+   "target": "8.10",
+   "why": "Sound credit assessment widens safe access to finance."
+  },
+  "complement": false
+ },
+ {
+  "id": "underwriting",
+  "name": "Insurance underwriting",
+  "ilo": "3321",
+  "onet": [
+   "13-2053.00"
+  ],
+  "sdg": {
+   "target": "1.3",
+   "why": "Insurance spreads risk and supports social protection."
+  },
+  "complement": false
+ },
+ {
+  "id": "claims",
+  "name": "Claims review and processing",
+  "ilo": "3321",
+  "onet": [
+   "43-9041.01"
+  ],
+  "sdg": {
+   "target": "3.8",
+   "why": "Claims administration supports financial risk protection in health care."
+  },
+  "complement": false
+ },
+ {
+  "id": "aml",
+  "name": "Anti-money-laundering and fraud investigation",
+  "ilo": "3359",
+  "onet": [
+   "13-2099.04"
+  ],
+  "sdg": {
+   "target": "16.4",
+   "why": "Detecting illicit financial flows is the core of SDG target 16.4."
+  },
+  "complement": false
+ },
+ {
+  "id": "regulatory",
+  "name": "Regulatory compliance and reporting",
+  "ilo": "3359",
+  "onet": [
+   "13-1041.07"
+  ],
+  "sdg": {
+   "target": "16.5",
+   "why": "Compliance work reduces corruption and bribery risk."
+  },
+  "complement": false
+ },
+ {
+  "id": "esg",
+  "name": "ESG and sustainability reporting",
+  "ilo": "2133",
+  "onet": [
+   "13-1199.05"
+  ],
+  "sdg": {
+   "target": "12.6",
+   "why": "Sustainability reporting is the subject of SDG target 12.6."
+  },
+  "complement": false
+ },
+ {
+  "id": "budgeting",
+  "name": "Budgeting and forecasting",
+  "ilo": "3313",
+  "onet": [
+   "13-2031.00"
+  ],
+  "sdg": {
+   "target": "8.2",
+   "why": "Planning skills support productive organisations."
+  },
+  "complement": false
+ },
+ {
+  "id": "sql",
+  "name": "SQL and databases",
+  "ilo": "2521",
+  "onet": [
+   "15-1141.00"
+  ],
+  "sdg": {
+   "target": "8.2",
+   "why": "Data skills support technological upgrading."
+  },
+  "complement": false
+ },
+ {
+  "id": "bi_dashboards",
+  "name": "Dashboards and BI tools",
+  "ilo": "3314",
+  "onet": [
+   "15-1199.08"
+  ],
+  "sdg": {
+   "target": "8.2",
+   "why": "Data skills support technological upgrading."
+  },
+  "complement": false
+ },
+ {
+  "id": "statistics",
+  "name": "Statistics and data analysis",
+  "ilo": "2120",
+  "onet": [
+   "15-2041.00"
+  ],
+  "sdg": {
+   "target": "4.4",
+   "why": "Quantitative skills relevant for employment."
+  },
+  "complement": false
+ },
+ {
+  "id": "python",
+  "name": "Python for data work",
+  "ilo": "2512",
+  "onet": [
+   "15-1132.00"
+  ],
+  "sdg": {
+   "target": "8.2",
+   "why": "Programming skills support technological upgrading."
+  },
+  "complement": false
+ },
+ {
+  "id": "process_analysis",
+  "name": "Process improvement and business analysis",
+  "ilo": "2421",
+  "onet": [
+   "13-1111.00"
+  ],
+  "sdg": {
+   "target": "8.2",
+   "why": "Process improvement raises productivity."
+  },
+  "complement": false
+ },
+ {
+  "id": "procurement",
+  "name": "Procurement and vendor management",
+  "ilo": "3323",
+  "onet": [
+   "13-1023.00"
+  ],
+  "sdg": {
+   "target": "8.2",
+   "why": "Purchasing skills support productive supply chains."
+  },
+  "complement": false
+ },
+ {
+  "id": "supply_chain",
+  "name": "Supply-chain analysis",
+  "ilo": "4323",
+  "onet": [
+   "13-1081.02"
+  ],
+  "sdg": {
+   "target": "8.2",
+   "why": "Logistics analysis supports productivity."
+  },
+  "complement": false
+ },
+ {
+  "id": "hr_admin",
+  "name": "HR administration",
+  "ilo": "4416",
+  "onet": [
+   "13-1071.00"
+  ],
+  "sdg": {
+   "target": "8.5",
+   "why": "HR administration supports decent-work practices."
+  },
+  "complement": false
+ },
+ {
+  "id": "comp_benefits",
+  "name": "Compensation and benefits",
+  "ilo": "2423",
+  "onet": [
+   "13-1141.00"
+  ],
+  "sdg": {
+   "target": "8.5",
+   "why": "Fair pay and benefits support decent work."
+  },
+  "complement": false
+ },
+ {
+  "id": "training_design",
+  "name": "Training design and facilitation",
+  "ilo": "2424",
+  "onet": [
+   "13-1151.00"
+  ],
+  "sdg": {
+   "target": "4.4",
+   "why": "Teaching skills directly support SDG target 4.4."
+  },
+  "complement": false
+ },
+ {
+  "id": "market_research",
+  "name": "Market research",
+  "ilo": "2431",
+  "onet": [
+   "13-1161.00"
+  ],
+  "sdg": {
+   "target": "8.2",
+   "why": "Market insight supports productive enterprises."
+  },
+  "complement": false
+ },
+ {
+  "id": "it_support",
+  "name": "IT user support",
+  "ilo": "3512",
+  "onet": [
+   "15-1151.00"
+  ],
+  "sdg": {
+   "target": "8.2",
+   "why": "IT support skills support technological upgrading."
+  },
+  "complement": false
+ },
+ {
+  "id": "infosec",
+  "name": "Information security basics",
+  "ilo": "2523",
+  "onet": [
+   "15-1122.00"
+  ],
+  "sdg": {
+   "target": "16.6",
+   "why": "Secure systems support trustworthy institutions."
+  },
+  "complement": false
+ },
+ {
+  "id": "health_records",
+  "name": "Health records and medical coding",
+  "ilo": "3252",
+  "onet": [
+   "29-2071.00"
+  ],
+  "sdg": {
+   "target": "3.8",
+   "why": "Health information supports quality health-care services."
+  },
+  "complement": false
+ },
+ {
+  "id": "fin_inclusion",
+  "name": "Financial counselling and inclusion",
+  "ilo": "2635",
+  "onet": [
+   "13-2071.01"
+  ],
+  "sdg": {
+   "target": "8.10",
+   "why": "Financial counselling widens access to financial services."
+  },
+  "complement": false
+ },
+ {
+  "id": "communication",
+  "name": "Business communication and stakeholder management",
+  "ilo": "3341",
+  "onet": [
+   "43-1011.00"
+  ],
+  "sdg": {
+   "target": "8.5",
+   "why": "People skills carry across jobs."
+  },
+  "complement": false
+ },
+ {
+  "id": "ai_tools",
+  "name": "Working with AI tools (prompting and checking outputs)",
+  "ilo": null,
+  "onet": [],
+  "sdg": {
+   "target": "8.2",
+   "why": "Working alongside AI is the aim of SDG target 8.2 (technological upgrading)."
+  },
+  "complement": true
+ },
+ {
+  "id": "web_dev",
+  "name": "Web development (HTML, CSS, JavaScript)",
+  "ilo": "2513",
+  "onet": [
+   "15-1134.00"
+  ],
+  "sdg": {
+   "target": "8.2",
+   "why": "Web skills support technological upgrading."
+  },
+  "complement": false
+ },
+ {
+  "id": "programming",
+  "name": "Programming fundamentals (Java, C++, JavaScript)",
+  "ilo": "2514",
+  "onet": [
+   "15-1131.00"
+  ],
+  "sdg": {
+   "target": "8.2",
+   "why": "Programming skills support technological upgrading."
+  },
+  "complement": false
+ },
+ {
+  "id": "software_testing",
+  "name": "Software testing and QA",
+  "ilo": "2519",
+  "onet": [
+   "15-1199.01"
+  ],
+  "sdg": {
+   "target": "8.2",
+   "why": "Reliable software supports productive enterprises."
+  },
+  "complement": false
+ },
+ {
+  "id": "cloud_devops",
+  "name": "Cloud and DevOps basics",
+  "ilo": "2523",
+  "onet": [
+   "15-1142.00"
+  ],
+  "sdg": {
+   "target": "8.2",
+   "why": "Cloud skills support technological upgrading."
+  },
+  "complement": false
+ },
+ {
+  "id": "networking",
+  "name": "Networking and systems administration",
+  "ilo": "2522",
+  "onet": [
+   "15-1142.00"
+  ],
+  "sdg": {
+   "target": "8.2",
+   "why": "Reliable networks keep services running."
+  },
+  "complement": false
+ },
+ {
+  "id": "machine_learning",
+  "name": "Machine learning and data science",
+  "ilo": "2120",
+  "onet": [
+   "15-2041.00"
+  ],
+  "sdg": {
+   "target": "8.2",
+   "why": "Data skills support technological upgrading."
+  },
+  "complement": false
+ },
+ {
+  "id": "project_coordination",
+  "name": "Project coordination and agile",
+  "ilo": "2421",
+  "onet": [
+   "11-3021.00"
+  ],
+  "sdg": {
+   "target": "8.2",
+   "why": "Coordinated projects deliver productive work."
+  },
+  "complement": false
+ },
+ {
+  "id": "tech_writing",
+  "name": "Technical writing and documentation",
+  "ilo": "2641",
+  "onet": [
+   "27-3042.00"
+  ],
+  "sdg": {
+   "target": "4.4",
+   "why": "Clear documentation helps others learn and work."
+  },
+  "complement": false
+ },
+ {
+  "id": "cad_design",
+  "name": "CAD and engineering design",
+  "ilo": "3118",
+  "onet": [
+   "17-3013.00"
+  ],
+  "sdg": {
+   "target": "9.4",
+   "why": "Design skills support efficient, sustainable industry."
+  },
+  "complement": false
+ },
+ {
+  "id": "structural_civil",
+  "name": "Structural and civil engineering",
+  "ilo": "2142",
+  "onet": [
+   "17-2051.00"
+  ],
+  "sdg": {
+   "target": "9.1",
+   "why": "Civil engineering builds resilient infrastructure."
+  },
+  "complement": false
+ },
+ {
+  "id": "surveying",
+  "name": "Surveying and site measurement",
+  "ilo": "2165",
+  "onet": [
+   "17-1022.00"
+  ],
+  "sdg": {
+   "target": "9.1",
+   "why": "Accurate surveys underpin infrastructure projects."
+  },
+  "complement": false
+ },
+ {
+  "id": "mechanical_eng",
+  "name": "Mechanical engineering and design",
+  "ilo": "2144",
+  "onet": [
+   "17-2141.00"
+  ],
+  "sdg": {
+   "target": "9.4",
+   "why": "Mechanical engineering supports efficient industry."
+  },
+  "complement": false
+ },
+ {
+  "id": "electrical_eng",
+  "name": "Electrical engineering and power systems",
+  "ilo": "2151",
+  "onet": [
+   "17-2071.00"
+  ],
+  "sdg": {
+   "target": "7.2",
+   "why": "Power systems skills support clean energy."
+  },
+  "complement": false
+ },
+ {
+  "id": "electronics",
+  "name": "Electronics and embedded systems",
+  "ilo": "2152",
+  "onet": [
+   "17-2072.00"
+  ],
+  "sdg": {
+   "target": "9.4",
+   "why": "Electronics skills support industrial innovation."
+  },
+  "complement": false
+ },
+ {
+  "id": "process_eng",
+  "name": "Chemical and process engineering",
+  "ilo": "2145",
+  "onet": [
+   "17-2041.00"
+  ],
+  "sdg": {
+   "target": "9.4",
+   "why": "Process engineering supports cleaner industry."
+  },
+  "complement": false
+ },
+ {
+  "id": "quality_systems",
+  "name": "Quality assurance and control (QA/QC, ISO 9001)",
+  "ilo": "3119",
+  "onet": [
+   "19-4099.01"
+  ],
+  "sdg": {
+   "target": "9.4",
+   "why": "Quality systems reduce waste and defects."
+  },
+  "complement": false
+ },
+ {
+  "id": "lean_manufacturing",
+  "name": "Lean and manufacturing operations",
+  "ilo": "3122",
+  "onet": [
+   "17-2112.00"
+  ],
+  "sdg": {
+   "target": "9.4",
+   "why": "Lean operations raise resource efficiency."
+  },
+  "complement": false
+ },
+ {
+  "id": "hse_safety",
+  "name": "Health, safety and environment (HSE)",
+  "ilo": "3257",
+  "onet": [
+   "29-9011.00"
+  ],
+  "sdg": {
+   "target": "8.8",
+   "why": "Safe workplaces are a labour right."
+  },
+  "complement": false
+ },
+ {
+  "id": "construction_mgmt",
+  "name": "Construction site management",
+  "ilo": "3123",
+  "onet": [
+   "11-9021.00"
+  ],
+  "sdg": {
+   "target": "9.1",
+   "why": "Well-run sites deliver safe infrastructure."
+  },
+  "complement": false
+ },
+ {
+  "id": "lab_techniques",
+  "name": "Laboratory techniques and sample handling",
+  "ilo": "3119",
+  "onet": [
+   "19-4031.00"
+  ],
+  "sdg": {
+   "target": "3.9",
+   "why": "Lab testing detects hazardous substances."
+  },
+  "complement": false
+ },
+ {
+  "id": "analytical_chemistry",
+  "name": "Chemistry and analytical methods",
+  "ilo": "2113",
+  "onet": [
+   "19-2031.00"
+  ],
+  "sdg": {
+   "target": "3.9",
+   "why": "Analytical chemistry detects pollution and hazards."
+  },
+  "complement": false
+ },
+ {
+  "id": "microbiology",
+  "name": "Microbiology and biological testing",
+  "ilo": "2131",
+  "onet": [
+   "19-1022.00"
+  ],
+  "sdg": {
+   "target": "3.3",
+   "why": "Microbiology helps control communicable disease."
+  },
+  "complement": false
+ },
+ {
+  "id": "environmental_assessment",
+  "name": "Environmental assessment and monitoring",
+  "ilo": "2133",
+  "onet": [
+   "19-2041.00"
+  ],
+  "sdg": {
+   "target": "6.3",
+   "why": "Monitoring protects water and land."
+  },
+  "complement": false
+ },
+ {
+  "id": "research_methods",
+  "name": "Research methods and lab documentation",
+  "ilo": "2120",
+  "onet": [
+   "19-4021.00"
+  ],
+  "sdg": {
+   "target": "8.2",
+   "why": "Careful research builds knowledge for industry."
+  },
+  "complement": false
+ },
+ {
+  "id": "food_science",
+  "name": "Food science and safety",
+  "ilo": "2265",
+  "onet": [
+   "19-1012.00"
+  ],
+  "sdg": {
+   "target": "2.1",
+   "why": "Safe food is part of ending hunger."
+  },
+  "complement": false
+ },
+ {
+  "id": "patient_support",
+  "name": "Patient care support",
+  "ilo": "3256",
+  "onet": [
+   "31-9092.00"
+  ],
+  "sdg": {
+   "target": "3.8",
+   "why": "Care support widens access to health services."
+  },
+  "complement": false
+ },
+ {
+  "id": "pharmacy_support",
+  "name": "Pharmacy and medicines support",
+  "ilo": "3213",
+  "onet": [
+   "29-2052.00"
+  ],
+  "sdg": {
+   "target": "3.8",
+   "why": "Access to medicines is part of universal health coverage."
+  },
+  "complement": false
+ },
+ {
+  "id": "health_education",
+  "name": "Health education and community outreach",
+  "ilo": "3253",
+  "onet": [
+   "21-1094.00"
+  ],
+  "sdg": {
+   "target": "3.8",
+   "why": "Outreach helps people reach health services."
+  },
+  "complement": false
+ },
+ {
+  "id": "lab_diagnostics",
+  "name": "Clinical laboratory testing",
+  "ilo": "3212",
+  "onet": [
+   "29-2012.00"
+  ],
+  "sdg": {
+   "target": "3.3",
+   "why": "Diagnostic tests help control disease."
+  },
+  "complement": false
+ },
+ {
+  "id": "legal_admin",
+  "name": "Legal administration and contracts",
+  "ilo": "3411",
+  "onet": [
+   "23-2011.00"
+  ],
+  "sdg": {
+   "target": "16.3",
+   "why": "Legal support helps people access justice."
+  },
+  "complement": false
+ },
+ {
+  "id": "communications_pr",
+  "name": "Communications and public relations",
+  "ilo": "2432",
+  "onet": [
+   "27-3031.00"
+  ],
+  "sdg": {
+   "target": "8.2",
+   "why": "Clear communication supports organisations."
+  },
+  "complement": false
+ },
+ {
+  "id": "sales",
+  "name": "Selling and account management",
+  "ilo": "3322",
+  "onet": [
+   "41-4012.00"
+  ],
+  "sdg": {
+   "target": "8.2",
+   "why": "Sales skills connect products to customers."
+  },
+  "complement": false
+ },
+ {
+  "id": "retail_ops",
+  "name": "Retail operations and merchandising",
+  "ilo": "5223",
+  "onet": [
+   "41-2031.00"
+  ],
+  "sdg": {
+   "target": "8.5",
+   "why": "Retail work is a large source of entry jobs."
+  },
+  "complement": false
+ },
+ {
+  "id": "hospitality",
+  "name": "Hospitality and front-desk service",
+  "ilo": "4224",
+  "onet": [
+   "43-4081.00"
+  ],
+  "sdg": {
+   "target": "8.9",
+   "why": "Hospitality jobs support sustainable tourism."
+  },
+  "complement": false
+ },
+ {
+  "id": "food_service",
+  "name": "Food service operations and food safety",
+  "ilo": "1412",
+  "onet": [
+   "11-9051.00"
+  ],
+  "sdg": {
+   "target": "2.1",
+   "why": "Safe, well-run food service protects health."
+  },
+  "complement": false
+ },
+ {
+  "id": "warehouse_ops",
+  "name": "Warehouse and inventory control",
+  "ilo": "4321",
+  "onet": [
+   "43-5071.00"
+  ],
+  "sdg": {
+   "target": "8.2",
+   "why": "Inventory control keeps supply chains productive."
+  },
+  "complement": false
+ },
+ {
+  "id": "dispatch_planning",
+  "name": "Dispatch and production planning",
+  "ilo": "4322",
+  "onet": [
+   "43-5061.00"
+  ],
+  "sdg": {
+   "target": "8.2",
+   "why": "Planning keeps production and delivery on time."
+  },
+  "complement": false
+ },
+ {
+  "id": "electrical_work",
+  "name": "Electrical installation and maintenance",
+  "ilo": "7411",
+  "onet": [
+   "47-2111.00"
+  ],
+  "sdg": {
+   "target": "7.2",
+   "why": "Electricians connect homes and businesses safely."
+  },
+  "complement": false
+ },
+ {
+  "id": "hvac",
+  "name": "HVAC and refrigeration servicing",
+  "ilo": "7127",
+  "onet": [
+   "49-9021.01"
+  ],
+  "sdg": {
+   "target": "7.3",
+   "why": "Efficient cooling systems save energy."
+  },
+  "complement": false
+ },
+ {
+  "id": "machining_welding",
+  "name": "Machining and welding",
+  "ilo": "7223",
+  "onet": [
+   "51-4041.00"
+  ],
+  "sdg": {
+   "target": "9.4",
+   "why": "Fabrication skills support industry."
+  },
+  "complement": false
+ },
+ {
+  "id": "industrial_maintenance",
+  "name": "Industrial machinery maintenance",
+  "ilo": "7233",
+  "onet": [
+   "49-9041.00"
+  ],
+  "sdg": {
+   "target": "9.4",
+   "why": "Maintenance keeps factories running efficiently."
+  },
+  "complement": false
+ },
+ {
+  "id": "instruction_support",
+  "name": "Teaching support and tutoring",
+  "ilo": "5312",
+  "onet": [
+   "25-9041.00"
+  ],
+  "sdg": {
+   "target": "4.1",
+   "why": "Teaching support helps children learn."
+  },
+  "complement": false
+ }
+]

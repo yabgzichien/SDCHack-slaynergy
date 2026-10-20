@@ -1,0 +1,297 @@
+[
+ {
+  "id": "bank_ops",
+  "title": "Bank operations executive",
+  "isco": "4312",
+  "iscoTitle": "Statistical, Finance and Insurance Clerks",
+  "skills": [
+   "loan_docs",
+   "data_entry",
+   "spreadsheets",
+   "billing",
+   "communication"
+  ],
+  "education": "diploma",
+  "sector": "finance"
+ },
+ {
+  "id": "ap_ar_clerk",
+  "title": "Accounts payable / receivable clerk",
+  "isco": "4311",
+  "iscoTitle": "Accounting and Bookkeeping Clerks",
+  "skills": [
+   "bookkeeping",
+   "billing",
+   "data_entry",
+   "spreadsheets",
+   "collections"
+  ],
+  "education": "diploma",
+  "sector": "finance"
+ },
+ {
+  "id": "bookkeeper",
+  "title": "Bookkeeper",
+  "isco": "4311",
+  "iscoTitle": "Accounting and Bookkeeping Clerks",
+  "skills": [
+   "bookkeeping",
+   "accounting",
+   "spreadsheets",
+   "data_entry",
+   "tax"
+  ],
+  "education": "diploma",
+  "sector": "finance"
+ },
+ {
+  "id": "data_entry",
+  "title": "Data entry clerk",
+  "isco": "4132",
+  "iscoTitle": "Data Entry Clerks",
+  "skills": [
+   "data_entry",
+   "office_admin",
+   "spreadsheets"
+  ],
+  "education": "spm",
+  "sector": "business"
+ },
+ {
+  "id": "payroll_clerk",
+  "title": "Payroll clerk",
+  "isco": "4313",
+  "iscoTitle": "Payroll Clerks",
+  "skills": [
+   "payroll",
+   "hr_admin",
+   "spreadsheets",
+   "data_entry"
+  ],
+  "education": "diploma",
+  "sector": "business"
+ },
+ {
+  "id": "bank_teller",
+  "title": "Bank teller",
+  "isco": "4211",
+  "iscoTitle": "Bank Tellers and Related Clerks",
+  "skills": [
+   "counter_service",
+   "customer_service",
+   "data_entry"
+  ],
+  "education": "diploma",
+  "sector": "finance"
+ },
+ {
+  "id": "admin_assistant",
+  "title": "Administrative assistant",
+  "isco": "4120",
+  "iscoTitle": "Secretaries (general)",
+  "skills": [
+   "office_admin",
+   "communication",
+   "data_entry",
+   "spreadsheets"
+  ],
+  "education": "diploma",
+  "sector": "business"
+ },
+ {
+  "id": "loan_clerk",
+  "title": "Loan processing clerk",
+  "isco": "4312",
+  "iscoTitle": "Statistical, Finance and Insurance Clerks",
+  "skills": [
+   "loan_docs",
+   "data_entry",
+   "customer_service",
+   "spreadsheets"
+  ],
+  "education": "diploma",
+  "sector": "finance"
+ },
+ {
+  "id": "collections",
+  "title": "Collections officer",
+  "isco": "4214",
+  "iscoTitle": "Debt Collectors and Related Workers",
+  "skills": [
+   "collections",
+   "customer_service",
+   "communication"
+  ],
+  "education": "diploma",
+  "sector": "finance"
+ },
+ {
+  "id": "qa_tester",
+  "title": "Software tester / QA engineer",
+  "isco": "2519",
+  "iscoTitle": "Software and Applications Developers and Analysts Not Elsewhere Classified",
+  "skills": [
+   "software_testing",
+   "programming",
+   "sql",
+   "communication"
+  ],
+  "education": "diploma",
+  "sector": "computing"
+ },
+ {
+  "id": "software_dev",
+  "title": "Software developer",
+  "isco": "2512",
+  "iscoTitle": "Software Developers",
+  "skills": [
+   "programming",
+   "python",
+   "sql",
+   "web_dev",
+   "software_testing"
+  ],
+  "education": "degree",
+  "sector": "computing"
+ },
+ {
+  "id": "it_support_job",
+  "title": "IT support / helpdesk",
+  "isco": "3512",
+  "iscoTitle": "ICT User Support Technicians",
+  "skills": [
+   "it_support",
+   "customer_service",
+   "networking",
+   "communication"
+  ],
+  "education": "diploma",
+  "sector": "computing"
+ },
+ {
+  "id": "civil_eng_job",
+  "title": "Civil engineer",
+  "isco": "2142",
+  "iscoTitle": "Civil Engineers",
+  "skills": [
+   "structural_civil",
+   "cad_design",
+   "construction_mgmt",
+   "hse_safety"
+  ],
+  "education": "degree",
+  "sector": "engineering"
+ },
+ {
+  "id": "mech_eng_job",
+  "title": "Mechanical engineer",
+  "isco": "2144",
+  "iscoTitle": "Mechanical Engineers",
+  "skills": [
+   "mechanical_eng",
+   "cad_design",
+   "quality_systems",
+   "lean_manufacturing"
+  ],
+  "education": "degree",
+  "sector": "engineering"
+ },
+ {
+  "id": "elec_eng_job",
+  "title": "Electrical or electronics engineer",
+  "isco": "2151",
+  "iscoTitle": "Electrical Engineers",
+  "skills": [
+   "electrical_eng",
+   "electronics",
+   "cad_design",
+   "hse_safety"
+  ],
+  "education": "degree",
+  "sector": "engineering"
+ },
+ {
+  "id": "qaqc_exec",
+  "title": "QA/QC executive (manufacturing)",
+  "isco": "3119",
+  "iscoTitle": "Physical and Engineering Science Technicians Not Elsewhere Classified",
+  "skills": [
+   "quality_systems",
+   "lean_manufacturing",
+   "spreadsheets",
+   "communication"
+  ],
+  "education": "diploma",
+  "sector": "engineering"
+ },
+ {
+  "id": "lab_analyst",
+  "title": "Lab analyst / chemist",
+  "isco": "2113",
+  "iscoTitle": "Chemists",
+  "skills": [
+   "analytical_chemistry",
+   "lab_techniques",
+   "research_methods",
+   "hse_safety"
+  ],
+  "education": "degree",
+  "sector": "science"
+ },
+ {
+  "id": "retail_job",
+  "title": "Retail salesperson",
+  "isco": "5223",
+  "iscoTitle": "Shop Sales Assistants",
+  "skills": [
+   "retail_ops",
+   "customer_service",
+   "sales",
+   "communication"
+  ],
+  "education": "spm",
+  "sector": "service"
+ },
+ {
+  "id": "hotel_job",
+  "title": "Hotel or front-desk staff",
+  "isco": "4224",
+  "iscoTitle": "Hotel Receptionists",
+  "skills": [
+   "hospitality",
+   "customer_service",
+   "communication",
+   "data_entry"
+  ],
+  "education": "spm",
+  "sector": "service"
+ },
+ {
+  "id": "warehouse_job",
+  "title": "Warehouse or logistics clerk",
+  "isco": "4321",
+  "iscoTitle": "Stock Clerks",
+  "skills": [
+   "warehouse_ops",
+   "data_entry",
+   "spreadsheets",
+   "dispatch_planning"
+  ],
+  "education": "spm",
+  "sector": "logistics"
+ },
+ {
+  "id": "cs_exec",
+  "title": "Customer service executive",
+  "isco": "4222",
+  "iscoTitle": "Contact Centre Information Clerks",
+  "skills": [
+   "customer_service",
+   "communication",
+   "data_entry",
+   "sales"
+  ],
+  "education": "diploma",
+  "sector": "service"
+ }
+]

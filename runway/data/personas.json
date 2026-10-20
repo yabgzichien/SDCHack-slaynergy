@@ -1,0 +1,66 @@
+[
+ {
+  "id": "hafiz",
+  "name": "Hafiz",
+  "label": "Hafiz, 27 \u00b7 bank operations executive \u00b7 laid off in November",
+  "age": 27,
+  "occupation": "bank_ops",
+  "years": 5,
+  "months": 5,
+  "hoursPerWeek": 10,
+  "interests": [
+   "numbers",
+   "technology"
+  ],
+  "synthetic": true,
+  "education": "diploma"
+ },
+ {
+  "id": "aina",
+  "name": "Aina",
+  "label": "Aina, 25 \u00b7 accounts payable clerk \u00b7 3 years",
+  "age": 25,
+  "occupation": "ap_ar_clerk",
+  "years": 3,
+  "months": 4,
+  "hoursPerWeek": 12,
+  "interests": [
+   "numbers",
+   "sustainability"
+  ],
+  "synthetic": true,
+  "education": "diploma"
+ },
+ {
+  "id": "meiling",
+  "name": "Mei Ling",
+  "label": "Mei Ling, 31 \u00b7 payroll clerk \u00b7 8 years",
+  "age": 31,
+  "occupation": "payroll_clerk",
+  "years": 8,
+  "months": 3,
+  "hoursPerWeek": 15,
+  "interests": [
+   "people",
+   "teaching"
+  ],
+  "synthetic": true,
+  "education": "diploma"
+ },
+ {
+  "id": "daniel",
+  "name": "Daniel",
+  "label": "Daniel, 24 \u00b7 data entry clerk \u00b7 2 years",
+  "age": 24,
+  "occupation": "data_entry",
+  "years": 2,
+  "months": 6,
+  "hoursPerWeek": 8,
+  "interests": [
+   "technology",
+   "justice"
+  ],
+  "synthetic": true,
+  "education": "spm"
+ }
+]
