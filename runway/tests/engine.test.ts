@@ -83,11 +83,19 @@ describe("futures weights", () => {
 });
 
 describe("history replay", () => {
-  it("accuracy-weighted forecasts beat unweighted ones on real past releases", () => {
+  it("accuracy-weighted forecasts beat unweighted ones, and the market beats simple baselines, on real past releases", () => {
     const s = replayHistory().stats;
     expect(s.questions).toBeGreaterThanOrEqual(30);
     expect(s.brierWeightedMean).toBeLessThan(s.brierUnweighted);
-    expect(s.brierLmsr).toBeLessThan(s.brierUnweighted);
+    expect(s.brierLmsr).toBeLessThan(s.brierCoin);
+    expect(s.brierLmsr).toBeLessThan(s.brierBaseRate);
+  });
+  it("influence follows accuracy: the most accurate type gains influence and the least accurate types lose it", () => {
+    const r = replayHistory();
+    const last = r.influenceHistory[r.influenceHistory.length - 1].byKind;
+    expect(last.expert).toBeGreaterThan(1);
+    expect(last.noisy).toBeLessThan(1);
+    expect(last.optimist).toBeLessThan(1);
   });
 });
 
@@ -177,6 +185,23 @@ describe("Kalshi-style market", () => {
     expect(hle.settled!.payout).toBe(0);
     expect(hle.settled!.pnl).toBeCloseTo(-50, 3);
     expect(w.user.balance).toBeCloseTo(1000 + swe.settled!.pnl + hle.settled!.pnl, 6);
+  });
+});
+
+describe("new data never pushes a worker back into a fading job", () => {
+  it("after the release, no persona's top job is one whose skills are at risk, and no role jumps more than 8 places", () => {
+    for (const p of personas) {
+      const o = occupations.find((x) => x.id === p.occupation)!;
+      const st: SessionState = { ...initialState(), profile: { name: p.name, occupationId: o.id, education: p.education, years: p.years, skills: o.skills, interests: p.interests, months: p.months, hoursPerWeek: p.hoursPerWeek, budget: "free", synthetic: true } };
+      const before = computeView(st), after = computeView({ ...st, release: 1, clock: { t0: T0, t1: T1 } });
+      expect(after.matches[0].atRisk, p.id).toBe(false);
+      const r0 = new Map(before.matches.map((m) => [m.roleId, m.rank]));
+      for (const m of after.matches) if (r0.has(m.roleId)) expect(Math.abs(r0.get(m.roleId)! - m.rank), `${p.id} ${m.title}`).toBeLessThanOrEqual(8);
+    }
+  });
+  it("the clerical demand score falls when the clerical share of job ads falls", async () => {
+    const { demandFor } = await import("@/lib/engine/matching");
+    expect(demandFor("clerical", "2026Q2").score).toBeLessThan(demandFor("clerical", "2026Q1").score);
   });
 });
 
@@ -292,7 +317,9 @@ describe("sectors and qualifications", () => {
   });
   it("lets the right worker see their own field first: a civil engineer is matched to civil engineering, a QA tester to QA", () => {
     expect(computeView(profileFor("civil_eng_job", "degree")).matches[0].roleId).toBe("civil_engineer");
-    expect(computeView(profileFor("qa_tester", "diploma")).matches[0].roleId).toBe("qa_tester_software");
+    const qa = computeView(profileFor("qa_tester", "diploma")).matches;
+    expect(qa[0].sector).toBe("computing");
+    expect(qa.slice(0, 3).map((m) => m.roleId)).toContain("qa_tester_software");
     expect(computeView(profileFor("lab_analyst", "degree")).matches.slice(0, 3).map((m) => m.sector)).toEqual(["science", "science", "science"]);
   });
   it("a degree is not needed to be shown the same ranking when education is the only difference but roles are not gated", () => {

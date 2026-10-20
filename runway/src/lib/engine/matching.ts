@@ -21,22 +21,34 @@ export function pickInputs(p: Record<string, unknown> & Partial<MatchInput>): Ma
 }
 
 export const WEIGHTS = { overlap: 0.25, outlook: 0.3, demand: 0.2, reach: 0.15, interest: 0.1 };
-export const AT_RISK_BELOW = 0.55; // roles whose skills mostly expire soon are flagged ...
-export const AT_RISK_PENALTY = 0.08; // ... and lose 8 points, so the ranking favours jobs that last
+export const AT_RISK_BELOW = 0.55; // roles whose skills mostly expire soon are flagged "skills at risk"
+// The ranking favours jobs that last: a penalty that grows smoothly from 0 (outlook 0.70) to 8 points (outlook 0.40),
+// so a small change in the futures' weights never makes a role jump by crossing a cliff.
+export const AT_RISK_PENALTY = 0.08;
+export const PENALTY_FROM = 0.7, PENALTY_FULL = 0.4;
+export const riskPenalty = (outlook: number) => AT_RISK_PENALTY * clamp((PENALTY_FROM - outlook) / (PENALTY_FROM - PENALTY_FULL), 0, 1);
 export const SDG_BONUS = 0.12;
 export const WEEKS_PER_MONTH = 4.345;
 
 // ---------- demand from DOSM major-group trend ----------
-export type Demand = { group: GroupKey; label: string; recent: number; before: number; trend: number; score: number; period: string };
+// DOSM changed what its online job-ad series covers from 2025 Q3, so quarters before that are not comparable.
+// Demand trend = the latest quarter's share of ads against the average share since the change.
+export const DOSM_BREAK = "2025Q3";
+export type Demand = { group: GroupKey; label: string; recent: number; before: number; trend: number; score: number; period: string; latest: string };
 export function demandFor(group: GroupKey, upTo: string): Demand {
-  const qs = series.dosm.quarters.filter((d) => d.q <= upTo);
-  const share = (d: (typeof qs)[number]) => (d[group] / d.total) * 100;
-  const last4 = qs.slice(-4), prev4 = qs.slice(-8, -4);
-  const avg = (a: typeof qs) => a.reduce((x, d) => x + share(d), 0) / Math.max(1, a.length);
-  const recent = avg(last4), before = avg(prev4);
-  const trend = before > 0 ? recent / before - 1 : 0;
-  const score = clamp(0.5 + 1.25 * trend, 0, 1) * 0.7 + clamp(recent / 40, 0, 1) * 0.3;
-  return { group, label: GROUP_LABEL[group], recent, before, trend, score, period: `${last4[0].q} to ${last4[last4.length - 1].q}` };
+  const all = series.dosm.quarters.filter((d) => d.q <= upTo);
+  const share = (d: (typeof all)[number]) => (d[group] / d.total) * 100;
+  const post = all.filter((d) => d.q >= DOSM_BREAK);
+  const latest = all[all.length - 1];
+  const base = post.length >= 3 ? post.slice(0, -1) : all.slice(-5, -1);
+  const recent = share(latest);
+  const before = base.reduce((x, d) => x + share(d), 0) / Math.max(1, base.length);
+  // Few comparable quarters exist, so the trend is shrunk towards "no change" (n / (n + 2)) to keep one noisy quarter
+  // from swinging the ranking. Size counts a little: a group with 20% or more of all ads scores full marks on it.
+  const raw = before > 0 ? recent / before - 1 : 0;
+  const trend = raw * (base.length / (base.length + 2));
+  const score = clamp(0.5 + 1.25 * trend, 0, 1) * 0.75 + clamp(recent / 20, 0, 1) * 0.25;
+  return { group, label: GROUP_LABEL[group], recent, before, trend, score, latest: latest.q, period: `${base[0].q} to ${base[base.length - 1].q}` };
 }
 
 // ---------- courses ----------
@@ -65,7 +77,7 @@ export function coverGaps(gaps: string[]): Pick[] {
 export type Gap = { skillId: string; name: string; importance: number; expiry: SkillExpiry };
 export type RoleMatch = {
   roleId: string; title: string; onet: string; sector: SectorId; requires: Education; closest: boolean; blocked: boolean; sdgTarget: string; sdgWhy: string; group: GroupKey;
-  atRisk: boolean; overlap: number; outlook: number; demand: Demand; reach: number; interest: number;
+  atRisk: boolean; penalty: number; overlap: number; outlook: number; demand: Demand; reach: number; interest: number;
   base: number; score: number; sdgMatch: boolean;
   weeks: number; courseWeeks: number; bufferWeeks: number; hours: number; reachable: boolean; deadlineWeeks: number;
   gaps: Gap[]; have: string[]; picks: Pick[];
@@ -99,11 +111,11 @@ export function matchRoles(input: MatchInput, w: Weights3, upTo: string): RoleMa
     const reach = clamp(1 - weeks / Math.max(1, deadlineWeeks), 0, 1);
     const tagFit = r.tags.length ? clamp(r.tags.filter((t) => input.interests.includes(t)).length / Math.min(2, r.tags.length), 0, 1) : 0;
     const interest = clamp(0.5 * tagFit + (input.field && input.field === r.sector ? 0.5 : 0), 0, 1);
-    const base = WEIGHTS.overlap * overlap + WEIGHTS.outlook * outlook + WEIGHTS.demand * demand.score + WEIGHTS.reach * reach + WEIGHTS.interest * interest - (outlook < AT_RISK_BELOW ? AT_RISK_PENALTY : 0);
+    const base = WEIGHTS.overlap * overlap + WEIGHTS.outlook * outlook + WEIGHTS.demand * demand.score + WEIGHTS.reach * reach + WEIGHTS.interest * interest - riskPenalty(outlook);
     const sdgMatch = input.goals.includes(r.sdg.target);
     out.push({
       roleId: r.id, title: r.title, onet: r.onet, sector: r.sector, requires: r.requires, closest: r.closest, blocked, sdgTarget: r.sdg.target, sdgWhy: r.sdg.why, group: r.group,
-      atRisk: outlook < AT_RISK_BELOW, overlap, outlook, demand, reach, interest, base, score: base + (sdgMatch ? SDG_BONUS : 0), sdgMatch,
+      atRisk: outlook < AT_RISK_BELOW, penalty: riskPenalty(outlook), overlap, outlook, demand, reach, interest, base, score: base + (sdgMatch ? SDG_BONUS : 0), sdgMatch,
       weeks, courseWeeks, bufferWeeks, hours, reachable, deadlineWeeks,
       gaps: gapIds.map((s) => ({ skillId: s, name: skillById[s].name, importance: r.skills[s], expiry: exp(s) })),
       have: Object.keys(r.skills).filter((s) => have.has(s)),
