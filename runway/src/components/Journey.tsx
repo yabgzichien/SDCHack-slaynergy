@@ -2,16 +2,17 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useSyncExternalStore } from "react";
-import { BriefcaseBusiness, Check, ListChecks, Sparkles, TrendingUp, UserRound, type LucideIcon } from "lucide-react";
+import { BriefcaseBusiness, Check, ListChecks, MapPin, Sparkles, TrendingUp, UserRound, type LucideIcon } from "lucide-react";
 import { useApp } from "./AppProvider";
 
-// The five steps of Runway, in order. Every page of the main path belongs to one of them.
+// The six steps of Runway, in order. Every page of the main path belongs to one of them.
 export type Step = { href: string; label: string; short: string; icon: LucideIcon; match: string[]; needsProfile: boolean };
 export const STEPS: Step[] = [
   { href: "/start", label: "About you", short: "You", icon: UserRound, match: ["/start", "/resume", "/profile"], needsProfile: false },
   { href: "/skills", label: "Your skills", short: "Skills", icon: Sparkles, match: ["/skills", "/radar"], needsProfile: true },
   { href: "/forecast", label: "The forecast", short: "Forecast", icon: TrendingUp, match: ["/forecast", "/futures"], needsProfile: false },
-  { href: "/jobs", label: "Jobs for you", short: "Jobs", icon: BriefcaseBusiness, match: ["/jobs", "/goals", "/map"], needsProfile: true },
+  { href: "/jobs", label: "Jobs for you", short: "Jobs", icon: BriefcaseBusiness, match: ["/jobs", "/goals"], needsProfile: true },
+  { href: "/map", label: "Job map", short: "Map", icon: MapPin, match: ["/map"], needsProfile: true },
   { href: "/plan", label: "Your plan", short: "Plan", icon: ListChecks, match: ["/plan"], needsProfile: true },
 ];
 

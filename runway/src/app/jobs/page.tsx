@@ -4,6 +4,10 @@ import { useRouter } from "next/navigation";
 import { useApp } from "@/components/AppProvider";
 import { Score, whyFits } from "@/components/JobBits";
 import { ChevronRight, HandHeart, MapPin } from "lucide-react";
+import { MalaysiaMap } from "@/components/MalaysiaMap";
+import { mapFigures, times } from "@/lib/map-figures";
+import { stateById } from "@/lib/engine/geo";
+import type { SectorId } from "@/lib/engine/data";
 import { Btn, Card, Chip, LinkRow, NextRow, PageTitle, SdgTag, Skeleton, sdgName } from "@/components/ui";
 
 // One question: which job should I aim for?
@@ -52,6 +56,8 @@ export default function JobsPage() {
         </div>
       </Card>
 
+      <MapTeaser roleTitle={best.title} sector={best.sector as SectorId} home={p.state ?? null} />
+
       <div className="mt-4 grid gap-4 lg:grid-cols-12">
         <Card className="lg:col-span-7">
           <h2 className="text-base font-semibold">Other good matches</h2>
@@ -75,22 +81,35 @@ export default function JobsPage() {
               <Link href={`/jobs/${bridge.roleId}`} className="mt-2 inline-block text-sm underline decoration-control underline-offset-2 hover:text-ink">See this bridge job</Link>
             </Card>
           )}
-          <Card>
-            <h2 className="text-base font-semibold">Make it fit you</h2>
-            <ul className="mt-3 space-y-2">
-              <li><LinkRow href="/goals" aside={<ChevronRight size={18} className="text-muted" aria-hidden />}>
-                <p className="flex items-center gap-2 font-medium"><HandHeart size={18} strokeWidth={1.8} aria-hidden />Causes you care about</p>
-                <p className="text-sm text-muted">{goals ? goals : "Jobs that serve them move up"}</p>
-              </LinkRow></li>
-              <li><LinkRow href="/map" aside={<ChevronRight size={18} className="text-muted" aria-hidden />}>
-                <p className="flex items-center gap-2 font-medium"><MapPin size={18} strokeWidth={1.8} aria-hidden />Would you move for work?</p>
-                <p className="text-sm text-muted">Where these jobs are in Malaysia</p>
-              </LinkRow></li>
-            </ul>
-          </Card>
+          <LinkRow href="/goals" aside={<ChevronRight size={18} className="text-muted" aria-hidden />}>
+            <p className="flex items-center gap-2 font-medium"><HandHeart size={18} strokeWidth={1.8} aria-hidden />Causes you care about</p>
+            <p className="text-sm text-muted">{goals ? goals : "Jobs that serve them move up your list"}</p>
+          </LinkRow>
         </div>
       </div>
-      <NextRow back="/forecast" next="/plan" nextLabel="Next: your plan" />
+      <NextRow back="/forecast" next="/map" nextLabel="Next: where in Malaysia" />
     </div>
+  );
+}
+
+// The map, small, right under the best job: where jobs like it are, and one line comparing your state with the best one.
+function MapTeaser({ roleTitle, sector, home }: { roleTitle: string; sector: SectorId; home: string | null }) {
+  const fig = mapFigures(sector, "jobs");
+  const ranked = [...fig.rows].sort((a, b) => b.workers - a.workers);
+  const homeRow = home ? fig.rows.find((r) => r.id === home) : null;
+  const top = ranked.find((r) => r.id !== home) ?? ranked[0];
+  const line = homeRow && top.workers > homeRow.workers
+    ? `${top.short} has ${times(top.workers / homeRow.workers)} as many jobs like this as ${homeRow.short}.`
+    : `Most jobs like this are in ${ranked[0].short}, ${ranked[1].short} and ${ranked[2].short}.`;
+  return (
+    <Link href="/map" className="press mt-4 grid items-center gap-4 rounded-[22px] bg-surface p-4 hover:bg-surface2 sm:grid-cols-[1.4fr_1fr] sm:p-5">
+      <MalaysiaMap preview values={fig.values} bins={fig.bins} ramp={fig.ramp} home={home} ariaLabel={`Small map of where jobs like ${roleTitle.toLowerCase()} are in Malaysia`} />
+      <div>
+        <p className="flex items-center gap-2 text-sm text-muted"><MapPin size={16} aria-hidden />Would you move for work?</p>
+        <h2 className="mt-1 text-lg font-medium">{line}</h2>
+        <p className="mt-1 text-sm text-muted">{homeRow ? `Compare pay and unemployment with ${stateById[home!]?.short}.` : "Tell us your state to compare it with the others."}</p>
+        <span className="mt-3 inline-flex min-h-11 items-center gap-1.5 rounded-full bg-primary px-5 text-sm font-medium text-primaryink">Open the job map <ChevronRight size={16} aria-hidden /></span>
+      </div>
+    </Link>
   );
 }

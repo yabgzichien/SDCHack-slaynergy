@@ -115,7 +115,3 @@ input[type="range"] { accent-color: var(--accent); width: 100%; }
 }
 
 /* Job map: state names drawn by the app over the shapes */
-.state-label span { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; font: 500 12px/1 var(--font-sans); color: #1f201d;
-  text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 3px #fff; pointer-events: none; }
-.leaflet-container { font-family: var(--font-sans); }
-.leaflet-tooltip { font-family: var(--font-sans); font-size: 13px; border-radius: 10px; }

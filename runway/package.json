@@ -10,27 +10,25 @@
     "test": "vitest run",
     "data:build": "node scripts/build-series.mjs && node scripts/build-geo.mjs",
     "anchor": "node scripts/anchor-log.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build:map": "node scripts/build-map.mjs"
   },
   "dependencies": {
     "better-sqlite3": "^13.0.3",
     "fflate": "^0.8.3",
     "framer-motion": "^14.4.0",
-    "leaflet": "^1.9.4",
     "lucide-react": "^1.60.0",
     "mammoth": "^1.13.0",
     "next": "16.4.2",
     "pg": "^8.23.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "react-leaflet": "^5.0.0",
     "recharts": "^3.10.1",
     "unpdf": "^1.9.1"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
     "@types/better-sqlite3": "^9.6.0",
-    "@types/leaflet": "1.9",
     "@types/node": "^22.20.5",
     "@types/pg": "^8.23.1",
     "@types/react": "^19",
