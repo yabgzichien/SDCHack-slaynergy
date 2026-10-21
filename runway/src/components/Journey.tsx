@@ -2,15 +2,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useSyncExternalStore, type CSSProperties } from "react";
-import { BriefcaseBusiness, Check, ListChecks, MapPin, Sparkles, TrendingUp, UserRound, type LucideIcon } from "lucide-react";
+import { BriefcaseBusiness, Check, ListChecks, MapPin, Sparkles, UserRound, type LucideIcon } from "lucide-react";
 import { useApp } from "./AppProvider";
 
-// The six steps of Runway, in order. Every page of the main path belongs to one of them.
+// The five steps of Runway, in order. Every page of the main path belongs to one of them.
 export type Step = { href: string; label: string; short: string; icon: LucideIcon; match: string[]; needsProfile: boolean };
 export const STEPS: Step[] = [
   { href: "/start", label: "About you", short: "You", icon: UserRound, match: ["/start", "/resume", "/profile"], needsProfile: false },
   { href: "/skills", label: "Your skills", short: "Skills", icon: Sparkles, match: ["/skills", "/radar"], needsProfile: true },
-  { href: "/forecast", label: "The forecast", short: "Forecast", icon: TrendingUp, match: ["/forecast", "/futures"], needsProfile: false },
   { href: "/jobs", label: "Jobs for you", short: "Jobs", icon: BriefcaseBusiness, match: ["/jobs", "/goals"], needsProfile: true },
   { href: "/map", label: "Job map", short: "Map", icon: MapPin, match: ["/map"], needsProfile: true },
   { href: "/plan", label: "Your plan", short: "Plan", icon: ListChecks, match: ["/plan"], needsProfile: true },
@@ -36,7 +35,7 @@ export function useJourney() {
   const path = usePathname();
   const { state } = useApp();
   const hasProfile = !!state?.profile;
-  const approved = state?.approval.status === "approved";
+  const planned = !!state?.chosenRoleId;
   const cur = currentStep(path);
   const stored = useSyncExternalStore(subscribe, readFurthest, () => 0);
   useEffect(() => { if (hasProfile && cur > readFurthest()) writeFurthest(cur); }, [cur, hasProfile]);
@@ -47,7 +46,7 @@ export function useJourney() {
     if (isDone(i)) return "done";
     return "todo";
   };
-  const isDone = (i: number) => (i === 0 ? hasProfile : i === STEPS.length - 1 ? approved : hasProfile && i < Math.max(furthest, cur));
+  const isDone = (i: number) => (i === 0 ? hasProfile : i === STEPS.length - 1 ? planned : hasProfile && i < Math.max(furthest, cur));
   return { cur, status, isDone, hasProfile };
 }
 
@@ -98,7 +97,7 @@ export function StepRail({ onPick }: { onPick?: () => void }) {
 export function StepBar() {
   const { cur, status } = useJourney();
   const resultIndex = cur - 1;
-  const progressStyle = { "--result-index": Math.max(0, resultIndex) } as CSSProperties;
+  const progressStyle = { "--result-index": Math.max(0, resultIndex), "--result-count": RESULT_STEPS.length } as CSSProperties;
   return (
     <nav className="app-journey" aria-label="Your steps">
       <div className="app-journey-inner">

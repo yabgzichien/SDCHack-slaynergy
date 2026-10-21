@@ -55,6 +55,9 @@ export type Course = {
   skills: string[]; checked: string; linkStatus: string;
   // "ai" or "people": taught in every plan's AI-at-work or people-skills strand, so gap matching leaves it out.
   strand?: "ai" | "people";
+  // A Malaysian programme or portal rather than one course: shown in the catalogue, never picked for a gap on its own.
+  catalogOnly?: boolean;
+  note?: string;
 };
 // evolved: the target role that is this same job as it is changing (more AI review and design, less routine work), if one exists.
 export type Occupation = { id: string; title: string; isco: string; iscoTitle: string; skills: string[]; education: Education; sector: SectorId; evolved?: string };

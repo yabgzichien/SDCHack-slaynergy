@@ -5,7 +5,7 @@ SDC Hackathon 2026 · Domain 1 (Aiversecity Future-Ready Workforce).
 
 Forecast → Match → Plan. Skill and job forecasts come from public, dated data. A prediction market
 (points only, never money) whose questions settle on real data releases decides how likely each of three
-futures (slow, medium, fast AI progress) is. The worker leaves with a week-by-week plan that a counsellor approves.
+futures (slow, medium, fast AI progress) is. The worker leaves with a week-by-week plan they choose, and can book an advisor for a second opinion.
 
 ## Run it
 
@@ -19,6 +19,30 @@ npm run build && npm start
 
 Without `DATABASE_URL` the app keeps sessions and the hash log in `.data/runway.db` (SQLite). On Replit, set
 `DATABASE_URL` to the built-in Postgres and `SESSION_SECRET` to a random string (see `.env.example`).
+
+## Advisors (for judges)
+
+**Meet an advisor** (`/advisor`) is the worker's side. It shows a two-week calendar of 30-minute slots in Malaysia time. The
+worker picks a slot, a topic and an optional question, and books it. Booking is optional and nothing waits on it. A worker
+can have one upcoming booking and can cancel it. A made-up **Demo advisor** always has weekday slots, so the calendar is
+never empty.
+
+**Advisor view** (`/counsellor`) is the advisor's side. Sign in with any name and the passcode **`counsellor-demo`**. It has
+three tabs:
+
+- **Meetings**: bookings with you or the demo advisor. Opening one shows the worker's question, profile, top jobs, plan and
+  the futures behind Jobbery's advice. You write advice (it appears on the worker's Plan page) or cancel with a reason.
+- **Pathways to confirm**: when a worker finishes every step and passes the AI check, an advisor confirms it, and only then
+  is the LinkedIn badge issued. This is the one sign-off. The worker's own session gets a 403 if it tries.
+- **My free times**: click half hours on a 14-day grid to open or close them. Workers see them beside the demo advisor's.
+
+**Add a made-up meeting** and **Add a made-up finished pathway** let you try each tab alone. To try both roles at once, use
+the worker app in one browser and the advisor view in a private window. The hash log records the advisor's name and a short
+id (`c-` plus 8 hex characters, from the name) on every badge and every piece of advice. For advice it stores a hash of the
+note, not the text.
+
+The passcode is shared and comes from the `COUNSELLOR_PASSCODE` secret; without it the demo code above works. A real
+deployment would give each advisor their own login (for example Replit Auth or the agency's single sign-on).
 
 ## Jobs, sectors and qualifications
 

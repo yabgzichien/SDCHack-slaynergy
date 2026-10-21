@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   description: "Jobbery helps young office workers who have just been laid off find a growing job that AI is unlikely to take soon, using forecasts tested against real data releases.",
   icons: { icon: "/cockatiel-ai-icon-v2.png", apple: "/cockatiel-ai-icon-v2.png" },
 };
-export const viewport: Viewport = { width: "device-width", initialScale: 1 };
+export const viewport: Viewport = { width: "device-width", initialScale: 1, colorScheme: "only light" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

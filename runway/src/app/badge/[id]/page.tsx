@@ -7,13 +7,15 @@ import { Btn, Card, Chip, H, PageTitle } from "@/components/ui";
 export const dynamic = "force-dynamic";
 
 const day = (iso?: string) => (iso ? new Date(iso).toLocaleDateString("en-MY", { day: "numeric", month: "long", year: "numeric" }) : "");
+// Named advisor and their id as recorded in the log; older badges recorded no name.
+const signer = (s?: { id: string; name: string }) => (s ? `by ${s.name} (${s.id}) on ` : "by an advisor on ");
 const STRAND: Record<string, string> = { job: "Job skills", ai: "AI at work", people: "People skills" };
 
 // Public verification page for a pathway badge. Everything shown is read from the badge's entry in the tamper-evident log.
 export default async function BadgePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const entry = await findBadge(id);
-  if (!entry) return <div><PageTitle title="Badge not found">This badge id is not in Runway&apos;s log. Check the link.</PageTitle><Btn href="/">Go to Runway</Btn></div>;
+  if (!entry) return <div><PageTitle title="Badge not found">This badge id is not in Jobbery&apos;s log. Check the link.</PageTitle><Btn href="/">Go to Jobbery</Btn></div>;
   const b = JSON.parse(entry.payload) as BadgeRecord;
   const h = await headers();
   const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost";
@@ -21,7 +23,7 @@ export default async function BadgePage({ params }: { params: Promise<{ id: stri
   const url = `${proto}://${host}/badge/${b.id}`;
   return (
     <div>
-      <PageTitle title={b.title}>{b.holder} completed this pathway on Runway, confirmed by an employment counsellor on {day(b.counsellor.confirmedAt)}.</PageTitle>
+      <PageTitle title={b.title}>{b.holder} completed this pathway on Jobbery, confirmed by {b.counsellor.confirmedBy ? `counsellor ${b.counsellor.confirmedBy.name}` : "an employment counsellor"} on {day(b.counsellor.confirmedAt)}.</PageTitle>
       <div className="-mt-2 mb-4 flex flex-wrap gap-2">
         {b.strands.map((s) => <Chip key={s} tone="accent">{s}</Chip>)}
         {b.synthetic && <Chip tone="demo">Made-up demo profile</Chip>}
@@ -64,7 +66,7 @@ export default async function BadgePage({ params }: { params: Promise<{ id: stri
       <Card className="mt-4">
         <H sub="Each log record includes the hash of the one before, so changing this badge would break every later record.">Check it is genuine</H>
         <p className="num break-all text-sm">Log record {entry.seq} · {day(entry.ts)} · hash {entry.hash}</p>
-        <p className="mt-2 text-sm">Plan approved by the counsellor {day(b.counsellor.approvedPlanAt) || "earlier"}; completion confirmed {day(b.counsellor.confirmedAt)}. <Link href="/trust" className="underline decoration-control underline-offset-2">Verify the whole log</Link></p>
+        <p className="mt-2 text-sm">{b.counsellor.approvedPlanAt && <>Plan approved {signer(b.counsellor.approvedBy)}{day(b.counsellor.approvedPlanAt)}; </>}Completion confirmed {signer(b.counsellor.confirmedBy)}{day(b.counsellor.confirmedAt)}. <Link href="/trust" className="underline decoration-control underline-offset-2">Verify the whole log</Link></p>
       </Card>
     </div>
   );
@@ -72,14 +74,14 @@ export default async function BadgePage({ params }: { params: Promise<{ id: stri
 
 function BadgeArt({ title, date }: { title: string; date: string }) {
   return (
-    <svg viewBox="0 0 320 200" role="img" aria-label={`Runway pathway badge: ${title}, ${date}`} className="w-full rounded-2xl">
+    <svg viewBox="0 0 320 200" role="img" aria-label={`Jobbery pathway badge: ${title}, ${date}`} className="w-full rounded-2xl">
       <rect width="320" height="200" rx="20" fill="var(--accent)" />
       <rect x="20" y="132" width="280" height="10" rx="5" fill="var(--surface)" opacity="0.35" />
       <rect x="20" y="132" width="280" height="10" rx="5" fill="var(--surface)" opacity="0.9" />
       <text x="24" y="44" fill="var(--surface)" fontSize="14" fontWeight="600" letterSpacing="2">RUNWAY · PATHWAY COMPLETED</text>
       <text x="24" y="88" fill="var(--surface)" fontSize={title.length > 22 ? 20 : 26} fontWeight="600">{title}</text>
       <text x="24" y="114" fill="var(--surface)" fontSize="13" opacity="0.9">AI at work · Interview-ready</text>
-      <text x="24" y="172" fill="var(--surface)" fontSize="12" opacity="0.9">Confirmed by a counsellor · {date}</text>
+      <text x="24" y="172" fill="var(--surface)" fontSize="12" opacity="0.9">Confirmed by an advisor · {date}</text>
     </svg>
   );
 }

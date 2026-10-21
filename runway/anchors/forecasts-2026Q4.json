@@ -1,0 +1,146 @@
+{
+  "what": "Runway crowd forecasts for questions not yet answered by real data (simulated forecasters, demo)",
+  "method": "Opening LMSR price of each answer after the 2026 Q2 release; forecasters weighted by the Hedge rule over the replayed releases",
+  "trackRecord": {
+    "questions": 66,
+    "from": "2021Q1",
+    "to": "2026Q1"
+  },
+  "futures": {
+    "slow": 0.4442,
+    "medium": 0.5018,
+    "fast": 0.054
+  },
+  "questions": [
+    {
+      "id": "dosm-2026Q3",
+      "text": "Will a smaller part of Malaysia's job ads be for office admin jobs in Jul to Sep 2026?",
+      "settles": "DOSM release of 2026-11-17",
+      "source": "https://www.dosm.gov.my/portal-main/release-content/big-data-analytics-job-market-insights-q22026",
+      "answers": [
+        {
+          "id": "dosm-2026Q3~0",
+          "label": "Drops by more than 0.5 (per 100 ads)",
+          "main": false,
+          "yes": 0.4099
+        },
+        {
+          "id": "dosm-2026Q3~1",
+          "label": "Drops at all",
+          "main": true,
+          "yes": 0.5745
+        },
+        {
+          "id": "dosm-2026Q3~2",
+          "label": "Does not rise by 0.5 or more (per 100 ads)",
+          "main": false,
+          "yes": 0.725
+        }
+      ]
+    },
+    {
+      "id": "hle-2026Q4",
+      "text": "Will AI's best test score for very hard expert exam questions go up by more than 8.6 points in Oct to Dec 2026?",
+      "settles": "Epoch AI results for Oct to Dec 2026, checked in Jan 2027 (best result by 31 Dec against the best by 30 Sep)",
+      "source": "https://epoch.ai/benchmarks",
+      "answers": [
+        {
+          "id": "hle-2026Q4~0",
+          "label": "Goes up by more than 4.3 points",
+          "main": false,
+          "yes": 0.6467
+        },
+        {
+          "id": "hle-2026Q4~1",
+          "label": "Goes up by more than 8.6 points",
+          "main": true,
+          "yes": 0.3526
+        },
+        {
+          "id": "hle-2026Q4~2",
+          "label": "Goes up by more than 13.0 points",
+          "main": false,
+          "yes": 0.1546
+        }
+      ]
+    },
+    {
+      "id": "metr-2026Q4",
+      "text": "Will the longest task AI can do on its own grow by more than 72% in Oct to Dec 2026?",
+      "settles": "Epoch AI results for Oct to Dec 2026, checked in Jan 2027 (best result by 31 Dec against the best by 30 Sep)",
+      "source": "https://epoch.ai/benchmarks",
+      "answers": [
+        {
+          "id": "metr-2026Q4~0",
+          "label": "Grows by more than 31%",
+          "main": false,
+          "yes": 0.7059
+        },
+        {
+          "id": "metr-2026Q4~1",
+          "label": "Grows by more than 72%",
+          "main": true,
+          "yes": 0.4964
+        },
+        {
+          "id": "metr-2026Q4~2",
+          "label": "Grows by more than 125%",
+          "main": false,
+          "yes": 0.305
+        }
+      ]
+    },
+    {
+      "id": "swe-2026Q4",
+      "text": "Will AI's best test score for fixing real software bugs go up by more than 3.0 points in Oct to Dec 2026?",
+      "settles": "Epoch AI results for Oct to Dec 2026, checked in Jan 2027 (best result by 31 Dec against the best by 30 Sep)",
+      "source": "https://epoch.ai/benchmarks",
+      "answers": [
+        {
+          "id": "swe-2026Q4~0",
+          "label": "Goes up by more than 1.5 points",
+          "main": false,
+          "yes": 0.5464
+        },
+        {
+          "id": "swe-2026Q4~1",
+          "label": "Goes up by more than 3.0 points",
+          "main": true,
+          "yes": 0.4911
+        },
+        {
+          "id": "swe-2026Q4~2",
+          "label": "Goes up by more than 4.5 points",
+          "main": false,
+          "yes": 0.4626
+        }
+      ]
+    },
+    {
+      "id": "tbench-2026Q4",
+      "text": "Will AI's best test score for doing tasks on a computer go up by more than 14.7 points in Oct to Dec 2026?",
+      "settles": "Epoch AI results for Oct to Dec 2026, checked in Jan 2027 (best result by 31 Dec against the best by 30 Sep)",
+      "source": "https://epoch.ai/benchmarks",
+      "answers": [
+        {
+          "id": "tbench-2026Q4~0",
+          "label": "Goes up by more than 7.3 points",
+          "main": false,
+          "yes": 0.5057
+        },
+        {
+          "id": "tbench-2026Q4~1",
+          "label": "Goes up by more than 14.7 points",
+          "main": true,
+          "yes": 0.2876
+        },
+        {
+          "id": "tbench-2026Q4~2",
+          "label": "Goes up by more than 22.0 points",
+          "main": false,
+          "yes": 0.1704
+        }
+      ]
+    }
+  ]
+}

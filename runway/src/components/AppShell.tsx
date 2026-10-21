@@ -43,7 +43,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <main id="main" className="app-page-main">{children}</main>
           <footer className="app-page-footer">
             <ReleaseNotice />
-            <p>Estimates, not certainties. You decide; a counsellor reviews. The guessing game uses points, never money, and the other players are computer-made.</p>
+            <p>Estimates, not certainties. You decide; an advisor is there if you want one. The guessing game uses points, never money, and the other players are computer-made.</p>
             <p>SDC Hackathon 2026, Domain 1. Apache-2.0. · <Link href="/trends">Job market trends</Link> · <Link href="/trust">How we keep this honest</Link></p>
           </footer>
         </>

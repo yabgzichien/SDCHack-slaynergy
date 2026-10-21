@@ -106,13 +106,15 @@ export function updateWeights(w: Weights, runs: MarketRun[], guests: Guest[] = [
     for (const r of runs) loss += brier(r.beliefs[f.id], r.q.outcome!);
     raw[f.id] = (w[f.id] ?? 1) * Math.exp(-ETA * loss);
   }
-  // The crowd's average sets the scale; guests (you) are scored by the same rule but do not move the scale.
-  const avg = FORECASTERS.reduce((a, f) => a + raw[f.id], 0) / FORECASTERS.length;
+  // One scale for everyone, chosen so the capped influences average exactly 1. Clamping and then rescaling would push
+  // the top forecasters back over the cap. Guests (you) are scored by the same rule and scale but do not set it.
+  const meanAt = (s: number) => FORECASTERS.reduce((a, f) => a + clamp(raw[f.id] * s, INFLUENCE_MIN, INFLUENCE_MAX), 0) / FORECASTERS.length;
+  let lo = 0, hi = 1 / Math.max(1e-300, Math.min(...FORECASTERS.map((f) => raw[f.id])));
+  for (let i = 0; i < 100; i++) { const mid = (lo + hi) / 2; if (meanAt(mid) < 1) lo = mid; else hi = mid; }
+  const s = (lo + hi) / 2;
   const next: Weights = {};
-  for (const f of FORECASTERS) next[f.id] = clamp(raw[f.id] / avg, INFLUENCE_MIN, INFLUENCE_MAX);
-  const avg2 = FORECASTERS.reduce((a, f) => a + next[f.id], 0) / FORECASTERS.length;
-  for (const f of FORECASTERS) next[f.id] /= avg2;
-  for (const g of guests) next[g.id] = clamp((g.prev * Math.exp(-ETA * g.loss)) / avg, INFLUENCE_MIN, INFLUENCE_MAX) / avg2;
+  for (const f of FORECASTERS) next[f.id] = clamp(raw[f.id] * s, INFLUENCE_MIN, INFLUENCE_MAX);
+  for (const g of guests) next[g.id] = clamp(g.prev * Math.exp(-ETA * g.loss) * s, INFLUENCE_MIN, INFLUENCE_MAX);
   return next;
 }
 

@@ -1,5 +1,5 @@
 .onboarding-journey { position:relative; min-height:130px; }
-.journey-track { position:absolute; top:73px; left:7.14%; right:7.14%; height:3px; border-radius:99px; background:repeating-linear-gradient(to right,#bfd9bf 0 7px,transparent 7px 13px); }
+.journey-track { position:absolute; top:73px; left:6.25%; right:6.25%; height:3px; border-radius:99px; background:repeating-linear-gradient(to right,#bfd9bf 0 7px,transparent 7px 13px); }
 .journey-track-fill { display:block; height:100%; border-radius:99px; background:#6fa66a; transition:width 1.05s cubic-bezier(.36,.04,.26,1); }
 .journey-bird { position:absolute; z-index:3; top:-12px; width:90px; height:90px; transform:translateX(-50%); pointer-events:none; transition:left 1.05s cubic-bezier(.36,.04,.26,1); }
 .journey-bird-frame { position:absolute; inset:0; display:block; width:90px; height:90px; object-fit:contain; filter:drop-shadow(0 2px 1px #2c4c3426); }
@@ -8,7 +8,7 @@
 .journey-bird-shadow { position:absolute; left:53%; top:83px; width:30px; height:4px; border-radius:50%; background:#436f496b; filter:blur(2px); transform:translateX(-50%); }
 .journey-bird.is-walking .journey-bird-frame-a { animation:mascot-step-a .5s steps(1,end) infinite; }
 .journey-bird.is-walking .journey-bird-frame-b { animation:mascot-step-b .5s steps(1,end) infinite; }
-.journey-points { position:relative; z-index:2; display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:0; padding-top:64px; }
+.journey-points { position:relative; z-index:2; display:grid; grid-template-columns:repeat(8,minmax(0,1fr)); gap:0; padding-top:64px; }
 .journey-points li { min-width:0; }
 .journey-checkpoint { display:flex; width:100%; min-height:62px; flex-direction:column; align-items:center; gap:7px; border-radius:12px; cursor:pointer; text-align:center; transition:background .2s ease,transform .2s ease; }
 .journey-checkpoint:hover:not(:disabled) { background:#e8f3e7; transform:translateY(-2px); }

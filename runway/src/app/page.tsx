@@ -6,9 +6,9 @@ import { useApp } from "@/components/AppProvider";
 import { LandingIntro } from "@/components/LandingIntro";
 import { STEPS, useJourney } from "@/components/Journey";
 import { RunwayStrip } from "@/components/RunwayStrip";
-import { Btn, Card, FUTURE_NAME, PageTitle, Skeleton, pct } from "@/components/ui";
+import { Btn, Card, PageTitle, Skeleton } from "@/components/ui";
 import { stateJobs } from "@/lib/engine/geo";
-import type { SectorId } from "@/lib/engine/data";
+import { roleById, type SectorId } from "@/lib/engine/data";
 
 export default function Home() {
   const { view, state } = useApp();
@@ -23,23 +23,20 @@ function Dashboard() {
   const plan = v.plan;
   const weeks = plan?.deadlineWeeks ?? Math.floor(p.months * 4.345 - 2);
   const fading = v.profileSkills.filter((s) => !s.expiry.durable && s.expiry.expectedYear < 2031).length;
-  const top = [...v.world.futures].sort((a, b) => b.weight - a.weight)[0];
   const next = plan?.steps.find((s) => !v.pathway.done[s.id]) ?? null;
   const done = plan ? plan.steps.filter((s) => v.pathway.done[s.id]).length : 0;
-  const a = st.approval;
   const role = v.chosen ?? v.lasting ?? v.matches[0];
   const mapFact = (() => {
     if (!role) return "Where the jobs are";
-    const r = [...stateJobs(role.sector as SectorId)].sort((x, y) => y.workers - x.workers);
+    const r = [...stateJobs(role.sector as SectorId, roleById[role.roleId]?.group)].sort((x, y) => y.workers - x.workers);
     return `Most jobs: ${r[0].short}`;
   })();
   const fact = [
     `${p.months} months, ${p.hoursPerWeek} hours a week`,
     fading ? `AI could take over ${fading} of ${v.profileSkills.length} skills by 2031` : "Your skills look safe until 2031",
-    `Most likely: ${FUTURE_NAME[top.id].toLowerCase()} AI, ${pct(top.weight)}`,
     v.lasting ? `Best: ${v.lasting.title}` : `${v.matches.length} jobs within reach`,
     mapFact,
-    plan ? `${done} of ${plan.steps.length} steps · ${a.status === "approved" ? "approved" : a.status === "submitted" ? "waiting for review" : "not sent yet"}` : "Choose a job first",
+    plan ? `${done} of ${plan.steps.length} steps done` : "Choose a job first",
   ];
   const nextStep = STEPS.findIndex((_, i) => status(i) !== "done");
   return (
@@ -48,7 +45,7 @@ function Dashboard() {
         {plan ? `Your plan for ${plan.title} takes ${plan.totalWeeks} of them.` : "Pick a job to plan for."}
       </PageTitle>
 
-      <ol className="grid gap-2 xl:grid-cols-6 xl:gap-3" aria-label="Your steps">
+      <ol className="grid gap-2 xl:grid-cols-5 xl:gap-3" aria-label="Your steps">
         {STEPS.map((s, i) => {
           const Icon = s.icon;
           const stt = status(i);

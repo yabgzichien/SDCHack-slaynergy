@@ -6,8 +6,8 @@ import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "rec
 import type { EventView, StrikeView } from "@/lib/engine/world";
 import { Chip } from "./ui";
 
-// Kalshi-style market cards: each question is one event with three answers (easier to harder), each with its own
-// chance, payout and colour. The colours are shared with the question page so a line means the same thing everywhere.
+// Market cards: each question is one event with three answers (easier to harder), each with its own
+// chance and colour. The colours are shared with the question page so a line means the same thing everywhere.
 export const STRIKE_COLORS = ["#3b82f6", "#a855f7", "#f59e0b"];
 
 const TOPIC: Record<string, { icon: LucideIcon; tag: string; tint: string }> = {
@@ -30,8 +30,6 @@ export function EventIcon({ eventId, size = 40 }: { eventId: string; size?: numb
 }
 
 const yesOf = (s: StrikeView) => (s.settled ? (s.settled.outcome ? 1 : 0) : s.price);
-// What 1 point on Yes returns if Yes is right, like Kalshi's "pays out 1.50x".
-export const paysOut = (p: number) => (p > 0.005 ? `${(1 / p).toFixed(2)}x` : "–");
 
 function OddsPill({ s }: { s: StrikeView }) {
   if (s.settled) return <Chip tone={s.settled.outcome ? "rise" : "fall"}>{s.settled.outcome ? "Yes" : "No"}</Chip>;
@@ -45,7 +43,6 @@ function OptionRow({ s, i, compact }: { s: StrikeView; i: number; compact?: bool
         <p className={`leading-snug ${compact ? "text-sm" : ""}`}>{s.label}</p>
         <div className="mt-1 h-0.5 rounded-full" style={{ width: `${Math.max(6, yesOf(s) * 100)}%`, background: STRIKE_COLORS[i] }} aria-hidden />
       </div>
-      {!s.settled && <p className="num w-14 text-right text-xs text-muted" title="What each point on Yes returns if Yes is right">{paysOut(s.price)}</p>}
       <OddsPill s={s} />
     </div>
   );
@@ -63,24 +60,25 @@ export function MarketCard({ e }: { e: EventView }) {
           <p className="text-xs text-muted">{topicOf(e.id).tag}{held ? " · you guessed here" : ""}</p>
         </div>
       </div>
-      <div className="mt-4 space-y-3">{e.strikes.map((s, i) => <OptionRow key={s.marketId} s={s} i={i} compact />)}</div>
+      <div className="mt-4 space-y-3"><OptionRow s={e.strikes[1]} i={1} compact /></div>
+      <p className="mt-2 text-xs text-muted">+{e.strikes.length - 1} harder and easier versions inside</p>
       {e.fact && <p className="num mt-3 text-xs text-muted">{e.fact}</p>}
-      <p className="num mt-auto pt-4 text-xs text-muted">{e.strikes.reduce((a, s) => a + s.trades, 0).toLocaleString()} guesses</p>
+      <p className="num mt-auto pt-4 text-xs text-muted">{e.strikes.reduce((a, s) => a + s.trades, 0).toLocaleString()} guesses, mostly computer-made</p>
     </Link>
   );
 }
 
-type Feed = { clockStart: number; nowT: number; strikes: { id: string; series: [number, number, number][] }[] };
+type Feed = { event: string; clockStart: number; nowT: number; strikes: { id: string; series: [number, number, number][] }[] };
 const clock = (ms: number) => new Date(ms).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 
 // The big card at the top: one question at a time, its answers on the left and all three chance lines on the right.
 export function FeaturedMarkets({ events }: { events: EventView[] }) {
   const [k, setK] = useState(0);
   const e = events[Math.min(k, events.length - 1)];
-  const [feed, setFeed] = useState<Feed | null>(null);
+  const [raw, setFeed] = useState<Feed | null>(null);
+  const feed = raw && e && raw.event === e.id ? raw : null; // ignore a chart that belongs to the previous question
   useEffect(() => {
     let on = true;
-    setFeed(null);
     const pull = () => fetch(`/api/market?event=${encodeURIComponent(e.id)}`, { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).then((d) => on && d && setFeed(d)).catch(() => {});
     pull();
     const id = window.setInterval(() => { if (document.visibilityState === "visible") pull(); }, 5000);
@@ -107,10 +105,10 @@ export function FeaturedMarkets({ events }: { events: EventView[] }) {
 
       <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
         <div>
-          <div className="mb-2 flex justify-between text-xs text-muted"><span>Answer</span><span className="flex gap-6"><span title="What each point on Yes returns if Yes is right">Pays out</span><span className="w-[4.5rem] text-center">Think Yes</span></span></div>
+          <div className="mb-2 flex justify-between text-xs text-muted"><span>Answer</span><span className="w-[4.5rem] text-center">Think Yes</span></div>
           <div className="space-y-4">{e.strikes.map((s, i) => <OptionRow key={s.marketId} s={s} i={i} />)}</div>
           <div className="mt-5 flex items-center justify-between">
-            <p className="num text-xs text-muted">{e.strikes.reduce((a, s) => a + s.trades, 0).toLocaleString()} guesses</p>
+            <p className="num text-xs text-muted">{e.strikes.reduce((a, s) => a + s.trades, 0).toLocaleString()} guesses, mostly computer-made</p>
             <Link href={`/market/${encodeURIComponent(e.id)}`} className="press inline-flex min-h-10 items-center gap-1 rounded-full bg-primary px-4 text-sm font-medium text-primaryink">Make a guess <ChevronRight size={16} aria-hidden /></Link>
           </div>
         </div>

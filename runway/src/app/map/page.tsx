@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { BriefcaseBusiness, Coins, MapPin, Plane, Users } from "lucide-react";
 import { useApp } from "@/components/AppProvider";
@@ -6,8 +7,8 @@ import { MalaysiaMap, MapLegend } from "@/components/MalaysiaMap";
 import { Btn, Card, Chip, More, NextRow, PageTitle, Skeleton, SourceChip } from "@/components/ui";
 import { colourFor, type Measure } from "@/lib/map-scale";
 import { mapFigures, metricOf, people, rm, times } from "@/lib/map-figures";
-import { STATES, compareMove, geo, kindOfWork, stateJobs } from "@/lib/engine/geo";
-import type { SectorId } from "@/lib/engine/data";
+import { STATES, compareMove, geo, kindOfWork, occupationOf, stateJobs } from "@/lib/engine/geo";
+import { SECTORS, roleById, type SectorId } from "@/lib/engine/data";
 
 const MEASURES: { id: Measure; label: string; icon: typeof Users }[] = [
   { id: "jobs", label: "Jobs", icon: Users },
@@ -20,13 +21,19 @@ export default function MapPage() {
   const { view, state, act, busy } = useApp();
   const [roleId, setRoleId] = useState<string | null>(null);
   const [measure, setMeasure] = useState<Measure>("jobs");
-  const [move, setMove] = useState(true);
+  const [move, setMove] = useState(state?.profile?.move !== "stay");
   const [picked, setPicked] = useState<string | null>(null);
 
   const matches = view?.matches ?? [];
-  const role = matches.find((m) => m.roleId === roleId) ?? view?.chosen ?? matches[0] ?? null;
+  const unreachable = view?.unreachable ?? [];
+  const role = matches.find((m) => m.roleId === roleId) ?? unreachable.find((m) => m.roleId === roleId) ?? view?.chosen ?? matches[0] ?? null;
+  const locked = unreachable.find((m) => m.roleId === role?.roleId) ?? null;
+  // every job, grouped by kind of work (the map is the same for jobs of one kind), reachable ones first
+  const groups = SECTORS.map((sec) => ({ ...sec, ok: matches.filter((m) => m.sector === sec.id), later: unreachable.filter((m) => m.sector === sec.id) }))
+    .filter((g) => g.ok.length + g.later.length > 0);
   const sector = (role?.sector ?? "finance") as SectorId;
-  const fig = useMemo(() => mapFigures(sector, measure), [sector, measure]);
+  const group = role ? roleById[role.roleId]?.group : undefined;
+  const fig = useMemo(() => mapFigures(sector, measure, group), [sector, measure, group]);
   const home = state?.profile?.state ?? null;
 
   if (!view || !state) return <Skeleton lines={6} />;
@@ -41,11 +48,11 @@ export default function MapPage() {
   const sel = picked ?? (showMove ? best.id : home!);
   const selRow = rows.find((r) => r.id === sel)!;
   const homeRow = home ? rows.find((r) => r.id === home)! : null;
-  const cmp = compareMove(sector, home, sel);
+  const cmp = compareMove(sector, home, sel, group);
   const job = role.title.toLowerCase();
 
   // other reachable jobs that are unusually common in the selected state
-  const alsoHere = matches.filter((m) => m.roleId !== role.roleId).map((m) => ({ m, lq: stateJobs(m.sector as SectorId).find((x) => x.id === sel)!.lq }))
+  const alsoHere = matches.filter((m) => m.roleId !== role.roleId).map((m) => ({ m, lq: stateJobs(m.sector as SectorId, roleById[m.roleId]?.group).find((x) => x.id === sel)!.lq }))
     .filter((x) => x.lq >= 1.15).sort((a, b) => b.lq - a.lq || b.m.score - a.m.score).slice(0, 4);
 
   const title = !showMove && homeRow
@@ -63,8 +70,14 @@ export default function MapPage() {
           <label className="block text-sm">
             <span className="flex items-center gap-1.5 text-muted"><BriefcaseBusiness size={15} aria-hidden />Job</span>
             <select value={role.roleId} onChange={(e) => { setRoleId(e.target.value); setPicked(null); }} className="mt-1.5 min-h-12 w-full rounded-2xl border border-control bg-raised px-3">
-              {matches.slice(0, 15).map((m) => <option key={m.roleId} value={m.roleId}>{m.title}</option>)}
+              {groups.map((g) => (
+                <optgroup key={g.id} label={g.label}>
+                  {g.ok.map((m) => <option key={m.roleId} value={m.roleId}>{m.title}</option>)}
+                  {g.later.map((m) => <option key={m.roleId} value={m.roleId}>{m.title} (not in reach yet)</option>)}
+                </optgroup>
+              ))}
             </select>
+            <p className="mt-1 text-xs text-muted">{locked ? `Not in reach yet: ${locked.need.charAt(0).toLowerCase()}${locked.need.slice(1)}.` : group ? `Shows ${occupationOf(group).toLowerCase()} in ${kindOfWork(sector)}.` : `Shows people in ${kindOfWork(sector)}.`}</p>
           </label>
           <label className="block text-sm">
             <span className="flex items-center gap-1.5 text-muted"><MapPin size={15} aria-hidden />You live in</span>
@@ -120,7 +133,7 @@ export default function MapPage() {
                 <li>Pay {cmp.wageGap! >= 0 ? `${rm(cmp.wageGap!)} higher` : `${rm(-cmp.wageGap!)} lower`} a month</li>
                 <li>Unemployment {Math.abs(cmp.uGap!) < 0.05 ? "about the same" : cmp.uGap! < 0 ? `${(-cmp.uGap!).toFixed(1)} points lower` : `${cmp.uGap!.toFixed(1)} points higher`}</li>
               </ul>
-              <p className="mt-2 text-xs text-muted">Higher pay often comes with higher rent. Talk a move through with your counsellor; Jobbery does not advise on where to live.</p>
+              <p className="mt-2 text-xs text-muted">Higher pay often comes with higher rent. Talk a move through with an <Link href="/advisor" className="underline decoration-control underline-offset-2 hover:text-ink">advisor</Link>; Jobbery does not advise on where to live.</p>
             </div>
           ) : !home ? <p className="mt-4 text-sm text-muted">Choose your state above to compare it with others.</p> : null}
         </Card>
@@ -172,7 +185,7 @@ export default function MapPage() {
           </div>
         </More>
         <More summary="Where these figures come from">
-          <p>Malaysia publishes no open data on job ads by state and occupation. So &quot;jobs like this&quot; counts people working in the industries this job belongs to ({kindOfWork(sector)}), from DOSM&apos;s {geo.industryYear} figures by state, scaled to each state&apos;s employment in {STATES[0].lfs.quarter.replace("Q", " Q")}. It shows where the work is, not a count of open vacancies.</p>
+          <p>Malaysia publishes no state figures for single jobs. So &quot;jobs like this&quot; is an estimate: the people working in the industries this job belongs to ({kindOfWork(sector)}){group ? <>, times the share of each state&apos;s workers who are {occupationOf(group).toLowerCase()}</> : null}. Both come from DOSM&apos;s Labour Force Survey {geo.industryYear} tables by state, scaled to each state&apos;s employment in {STATES[0].lfs.quarter.replace("Q", " Q")}. It shows where the work is, not a count of open vacancies.</p>
           <p>Sabah, Sarawak and Labuan are drawn closer to the peninsula than they really are, so every state fits at a readable size. State boundaries: geoBoundaries (OpenStreetMap contributors, ODbL).</p>
           <div className="flex flex-col gap-1">{geo.sources.map((s) => <SourceChip key={s.id} name={s.name} date={`${s.latest}; ${s.licence}`} url={s.url} />)}</div>
         </More>

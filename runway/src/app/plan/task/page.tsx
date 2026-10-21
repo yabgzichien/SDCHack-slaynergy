@@ -8,7 +8,7 @@ const rm = (n: number) => `RM${n.toLocaleString("en-MY")}`;
 const area = "mt-1 w-full rounded-2xl border border-control bg-raised p-3 text-sm";
 
 // The short AI quiz after the AI courses: spot the mistakes in an AI answer about a task from your field.
-// Teaching comes from the existing courses; Runway only adds this check and an optional portfolio piece.
+// Teaching comes from the existing courses; Jobbery only adds this check and an optional portfolio piece.
 export default function AiQuizPage() {
   const { view, state, act, busy, error } = useApp();
   const [flagged, setFlagged] = useState<string[]>([]);
@@ -64,7 +64,7 @@ export default function AiQuizPage() {
         {(
           <>
             <div className="rounded-2xl border border-dashed border-control bg-raised p-4">
-              <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted">Sample AI answer, written by Runway for practice</p>
+              <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted">Sample AI answer, written by Jobbery for practice</p>
               <ol className="space-y-1.5">
                 {card.sampleAnswer.map((a) => {
                   const on = flagged.includes(a.id);

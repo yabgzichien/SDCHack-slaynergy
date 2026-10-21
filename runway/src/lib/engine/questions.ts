@@ -1,4 +1,4 @@
-import { series, prevQuarter, quarterLabel, quarterIndex, sourceById } from "./data";
+import { series, prevQuarter, quarterIndex, sourceById } from "./data";
 import { FUTURES, type FutureId } from "./futures-def";
 import { clamp, mean, median, normCdf, std } from "./math";
 
@@ -20,7 +20,9 @@ export type Question = {
 export const REPLAY_FROM_DOSM = "2021Q1";
 export const REPLAY_FROM_EPOCH = "2023Q1";
 export const LIVE_QUARTER = "2026Q2"; // the release the app holds back
-export const NEXT_QUARTER = "2026Q3";
+export const NEXT_QUARTER = "2026Q3"; // DOSM: Jul to Sep 2026, published 17 Nov 2026
+// Epoch AI: Jul to Sep 2026 has already ended (data retrieved 20 Oct 2026), so the open AI questions ask about Oct to Dec.
+export const NEXT_QUARTER_EPOCH = "2026Q4";
 export const LAST_BEFORE = "2026Q1"; // newest data visible in the "before" state
 
 const dosmShares = new Map(series.dosm.quarters.map((d) => [d.q, d.clerical_share]));
@@ -107,7 +109,7 @@ export function makeQuestions(): Question[] {
         : `Will AI's best test score for ${plainTask(id)} go up ${thLabel} in ${quarterPlain(q)}?`,
       threshold: th.d,
       source: { name: "Epoch AI benchmarking data", url: sourceById.epoch.url },
-      settles: phase === "next" ? "Epoch AI data after the quarter closes" : `Epoch AI results for ${quarterPlain(q)}`,
+      settles: phase === "next" ? `Epoch AI results for ${quarterPlain(q)}, checked in Jan 2027 (best result by 31 Dec against the best by 30 Sep)` : `Epoch AI results for ${quarterPlain(q)}`,
       reason: `In the last three quarters ${isDoubling(id) ? "the longest task grew by" : "the best score went up by"} ${last3} (Epoch AI).`,
       phase,
       outcome: known ? f!.v - pf!.v > th.d + 1e-9 : undefined,
@@ -126,7 +128,7 @@ export function makeQuestions(): Question[] {
     }
     if (series.epoch[id].replayOnly) continue;
     addEpoch(id, LIVE_QUARTER, "live");
-    addEpoch(id, NEXT_QUARTER, "next");
+    addEpoch(id, NEXT_QUARTER_EPOCH, "next");
   }
   return out.sort((a, b) => quarterIndex(a.quarter) - quarterIndex(b.quarter) || a.id.localeCompare(b.id));
 }
@@ -184,7 +186,7 @@ export function factFor(q: Question): string | null {
 }
 
 
-// ---------- the ladder: several strikes per event (like Kalshi's "Above 25.5% / 26.4% / 27.7%") ----------
+// ---------- the ladder: several strikes per event (easier, main and harder versions of one question) ----------
 export type Strike = Question & { eventId: string; strike: number; label: string; base: boolean };
 export const STRIKES = 3;
 

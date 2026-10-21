@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useApp } from "@/components/AppProvider";
 import { Score, whyFits } from "@/components/JobBits";
+import { areaName } from "@/lib/engine/geo";
 import { Bar, Btn, Card, Chip, Estimate, H, More, PageTitle, SdgTag, Skeleton, SourceChip } from "@/components/ui";
 
 // One question: why does this job score what it does, and what am I missing?
@@ -18,12 +19,13 @@ export default function JobDetailPage() {
       <div>
         <Link href="/jobs/all" className="mb-4 inline-block text-sm text-muted underline decoration-control underline-offset-2">All jobs</Link>
         <PageTitle title={blocked ? `${blocked.title} is a longer-term path.` : "This job is not on your list."}>
-          {blocked ? (blocked.reason === "qualification" ? `${blocked.need}. Ask your counsellor about part-time study, recognition of prior learning, or funding.` : `It needs ${blocked.need.replace("≈ ", "about ")} of training, more than the time you have.`) : "Go back to your jobs."}
+          {blocked ? (blocked.reason === "qualification" ? `${blocked.need}. Ask an advisor about part-time study, recognition of prior learning, or funding.` : `It needs ${blocked.need.replace("≈ ", "about ")} of training, more than the time you have.`) : "Go back to your jobs."}
         </PageTitle>
       </div>
     );
   }
   const chosen = view.chosen?.roleId === m.roleId;
+  const where = state.profile?.state && state.profile.move && state.profile.move !== "anywhere" ? areaName(state.profile.state, state.profile.move, state.profile.moveTo) : null;
   const choose = async () => { if (await act("chooseRole", { roleId: m.roleId })) router.push("/plan"); };
   return (
     <div>
@@ -45,6 +47,7 @@ export default function JobDetailPage() {
             ))}
           </ul>
           {m.penalty > 0.001 && <p className="num mt-3 text-sm">Minus {Math.round(m.penalty * 100)} because AI may take over some of its skills soon.</p>}
+          {m.localPenalty > 0.001 && where && <p className="num mt-1 text-sm">Minus {Math.round(m.localPenalty * 100)} because jobs like this are {Math.round((1 - (m.localLq ?? 1)) * 100)}% less common in {where} than across Malaysia (an estimate from DOSM state figures). <Link href="/map" className="underline decoration-control underline-offset-2">See the job map</Link></p>}
           {m.sdgMatch && <p className="num mt-1 text-sm">Plus 12 because it serves a goal you picked.</p>}
           <p className="mt-3 text-sm">Job ads for work like this are {Math.abs(m.demand.trend) < 0.03 ? "steady" : m.demand.trend > 0 ? `up ${Math.abs(m.demand.trend * 100).toFixed(0)}%` : `down ${Math.abs(m.demand.trend * 100).toFixed(0)}%`} compared with earlier in the year.</p>
           <More>
@@ -65,7 +68,7 @@ export default function JobDetailPage() {
               </li>
             ))}
           </ul>
-          <div className="mt-4 flex flex-wrap gap-1.5"><SdgTag target={m.sdgTarget} why={m.sdgWhy} /><Chip>About {m.weeks} weeks to get ready</Chip>{m.atRisk && <Chip tone="fall">AI may take over some skills soon</Chip>}</div>
+          <div className="mt-4 flex flex-wrap gap-1.5"><SdgTag target={m.sdgTarget} why={m.sdgWhy} /><Chip>About {m.weeks} weeks to get ready</Chip>{m.atRisk && <Chip tone="fall">AI may take over some skills soon</Chip>}{m.fewNearby && <Chip tone="fall">Few jobs like this near you</Chip>}</div>
           <p className="mt-2 text-sm">{m.sdgWhy}</p>
           {m.tradeoff && <p className="mt-2 text-sm text-muted">{m.tradeoff}</p>}
         </Card>

@@ -14,7 +14,8 @@ const secret = () => {
   }
   return g.__runwaySecret;
 };
-const sign = (id: string) => crypto.createHmac("sha256", secret()).update(id).digest("hex").slice(0, 24);
+export const hmac = (s: string) => crypto.createHmac("sha256", secret()).update(s).digest("hex");
+const sign = (id: string) => hmac(id).slice(0, 24);
 
 export async function getSessionId(create = true): Promise<string | null> {
   const jar = await cookies();

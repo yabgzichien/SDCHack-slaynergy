@@ -8,9 +8,16 @@ export type Profile = {
   name: string;
   // Optional. Shown to the counsellor only; never an input to matching (see pickInputs and the fairness test).
   age?: number | null;
-  // Optional home state (ISO 3166-2:MY code, e.g. "MY-02"). Used only by the job map; never an input to matching.
+  // Optional home state (ISO 3166-2:MY code, e.g. "MY-02"). With move, it tells matching where they can work.
   state?: string | null;
-  occupationId: string;
+  // Where they would work: their state only, nearby states (their region) or anywhere. Older sessions lack it (anywhere).
+  move?: "stay" | "region" | "pick" | "anywhere" | null;
+  // With move "pick": the other states they would move to.
+  moveTo?: string[];
+  // Working (or between jobs), or studying for a diploma or higher. Older sessions lack it (working).
+  // Students may have no job yet (occupationId ""), and months counts to graduation instead of to a job deadline.
+  status?: "working" | "studying";
+  occupationId: string; // "" for a student with no job or internship yet
   education: Education;
   // What they studied (diploma and above). Only checks entry to field-locked degree jobs. Older sessions lack it.
   study?: StudyField | null;
@@ -22,13 +29,7 @@ export type Profile = {
   budget: "free" | "low" | "flexible";
   synthetic: boolean;
 };
-export type Approval = {
-  status: "draft" | "submitted" | "approved";
-  submittedAt?: string;
-  approvedAt?: string;
-  note?: string;
-  planRoleId?: string;
-};
+export type Signer = { id: string; name: string };
 // The worker's own pathway work: the AI quiz, the optional portfolio piece and the resume step. Kept in the session only.
 export type PathwayWork = {
   prompt?: string;
@@ -46,6 +47,7 @@ export type Completion = {
   confirmedAt?: string;
   note?: string;
   badgeId?: string;
+  by?: Signer;
 };
 export type Clock = { t0: string; t1?: string };
 export type SessionState = {
@@ -58,16 +60,17 @@ export type SessionState = {
   override: Weights3 | null;
   // A role id, or STAY_ID for staying in (or bridging from) the current job.
   chosenRoleId: string | null;
-  approval: Approval;
   progress: Record<string, boolean>;
   resume: ResumeSummary | null;
   pathway: PathwayWork;
   completion: Completion;
+  // Courses the worker chose instead of the suggested one, by the gap skills a plan step covers ("a+b" -> course id).
+  courseSwaps?: Record<string, string>;
 };
 
 export const STAY_ID = "stay";
 export const initialState = (): SessionState => ({
   v: 1, profile: null, release: 0, orders: [], clock: null, goals: [], override: null, chosenRoleId: null,
-  approval: { status: "draft" }, progress: {}, resume: null,
+  progress: {}, resume: null,
   pathway: {}, completion: { status: "none" },
 });

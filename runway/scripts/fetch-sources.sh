@@ -21,7 +21,13 @@ done
 # State-level labour market (job map): OpenDOSM (CC BY 4.0), DOSM via data.gov.my (CC BY), geoBoundaries (ODbL 1.0)
 curl -fsSL https://storage.dosm.gov.my/labour/lfs_qtr_state.csv -o data/raw/opendosm/lfs_qtr_state.csv
 curl -fsSL https://storage.dosm.gov.my/labour/wages_state.csv -o data/raw/opendosm/wages_state.csv
-curl -fsSL "https://archive.data.gov.my/data/dataset/1fb468f2-0248-40bc-82d3-927497ade383/resource/24d35008-e7b0-4b73-869f-24a9d3cf543a/download/m-20210302115456_202303011017460_1982-2021-employed-persons-by-industry-and-state-dataset.csv" -o data/raw/opendosm/employed_industry_state_1982_2021.csv
 curl -fsSL https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/MYS/ADM1/geoBoundaries-MYS-ADM1_simplified.geojson -o data/raw/geo/mys_adm1_simplified.geojson
+
+# DOSM Labour Force Survey Report 2024 (annual, published 2025-06-30; the newest with state tables, as the 2025 file is a 16-page summary). Table B4.5 (PDF page 251): employed persons by state and occupation
+# (MASCO major group); Table B4.8 (PDF pages 256-258): employed persons by state and industry.
+# Only the PDF is published; pdftotext (poppler-utils) turns those pages into text for scripts/extract-state-occupation.mjs.
+curl -fsSL https://storage.dosm.gov.my/labour/lfs_annual_2024.pdf -o data/raw/dosm/lfs_annual_2024.pdf
+for p in 251 256 257 258; do pdftotext -layout -f $p -l $p data/raw/dosm/lfs_annual_2024.pdf data/raw/dosm/lfs_annual_2024_p$p.txt; done
+node scripts/extract-state-occupation.mjs
 
 echo "Done. Now run: npm run data:build"

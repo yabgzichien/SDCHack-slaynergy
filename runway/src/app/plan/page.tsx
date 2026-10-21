@@ -3,7 +3,8 @@ import Link from "next/link";
 import { useApp } from "@/components/AppProvider";
 import { RunwayStrip } from "@/components/RunwayStrip";
 import { Btn, Card, Chip, H, More, PageTitle, SdgTag, Skeleton, SourceChip } from "@/components/ui";
-import { activityHref, BadgePanel, Portfolio } from "@/components/Pathway";
+import { activityHref, BadgePanel, BadgeShelf, Portfolio } from "@/components/Pathway";
+import { AdvisorCard } from "@/components/Meetings";
 import type { PlanStep } from "@/lib/engine/plan";
 
 const STRAND: Record<PlanStep["strand"], string> = { job: "Job skills", ai: "AI at work", people: "People skills" };
@@ -18,12 +19,11 @@ export default function PlanPage() {
   const prog = view.pathway.done;
   const next = plan.steps.find((s) => !prog[s.id]) ?? null;
   const done = plan.steps.filter((s) => prog[s.id]).length;
-  const a = state.approval;
 
   return (
     <div>
       <PageTitle title={next ? `Next: ${next.title}` : "Every step is done. Well done."}>
-        {next ? `${next.weekStart === next.weekEnd ? `Week ${next.weekStart}` : `Weeks ${next.weekStart}–${next.weekEnd}`} of your plan for ${plan.title}, about ${Math.round(next.hours)} hours.` : `You finished the plan for ${plan.title}. Tell your counsellor.`}
+        {next ? `${next.weekStart === next.weekEnd ? `Week ${next.weekStart}` : `Weeks ${next.weekStart}–${next.weekEnd}`} of your plan for ${plan.title}, about ${Math.round(next.hours)} hours.` : `You finished the plan for ${plan.title}. Ask an advisor to confirm it.`}
       </PageTitle>
 
       {plan.kind === "bridge" && plan.stayIn && <p className="-mt-2 mb-4 text-sm text-muted">You keep working as {plan.stayIn.toLowerCase()} for income while you train. <Link href="/jobs" className="underline decoration-control underline-offset-2 hover:text-ink">Change</Link></p>}
@@ -54,6 +54,7 @@ export default function PlanPage() {
               <>
                 <Btn onClick={() => act("progress", { stepId: next.id, done: true })} disabled={busy} className="min-h-12 px-6 text-base">Mark as done</Btn>
                 {next.url && <Btn href={next.url} variant="ghost" className="min-h-12">Open the course</Btn>}
+                {next.skillKey && !!next.alternatives && <Btn href={`/courses?skill=${next.skillKey.split("+")[0]}`} variant="quiet" className="min-h-12">Choose a different course</Btn>}
               </>
             )}
           </div>
@@ -81,24 +82,25 @@ export default function PlanPage() {
                   <input type="checkbox" className="h-5 w-5 shrink-0 accent-[var(--accent)]" checked={!!prog[s.id]} onChange={(e) => act("progress", { stepId: s.id, done: e.target.checked })} />
                   <span className="num w-24 shrink-0 text-sm text-muted">{s.weekStart === s.weekEnd ? `Week ${s.weekStart}` : `Weeks ${s.weekStart}–${s.weekEnd}`}</span>
                   <span className={`min-w-0 flex-1 text-sm ${prog[s.id] ? "line-through" : ""}`}>{s.title}</span>
+                  {s.swapped && <Chip tone="accent">Your choice</Chip>}
                   {s.shortLived && <Chip tone="fall">Short-lived skill</Chip>}
+                  {s.skillKey && !!s.alternatives && <Link href={`/courses?skill=${s.skillKey.split("+")[0]}`} className="text-xs text-muted underline decoration-control underline-offset-2 hover:text-ink">Other courses</Link>}
                   {s.strand !== "job" && <Chip tone={s.strand === "ai" ? "accent" : "neutral"}>{STRAND[s.strand]}</Chip>}
                 </label>
               )}
             </li>
           ))}
         </ol>
-        <p className="mt-3 text-sm text-muted">{plan.note}</p>
+        <p className="mt-3 text-sm text-muted">{plan.note} Every course comes from the <Link href="/courses" className="underline decoration-control underline-offset-2 hover:text-ink">course list</Link>, where you can swap one for another that teaches the same skills.</p>
       </Card>
+
+      <BadgeShelf />
 
       <Portfolio />
 
       <div className="mt-4 grid gap-4 lg:grid-cols-12">
-        <Card className="lg:col-span-7" tone={a.status === "approved" ? "rise" : undefined}>
-          <H>Counsellor review</H>
-          {a.status === "draft" && (<><p className="text-sm">Send the plan to a counsellor, such as an employment officer. They review it, add a note and approve it.</p><p className="mt-1 text-xs text-muted">No partnership with any agency is implied.</p><div className="mt-3"><Btn onClick={() => act("submit")} disabled={busy}>Send to my counsellor</Btn></div></>)}
-          {a.status === "submitted" && (<><p className="text-sm">Waiting for your counsellor. For the demo, open the counsellor view and review it as them.</p><div className="mt-3"><Btn href="/counsellor" variant="ghost">Open the counsellor view</Btn></div></>)}
-          {a.status === "approved" && (<><p className="text-sm font-medium">Approved by your counsellor.</p>{a.note && <p className="mt-2 rounded-2xl bg-raised p-3 text-sm">&ldquo;{a.note}&rdquo;</p>}</>)}
+        <Card className="lg:col-span-7">
+          <AdvisorCard />
           <BadgePanel />
         </Card>
         <Card className="lg:col-span-5" tone="accent">
