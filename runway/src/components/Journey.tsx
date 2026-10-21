@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore, type CSSProperties } from "react";
 import { BriefcaseBusiness, Check, ListChecks, MapPin, Sparkles, UserRound, type LucideIcon } from "lucide-react";
 import { useApp } from "./AppProvider";
 
@@ -14,6 +14,7 @@ export const STEPS: Step[] = [
   { href: "/map", label: "Job map", short: "Map", icon: MapPin, match: ["/map"], needsProfile: true },
   { href: "/plan", label: "Your plan", short: "Plan", icon: ListChecks, match: ["/plan"], needsProfile: true },
 ];
+const RESULT_STEPS = STEPS.slice(1);
 
 const at = (path: string, s: Step) => s.match.some((m) => path === m || path.startsWith(`${m}/`));
 export const currentStep = (path: string) => STEPS.findIndex((s) => at(path, s));
@@ -92,27 +93,36 @@ export function StepRail({ onPick }: { onPick?: () => void }) {
   );
 }
 
-// Phone: the five steps as a horizontal track under the top bar, on the pages of the main path.
+// Shared journey navigation for every app page.
 export function StepBar() {
-  const { cur, status, isDone } = useJourney();
-  if (cur < 0) return null;
+  const { cur, status } = useJourney();
+  const resultIndex = cur - 1;
+  const progressStyle = { "--result-index": Math.max(0, resultIndex) } as CSSProperties;
   return (
-    <nav className="border-b border-line bg-bg px-4 pb-2.5 pt-2 lg:hidden" aria-label="Your steps">
-      <ol className="relative flex items-center justify-between">
-        <span className="absolute left-4 right-4 top-1/2 h-px -translate-y-1/2 bg-line" aria-hidden />
-        {STEPS.map((s, i) => {
+    <nav className="app-journey" aria-label="Your steps">
+      <div className="app-journey-inner">
+        <div className="app-journey-steps" style={progressStyle}>
+          <div className="app-journey-track" aria-hidden="true"><span className="app-journey-fill" /></div>
+          {resultIndex >= 0 && <span className="app-journey-bird" aria-hidden="true"><span key={cur} className="app-journey-bird-face" /></span>}
+          <ol>
+        {RESULT_STEPS.map((s, index) => {
+          const i = index + 1;
           const st = status(i);
-          const dot = <Dot i={i} st={st} done={isDone(i)} size={26} />;
+          const dot = <Dot i={index} st={st} size={28} />;
+          const content = <>{dot}<span className="app-journey-label"><span className="app-journey-label-full">{s.label}</span><span className="app-journey-label-short">{s.short}</span></span></>;
           return (
-            <li key={s.href} className="relative">
-              {st === "locked" ? <span className="flex h-11 w-11 items-center justify-center opacity-60">{dot}</span> : (
-                <Link href={s.href} aria-current={st === "current" ? "step" : undefined} aria-label={`Step ${i + 1}: ${s.label}, ${stateWord[st]}`} className="press flex h-11 w-11 items-center justify-center">{dot}</Link>
+            <li key={s.href}>
+              {st === "locked" ? <span className="app-journey-item is-locked" aria-label={`Step ${index + 1}: ${s.label}, ${stateWord[st]}`}>{content}</span> : (
+                <Link href={s.href} aria-current={st === "current" ? "step" : undefined} aria-label={`Step ${index + 1}: ${s.label}, ${stateWord[st]}`} className={`app-journey-item press${st === "current" ? " is-current" : ""}${st === "done" ? " is-done" : ""}`}>{content}</Link>
               )}
             </li>
           );
         })}
-      </ol>
-      <p className="text-center text-xs text-muted">Step {cur + 1} of {STEPS.length}: <span className="text-ink">{STEPS[cur].label}</span></p>
+          </ol>
+        </div>
+        <Link href="/start" className="app-journey-edit">Back to edit my details</Link>
+      </div>
+      {resultIndex >= 0 && <p className="app-journey-current">Results section {resultIndex + 1} of {RESULT_STEPS.length}: {STEPS[cur].label}</p>}
     </nav>
   );
 }

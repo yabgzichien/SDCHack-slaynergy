@@ -31,6 +31,12 @@ secrets/
 !runway/public/cockatiel-cursor-art.png
 !runway/public/cockatiel-ai-icon.png
 !runway/public/cockatiel-welcome.png
+!runway/public/cockatiel-sdg-blocks.png
+!runway/public/sdg-block-stack.png
+!runway/public/cockatiel-landing.png
+!runway/public/landing-sdg-stack.png
+!runway/public/landing-cockatiel-flight.png
+!runway/public/landing-nature-skyline.png
 !runway/public/cockatiel-thinking.png
 !runway/public/cockatiel-running.png
 !runway/public/cockatiel-cursor-moderate.png
@@ -42,6 +48,9 @@ secrets/
 *.jpeg
 *.gif
 *.webp
+!runway/public/cockatiel-progress-expressions.webp
+!runway/public/landing-cockatiel.webp
+!runway/public/landing-sdg-blocks.webp
 *.avif
 *.bmp
 *.svg

@@ -98,7 +98,7 @@ function Wizard({ cat }: { cat: Catalog }) {
   const next = () => { if (canGo[step]) go(i + 1); };
   const finish = async () => {
     const r = await act("setProfile", { profile: { name: d.name.trim() || "You", age: d.age ? Number(d.age) : null, state: d.state || null, occupationId: d.occupationId, education: d.education, study, years: d.years, skills: d.skills, interests: d.interests, months: d.months, hoursPerWeek: d.hours, budget: "free", synthetic: !!d.resume?.sample || (answered && !!state?.profile?.synthetic) } });
-    if (r) { try { sessionStorage.removeItem(KEY); } catch { /* ignore */ } router.push("/skills"); }
+    if (r) { try { sessionStorage.removeItem(KEY); sessionStorage.setItem("jobbery-results-arrival", "1"); } catch { /* ignore */ } router.push("/skills"); }
   };
 
   // Enter continues from anywhere on the question, not only from inside a text field.
@@ -153,7 +153,7 @@ function Wizard({ cat }: { cat: Catalog }) {
           </Q>
         )}
         {step === "education" && (
-          <Q title="What is your highest qualification?" help="Some jobs need a diploma or a degree. We only use this to check entry requirements.">
+          <Q title="What is your highest qualification?">
             <Options value={d.education} onPick={(v) => set({ education: v, touched: { ...d.touched, education: true } })} cols={2}
               options={cat.education.map((e) => ({ id: e.id, label: e.label, sub: EDU_SUB[e.id], icon: EDU_ICON[e.id] }))} />
             {hasField && (
@@ -178,7 +178,7 @@ function Wizard({ cat }: { cat: Catalog }) {
               <Options value={String(d.months)} onPick={(v) => set({ months: Number(v) })} cols={3}
                 options={[1, 2, 3, 4, 5, 6].map((m) => ({ id: String(m), label: `${m} ${m === 1 ? "month" : "months"}` }))} />
             </Group>
-            <Group icon={Clock} label="Hours a week you can study" note="A plan you can keep beats a plan that looks fast.">
+            <Group icon={Clock} label="Hours per week you’d like to spend learning a new skill" note="A plan you can keep beats a plan that looks fast.">
               <Options value={String(d.hours)} onPick={(v) => set({ hours: Number(v) })} cols={3}
                 options={[5, 8, 10, 15, 20, 30].map((h) => ({ id: String(h), label: `${h} hours` }))} />
             </Group>
