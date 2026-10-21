@@ -31,7 +31,7 @@ export default function TrendsPage() {
             </LineChart>
           </ResponsiveContainer>
         </div>
-        <p className="mt-2 text-sm text-muted">Line going down = fewer of the job ads are for office admin. Note: from 2025 Q3 the government changed how it counts job ads, so the jump there is partly because of that, not only real change.</p>
+        <p className="mt-2 text-sm text-muted">Line going down means fewer job ads are for office admin. DOSM changed what this series covers from 2025 Q3, so Jobbery compares demand only with quarters since then.</p>
         <div className="mt-1"><SourceChip name="DOSM Job Market Insights" date={w.release ? "2026 Q2 release, 18 Aug 2026" : "to 2026 Q1"} url={r.sources.find((s) => s.name.startsWith("DOSM"))?.url} /></div>
       </Card>
 

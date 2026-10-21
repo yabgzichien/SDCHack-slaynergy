@@ -14,7 +14,7 @@ export default function PlanPage() {
   const { view, state, act, busy } = useApp();
   if (!view || !state) return <Skeleton lines={6} />;
   const plan = view.plan;
-  if (!state.profile || !plan) return <div><PageTitle title="Your plan">Choose a job first, and Runway lays out the weeks.</PageTitle><Btn href={state.profile ? "/jobs" : "/start"}>{state.profile ? "Choose a job" : "Get started"}</Btn></div>;
+  if (!state.profile || !plan) return <div><PageTitle title="Your plan">Choose a job first, and Jobbery lays out the weeks.</PageTitle><Btn href={state.profile ? "/jobs" : "/start"}>{state.profile ? "Choose a job" : "Get started"}</Btn></div>;
   const prog = view.pathway.done;
   const next = plan.steps.find((s) => !prog[s.id]) ?? null;
   const done = plan.steps.filter((s) => prog[s.id]).length;
@@ -32,7 +32,7 @@ export default function PlanPage() {
         <Card tone="raised">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0 max-w-2xl">
-              <p className="text-sm text-muted">{STRAND[next.strand]} · {next.provider ? `${next.provider} · ${next.cost}` : next.kind === "apply" ? "Applications" : next.kind === "adapt" ? "At work" : next.activity ? "In Runway" : "Practice"}</p>
+              <p className="text-sm text-muted">{STRAND[next.strand]} · {next.provider ? `${next.provider} · ${next.cost}` : next.kind === "apply" ? "Applications" : next.kind === "adapt" ? "At work" : next.activity ? "In Jobbery" : "Practice"}</p>
               <h2 className="mt-1 text-xl font-medium">{next.url ? <a href={next.url} target="_blank" rel="noreferrer" className="underline decoration-control underline-offset-4 hover:decoration-ink">{next.title}</a> : next.title}</h2>
               {next.skills.length > 0 && <p className="mt-2 text-sm">Builds {next.skills.map((k) => k.name.toLowerCase()).join(", ")}.</p>}
               {next.shortLivedNote && <p className="mt-2 text-sm text-fall">{next.shortLivedNote}</p>}
@@ -58,7 +58,7 @@ export default function PlanPage() {
             )}
           </div>
           {next.activity === "resume" && !view.resume && <p className="mt-3 text-xs text-muted">Scan your resume first. Add the courses you finish and your portfolio piece as you go.</p>}
-          {next.activity && next.activity !== "resume" && <p className="mt-3 text-xs text-muted">This step is done when you save the work in Runway, not by ticking a box.</p>}
+          {next.activity && next.activity !== "resume" && <p className="mt-3 text-xs text-muted">This step is done when you save the work in Jobbery.</p>}
           {next.checked && <p className="mt-3 text-xs text-muted">Link checked {next.checked}. Hours are estimates.</p>}
         </Card>
       )}

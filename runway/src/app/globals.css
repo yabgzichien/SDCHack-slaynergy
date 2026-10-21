@@ -1,54 +1,51 @@
 @import "tailwindcss";
 
-/* Runway · app style "Editorial greeting" (tasteskill, seed 1863696052).
-   One ground (white), tonal panels one step off it, ink for text and the primary action,
-   one deep teal for the main data element. No shadows at rest, no gradients, no glass. */
+/* Jobbery · professional career guidance, with a quiet editorial finish. */
 :root {
-  --bg: #ffffff;          /* the page ground and the sidebar */
-  --surface: #f6f6f3;     /* tonal panels: one step off white */
-  --surface-2: #ecece8;   /* tracks, wells and hover rows inside a panel */
-  --raised: #ffffff;      /* the one white inner card on a screen */
-  --ink: #1f201d;
-  --muted: #5e5e5b;       /* 6.2:1 on white */
-  --line: #e4e4e0;
-  --control: #d3d3ce;
-  --accent: #1b6e66;      /* the one data hue */
-  --accent-soft: #e2eeec;
-  --accent-ink: #ffffff;
-  --primary: #1f201d;     /* the primary button is near-black */
-  --primary-ink: #ffffff;
-  /* the three futures: grey, the data hue, ink (no rainbow) */
-  --slow: #8c8c88;
-  --medium: #1b6e66;
-  --fast: #1f201d;
-  --rise: #2e7d32;
-  --rise-soft: #dcfae5;
-  --fall: #92400e;        /* a skill fading: a warning, not an alarm */
-  --fall-soft: #fff6e0;
-  --negative: #b42318;    /* only for a failing fact */
-  --demo: #3d3d3a;        /* "simulated" labels are neutral */
-  --demo-soft: #ecece8;
-  --focus: #1b6e66;
+  --bg: #fffdf8;
+  --surface: #f1faee;
+  --surface-2: #c7e9c0;
+  --raised: #ffffff;
+  --ink: #203b2b;
+  --muted: #547451;
+  --line: #d5e7d2;
+  --control: #c7e9c0;
+  --accent: #6fa66a;
+  --accent-soft: #c7e9c0;
+  --accent-ink: #1f421f;
+  --primary: #f8c982;
+  --primary-ink: #203b2b;
+  --slow: #c7e9c0;
+  --medium: #9bcb95;
+  --fast: #6fa66a;
+  --rise: #6fa66a;
+  --rise-soft: #f1faee;
+  --fall: #bd7b2b;
+  --fall-soft: #fff0d8;
+  --negative: #a8583e;
+  --demo: #547451;
+  --demo-soft: #f1faee;
+  --focus: #6fa66a;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #111211; --surface: #1b1c1a; --surface-2: #262724; --raised: #222320;
-    --ink: #f2f2ee; --muted: #a9a9a3; --line: #2c2d2a; --control: #4a4b46;
-    --accent: #5cc0b3; --accent-soft: #1c3431; --accent-ink: #0b1d1b;
-    --primary: #f2f2ee; --primary-ink: #111211;
-    --slow: #8c8c88; --medium: #5cc0b3; --fast: #f2f2ee;
-    --rise: #6cc58d; --rise-soft: #18301f; --fall: #e5a93b; --fall-soft: #2b2414; --negative: #ef6b5e;
-    --demo: #d6d6d0; --demo-soft: #262724; --focus: #5cc0b3;
+    --bg: #274a2a; --surface: #355c35; --surface-2: #486f45; --raised: #355c35;
+    --ink: #fff0d8; --muted: #c7e9c0; --line: #6fa66a; --control: #547451;
+    --accent: #9bcb95; --accent-soft: #486f45; --accent-ink: #1f421f;
+    --primary: #9bcb95; --primary-ink: #1f421f;
+    --slow: #c7e9c0; --medium: #9bcb95; --fast: #fff0d8;
+    --rise: #9bcb95; --rise-soft: #355c35; --fall: #f8c982; --fall-soft: #4f4128; --negative: #f8c982;
+    --demo: #c7e9c0; --demo-soft: #486f45; --focus: #f8c982;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #111211; --surface: #1b1c1a; --surface-2: #262724; --raised: #222320;
-  --ink: #f2f2ee; --muted: #a9a9a3; --line: #2c2d2a; --control: #4a4b46;
-  --accent: #5cc0b3; --accent-soft: #1c3431; --accent-ink: #0b1d1b;
-  --primary: #f2f2ee; --primary-ink: #111211;
-  --slow: #8c8c88; --medium: #5cc0b3; --fast: #f2f2ee;
-  --rise: #6cc58d; --rise-soft: #18301f; --fall: #e5a93b; --fall-soft: #2b2414; --negative: #ef6b5e;
-  --demo: #d6d6d0; --demo-soft: #262724; --focus: #5cc0b3;
+  --bg: #274a2a; --surface: #355c35; --surface-2: #486f45; --raised: #355c35;
+  --ink: #fff0d8; --muted: #c7e9c0; --line: #6fa66a; --control: #547451;
+  --accent: #9bcb95; --accent-soft: #486f45; --accent-ink: #1f421f;
+  --primary: #9bcb95; --primary-ink: #1f421f;
+  --slow: #c7e9c0; --medium: #9bcb95; --fast: #fff0d8;
+  --rise: #9bcb95; --rise-soft: #355c35; --fall: #f8c982; --fall-soft: #4f4128; --negative: #f8c982;
+  --demo: #c7e9c0; --demo-soft: #486f45; --focus: #f8c982;
 }
 
 @theme inline {
@@ -80,6 +77,8 @@
 }
 
 html { -webkit-text-size-adjust: 100%; }
+.site-cursor { position: fixed; z-index: 2147483647; top: 0; left: 0; width: 56px; height: 56px; pointer-events: none; visibility: hidden; will-change: transform; }
+body.has-site-cursor, body.has-site-cursor * { cursor: none !important; }
 body {
   background: var(--bg);
   color: var(--ink);
@@ -89,8 +88,19 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 h1, h2, h3 { letter-spacing: -0.01em; }
-/* The greeting: one serif line per screen that answers the screen's question. */
-.greeting { font-family: var(--font-serif); font-weight: 400; line-height: 1.05; letter-spacing: -0.02em; }
+/* The greeting: a restrained editorial headline that keeps information approachable. */
+.greeting { font-family: var(--font-serif); font-weight: 400; line-height: 0.98; letter-spacing: -0.035em; }
+.hero-illustration { position: relative; min-height: 310px; overflow: hidden; border-radius: 0 0 96px 0; background: #c7e9c0; }
+.hero-illustration::before { content: ""; position: absolute; width: 430px; height: 430px; right: -95px; bottom: -175px; border-radius: 50%; background: #9bcb95; }
+.hero-illustration::after { content: ""; position: absolute; width: 250px; height: 250px; right: 30px; top: 38px; border-radius: 50% 50% 0 50%; background: #f1faee; }
+.hero-sun { position: absolute; top: 25px; right: 44px; width: 58px; height: 58px; border-radius: 50%; background: #f8c982; z-index: 2; }
+.hero-stem { position: absolute; bottom: 0; left: 33%; z-index: 3; height: 195px; width: 2px; background: #6fa66a; }
+.hero-leaf { position: absolute; z-index: 3; width: 52px; height: 78px; background: #6fa66a; border-radius: 52px 4px 52px 4px; transform-origin: bottom left; }
+.hero-leaf-a { bottom: 112px; left: calc(33% - 50px); transform: rotate(-47deg); }
+.hero-leaf-b { bottom: 150px; left: calc(33% + 1px); transform: rotate(25deg); }
+.hero-building { position: absolute; right: 0; bottom: 0; z-index: 4; display: flex; align-items: end; gap: 4px; height: 120px; padding-right: 24px; }
+.hero-building span { display: block; width: 34px; background: #6fa66a; }
+.hero-building span:nth-child(1) { height: 48px; }.hero-building span:nth-child(2) { height: 76px; }.hero-building span:nth-child(3) { height: 104px; }.hero-building span:nth-child(4) { height: 64px; }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 8px; }
 h1[tabindex="-1"]:focus, h1[tabindex="-1"]:focus-visible { outline: none; }
 button, a, input, select, textarea { font: inherit; }

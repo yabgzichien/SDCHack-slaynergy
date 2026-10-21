@@ -93,7 +93,7 @@ export default function JobsPage() {
           </LinkRow>
         </div>
       </div>
-      <NextRow back="/skills" next="/map" nextLabel="Next: where in Malaysia" />
+      <NextRow back="/forecast" next="/map" nextLabel="Next: where in Malaysia" />
     </div>
   );
 }

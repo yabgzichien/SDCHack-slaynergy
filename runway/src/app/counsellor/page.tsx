@@ -22,7 +22,7 @@ export default function CounsellorPage() {
   return (
     <div>
       <PageTitle title={a.status === "approved" ? `You approved ${p.name}'s plan.` : a.status === "submitted" ? `${p.name} is waiting for your review.` : `${p.name} has not sent a plan yet.`}>
-        Counsellor view. You see what Runway suggested and why. The worker chooses; you review, correct and approve. Runway never decides, and no hiring decision is automated.
+        Counsellor view. You see what Jobbery suggested and why. The worker chooses; you review, correct and approve. Jobbery never decides, and no hiring decision is automated.
       </PageTitle>
       <div className="mb-4 flex flex-wrap gap-2">
         <Chip tone={a.status === "approved" ? "rise" : a.status === "submitted" ? "accent" : "neutral"}>{a.status === "approved" ? "Approved" : a.status === "submitted" ? "Waiting for your review" : "Not yet sent by the worker"}</Chip>

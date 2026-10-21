@@ -21,7 +21,7 @@ export default function SkillsPage() {
   if (!state.profile) {
     return (
       <div>
-        <PageTitle title="Which of your skills will last?">Answer a few questions first, and Runway gives each of your skills a date.</PageTitle>
+        <PageTitle title="Which of your skills will last?">Answer a few questions first, and Jobbery gives each of your skills a shelf life.</PageTitle>
         <Btn href="/start">Get started</Btn>
       </div>
     );
@@ -108,7 +108,7 @@ export default function SkillsPage() {
         <div className="mt-2"><Estimate /></div>
       </Card>
 
-      <NextRow back="/start" next="/jobs" nextLabel="Next: jobs for you" />
+      <NextRow back="/start" next="/forecast" nextLabel="Next: the forecast" />
     </div>
   );
 }

@@ -50,7 +50,7 @@ export default function TrustPage() {
       </Card>
 
       <Card>
-        <H>What Runway does not do</H>
+        <H>What Jobbery does not do</H>
         <ul className="list-disc space-y-1 pl-5 text-sm">
           <li>It never invents jobs, courses or statistics. Roles and courses come from fixed, checked lists; scores are computed; explanations are filled from templates with a source and date.</li>
           <li>It uses no real CVs or personal data, and no paid or hosted AI model at run time.</li>

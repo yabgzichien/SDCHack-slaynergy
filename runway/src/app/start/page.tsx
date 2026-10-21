@@ -1,9 +1,11 @@
 "use client";
+import "./start-journey.css";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
-  Award, BookOpen, BriefcaseBusiness, Calculator, CalendarClock, Clock, FileText, FlaskConical, GraduationCap, Hammer, HeartPulse,
+  Award, BookOpen, BriefcaseBusiness, Calculator, CalendarClock, Check, Clock, FileText, FlaskConical, GraduationCap, Hammer, HeartPulse,
   Laptop, Leaf, Library, Microscope, Presentation, Scale, ScrollText, Sparkles, Users, UserRound, Wrench, type LucideIcon,
 } from "lucide-react";
 import { useApp, type Catalog } from "@/components/AppProvider";
@@ -58,6 +60,9 @@ function Wizard({ cat }: { cat: Catalog }) {
   // Someone who already answered comes back to change an answer: open on the last screen with every question reachable.
   const answered = !!state?.profile && !state.profile.personaId;
   const [i, setI] = useState(() => answered ? STEPS.length - 1 : Math.min(saved?.i ?? 0, STEPS.length - 1));
+  const [walking, setWalking] = useState(false);
+  const [walkingBack, setWalkingBack] = useState(false);
+  const walkTimer = useRef<number | null>(null);
   const [seen, setSeen] = useState(() => answered ? STEPS.length - 1 : Math.min(saved?.i ?? 0, STEPS.length - 1));
   const [d, setD] = useState<Draft>(() => {
     if (saved) return { ...blank(cat), ...saved.d };
@@ -77,7 +82,19 @@ function Wizard({ cat }: { cat: Catalog }) {
   const hasField = HAS_FIELD.includes(d.education);
   const study = hasField ? d.study || occ?.sector || "" : null;
   const canGo: Record<Step, boolean> = { resume: true, job: !!occ, education: !!d.education && (!hasField || !!study), skills: d.skills.length > 0, time: true, interests: true, about: !!occ && d.skills.length > 0 };
-  const go = (n: number) => { const k = Math.max(0, Math.min(STEPS.length - 1, n)); setI(k); setSeen((x) => Math.max(x, k)); window.scrollTo({ top: 0 }); };
+  const go = (n: number) => {
+    const k = Math.max(0, Math.min(STEPS.length - 1, n));
+    if (k !== i) {
+      if (walkTimer.current !== null) window.clearTimeout(walkTimer.current);
+      setWalkingBack(k < i);
+      setWalking(true);
+      walkTimer.current = window.setTimeout(() => { setWalking(false); walkTimer.current = null; }, 1050);
+    }
+    setI(k);
+    setSeen((x) => Math.max(x, k));
+    window.scrollTo({ top: 0 });
+  };
+  useEffect(() => () => { if (walkTimer.current !== null) window.clearTimeout(walkTimer.current); }, []);
   const next = () => { if (canGo[step]) go(i + 1); };
   const finish = async () => {
     const r = await act("setProfile", { profile: { name: d.name.trim() || "You", age: d.age ? Number(d.age) : null, state: d.state || null, occupationId: d.occupationId, education: d.education, study, years: d.years, skills: d.skills, interests: d.interests, months: d.months, hoursPerWeek: d.hours, budget: "free", synthetic: !!d.resume?.sample || (answered && !!state?.profile?.synthetic) } });
@@ -98,23 +115,31 @@ function Wizard({ cat }: { cat: Catalog }) {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <ol className="mb-10 grid grid-cols-7 gap-1.5" aria-label="Questions">
-        {STEPS.map((s, k) => {
-          const Icon = STEP_ICON[s];
-          const on = k === i, done = k < i || (k <= seen && k !== i);
-          const reachable = k <= seen && STEPS.slice(0, k).every((x) => canGo[x]);
-          return (
-            <li key={s}>
-              <button type="button" onClick={() => reachable && go(k)} disabled={!reachable} aria-current={on ? "step" : undefined} aria-label={`${STEP_LABEL[s]}${on ? ", current question" : done ? ", answered" : ""}`}
-                className="press group flex w-full flex-col items-center gap-1.5 disabled:cursor-default">
-                <span className={`h-1.5 w-full rounded-full ${on ? "bg-primary" : done ? "bg-accent" : "bg-surface2"}`} />
-                <Icon size={16} strokeWidth={1.8} aria-hidden className={on ? "text-ink" : done ? "text-accent" : "text-muted/60"} />
-                <span className={`hidden text-[11px] sm:block ${on ? "font-medium text-ink" : "text-muted"}`}>{STEP_LABEL[s]}</span>
-              </button>
-            </li>
-          );
-        })}
-      </ol>
+      <div className="onboarding-journey mb-10">
+        <div className="journey-track" aria-hidden="true"><span className="journey-track-fill" style={{ width: `${(i / (STEPS.length - 1)) * 100}%` }} /></div>
+        <div className={`journey-bird${walking ? " is-walking" : ""}${walkingBack ? " is-returning" : ""}`} style={{ left: `${((i + 0.5) / STEPS.length) * 100}%` }} aria-hidden="true">
+          <Image className="journey-bird-frame journey-bird-frame-a" src="/cockatiel-walk-step-a.png" alt="" width={1254} height={1254} priority />
+          <Image className="journey-bird-frame journey-bird-frame-b" src="/cockatiel-walk-step-b.png" alt="" width={1254} height={1254} priority />
+          <span className="journey-bird-shadow" />
+        </div>
+        <ol className="journey-points" aria-label="Questions">
+          {STEPS.map((s, k) => {
+            const Icon = STEP_ICON[s];
+            const on = k === i, done = k < i || (k <= seen && k !== i);
+            const reachable = k <= seen && STEPS.slice(0, k).every((x) => canGo[x]);
+            return (
+              <li key={s}>
+                <button type="button" onClick={() => reachable && go(k)} disabled={!reachable} aria-current={on ? "step" : undefined} aria-label={`${STEP_LABEL[s]}${on ? ", current question" : done ? ", answered" : ""}`}
+                  className="journey-checkpoint group" data-state={on ? "current" : done ? "done" : "upcoming"}>
+                  <span className="journey-marker">{done ? <Check size={10} strokeWidth={2.3} aria-hidden /> : null}</span>
+                  <Icon size={16} strokeWidth={1.8} aria-hidden className={on ? "text-ink" : done ? "text-accent" : "text-muted/60"} />
+                  <span className={`hidden text-[11px] sm:block ${on ? "font-medium text-ink" : "text-muted"}`}>{STEP_LABEL[s]}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
 
       <form onSubmit={(e) => { e.preventDefault(); if (step === "about") finish(); else next(); }}>
         {step === "resume" && <ResumeStep d={d} setD={setD} cat={cat} onDone={() => go(i + 1)} />}
@@ -148,7 +173,7 @@ function Wizard({ cat }: { cat: Catalog }) {
           </Q>
         )}
         {step === "time" && (
-          <Q title="How much time do you have?" help="Runway only suggests jobs you can get ready for in this time.">
+          <Q title="How much time do you have?" help="Jobbery only suggests jobs you can get ready for in this time.">
             <Group icon={CalendarClock} label="Months to find a new job" note="Job-seeker support usually lasts 3 to 6 months.">
               <Options value={String(d.months)} onPick={(v) => set({ months: Number(v) })} cols={3}
                 options={[1, 2, 3, 4, 5, 6].map((m) => ({ id: String(m), label: `${m} ${m === 1 ? "month" : "months"}` }))} />
@@ -224,7 +249,10 @@ function Q({ title, help, children }: { title: string; help?: string; children: 
   useEffect(() => { if (!box.current?.contains(document.activeElement)) ref.current?.focus({ preventScroll: true }); }, [title]);
   return (
     <section ref={box}>
-      <h1 ref={ref} tabIndex={-1} className="greeting text-[1.75rem] outline-none sm:text-[2.6rem]">{title}</h1>
+      <div className="flex items-center justify-between gap-4">
+        <h1 ref={ref} tabIndex={-1} className="greeting text-[1.75rem] outline-none sm:text-[2.6rem]">{title}</h1>
+        <Image src="/cockatiel-thinking.png" alt="" width={88} height={88} className="h-16 w-16 shrink-0 object-contain sm:h-20 sm:w-20" />
+      </div>
       {help && <p className="mt-3 text-base text-muted">{help}</p>}
       <div className="mt-8">{children}</div>
     </section>

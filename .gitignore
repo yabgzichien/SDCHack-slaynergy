@@ -11,6 +11,7 @@ handoff.md
 !README.md
 !**/README.md
 docs/
+*.docx
 
 # Secrets and keys
 .env
@@ -25,6 +26,18 @@ secrets/
 # PDFs, images and video
 *.pdf
 *.png
+!runway/public/cockatiel-mascot.png
+!runway/public/cockatiel-cursor.png
+!runway/public/cockatiel-cursor-art.png
+!runway/public/cockatiel-ai-icon.png
+!runway/public/cockatiel-welcome.png
+!runway/public/cockatiel-thinking.png
+!runway/public/cockatiel-running.png
+!runway/public/cockatiel-cursor-moderate.png
+!runway/public/cockatiel-cursor-jobs-art.png
+!runway/public/cockatiel-ai-icon-v2.png
+!runway/public/cockatiel-walk-step-a.png
+!runway/public/cockatiel-walk-step-b.png
 *.jpg
 *.jpeg
 *.gif
@@ -32,6 +45,7 @@ secrets/
 *.avif
 *.bmp
 *.svg
+!runway/public/career-pattern.svg
 *.ico
 *.mp4
 *.mov
