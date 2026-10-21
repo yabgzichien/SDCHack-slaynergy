@@ -6,7 +6,7 @@ import type { PlanStep } from "@/lib/engine/plan";
 
 // Where each in-app activity lives.
 export const activityHref = (s: PlanStep) =>
-  s.activity === "task" ? "/plan/task" : s.activity === "resume" ? "/resume" : s.activity ? `/plan/interview#${s.activity}` : null;
+  s.activity === "task" ? "/plan/task" : s.activity === "resume" ? "/resume" : null;
 
 // The worker's optional portfolio piece after the AI quiz: the reusable prompt and the "how I do this task" sheet.
 export function Portfolio({ counsellor }: { counsellor?: boolean }) {

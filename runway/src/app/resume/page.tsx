@@ -276,7 +276,7 @@ function SkillsFound({ analysis: a }: { analysis: ResumeAnalysis }) {
   };
   return (
     <Card className="space-y-5">
-      <p className="text-sm text-muted">Shelf life is when AI is expected to do most of the work behind a skill. These are estimates, not predictions of certainty, weighted by the three futures.</p>
+      <p className="text-sm text-muted">Shelf life is roughly when AI could do most of the work for a skill. These are estimates, not promises.</p>
       {group("fading", "Fading soonest", "Keep them, but put your judgment and customer skills first.", "fall")}
       {group("mid", "Medium", "Useful for years, worth pairing with a lasting skill.", "neutral")}
       {group("lasting", "Likely to last", "Lead with these.", "rise")}

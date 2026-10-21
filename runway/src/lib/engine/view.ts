@@ -1,3 +1,4 @@
+import { KIND_LABEL } from "./market";
 import { skills, skillById, roles, roleById, occupations, occupationById, series, sdg, sourceById, SECTORS, EDUCATION_LABEL, EDUCATION_RANK, quarterIndex, type SectorId } from "./data";
 import { computeWorld, type World } from "./world";
 import { expiryFor, durability, fmtYear, NOW, THRESHOLD, type SkillExpiry } from "./expiry";
@@ -7,7 +8,7 @@ import { FUTURES, FUTURE_IDS } from "./futures-def";
 import { STAY_ID, type SessionState } from "./state";
 import { mean } from "./math";
 import { tailorTips, type ResumeSummary } from "./resume";
-import { cardById, completionGate, doneMap, gradeQuiz, interview, promptChecklist, type Interview, type TaskCard } from "./pathway";
+import { cardById, completionGate, doneMap, gradeQuiz, promptChecklist, type TaskCard } from "./pathway";
 
 export type RadarSkill = {
   skillId: string; name: string; expected: string; expectedYear: number; byFuture: Record<string, string>;
@@ -50,7 +51,6 @@ export type PathwayView = {
   gate: { ok: boolean; missing: string[] };
   card: CardView | null;
   promptCovers: string[];
-  interview: Interview;
 };
 function pathwayView(plan: Plan | null, state: SessionState): PathwayView {
   const step = plan?.steps.find((s) => s.activity === "task");
@@ -66,7 +66,6 @@ function pathwayView(plan: Plan | null, state: SessionState): PathwayView {
     done: plan ? doneMap(plan, state) : {},
     gate: completionGate(plan, state),
     card, promptCovers: c && w.prompt ? promptChecklist(c, w.prompt) : [],
-    interview,
   };
 }
 
@@ -276,7 +275,7 @@ function diffViews(a: View, b: View, state: SessionState): Change[] {
     const o = q.settled!.outcome;
     const fav = FUTURES.map((f) => ({ f, p: o ? q.futures[f.id] : 1 - q.futures[f.id] })).sort((x, y) => y.p - x.p)[0];
     out.push({
-      kind: "market", text: `Settled: ${e.text.replace(/^Will /, "").replace(/\?$/, "")}? ${o ? "Yes" : "No"}.`,
+      kind: "market", text: `Answered: ${e.text} ${o ? "Yes" : "No"}.`,
       why: `The crowd said ${pct(q.close)}. The ${fav.f.name} future had given this outcome the highest probability (${pct(fav.p)}).`,
       source: e.id.startsWith("dosm") ? dosmSrc : epochSrc,
     });
@@ -285,16 +284,16 @@ function diffViews(a: View, b: View, state: SessionState): Change[] {
     const x = a.world.futures.find((u) => u.id === f.id)!.weight, y = b.world.futures.find((u) => u.id === f.id)!.weight;
     const d = Math.round((y - x) * 100);
     out.push({
-      kind: "futures", text: `${f.name}: ${pct(x)} → ${pct(y)}${d === 0 ? " (unchanged)" : ` (${d > 0 ? "+" : ""}${d} points)`}`,
-      why: `It gave the real outcome a probability above 50% in ${headline.filter(({ s: q }) => (q.settled!.outcome ? q.futures[f.id] : 1 - q.futures[f.id]) > 0.5).length} of ${headline.length} settled questions.`,
+      kind: "futures", text: `${f.name}: ${pct(x)} → ${pct(y)} likely${d === 0 ? " (no change)" : ""}`,
+      why: `It predicted the real answer correctly in ${headline.filter(({ s: q }) => (q.settled!.outcome ? q.futures[f.id] : 1 - q.futures[f.id]) > 0.5).length} of ${headline.length} questions.`,
       source: { name: "Settled market questions", url: sourceById.epoch.url, date: "2026 Q2 data" },
     });
   }
   const ka = a.world.kindSummary, kb = b.world.kindSummary;
   const moved = kb.map((k) => ({ k: k.kind, d: k.influence - ka.find((z) => z.kind === k.kind)!.influence })).sort((x, y) => Math.abs(y.d) - Math.abs(x.d))[0];
   out.push({
-    kind: "forecasters", text: `Influence moved most for simulated ${moved.k}s (${moved.d > 0 ? "up" : "down"} ${Math.abs(moved.d).toFixed(2)}x on average).`,
-    why: "Forecasters whose chances were closer to what really happened gained influence.", source: epochSrc,
+    kind: "forecasters", text: `The computer-made ${KIND_LABEL[moved.k as keyof typeof KIND_LABEL]}s' vote changed the most (${moved.d > 0 ? "up" : "down"} ${Math.abs(moved.d).toFixed(2)}× on average).`,
+    why: "Players whose guesses were closer to the real answers got a bigger vote.", source: epochSrc,
   });
   if (state.profile) {
     const shifts = b.profileSkills.map((s) => {
@@ -303,26 +302,26 @@ function diffViews(a: View, b: View, state: SessionState): Change[] {
     }).filter((s) => s.m !== 0 && !s.dur).sort((x, y) => Math.abs(y.m) - Math.abs(x.m)).slice(0, 4);
     for (const s of shifts) {
       out.push({
-        kind: "skills", text: `${s.name}: expires ${s.from} → ${s.to} (${s.m > 0 ? "+" : ""}${s.m} months).`,
-        why: "The expiry date is weighted across the three futures, and the weights moved.", source: { name: "ILO 2025 exposure + Anthropic Economic Index + futures", url: sourceById.ilo.url, date: "weights as of 2026 Q2" },
+        kind: "skills", text: `${s.name}: AI could take it over by ${s.to} (was ${s.from}, ${Math.abs(s.m)} months ${s.m > 0 ? "later" : "sooner"}).`,
+        why: "Our guess of how fast AI is moving changed, so the date moved.", source: { name: "ILO 2025 exposure + Anthropic Economic Index + futures", url: sourceById.ilo.url, date: "weights as of 2026 Q2" },
       });
     }
-    if (!shifts.length) out.push({ kind: "skills", text: "No skill expiry date moved by a month or more.", why: "The weights shifted too little to change any date by a full month.", source: epochSrc });
+    if (!shifts.length) out.push({ kind: "skills", text: "None of your skill dates moved by a month or more.", why: "Our guess of how fast AI is moving changed too little to move any date.", source: epochSrc });
     const ra = new Map(a.matches.map((m) => [m.roleId, m.rank]));
     const moves = b.matches.map((m) => ({ t: m.title, from: ra.get(m.roleId), to: m.rank })).filter((m) => m.from !== m.to).slice(0, 5);
     for (const m of moves) {
-      out.push({ kind: "jobs", text: `${m.t}: rank ${m.from ?? "–"} → ${m.to}.`, why: "Future outlook and job demand were recomputed with the new weights and the 2026 Q2 job-ad shares.", source: dosmSrc });
+      out.push({ kind: "jobs", text: `${m.t}: now number ${m.to} on your list (was ${m.from ?? "not listed"}).`, why: "We rechecked each job with the new job-ad numbers and our new guess of how fast AI is moving.", source: dosmSrc });
     }
-    if (!moves.length) out.push({ kind: "jobs", text: "The job ranking did not change.", why: "The new data moved the scores a little but not enough to reorder reachable roles.", source: dosmSrc });
+    if (!moves.length) out.push({ kind: "jobs", text: "The job ranking did not change.", why: "The new numbers changed the scores a little, but not enough to change the order.", source: dosmSrc });
     if (a.plan && b.plan && (a.plan.roleId !== b.plan.roleId || a.plan.totalWeeks !== b.plan.totalWeeks)) {
-      out.push({ kind: "plan", text: a.plan.roleId !== b.plan.roleId ? `Top plan changed: ${a.plan.title} → ${b.plan.title}.` : `Plan length: ${a.plan.totalWeeks} → ${b.plan.totalWeeks} weeks.`, why: "The plan follows the highest-ranked role.", source: dosmSrc });
-    } else if (b.plan) out.push({ kind: "plan", text: `Plan unchanged: ${b.plan.title}, ${b.plan.totalWeeks} weeks.`, why: "Your top role stayed the same.", source: dosmSrc });
+      out.push({ kind: "plan", text: a.plan.roleId !== b.plan.roleId ? `Top plan changed: ${a.plan.title} → ${b.plan.title}.` : `Plan length: ${a.plan.totalWeeks} → ${b.plan.totalWeeks} weeks.`, why: "Your plan follows the job at the top of your list.", source: dosmSrc });
+    } else if (b.plan) out.push({ kind: "plan", text: `Plan unchanged: ${b.plan.title}, ${b.plan.totalWeeks} weeks.`, why: "The job at the top of your list stayed the same.", source: dosmSrc });
   }
   const q = series.dosm.quarters;
   const q1 = q.find((d) => d.q === "2026Q1")!, q2 = q.find((d) => d.q === "2026Q2")!;
   out.push({
-    kind: "demand", text: `Clerical share of online job ads: ${q1.clerical_share.toFixed(2)}% → ${q2.clerical_share.toFixed(2)}%; total ads ${(((q2.total / q1.total) - 1) * 100).toFixed(1)}%.`,
-    why: "Real DOSM figures for the quarter that was held back.", source: dosmSrc,
+    kind: "demand", text: `Office admin jobs: ${q1.clerical_share.toFixed(1)} → ${q2.clerical_share.toFixed(1)} in every 100 job ads. All job ads ${q2.total >= q1.total ? "up" : "down"} ${Math.abs(((q2.total / q1.total) - 1) * 100).toFixed(1)}%.`,
+    why: "Real government (DOSM) numbers for Apr to Jun 2026.", source: dosmSrc,
   });
   return out;
 }

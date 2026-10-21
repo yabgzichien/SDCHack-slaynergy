@@ -11,7 +11,7 @@ import { runTape } from "@/lib/engine/tape";
 import { quoteBuy } from "@/lib/market-math";
 import { newMarket, price, tradeToward, cost } from "@/lib/engine/lmsr";
 import { verifyChain, entryHash, type LogEntry } from "@/lib/server/store";
-import { taskCards, gradeQuiz, completionGate, badgeRecord, interview, linkedinAddUrl } from "@/lib/engine/pathway";
+import { taskCards, gradeQuiz, completionGate, badgeRecord, linkedinAddUrl } from "@/lib/engine/pathway";
 import { buildPlan } from "@/lib/engine/plan";
 
 const hafiz = (): SessionState => {
@@ -470,7 +470,13 @@ describe("pathway: three strands, task card, badge", () => {
     expect(new Set(plan.steps.map((x) => x.strand))).toEqual(new Set(["job", "ai", "people"]));
     for (const st of plan.steps) expect(st.skills.length).toBeGreaterThan(0);
     expect(plan.steps.find((x) => x.activity === "task")?.cardId).toBe("finance_variance");
-    expect(plan.steps.map((x) => x.activity).filter(Boolean)).toEqual(["resume", "task", "story", "star", "rehearse"]);
+    expect(plan.steps.map((x) => x.activity).filter(Boolean)).toEqual(["resume", "task"]);
+  });
+  it("teaches people skills with existing online courses, not Runway's own", () => {
+    const plan = computeView(finance().s).plan!;
+    const ppl = plan.steps.filter((x) => x.strand === "people" && x.kind === "course");
+    expect(ppl.map((x) => x.course?.id)).toEqual(["alison_interview", "google_interview_ai", "coursera_comm"]);
+    expect(ppl.every((x) => x.url?.startsWith("https://") && !x.activity)).toBe(true);
   });
   it("teaches AI with existing courses, then a short quiz, and never repeats them in the job strand", () => {
     const plan = computeView(finance().s).plan!;
@@ -516,9 +522,7 @@ describe("pathway: three strands, task card, badge", () => {
       prompt: "Act as a budget analyst", template: "Act as a budget analyst. Use only the data.",
       quiz: { attempts: 2, passed: true, found: ["a3", "a7", "a8"], wrong: [] },
       sheet: Object.fromEntries(card.sheetHeadings.map((h) => [h.id, "Something long enough here"])),
-      story: Object.fromEntries(interview.story.fields.map((f) => [f.id, "A sentence or two"])),
-      star: Object.fromEntries(interview.star.questions.map((q) => [q.id, Object.fromEntries(interview.star.parts.map((p) => [p.id, "Enough words here"]))])),
-      rehearsal: interview.rehearsal.map((r) => r.id), resumeApplied: true,
+      resumeApplied: true,
     };
     const resume = { skillIds: [], found: [], words: 0 } as unknown as SessionState["resume"];
     const full = { ...ticked, pathway: work, resume };

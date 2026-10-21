@@ -38,7 +38,7 @@ export default function JobsPage() {
   return (
     <div>
       <PageTitle title={`Aim for ${best.title.toLowerCase()}.`}>
-        Of the {view.matches.length} jobs you can reach in {p.months} months, this one fits you best and its skills should last.
+        Of the {view.matches.length} jobs you can reach in {p.months} months, this one fits you best, and AI is unlikely to take it over soon.
       </PageTitle>
 
       <Card tone="raised">
@@ -72,7 +72,7 @@ export default function JobsPage() {
               <li key={m.roleId}>
                 <LinkRow href={`/jobs/${m.roleId}`} aside={<p className="num text-xl">{Math.round(m.score * 100)}</p>}>
                   <p className="font-medium">{m.title}</p>
-                  <p className="text-sm text-muted">About {m.weeks} weeks · {sdgName(m.sdgTarget)}{m.atRisk ? " · skills may fade" : ""}</p>
+                  <p className="text-sm text-muted">About {m.weeks} weeks · {sdgName(m.sdgTarget)}{m.atRisk ? " · AI may take over some skills" : ""}</p>
                 </LinkRow>
               </li>
             ))}
@@ -83,8 +83,8 @@ export default function JobsPage() {
           {bridge && view.stay?.status !== "fast" && (
             <Card>
               <h2 className="text-base font-semibold">Need income sooner?</h2>
-              <p className="mt-1 text-sm"><b className="font-medium">{bridge.title}</b> needs about {bridge.weeks} weeks. Its skills may fade sooner, so treat it as a bridge while you train for {best.title.toLowerCase()}.</p>
-              <Link href={`/jobs/${bridge.roleId}`} className="mt-2 inline-block text-sm underline decoration-control underline-offset-2 hover:text-ink">See this bridge job</Link>
+              <p className="mt-1 text-sm"><b className="font-medium">{bridge.title}</b> needs about {bridge.weeks} weeks. AI may take over its skills sooner, so use it to earn money while you train for {best.title.toLowerCase()}.</p>
+              <Link href={`/jobs/${bridge.roleId}`} className="mt-2 inline-block text-sm underline decoration-control underline-offset-2 hover:text-ink">See this short-term job</Link>
             </Card>
           )}
           <LinkRow href="/goals" aside={<ChevronRight size={18} className="text-muted" aria-hidden />}>
@@ -103,19 +103,19 @@ const an = (t: string) => (/^[aeiou]/i.test(t) ? "an" : "a");
 // Staying in the job you have. Labelled by how exposed it is (ILO 2025), with what fades and what grows in it.
 function StayCard({ stay, bridge, chosen, busy, onChoose }: { stay: StayView; bridge: RoleMatchView | null; chosen: boolean; busy: boolean; onChoose: () => void }) {
   const job = stay.title.toLowerCase();
-  const exposed = stay.ilo ? `ILO finds about ${Math.round(stay.ilo.score * 100)}% of this job's tasks exposed to generative AI` : "This job's tasks are exposed to generative AI";
+  const exposed = stay.ilo ? `A UN study (ILO) found AI could do about ${Math.round(stay.ilo.score * 100)}% of this job's tasks` : "AI could do many of this job's tasks";
   const toward = stay.toward;
   const head = stay.status === "fast" ? `Stay ${an(job)} ${job}, for now` : `Stay ${an(job)} ${job}`;
   const text = stay.status === "fast"
-    ? `${exposed}, the highest exposure group.${stay.fadeYear ? ` Most of its skills may fade by ${stay.fadeYear}.` : ""} ${toward ? `Keep it for income while you train for ${toward.title.toLowerCase()}, a job whose skills should last.` : "No lasting job is reachable in your time yet, so add the skills below while you keep working."}`
+    ? `${exposed}, one of the highest of any job.${stay.fadeYear ? ` AI could do most of its skills by ${stay.fadeYear}.` : ""} ${toward ? `Keep it for income while you train for ${toward.title.toLowerCase()}, a job AI is unlikely to take over.` : "No lasting job is reachable in your time yet, so add the skills below while you keep working."}`
     : stay.status === "changing"
       ? `This job is changing, not disappearing. ${exposed}, so some of your work will move to AI. It should last if you add the skills growing in it.`
-      : "ILO finds little generative AI exposure in this job. Keeping its skills fresh, and learning to use AI tools, should be enough.";
+      : "A UN study (ILO) found AI can do little of this job. Keeping your skills fresh and learning to use AI tools should be enough.";
   const action = stay.status === "fast" && toward ? `Keep my job and train for ${toward.title.toLowerCase()}` : stay.status === "steady" ? "Plan to keep my job up to date" : "Plan to reshape my job";
   return (
     <Card tone={stay.status === "fast" ? "fall" : undefined}>
       <div className="flex flex-wrap items-center gap-2">
-        {stay.status === "fast" ? <Chip tone="negative">Shrinking fast</Chip> : stay.status === "changing" ? <Chip tone="fall">Potentially fading</Chip> : <Chip tone="rise">Steady</Chip>}
+        {stay.status === "fast" ? <Chip tone="negative">Shrinking fast</Chip> : stay.status === "changing" ? <Chip tone="fall">Changing because of AI</Chip> : <Chip tone="rise">Steady</Chip>}
         {chosen && <Chip tone="accent">Your current plan</Chip>}
       </div>
       <h2 className="mt-2 text-xl font-medium">{head}</h2>
@@ -123,7 +123,7 @@ function StayCard({ stay, bridge, chosen, busy, onChoose }: { stay: StayView; br
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         {stay.fading.length > 0 && (
           <div className="rounded-2xl bg-raised p-4">
-            <p className="flex items-center gap-2 text-sm font-medium"><TrendingDown size={16} aria-hidden className="text-fall" />Fading in this job</p>
+            <p className="flex items-center gap-2 text-sm font-medium"><TrendingDown size={16} aria-hidden className="text-fall" />AI is taking over in this job</p>
             <ul className="mt-2 space-y-1 text-sm">{stay.fading.map((f) => <li key={f.skillId} className="flex justify-between gap-3"><span>{f.name}</span><span className="num shrink-0 whitespace-nowrap text-muted">by {f.expected}</span></li>)}</ul>
           </div>
         )}

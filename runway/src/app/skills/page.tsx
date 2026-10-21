@@ -36,12 +36,12 @@ export default function SkillsPage() {
   const mine = [...view.profileSkills].sort((a, b) => yearOf(a) - yearOf(b));
   const fading = mine.filter((s) => yearOf(s) < 2031);
   const lasting = mine.filter((s) => yearOf(s) >= 2034);
-  const shelf = (y: number) => (y >= 2034 ? { t: "Lasting", tone: "rise" as const } : y < 2031 ? { t: "Fading soon", tone: "fall" as const } : { t: "Holding up", tone: "neutral" as const });
+  const shelf = (y: number) => (y >= 2034 ? { t: "Safe for years", tone: "rise" as const } : y < 2031 ? { t: "AI may take over soon", tone: "fall" as const } : { t: "Safe for now", tone: "neutral" as const });
 
   return (
     <div>
-      <PageTitle title={fading.length ? `${fading.length} of your ${mine.length} skills fade before 2031.` : `None of your ${mine.length} skills fades before 2031.`}>
-        Each date is when AI is likely to do most of that skill&apos;s work{speed === likely ? ", at the most likely speed of AI progress" : `, if AI progress is ${SPEED[speed].name.toLowerCase()}`}. {lasting.length ? `Your longest-lasting: ${lasting.slice(0, 2).map((s) => s.name.toLowerCase()).join(" and ")}.` : ""}
+      <PageTitle title={fading.length ? `AI could do most of ${fading.length} of your ${mine.length} skills before 2031.` : `AI is unlikely to take over any of your ${mine.length} skills before 2031.`}>
+        Each date below is roughly when AI could do most of the work for that skill{speed === likely ? "" : `, if AI improves ${SPEED[speed].name.toLowerCase()}`}. After that date, the skill alone is less likely to get you hired. {lasting.length ? `Your safest skills: ${lasting.slice(0, 2).map((s) => s.name.toLowerCase()).join(" and ")}.` : ""}
       </PageTitle>
 
       <Card tone="raised">
@@ -49,7 +49,7 @@ export default function SkillsPage() {
           <h2 className="text-base font-semibold">How fast is AI getting better?</h2>
           <SourceChip name={pace.source.name} date={`to ${pace.asOf.replace("Q", " Q")}`} url={pace.source.url} />
         </div>
-        <p className="mt-1 text-sm text-muted">Measured by how long a task AI can finish on its own. Pick a speed to see your dates change.</p>
+        <p className="mt-1 text-sm text-muted">We measure this by how long a task AI can finish without help. Nobody knows the future speed, so pick one to see how your dates change.</p>
         <div role="radiogroup" aria-label="Speed of AI progress" className="mt-4 grid gap-2 sm:grid-cols-3">
           {pace.futures.map((f) => {
             const on = f.id === speed;
@@ -63,24 +63,24 @@ export default function SkillsPage() {
                 <span className="min-w-0 flex-1">
                   <span className="flex items-baseline justify-between gap-2">
                     <span className="font-medium">{SPEED[f.id].name}</span>
-                    <span className={`num text-sm ${on ? "opacity-80" : "text-muted"}`}>{pct(f.weight)} chance</span>
+                    <span className={`num text-sm ${on ? "opacity-80" : "text-muted"}`}>{pct(f.weight)} likely</span>
                   </span>
-                  <span className="mt-0.5 block text-sm"><span className="num text-lg font-medium">Doubles every {months(f.doublingMonths)} months</span></span>
+                  <span className="mt-0.5 block text-sm"><span className="num text-lg font-medium">AI gets twice as capable every {months(f.doublingMonths)} months</span></span>
                 </span>
               </button>
             );
           })}
         </div>
-        <More summary="Where do these speeds and chances come from?">
-          <p>The speeds come from the recent pace of the METR time-horizon test (Epoch AI): over the last four quarters, the task length AI can finish doubled about every {months(pace.futures.find((f) => f.id === "medium")!.doublingMonths)} months. &quot;Slow&quot; assumes 60% of that pace, &quot;Fast&quot; 160%. Faster AI also means companies adopt it sooner and clerical job ads shrink faster ({pace.futures.map((f) => `${SPEED[f.id].name.toLowerCase()}: ${Math.abs(f.clericalPerYear).toFixed(1)} points a year`).join(", ")}).</p>
-          <p>The chances come from real data releases and from a crowd of forecasters who bet points on the next figures; the most accurate get the most say. <Link href="/market" className="underline decoration-control underline-offset-2 hover:text-ink">See the market and how it is scored</Link>.</p>
+        <More summary="Where do these numbers come from?">
+          <p>The speeds come from a test by the research group METR (data from Epoch AI). Over the last year, the length of task AI can finish on its own doubled about every {months(pace.futures.find((f) => f.id === "medium")!.doublingMonths)} months. &quot;Slow&quot; assumes 60% of that pace, &quot;Fast&quot; 160%. Faster AI also means companies start using it sooner and office admin job ads shrink faster ({pace.futures.map((f) => `${SPEED[f.id].name.toLowerCase()}: ${Math.abs(f.clericalPerYear).toFixed(1)} fewer in every 100 ads each year`).join(", ")}).</p>
+          <p>How likely each speed is comes from real published numbers and from a guessing game where players predict the next numbers; players who guess well count more. <Link href="/market" className="underline decoration-control underline-offset-2 hover:text-ink">Try the guessing game</Link>.</p>
         </More>
       </Card>
 
       <Card className="mt-4">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-base font-semibold">Your skills, soonest to fade first</h2>
-          <p className="text-xs text-muted">At {SPEED[speed].name.toLowerCase()} speed: what AI can do doubles every {months(sp.doublingMonths)} months</p>
+          <h2 className="text-base font-semibold">Your skills: the ones AI could take over soonest are at the top</h2>
+          <p className="text-xs text-muted">Speed picked: {SPEED[speed].name.toLowerCase()} (AI twice as capable every {months(sp.doublingMonths)} months)</p>
         </div>
         <ul className="space-y-2">
           {mine.map((s) => {
@@ -101,7 +101,7 @@ export default function SkillsPage() {
           })}
         </ul>
         <div className="mt-1 px-4"><ExpiryAxis /></div>
-        <p className="mt-3 text-xs text-muted">Big dot: the speed you picked. Small dots: the other two speeds.</p>
+        <p className="mt-3 text-xs text-muted">The date on the right: when AI could do most of this skill. Big dot: the speed you picked. Small dots: the other two speeds.</p>
         <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
           {view.radar.sources.slice(0, 2).map((x) => <SourceChip key={x.name} name={x.name} date={x.date} url={x.url} />)}
         </div>

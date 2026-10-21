@@ -3,11 +3,11 @@ import Link from "next/link";
 import { useApp } from "./AppProvider";
 
 const STAGES = [
-  "Loading the real April to June 2026 job figures (published 18 Aug 2026)",
-  "Checking every open question against the real figures",
-  "Scoring every forecaster, you included",
-  "Updating how likely each future is",
-  "Updating your skill dates, jobs and plan",
+  "Loading the real Apr to Jun 2026 job numbers (published 18 Aug 2026)",
+  "Checking every question against the real numbers",
+  "Scoring every player's guesses, yours too",
+  "Updating how fast we think AI is moving",
+  "Updating your skills, jobs and plan",
 ];
 
 // A real overlay floating over the page, so it may carry a shadow.
@@ -23,7 +23,7 @@ export function ReleaseOverlay() {
       <div className={PANEL}>
         {stage > 0 ? (
           <>
-            <p className="font-medium">New figures are in</p>
+            <p className="font-medium">New numbers are out</p>
             <ol className="mt-2 space-y-1.5">
               {STAGES.map((s, i) => {
                 const n = i + 1;
@@ -39,7 +39,7 @@ export function ReleaseOverlay() {
           </>
         ) : (
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm"><span className="font-medium">Your results changed.</span> {view?.changes?.length ?? 0} updates, each with its source.</p>
+            <p className="text-sm"><span className="font-medium">Your results changed.</span> {view?.changes?.length ?? 0} things changed.</p>
             <div className="flex shrink-0 items-center gap-1">
               <Link href="/changes" onClick={() => setShowChanges(false)} className="press inline-flex min-h-10 items-center rounded-full bg-primary px-4 text-sm font-medium text-primaryink">See them</Link>
               <button onClick={() => setShowChanges(false)} className="press min-h-10 rounded-full px-3 text-sm text-muted hover:text-ink" aria-label="Dismiss">Close</button>

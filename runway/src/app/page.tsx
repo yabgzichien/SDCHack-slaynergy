@@ -55,7 +55,7 @@ function Intro() {
       </ol>
 
       <p className="mt-8 max-w-3xl text-sm text-muted">
-        What makes it different: the forecast is not one fixed score. A crowd of forecasters bets points, never money, on the next official job figures, and the most accurate ones get the most say. Every number shows its source and date, and you stay in charge.
+        What makes it different: our forecast keeps learning. Players guess (with free points, not money) what the next official job numbers will show, and people who guess well count more. Every number shows where it came from, and you make the final choice.
       </p>
     </div>
   );
@@ -79,7 +79,7 @@ function Dashboard() {
   })();
   const fact = [
     `${p.months} months, ${p.hoursPerWeek} hours a week`,
-    fading ? `${fading} of ${v.profileSkills.length} fade before 2031` : "None fades before 2031",
+    fading ? `AI could take over ${fading} of ${v.profileSkills.length} skills by 2031` : "Your skills look safe until 2031",
     v.lasting ? `Best: ${v.lasting.title}` : `${v.matches.length} jobs within reach`,
     mapFact,
     plan ? `${done} of ${plan.steps.length} steps · ${a.status === "approved" ? "approved" : a.status === "submitted" ? "waiting for review" : "not sent yet"}` : "Choose a job first",
@@ -87,7 +87,7 @@ function Dashboard() {
   const nextStep = STEPS.findIndex((_, i) => status(i) !== "done");
   return (
     <div>
-      <PageTitle title={`${p.name === "You" ? "You" : p.name}, you have ${weeks} weeks of runway.`}>
+      <PageTitle title={`${p.name === "You" ? "You" : p.name}, you have ${weeks} weeks to find your next job.`}>
         {plan ? `Your plan for ${plan.title} takes ${plan.totalWeeks} of them.` : "Pick a job to plan for."}
       </PageTitle>
 
@@ -112,7 +112,7 @@ function Dashboard() {
       </ol>
 
       <Card className="mt-4">
-        <h2 className="mb-3 text-base font-semibold">Your runway</h2>
+        <h2 className="mb-3 text-base font-semibold">Your weeks, step by step</h2>
         {plan ? <RunwayStrip plan={plan} progress={v.pathway.done} /> : <p className="text-sm text-muted">Choose a job to see your plan on your runway.</p>}
         {next && (
           <div className="mt-5 flex flex-wrap items-end justify-between gap-3 rounded-2xl bg-raised p-4">

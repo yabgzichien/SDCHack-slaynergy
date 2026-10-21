@@ -6,7 +6,7 @@ export const FUTURE_COLOR: Record<string, string> = { slow: "var(--slow)", mediu
 export const FUTURE_NAME: Record<string, string> = { slow: "Slow", medium: "Medium", fast: "Fast" };
 // What each forecast question measures, in everyday words. Keyed by the question id's prefix (dosm-2026Q2, swe-2026Q2, ...).
 export const QUESTION_PLAIN: Record<string, string> = {
-  dosm: "How many Malaysian job ads are for clerical and office-admin jobs",
+  dosm: "How many Malaysian job ads are for office admin jobs",
   metr: "How long a task AI can finish on its own",
   swe: "How well AI fixes real software bugs",
   hle: "How well AI answers very hard expert questions",
@@ -55,7 +55,7 @@ export function Chip({ children, tone = "neutral", title }: { children: ReactNod
   return <span title={title} className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${t}`}>{children}</span>;
 }
 
-export const DemoLabel = () => <Chip tone="demo" title="The other forecasters are simulated for this demo, not real people">Simulated forecasters (demo)</Chip>;
+export const DemoLabel = () => <Chip tone="demo" title="The other players are made by the computer for this demo, not real people">Other players are computer-made (demo)</Chip>;
 
 export function SourceChip({ name, date, url }: { name: string; date: string; url?: string }) {
   const inner = <>Source: {name}, {date}</>;

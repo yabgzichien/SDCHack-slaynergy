@@ -34,7 +34,7 @@ export const FORECASTERS: Forecaster[] = (() => {
   }
   return out;
 })();
-export const forecasterName = (f: Forecaster) => `Simulated forecaster ${f.id.slice(1)} · ${KIND_LABEL[f.kind]}`;
+export const forecasterName = (f: Forecaster) => `Computer-made player ${f.id.slice(1)} · ${KIND_LABEL[f.kind]}`;
 
 export function belief(f: Forecaster, q: Question, probs = futureProbs(q)): number {
   // What each type reads: experts allow for scores near 100% slowing down; trend chasers repeat last quarter's change;

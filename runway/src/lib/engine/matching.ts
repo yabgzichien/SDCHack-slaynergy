@@ -63,7 +63,7 @@ export function coverGaps(gaps: string[]): Pick[] {
   while (left.size) {
     let best: { c: Course; cover: string[]; score: number } | null = null;
     for (const c of courses) {
-      if (c.strand === "ai") continue;
+      if (c.strand) continue;
       const cover = c.skills.filter((s) => left.has(s));
       if (!cover.length) continue;
       const score = cover.length / c.hours;

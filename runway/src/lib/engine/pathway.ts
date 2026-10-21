@@ -1,10 +1,9 @@
 import cardsJson from "../../../data/task-cards.json";
-import interviewJson from "../../../data/interview.json";
 import type { SectorId } from "./data";
 import type { Plan, PlanStep } from "./plan";
 import type { PathwayWork, SessionState } from "./state";
 
-// The pathway beyond courses: a short AI quiz after the AI courses (plus an optional portfolio piece) and the people strand (resume, story, STAR, rehearsal).
+// The pathway beyond courses: a short AI quiz after the AI courses (plus an optional portfolio piece) and the people strand (resume rewrite, then existing interview and communication courses).
 // Everything here is pre-written and hand-checked. Nothing calls an AI model; the "AI answer" is a labelled sample.
 
 export type TaskCard = {
@@ -16,26 +15,13 @@ export type TaskCard = {
   sampleAnswer: { id: string; text: string; mistake?: { kind: string; why: string } }[];
   sheetHeadings: { id: string; label: string; hint: string }[];
 };
-export type Interview = {
-  story: { fields: { id: string; label: string; hint: string; example: string }[]; maxWords: number };
-  star: {
-    source: { name: string; url: string; checked: string };
-    parts: { id: string; label: string; hint: string }[];
-    questions: { id: string; text: string; hint?: string; fromSource: boolean }[];
-  };
-  rehearsal: { id: string; text: string }[];
-  practiceTool: { name: string; provider: string; url: string; cost: string; checked: string };
-};
-
 export const taskCards = cardsJson as unknown as TaskCard[];
-export const interview = interviewJson as unknown as Interview;
 export const cardForSector = (sector: SectorId | undefined | null) => taskCards.find((c) => c.sector === sector) ?? null;
 export const cardById = (id: string) => taskCards.find((c) => c.id === id) ?? null;
 
 // Limits for saved text, so a session can't grow without bound.
 export const MAX_TEXT = 2000;
 export const SHEET_MIN_CHARS = 15;
-export const STAR_MIN_CHARS = 10;
 
 // Which prompt-writing tips the prompt covers. Keyword checks only.
 export function promptChecklist(card: TaskCard, prompt: string): string[] {
@@ -58,18 +44,12 @@ const filled = (r: Record<string, string> | undefined, keys: string[], min: numb
 export const sheetDone = (card: TaskCard, w: PathwayWork) => filled(w.sheet, card.sheetHeadings.map((h) => h.id), SHEET_MIN_CHARS);
 // The quiz is the required part; the reusable prompt and the how-I-do-it sheet are an optional portfolio piece.
 export const taskDone = (card: TaskCard | null, w: PathwayWork) => !!card && !!w.quiz?.passed;
-export const storyDone = (w: PathwayWork) => filled(w.story, interview.story.fields.map((f) => f.id), 10);
-export const starDone = (w: PathwayWork) => interview.star.questions.every((q) => filled(w.star?.[q.id], interview.star.parts.map((p) => p.id), STAR_MIN_CHARS));
-export const rehearsalDone = (w: PathwayWork) => interview.rehearsal.every((r) => w.rehearsal?.includes(r.id));
 
 // Steps with an activity are done when the work is saved, not when the box is ticked.
 export function stepDone(step: PlanStep, state: SessionState): boolean {
   const w = state.pathway ?? {};
   switch (step.activity) {
     case "task": return taskDone(step.cardId ? cardById(step.cardId) : null, w);
-    case "story": return storyDone(w);
-    case "star": return starDone(w);
-    case "rehearse": return rehearsalDone(w);
     case "resume": return !!state.resume && !!w.resumeApplied;
     default: return !!state.progress[step.id];
   }

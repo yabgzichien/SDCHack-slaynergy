@@ -8,7 +8,7 @@ import { stateById } from "@/lib/engine/geo";
 import { respond } from "@/lib/server/respond";
 import { getSessionId } from "@/lib/server/session";
 import { loadState, logEvent, resetState, saveState } from "@/lib/server/store";
-import { badgeRecord, cardById, completionGate, gradeQuiz, interview, MAX_TEXT } from "@/lib/engine/pathway";
+import { badgeRecord, cardById, completionGate, gradeQuiz, MAX_TEXT } from "@/lib/engine/pathway";
 import type { PathwayWork } from "@/lib/engine/state";
 import crypto from "node:crypto";
 
@@ -58,12 +58,6 @@ function cleanPathway(raw: Record<string, unknown>, cardId: string | undefined):
   if ("prompt" in raw) out.prompt = text(raw.prompt);
   if ("template" in raw) out.template = text(raw.template);
   if ("sheet" in raw && card) out.sheet = fields(raw.sheet, card.sheetHeadings.map((h) => h.id));
-  if ("story" in raw) out.story = fields(raw.story, interview.story.fields.map((f) => f.id));
-  if ("star" in raw) {
-    const r = (raw.star && typeof raw.star === "object" ? raw.star : {}) as Record<string, unknown>;
-    out.star = Object.fromEntries(interview.star.questions.map((q) => [q.id, fields(r[q.id], interview.star.parts.map((p) => p.id))]));
-  }
-  if ("rehearsal" in raw && Array.isArray(raw.rehearsal)) out.rehearsal = raw.rehearsal.map(String).filter((id) => interview.rehearsal.some((r) => r.id === id));
   if ("resumeApplied" in raw) out.resumeApplied = !!raw.resumeApplied;
   if ("showName" in raw) out.showName = !!raw.showName;
   if ("publishPortfolio" in raw) out.publishPortfolio = !!raw.publishPortfolio;

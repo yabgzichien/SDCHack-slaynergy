@@ -14,7 +14,7 @@ export type PlanStep = {
   // job: courses for the gap. ai: working with AI. people: resume, story and interviews.
   strand: Strand;
   // Steps with an activity are done when the work is saved in Runway, not by ticking (see pathway.stepDone).
-  activity?: "task" | "story" | "star" | "rehearse" | "resume";
+  activity?: "task" | "resume";
   cardId?: string;
 };
 export type Strand = "job" | "ai" | "people";
@@ -71,18 +71,24 @@ function relayout(steps: PlanStep[], hoursPerWeek: number): PlanStep[] {
 
 const people = (id: string) => ({ id, name: skillById[id].name, sdgTarget: skillById[id].sdg.target, sdgWhy: skillById[id].sdg.why });
 // Small people-strand steps share weeks with the learning or applying steps around them.
-const RESUME_HOURS = 2, STORY_HOURS = 1, STAR_HOURS = 3, REHEARSE_HOURS = 2;
+const RESUME_HOURS = 2;
 function resumeStep(): PlanStep {
   return { id: "resume", kind: "practice", strand: "people", activity: "resume", weekStart: 1, weekEnd: 1, hours: RESUME_HOURS,
     title: "Rewrite your resume with the fixes from the scan", skills: [people("communication")], shortLived: false, funding: "Free", cost: "Free" };
 }
-function interviewSteps(week: number): PlanStep[] {
-  const base = { kind: "practice" as const, strand: "people" as const, weekStart: week, weekEnd: week, shortLived: false, funding: "Free", cost: "Free", skills: [people("communication")] };
-  return [
-    { ...base, id: "story", activity: "story", hours: STORY_HOURS, title: "Write your story in 60 seconds: why you left and where you are going" },
-    { ...base, id: "star", activity: "star", hours: STAR_HOURS, title: "Prepare three interview answers with the STAR method" },
-    { ...base, id: "rehearse", activity: "rehearse", hours: REHEARSE_HOURS, title: "Rehearse out loud, then do a mock interview with your counsellor" },
-  ];
+// The people-skills strand: existing free courses on interviews and workplace communication, in that order.
+// The communication course is skipped if the job strand already teaches it.
+export const PEOPLE_COURSE_IDS = ["alison_interview", "google_interview_ai", "coursera_comm"];
+function peopleSteps(start: number, hoursPerWeek: number, taken: Set<string>): { steps: PlanStep[]; week: number } {
+  let week = start;
+  const steps = PEOPLE_COURSE_IDS.map((id) => courses.find((c) => c.id === id)!).filter((c) => !taken.has(c.id)).map((c, i): PlanStep => {
+    const w = Math.max(1, Math.ceil(c.hours / hoursPerWeek));
+    const st: PlanStep = { id: `p${i + 1}`, kind: "course", strand: "people", weekStart: week, weekEnd: week + w - 1, title: c.title, provider: c.provider, url: c.url, hours: c.hours,
+      skills: [people("communication")], shortLived: false, funding: c.funding, cost: c.cost, course: c, checked: c.checked };
+    week += w;
+    return st;
+  });
+  return { steps, week };
 }
 // The AI-at-work strand: existing free courses teach it, then a short quiz on a task from the worker's field checks it.
 // Where no quiz is written for the field yet, a general practice step takes its place.
@@ -126,10 +132,12 @@ export function buildPlan(m: RoleMatch, hoursPerWeek: number, stayIn?: string): 
   const ai = aiSteps(week, practice, hoursPerWeek, m.sector, `Practice project for ${m.title}: use AI tools, then check and correct their output`);
   steps.push(...ai.steps);
   week = ai.week;
-  steps.push(...interviewSteps(week));
+  const ppl = peopleSteps(week, hoursPerWeek, new Set(jobSteps.map((x) => x.course?.id ?? "")));
+  steps.push(...ppl.steps);
+  week = ppl.week;
   steps.push({
     id: "apply", kind: "apply", strand: "job", weekStart: week, weekEnd: week + apply - 1,
-    title: `Apply for ${m.title} roles`,
+    title: `Apply for ${m.title} roles, with a mock interview with your counsellor first`,
     hours: apply * hoursPerWeek, skills: [people("communication")], shortLived: false, funding: "Free", cost: "Free",
   });
   week += apply;

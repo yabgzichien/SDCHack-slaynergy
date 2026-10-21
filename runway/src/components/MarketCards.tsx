@@ -1,0 +1,139 @@
+"use client";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { Briefcase, Bug, ChevronLeft, ChevronRight, GraduationCap, Terminal, Timer, type LucideIcon } from "lucide-react";
+import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import type { EventView, StrikeView } from "@/lib/engine/world";
+import { Chip } from "./ui";
+
+// Kalshi-style market cards: each question is one event with three answers (easier to harder), each with its own
+// chance, payout and colour. The colours are shared with the question page so a line means the same thing everywhere.
+export const STRIKE_COLORS = ["#3b82f6", "#a855f7", "#f59e0b"];
+
+const TOPIC: Record<string, { icon: LucideIcon; tag: string; tint: string }> = {
+  dosm: { icon: Briefcase, tag: "Malaysia jobs", tint: "#0ea5e9" },
+  swe: { icon: Bug, tag: "AI ability", tint: "#8b5cf6" },
+  tbench: { icon: Terminal, tag: "AI ability", tint: "#6366f1" },
+  hle: { icon: GraduationCap, tag: "AI ability", tint: "#ec4899" },
+  metr: { icon: Timer, tag: "AI ability", tint: "#14b8a6" },
+};
+export const topicOf = (eventId: string) => TOPIC[eventId.split("-")[0]] ?? { icon: Briefcase, tag: "Question", tint: "#64748b" };
+
+export function EventIcon({ eventId, size = 40 }: { eventId: string; size?: number }) {
+  const t = topicOf(eventId);
+  const Icon = t.icon;
+  return (
+    <span className="inline-flex shrink-0 items-center justify-center rounded-xl text-white" style={{ width: size, height: size, background: `linear-gradient(135deg, ${t.tint}, ${t.tint}bb)` }} aria-hidden>
+      <Icon size={size * 0.5} strokeWidth={1.9} />
+    </span>
+  );
+}
+
+const yesOf = (s: StrikeView) => (s.settled ? (s.settled.outcome ? 1 : 0) : s.price);
+// What 1 point on Yes returns if Yes is right, like Kalshi's "pays out 1.50x".
+export const paysOut = (p: number) => (p > 0.005 ? `${(1 / p).toFixed(2)}x` : "–");
+
+function OddsPill({ s }: { s: StrikeView }) {
+  if (s.settled) return <Chip tone={s.settled.outcome ? "rise" : "fall"}>{s.settled.outcome ? "Yes" : "No"}</Chip>;
+  return <span className="num inline-flex min-w-[4.5rem] items-center justify-center rounded-xl border border-rise/60 px-3 py-1.5 text-base font-medium text-rise">{Math.round(s.price * 100)}%</span>;
+}
+
+function OptionRow({ s, i, compact }: { s: StrikeView; i: number; compact?: boolean }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="min-w-0 flex-1">
+        <p className={`leading-snug ${compact ? "text-sm" : ""}`}>{s.label}</p>
+        <div className="mt-1 h-0.5 rounded-full" style={{ width: `${Math.max(6, yesOf(s) * 100)}%`, background: STRIKE_COLORS[i] }} aria-hidden />
+      </div>
+      {!s.settled && <p className="num w-14 text-right text-xs text-muted" title="What each point on Yes returns if Yes is right">{paysOut(s.price)}</p>}
+      <OddsPill s={s} />
+    </div>
+  );
+}
+
+// One small card per question, for the grid.
+export function MarketCard({ e }: { e: EventView }) {
+  const held = e.strikes.some((s) => s.position.yes > 1e-6 || s.position.no > 1e-6);
+  return (
+    <Link href={`/market/${encodeURIComponent(e.id)}`} className="press flex h-full flex-col rounded-[22px] bg-surface p-5 hover:bg-surface2">
+      <div className="flex items-start gap-3">
+        <EventIcon eventId={e.id} />
+        <div className="min-w-0">
+          <p className="font-medium leading-snug">{e.title}</p>
+          <p className="text-xs text-muted">{topicOf(e.id).tag}{held ? " · you guessed here" : ""}</p>
+        </div>
+      </div>
+      <div className="mt-4 space-y-3">{e.strikes.map((s, i) => <OptionRow key={s.marketId} s={s} i={i} compact />)}</div>
+      {e.fact && <p className="num mt-3 text-xs text-muted">{e.fact}</p>}
+      <p className="num mt-auto pt-4 text-xs text-muted">{e.strikes.reduce((a, s) => a + s.trades, 0).toLocaleString()} guesses</p>
+    </Link>
+  );
+}
+
+type Feed = { clockStart: number; nowT: number; strikes: { id: string; series: [number, number, number][] }[] };
+const clock = (ms: number) => new Date(ms).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+
+// The big card at the top: one question at a time, its answers on the left and all three chance lines on the right.
+export function FeaturedMarkets({ events }: { events: EventView[] }) {
+  const [k, setK] = useState(0);
+  const e = events[Math.min(k, events.length - 1)];
+  const [feed, setFeed] = useState<Feed | null>(null);
+  useEffect(() => {
+    let on = true;
+    setFeed(null);
+    const pull = () => fetch(`/api/market?event=${encodeURIComponent(e.id)}`, { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).then((d) => on && d && setFeed(d)).catch(() => {});
+    pull();
+    const id = window.setInterval(() => { if (document.visibilityState === "visible") pull(); }, 5000);
+    return () => { on = false; window.clearInterval(id); };
+  }, [e.id]);
+  const lines = useMemo(() => feed?.strikes.map((s) => s.series.map(([t, p]) => ({ x: feed.clockStart + t * 1000, p: p * 100 }))) ?? [], [feed]);
+  if (!e) return null;
+  const go = (d: number) => setK((x) => (x + d + events.length) % events.length);
+
+  return (
+    <section className="rounded-[22px] bg-surface p-5 sm:p-6">
+      <div className="flex items-center justify-between gap-3">
+        <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted"><EventIcon eventId={e.id} size={22} />{topicOf(e.id).tag}</p>
+        {events.length > 1 && (
+          <div className="flex items-center gap-2">
+            <button onClick={() => go(-1)} aria-label="Previous question" className="press inline-flex h-9 w-9 items-center justify-center rounded-full border border-line hover:bg-surface2"><ChevronLeft size={16} /></button>
+            <span className="num text-sm text-muted">{k + 1} of {events.length}</span>
+            <button onClick={() => go(1)} aria-label="Next question" className="press inline-flex h-9 w-9 items-center justify-center rounded-full border border-line hover:bg-surface2"><ChevronRight size={16} /></button>
+          </div>
+        )}
+      </div>
+      <Link href={`/market/${encodeURIComponent(e.id)}`} className="mt-3 block text-2xl font-semibold leading-tight hover:underline sm:text-[1.75rem]">{e.title}</Link>
+      <p className="mt-1 text-sm text-muted">{e.text}</p>
+
+      <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
+        <div>
+          <div className="mb-2 flex justify-between text-xs text-muted"><span>Answer</span><span className="flex gap-6"><span title="What each point on Yes returns if Yes is right">Pays out</span><span className="w-[4.5rem] text-center">Think Yes</span></span></div>
+          <div className="space-y-4">{e.strikes.map((s, i) => <OptionRow key={s.marketId} s={s} i={i} />)}</div>
+          <div className="mt-5 flex items-center justify-between">
+            <p className="num text-xs text-muted">{e.strikes.reduce((a, s) => a + s.trades, 0).toLocaleString()} guesses</p>
+            <Link href={`/market/${encodeURIComponent(e.id)}`} className="press inline-flex min-h-10 items-center gap-1 rounded-full bg-primary px-4 text-sm font-medium text-primaryink">Make a guess <ChevronRight size={16} aria-hidden /></Link>
+          </div>
+        </div>
+        <div className="min-w-0">
+          <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+            {e.strikes.map((s, i) => (
+              <span key={s.marketId} className="inline-flex items-center gap-1.5"><span className="inline-block h-2 w-2 rounded-full" style={{ background: STRIKE_COLORS[i] }} />{s.label} <b className="num">{Math.round(yesOf(s) * 100)}%</b></span>
+            ))}
+          </div>
+          <div className="h-56" role="img" aria-label={`How the Yes % changed for each answer to: ${e.title}`}>
+            {feed ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart margin={{ left: 0, right: 0, top: 8, bottom: 0 }}>
+                  <XAxis type="number" dataKey="x" domain={["dataMin", "dataMax"]} tickFormatter={clock} tick={{ fontSize: 11, fill: "var(--muted)" }} tickCount={4} axisLine={false} tickLine={false} />
+                  <YAxis type="number" domain={[0, 100]} ticks={[0, 20, 40, 60, 80, 100]} tickFormatter={(v) => `${v}%`} orientation="right" width={40} tick={{ fontSize: 11, fill: "var(--muted)" }} axisLine={false} tickLine={false} />
+                  <Tooltip formatter={(v) => [`${Number(v).toFixed(0)}%`, "Think Yes"]} labelFormatter={(x) => clock(Number(x))} contentStyle={{ background: "var(--raised)", border: "1px solid var(--line)", borderRadius: 12 }} />
+                  {lines.map((d, i) => <Line key={i} data={d} dataKey="p" type="stepAfter" stroke={STRIKE_COLORS[i]} strokeWidth={2} dot={false} isAnimationActive={false} />)}
+                </LineChart>
+              </ResponsiveContainer>
+            ) : <div className="h-full animate-pulse rounded-2xl bg-surface2" />}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

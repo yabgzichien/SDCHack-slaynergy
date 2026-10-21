@@ -42,8 +42,24 @@ function dosmChanges(upTo: string): { q: string; d: number }[] {
   return out;
 }
 
-const fmt = (x: number, unit: string) => (unit.startsWith("doubl") ? x.toFixed(2) : x.toFixed(1));
-const unitShort = (u: string) => (u.startsWith("doubl") ? "doublings" : "points");
+// Everyday names and wording for the question pages. METR is stored as doublings (log2 minutes), so a change of x
+// doublings is shown as "grows by (2^x - 1) x 100 percent" and a level as hours or minutes.
+const PLAIN_NAME: Record<string, string> = {
+  metr: "How long a task AI can do on its own", swe: "AI fixing real software bugs",
+  hle: "AI on very hard expert exam questions", tbench: "AI doing tasks on a computer",
+};
+const plainName = (id: string) => PLAIN_NAME[id] ?? `AI on ${series.epoch[id].short}`;
+const PLAIN_TASK: Record<string, string> = { swe: "fixing real software bugs", hle: "very hard expert exam questions", tbench: "doing tasks on a computer" };
+const plainTask = (id: string) => PLAIN_TASK[id] ?? series.epoch[id].short;
+const isDoubling = (id: string) => series.epoch[id].unit.startsWith("doubl");
+const change = (id: string, x: number) => (isDoubling(id) ? `${Math.round((2 ** x - 1) * 100)}%` : `${x.toFixed(1)} points`);
+const level = (id: string, v: number) => {
+  if (!isDoubling(id)) return `${v.toFixed(1)} out of 100`;
+  const min = 2 ** v;
+  return min >= 90 ? `${(min / 60).toFixed(1)} hours` : `${Math.round(min)} minutes`;
+};
+const MONTHS = ["Jan to Mar", "Apr to Jun", "Jul to Sep", "Oct to Dec"];
+export const quarterPlain = (q: string) => `${MONTHS[Number(q[5]) - 1]} ${q.slice(0, 4)}`;
 
 function epochThreshold(id: string, q: string) {
   const g = epochGains(id, prevQuarter(q)).map((x) => x.g);
@@ -65,11 +81,11 @@ export function makeQuestions(): Question[] {
     const known = dosmShares.has(q);
     out.push({
       id: `dosm-${q}`, quarter: q, kind: "dosm", series: "dosm_clerical",
-      text: `Will clerical support's share of online job ads fall in ${quarterLabel(q)}?`,
+      text: `Will a smaller part of Malaysia's job ads be for office admin jobs in ${quarterPlain(q)}?`,
       threshold: 0,
       source: { name: "DOSM Job Market Insights", url: sourceById.dosm.url },
-      settles: phase === "next" ? `DOSM release of ${sourceById.dosm.next ?? "next quarter"}` : `DOSM ${quarterLabel(q)} release${published[q] ? ` (${published[q]})` : ""}`,
-      reason: `The clerical share fell in ${fell} of the last ${last4.length} quarters; it was ${lastShare?.toFixed(2)}% in ${quarterLabel(prevQuarter(q))} (DOSM).`,
+      settles: phase === "next" ? `DOSM release of ${sourceById.dosm.next ?? "next quarter"}` : `DOSM numbers for ${quarterPlain(q)}${published[q] ? ` (published ${published[q]})` : ""}`,
+      reason: `Office admin jobs made up a smaller part of job ads in ${fell} of the last ${last4.length} quarters. In ${quarterPlain(prevQuarter(q))} they were ${lastShare?.toFixed(1)} in every 100 job ads (DOSM).`,
       phase,
       outcome: known && phase !== "next" ? dosmShares.get(q)! - dosmShares.get(prevQuarter(q))! < 0 : undefined,
     });
@@ -82,15 +98,17 @@ export function makeQuestions(): Question[] {
     const f = e.frontier.find((x) => x.q === q);
     const pf = e.frontier.find((x) => x.q === prevQuarter(q));
     const known = phase !== "next" && f && pf;
-    const last3 = th.g.slice(-3).map((x) => fmt(x, e.unit)).join(", ");
-    const thLabel = th.d > 0 ? `by more than ${fmt(th.d, e.unit)} ${unitShort(e.unit)}` : "at all";
+    const last3 = th.g.slice(-3).map((x) => change(id, x)).join(", ");
+    const thLabel = th.d > 0 ? `by more than ${change(id, th.d)}` : "at all";
     out.push({
       id: `${id}-${q}`, quarter: q, kind: "epoch", series: id,
-      text: `Will the best ${e.name} result rise ${thLabel} in ${quarterLabel(q)}?`,
+      text: isDoubling(id)
+        ? `Will the longest task AI can do on its own grow ${thLabel} in ${quarterPlain(q)}?`
+        : `Will AI's best test score for ${plainTask(id)} go up ${thLabel} in ${quarterPlain(q)}?`,
       threshold: th.d,
       source: { name: "Epoch AI benchmarking data", url: sourceById.epoch.url },
-      settles: phase === "next" ? "Epoch AI data after the quarter closes" : `Epoch AI data for ${quarterLabel(q)} (retrieved ${sourceById.epoch.retrieved})`,
-      reason: `The best result rose ${last3} ${unitShort(e.unit)} in the last quarters (Epoch AI).`,
+      settles: phase === "next" ? "Epoch AI data after the quarter closes" : `Epoch AI results for ${quarterPlain(q)}`,
+      reason: `In the last three quarters ${isDoubling(id) ? "the longest task grew by" : "the best score went up by"} ${last3} (Epoch AI).`,
       phase,
       outcome: known ? f!.v - pf!.v > th.d + 1e-9 : undefined,
     });
@@ -154,12 +172,15 @@ export function trendProb(q: Question): number {
 export function factFor(q: Question): string | null {
   if (q.kind === "dosm") {
     const a = dosmShares.get(prevQuarter(q.quarter)), b = dosmShares.get(q.quarter);
-    return a !== undefined && b !== undefined ? `Clerical share of online job ads: ${a.toFixed(2)}% → ${b.toFixed(2)}%` : null;
+    return a !== undefined && b !== undefined ? `Office admin jobs: ${a.toFixed(1)} → ${b.toFixed(1)} in every 100 job ads` : null;
   }
   const f = series.epoch[q.series].frontier;
   const a = f.find((x) => x.q === prevQuarter(q.quarter)), b = f.find((x) => x.q === q.quarter);
   if (!a || !b) return null;
-  return `Best ${series.epoch[q.series].name}: ${fmt(a.v, series.epoch[q.series].unit)} → ${fmt(b.v, series.epoch[q.series].unit)} (${b.v - a.v >= 0 ? "+" : ""}${fmt(b.v - a.v, series.epoch[q.series].unit)} ${unitShort(series.epoch[q.series].unit)})`;
+  const id = q.series, d = b.v - a.v;
+  return isDoubling(id)
+    ? `Longest task: ${level(id, a.v)} → ${level(id, b.v)}`
+    : `Best score: ${level(id, a.v)} → ${level(id, b.v)} (${d >= 0 ? "up" : "down"} ${change(id, Math.abs(d))})`;
 }
 
 
@@ -177,8 +198,8 @@ export function ladder(q: Question): Strike[] {
   })();
   return ths.map((t, k) => {
     const label = q.kind === "dosm"
-      ? (t < 0 ? `Falls by more than ${Math.abs(t).toFixed(1)} points` : t === 0 ? "Falls at all" : `Rises by less than ${t.toFixed(1)} points`)
-      : (t > 0 ? `Rises by more than ${fmt(t, series.epoch[q.series].unit)} ${unitShort(series.epoch[q.series].unit)}` : "Rises at all");
+      ? (t < 0 ? `Drops by more than ${Math.abs(t).toFixed(1)} (per 100 ads)` : t === 0 ? "Drops at all" : `Does not rise by ${t.toFixed(1)} or more (per 100 ads)`)
+      : (t > 0 ? `${isDoubling(q.series) ? "Grows" : "Goes up"} by more than ${change(q.series, t)}` : `${isDoubling(q.series) ? "Grows" : "Goes up"} at all`);
     let outcome: boolean | undefined;
     if (q.kind === "dosm") {
       const a = dosmShares.get(prevQuarter(q.quarter)), b = dosmShares.get(q.quarter);
@@ -193,6 +214,6 @@ export function ladder(q: Question): Strike[] {
 }
 
 export function eventTitle(q: Question): string {
-  if (q.kind === "dosm") return `Clerical support's share of online job ads in ${quarterLabel(q.quarter)}`;
-  return `Best ${series.epoch[q.series].name} result in ${quarterLabel(q.quarter)}`;
+  if (q.kind === "dosm") return `Office admin jobs in Malaysian job ads, ${quarterPlain(q.quarter)}`;
+  return `${plainName(q.series)}, ${quarterPlain(q.quarter)}`;
 }

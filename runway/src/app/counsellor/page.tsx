@@ -105,38 +105,23 @@ export default function CounsellorPage() {
 function CompletionReview({ note, setNote }: { note: string; setNote: (s: string) => void }) {
   const { view, state, act, busy } = useApp();
   if (!view || !state) return null;
-  const c = state.completion, w = state.pathway, iv = view.pathway.interview;
+  const c = state.completion;
   return (
     <div className="mb-4">
       <Card tone={c.status === "confirmed" ? "rise" : "raised"}>
-        <H sub="The worker says every step is done. Read their work, then confirm. Only then is the badge issued.">Finished pathway</H>
+        <H sub="The worker says every step is done, including the courses and the mock interview with you. Check, then confirm. Only then is the badge issued.">Finished pathway</H>
         {c.status === "confirmed" ? (
           <p className="text-sm"><b>Confirmed</b> {c.confirmedAt ? `on ${new Date(c.confirmedAt).toLocaleString()}` : ""}. The badge is recorded in the tamper-evident log. {c.badgeId && <a className="underline decoration-control underline-offset-2" href={`/badge/${c.badgeId}`}>See the badge</a>}</p>
         ) : (
           <>
             <label className="block text-sm font-medium">Note to the worker (optional)
-              <textarea value={note} onChange={(e) => setNote(e.target.value)} maxLength={500} rows={2} className="mt-1 w-full rounded-2xl border border-control bg-raised p-3" placeholder="For example: strong STAR answers; we did the mock interview on Tuesday." />
+              <textarea value={note} onChange={(e) => setNote(e.target.value)} maxLength={500} rows={2} className="mt-1 w-full rounded-2xl border border-control bg-raised p-3" placeholder="For example: we did the mock interview on Tuesday; strong answers." />
             </label>
             <div className="mt-3"><Btn onClick={() => act("confirmCompletion", { note })} disabled={busy}>Confirm completion and issue the badge</Btn></div>
           </>
         )}
       </Card>
       <Portfolio counsellor />
-      <Card className="mt-4">
-        <H>Story and interview answers</H>
-        <dl className="grid gap-2 text-sm">
-          {iv.story.fields.map((f) => <div key={f.id}><dt className="text-muted">{f.label}</dt><dd>{w.story?.[f.id] || "—"}</dd></div>)}
-        </dl>
-        <div className="mt-4 space-y-3">
-          {iv.star.questions.map((q) => (
-            <div key={q.id} className="rounded-2xl bg-raised p-3 text-sm">
-              <p className="font-medium">{q.text}</p>
-              <dl className="mt-1 grid gap-1 sm:grid-cols-2">{iv.star.parts.map((p) => <div key={p.id}><dt className="text-xs text-muted">{p.label}</dt><dd>{w.star?.[q.id]?.[p.id] || "—"}</dd></div>)}</dl>
-            </div>
-          ))}
-        </div>
-        <p className="mt-3 text-sm text-muted">Rehearsal: {w.rehearsal?.length ?? 0} of {iv.rehearsal.length} checks ticked by the worker. A mock interview with you is the last step.</p>
-      </Card>
     </div>
   );
 }

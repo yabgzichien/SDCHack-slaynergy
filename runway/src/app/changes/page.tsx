@@ -2,7 +2,7 @@
 import { useApp } from "@/components/AppProvider";
 import { Btn, Card, PageTitle, Skeleton, SourceChip } from "@/components/ui";
 
-const KIND: Record<string, string> = { market: "Questions answered", futures: "The three futures", forecasters: "Forecasters", skills: "Your skills", jobs: "Your jobs", plan: "Your plan", demand: "Job demand" };
+const KIND: Record<string, string> = { market: "Questions answered", futures: "How fast AI is moving", forecasters: "Players", skills: "Your skills", jobs: "Your jobs", plan: "Your plan", demand: "Job demand" };
 const ORDER = ["plan", "jobs", "skills", "futures", "market", "forecasters", "demand"];
 
 // One question: what did the new data change for me, and why?
@@ -13,7 +13,7 @@ export default function ChangesPage() {
   if (!changes) {
     return (
       <div>
-        <PageTitle title="Nothing has changed yet.">Load the new figures from the menu, and this page lists every change they make, each with its source.</PageTitle>
+        <PageTitle title="Nothing has changed yet.">When you load the new numbers from the menu, this page shows everything that changed.</PageTitle>
         <Btn href="/skills" variant="ghost">See your skills</Btn>
       </div>
     );

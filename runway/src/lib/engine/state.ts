@@ -29,15 +29,12 @@ export type Approval = {
   note?: string;
   planRoleId?: string;
 };
-// The worker's own pathway work: the AI task card, story, STAR answers and rehearsal. Kept in the session only.
+// The worker's own pathway work: the AI quiz, the optional portfolio piece and the resume step. Kept in the session only.
 export type PathwayWork = {
   prompt?: string;
   quiz?: { attempts: number; passed: boolean; found: string[]; wrong: string[] };
   template?: string;
   sheet?: Record<string, string>;
-  story?: Record<string, string>;
-  star?: Record<string, Record<string, string>>;
-  rehearsal?: string[];
   resumeApplied?: boolean;
   // Shown on the public badge page only if the worker opts in.
   showName?: boolean;

@@ -14,12 +14,13 @@ export function ForecastDetails() {
 
   return (
     <div>
-      <h2 id="how" className="mb-3 mt-10 text-xl font-medium">How the forecast is made</h2>
+      <h2 id="how" className="mb-3 mt-10 text-xl font-medium">What all these guesses are for</h2>
+      <p className="mb-3 text-sm text-muted">Nobody knows how fast AI will change jobs. Runway keeps three possible speeds in mind and uses the guesses and the real numbers to decide which is most likely. That decides the dates you see for your skills and jobs.</p>
 
       <Card tone="raised">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-base font-semibold">How likely is each future?</h2>
-          {w.usingOverride ? <Chip tone="fall">You set these chances</Chip> : <span className="text-sm text-muted">{w.release ? "Updated with the April to June 2026 figures" : "Using figures up to March 2026"}</span>}
+          <h2 className="text-base font-semibold">How fast is AI changing jobs? Our best guess</h2>
+          {w.usingOverride ? <Chip tone="fall">You set these yourself</Chip> : <span className="text-sm text-muted">{w.release ? "Updated with the Apr to Jun 2026 numbers" : "Using numbers up to Mar 2026"}</span>}
         </div>
         <div className="mt-4"><FutureBar futures={w.futures} height={16} /></div>
         <div className="mt-5 grid gap-4 md:grid-cols-3">
@@ -34,38 +35,38 @@ export function ForecastDetails() {
           ))}
         </div>
         <div className="mt-4"><Estimate /></div>
-        <More summary="Where do these chances come from?">
+        <More summary="Where do these numbers come from?">
           <ol className="list-decimal space-y-2 pl-5">
-          <li>Each future makes its own guess about the next official figures: Malaysian job ads and AI test scores.</li>
-          <li>When the real figures come out, the futures that guessed well become more likely.</li>
-          <li>In between, a crowd of forecasters bets points on the next figures. Those who were right before get more say.</li>
+          <li>Each speed (slow, medium, fast) predicts what the next official numbers will be: Malaysian job ads and AI test scores.</li>
+          <li>When the real numbers come out, the speed that predicted best becomes more likely.</li>
+          <li>Before then, players guess on the questions above. Players who were right before count more.</li>
         </ol>
-        <More summary="The detail: settings and accuracy">
+        <More summary="For experts: exact settings and accuracy">
           <ul className="list-disc space-y-1 pl-5">
             {w.futures.map((f) => <li key={f.id}><span className="text-ink">{f.name}:</span> {f.blurb}</li>)}
           </ul>
           <p>The sources are DOSM Job Market Insights (job ads) and Epoch AI benchmark results (AI test scores). Replaying {r.questions} past releases set today&apos;s starting chances. Until the next release, the market&apos;s prices tilt them a little.</p>
-          <p>In this demo the forecasters are simulated, and most of them read the three futures themselves, so their prices mostly echo them. The new information comes from the real releases and from your own trades.</p>
-          <p className="text-ink">How accurate was it on the {r.questions} replayed questions? (Brier score, lower is better)</p>
+          <p>In this demo the other players are made by the computer, and most of them read the three futures themselves, so their prices mostly echo them. The new information comes from the real releases and from your own trades.</p>
+          <p className="text-ink">How accurate was it on the {r.questions} replayed questions? (error score: 0 is perfect, lower is better)</p>
           <dl className="num max-w-md space-y-1.5">
             {[
-              ["Accuracy-weighted forecasters", r.brierWeighted, true],
-              ["The market price", r.brierLmsr, false],
-              ["All forecasters, equal weight", r.brierUnweighted, false],
+              ["Players, with better players counting more", r.brierWeighted, true],
+              ["The Yes % on each question", r.brierLmsr, false],
+              ["All players counting the same", r.brierUnweighted, false],
               ["Always saying 50%", r.brierCoin, false],
-              ["Always saying the past share of yes", r.brierBaseRate, false],
+              ["Always guessing what usually happened before", r.brierBaseRate, false],
             ].map(([k, v, best]) => (
               <div key={k as string} className="flex justify-between gap-3"><dt className={best ? "font-medium text-ink" : ""}>{k as string}</dt><dd className={best ? "font-medium text-ink" : ""}>{(v as number).toFixed(3)}</dd></div>
             ))}
           </dl>
-          <p>The edge over a coin flip is small: these questions are hard. Weighting forecasters by their track record helps most.</p>
+          <p>It only beats a coin flip by a little, because these questions are hard. Letting better players count more helps most.</p>
         </More>
         </More>
       </Card>
 
       <details className="mt-4 rounded-[22px] bg-surface p-5 sm:p-6">
-        <summary className="min-h-11 cursor-pointer py-2 font-medium">Disagree? Set the chances yourself</summary>
-        <p className="text-sm text-muted">Your own chances change every skill date, job score and your plan, and are marked as yours. They always add up to 100%.</p>
+        <summary className="min-h-11 cursor-pointer py-2 font-medium">Disagree? Set the speeds yourself</summary>
+        <p className="text-sm text-muted">Your choice changes every skill date, job score and your plan, and is marked as yours. The three always add up to 100%.</p>
         <div className="mt-4 grid gap-4 sm:grid-cols-3">
           {(["slow", "medium", "fast"] as const).map((k) => (
             <label key={k} className="block text-sm">
@@ -75,8 +76,8 @@ export function ForecastDetails() {
           ))}
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
-          <Btn onClick={() => act("override", { weights: sl })} disabled={busy}>Use my chances</Btn>
-          {w.usingOverride && <Btn variant="ghost" onClick={() => { setCustom(null); act("override", { weights: null }); }} disabled={busy}>Back to the crowd&apos;s chances</Btn>}
+          <Btn onClick={() => act("override", { weights: sl })} disabled={busy}>Use my numbers</Btn>
+          {w.usingOverride && <Btn variant="ghost" onClick={() => { setCustom(null); act("override", { weights: null }); }} disabled={busy}>Go back to Runway&apos;s numbers</Btn>}
         </div>
       </details>
 

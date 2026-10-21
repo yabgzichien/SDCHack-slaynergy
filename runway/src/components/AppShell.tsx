@@ -7,8 +7,9 @@ import { STEPS, StepBar, StepRail, forgetProgress } from "./Journey";
 
 type Item = { href: string; label: string; match?: string[]; count?: number };
 
-// Besides the five steps, only two places: the forecasting market and the counsellor's side. The rest is linked from pages.
+// Besides the five steps, three places: job market trends, the forecasting market and the counsellor's side. The rest is linked from pages.
 const EXTRA: Item[] = [
+  { href: "/trends", label: "Job market trends", match: ["/trends", "/radar"] },
   { href: "/market", label: "Prediction market", match: ["/market", "/leaderboard"] },
   { href: "/counsellor", label: "Counsellor view" },
 ];
@@ -131,7 +132,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="min-w-0 flex-1">
         <main id="main" className="mx-auto w-full max-w-[1100px] px-4 pb-16 pt-8 sm:px-8 lg:pt-14">{children}</main>
         <footer className="mx-auto max-w-[1100px] px-4 pb-10 text-sm text-muted sm:px-8">
-          <p>Estimates, not certainties. You decide; a counsellor reviews. Forecasts use points, never money, and the other forecasters are simulated.</p>
+          <p>Estimates, not certainties. You decide; a counsellor reviews. The guessing game uses points, never money, and the other players are computer-made.</p>
           <p className="mt-1">SDC Hackathon 2026, Domain 1. Apache-2.0. {OTHER.filter((o) => o.href !== "/changes").map((o) => <span key={o.href}> · <Link href={o.href} className="underline decoration-control underline-offset-2 hover:text-ink">{o.label}</Link></span>)}</p>
         </footer>
       </div>

@@ -146,7 +146,7 @@ export function computeWorld(state: SessionState, nowMs: number = Date.now()): W
         };
       });
       return {
-        id: q.id, quarter: q.quarter, title: eventTitle(q), short: q.kind === "dosm" ? "Clerical job-ad share" : series.epoch[q.series].name, text: q.text, source: q.source, settles: q.settles, reason: q.reason, phase,
+        id: q.id, quarter: q.quarter, title: eventTitle(q), short: q.kind === "dosm" ? "Office admin jobs" : series.epoch[q.series].name, text: q.text, source: q.source, settles: q.settles, reason: q.reason, phase,
         strikes: views, clockStart: ph.t0, nowT: ph.nowT, fact: settleNow ? factFor(q) : null, settled: settleNow,
       };
     });

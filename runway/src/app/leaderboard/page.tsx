@@ -34,15 +34,15 @@ export default function LeaderboardPage() {
 
   return (
     <div>
-      <PageTitle title={you.rank ? `You rank ${ord(you.rank)} of ${ranked} forecasters.` : `${best.label[0].toUpperCase()}${best.label.slice(1)}s hold ${best.influence.toFixed(1)}× the average influence.`}>
-        The more accurate a forecaster has been, the more weight their trades carry. {worst.label[0].toUpperCase()}{worst.label.slice(1)}s, the least accurate, are down to {worst.influence.toFixed(2)}×.
+      <PageTitle title={you.rank ? `You are ${ord(you.rank)} out of ${ranked} players.` : "Who guesses best?"}>
+        Players who guess right more often get a bigger vote. Right now {best.label}s count the most ({best.influence.toFixed(1)}× a normal vote) and {worst.label}s count the least ({worst.influence.toFixed(2)}×).
       </PageTitle>
 
       <div className="mb-4 grid gap-4 lg:grid-cols-2">
           <Card>
-            <H>How influence works</H>
-            <p className="text-sm">Everyone starts equal. Each time real figures come out, forecasters who were confidently right keep their influence and those who were confidently wrong lose most of theirs. More influence means a bigger budget to bet with, so accurate forecasters move the chances more.</p>
-            <More summary="The formula">
+            <H>How the vote works</H>
+            <p className="text-sm">Everyone starts with a normal vote (1×). Each time real numbers come out, players who were sure and right keep their vote, and players who were sure and wrong lose most of it. A bigger vote means more points to guess with, so good players move the Yes % more.</p>
+            <More summary="For experts: the formula">
               <p>Each forecaster&apos;s influence is multiplied by e<sup>−{lb.eta}×Brier</sup> when a question settles, then rescaled so the crowd averages 1. Extreme values are capped so no one forecaster can dominate. This is the Hedge rule, an online-learning method for combining forecasters.</p>
               <p>Brier score: the average squared gap between the chance given and what happened. 0 is perfect; always saying 50% scores 0.25.</p>
             </More>
@@ -50,23 +50,23 @@ export default function LeaderboardPage() {
           <Card tone={you.rank ? "accent" : undefined}>
             <H>You</H>
             {you.brier === null ? (
-              <p className="text-sm">Your forecasts are scored when the new data is released. Your forecast on a question is the chance on its main line after your last bet. A question you skip counts as 50%.</p>
+              <p className="text-sm">Your guesses get scored when the new numbers come out. A question you skip counts as a 50/50 guess.</p>
             ) : (
               <dl className="num space-y-1.5 text-sm">
-                <div className="flex justify-between"><dt className="text-muted">Error score (lower is better)</dt><dd>{you.brier.toFixed(3)}</dd></div>
-                <div className="flex justify-between"><dt className="text-muted">Questions you bet on</dt><dd>{view.world.you.traded} of {you.questions}</dd></div>
-                <div className="flex justify-between"><dt className="text-muted">Influence</dt><dd>{you.influence.toFixed(2)}×</dd></div>
-                <div className="flex justify-between"><dt className="text-muted">Largest order allowed</dt><dd>{view.world.you.maxOrder} points</dd></div>
+                <div className="flex justify-between"><dt className="text-muted">Error score (0 is perfect)</dt><dd>{you.brier.toFixed(3)}</dd></div>
+                <div className="flex justify-between"><dt className="text-muted">Questions you guessed on</dt><dd>{view.world.you.traded} of {you.questions}</dd></div>
+                <div className="flex justify-between"><dt className="text-muted">Your vote counts</dt><dd>{you.influence.toFixed(2)}×</dd></div>
+                <div className="flex justify-between"><dt className="text-muted">Most points per guess</dt><dd>{view.world.you.maxOrder} points</dd></div>
               </dl>
             )}
-            <div className="mt-3"><Btn href="/market" variant="ghost">Make a forecast</Btn></div>
+            <div className="mt-3"><Btn href="/market" variant="ghost">Make a guess</Btn></div>
           </Card>
         </div>
 
       <div>
         <Card className="min-w-0">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-base font-semibold">Ranked by accuracy</h2>
+            <h2 className="text-base font-semibold">Best guessers first</h2>
             <DemoLabel />
           </div>
           <div className="scroll-x -mx-1 mb-3 flex gap-1.5 px-1 pb-1" role="group" aria-label="Filter by type">
@@ -81,10 +81,10 @@ export default function LeaderboardPage() {
               <thead>
                 <tr className="text-left text-xs text-muted">
                   <th className="py-2 pr-2 font-normal">Rank</th>
-                  <th className="py-2 pr-2 font-normal">Forecaster</th>
-                  <th className="py-2 pr-2 text-right font-normal">Brier</th>
+                  <th className="py-2 pr-2 font-normal">Player</th>
+                  <th className="py-2 pr-2 text-right font-normal">Error score</th>
                   <th className="hidden py-2 pr-2 text-right font-normal sm:table-cell">Questions</th>
-                  <th className="py-2 pr-2 font-normal">Influence</th>
+                  <th className="py-2 pr-2 font-normal">Vote counts</th>
                   {lb.released && <th className="hidden py-2 text-right font-normal sm:table-cell">Change</th>}
                 </tr>
               </thead>
@@ -95,15 +95,15 @@ export default function LeaderboardPage() {
             </table>
           </div>
           {rows.length > 25 && <div className="mt-3"><Btn variant="quiet" onClick={() => setAll(!all)}>{all ? "Show the top 25" : `Show all ${rows.length}`}</Btn></div>}
-          <p className="mt-3 text-sm text-muted">Brier score (lower is better): the average squared gap between the chance given and what happened (0 is perfect; always saying 50% scores 0.25). Simulated forecasters are scored on {lb.rows[0]?.questions ?? 0} questions, replayed from real past releases{lb.released ? " plus the 2026 Q2 release" : ""}.</p>
+          <p className="mt-3 text-sm text-muted">Error score: how far a player&apos;s guesses were from what really happened. 0 is perfect; always guessing 50/50 scores 0.25. Computer-made players are scored on {lb.rows[0]?.questions ?? 0} past questions with real answers{lb.released ? ", plus the Apr to Jun 2026 numbers" : ""}.</p>
         </Card>
 
       </div>
 
       <Card className="mt-4">
-        <H sub="Average influence of each type after every replayed quarter. Everyone starts at 1.">Influence follows accuracy over time</H>
+        <H sub="How much each type of player's vote counted after each past quarter. Everyone starts at 1×.">Good guessers gain a bigger vote over time</H>
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_16rem]">
-          <div className="h-64 min-w-0" role="img" aria-label="Line chart of average influence by forecaster type over the replayed quarters">
+          <div className="h-64 min-w-0" role="img" aria-label="Line chart: how much each type of player's vote counted, quarter by quarter">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={history} margin={{ left: -16, right: 8, top: 8 }}>
                 <CartesianGrid stroke="var(--line)" vertical={false} />
@@ -116,7 +116,7 @@ export default function LeaderboardPage() {
           </div>
           <table className="num self-center text-sm">
             <caption className="sr-only">Average Brier score and influence by type</caption>
-            <thead><tr className="text-left text-xs text-muted"><th className="pb-1 font-normal">Type</th><th className="pb-1 text-right font-normal">Brier</th><th className="pb-1 text-right font-normal">Influence</th></tr></thead>
+            <thead><tr className="text-left text-xs text-muted"><th className="pb-1 font-normal">Type</th><th className="pb-1 text-right font-normal">Error score</th><th className="pb-1 text-right font-normal">Vote</th></tr></thead>
             <tbody>
               {[...lb.kinds].sort((a, b) => a.brier - b.brier).map((k) => (
                 <tr key={k.kind}>
@@ -139,8 +139,8 @@ function RowView({ r, released, max }: { r: LeaderRow; released: boolean; max: n
     <tr className={`border-t border-line ${r.you ? "bg-accentsoft" : ""}`}>
       <td className="num py-2.5 pr-2">{r.rank ?? "–"}</td>
       <td className="py-2.5 pr-2">
-        <p className={r.you ? "font-medium" : ""}>{r.you ? "You" : `Forecaster ${r.id.slice(1)}`}</p>
-        <p className="text-xs text-muted">{r.you ? "Skipped questions count as 50%" : r.kind}</p>
+        <p className={r.you ? "font-medium" : ""}>{r.you ? "You" : `Player ${r.id.slice(1)}`}</p>
+        <p className="text-xs text-muted">{r.you ? "Skipped questions count as 50/50" : r.kind}</p>
       </td>
       <td className="num py-2.5 pr-2 text-right">{r.brier === null ? "–" : r.brier.toFixed(3)}</td>
       <td className="num hidden py-2.5 pr-2 text-right sm:table-cell">{r.questions}</td>
