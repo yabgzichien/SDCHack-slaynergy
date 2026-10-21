@@ -2,6 +2,7 @@
 
 /* Jobbery · professional career guidance, with a quiet editorial finish. */
 :root {
+  color-scheme: only light; /* one designed theme: browser dark mode or force-dark must not recolour half the page */
   --bg: #fffdf8;
   --surface: #f1faee;
   --surface-2: #c7e9c0;
@@ -27,27 +28,6 @@
   --demo-soft: #f1faee;
   --focus: #6fa66a;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #274a2a; --surface: #355c35; --surface-2: #486f45; --raised: #355c35;
-    --ink: #fff0d8; --muted: #c7e9c0; --line: #6fa66a; --control: #547451;
-    --accent: #9bcb95; --accent-soft: #486f45; --accent-ink: #1f421f;
-    --primary: #9bcb95; --primary-ink: #1f421f;
-    --slow: #c7e9c0; --medium: #9bcb95; --fast: #fff0d8;
-    --rise: #9bcb95; --rise-soft: #355c35; --fall: #f8c982; --fall-soft: #4f4128; --negative: #f8c982;
-    --demo: #c7e9c0; --demo-soft: #486f45; --focus: #f8c982;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #274a2a; --surface: #355c35; --surface-2: #486f45; --raised: #355c35;
-  --ink: #fff0d8; --muted: #c7e9c0; --line: #6fa66a; --control: #547451;
-  --accent: #9bcb95; --accent-soft: #486f45; --accent-ink: #1f421f;
-  --primary: #9bcb95; --primary-ink: #1f421f;
-  --slow: #c7e9c0; --medium: #9bcb95; --fast: #fff0d8;
-  --rise: #9bcb95; --rise-soft: #355c35; --fall: #f8c982; --fall-soft: #4f4128; --negative: #f8c982;
-  --demo: #c7e9c0; --demo-soft: #486f45; --focus: #f8c982;
-}
-
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);

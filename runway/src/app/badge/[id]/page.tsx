@@ -13,7 +13,7 @@ const STRAND: Record<string, string> = { job: "Job skills", ai: "AI at work", pe
 export default async function BadgePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const entry = await findBadge(id);
-  if (!entry) return <div><PageTitle title="Badge not found">This badge id is not in Runway&apos;s log. Check the link.</PageTitle><Btn href="/">Go to Runway</Btn></div>;
+  if (!entry) return <div><PageTitle title="Badge not found">This badge id is not in Jobbery&apos;s log. Check the link.</PageTitle><Btn href="/">Go to Jobbery</Btn></div>;
   const b = JSON.parse(entry.payload) as BadgeRecord;
   const h = await headers();
   const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost";
@@ -21,7 +21,7 @@ export default async function BadgePage({ params }: { params: Promise<{ id: stri
   const url = `${proto}://${host}/badge/${b.id}`;
   return (
     <div>
-      <PageTitle title={b.title}>{b.holder} completed this pathway on Runway, confirmed by an employment counsellor on {day(b.counsellor.confirmedAt)}.</PageTitle>
+      <PageTitle title={b.title}>{b.holder} completed this pathway on Jobbery, confirmed by an employment counsellor on {day(b.counsellor.confirmedAt)}.</PageTitle>
       <div className="-mt-2 mb-4 flex flex-wrap gap-2">
         {b.strands.map((s) => <Chip key={s} tone="accent">{s}</Chip>)}
         {b.synthetic && <Chip tone="demo">Made-up demo profile</Chip>}
@@ -72,7 +72,7 @@ export default async function BadgePage({ params }: { params: Promise<{ id: stri
 
 function BadgeArt({ title, date }: { title: string; date: string }) {
   return (
-    <svg viewBox="0 0 320 200" role="img" aria-label={`Runway pathway badge: ${title}, ${date}`} className="w-full rounded-2xl">
+    <svg viewBox="0 0 320 200" role="img" aria-label={`Jobbery pathway badge: ${title}, ${date}`} className="w-full rounded-2xl">
       <rect width="320" height="200" rx="20" fill="var(--accent)" />
       <rect x="20" y="132" width="280" height="10" rx="5" fill="var(--surface)" opacity="0.35" />
       <rect x="20" y="132" width="280" height="10" rx="5" fill="var(--surface)" opacity="0.9" />

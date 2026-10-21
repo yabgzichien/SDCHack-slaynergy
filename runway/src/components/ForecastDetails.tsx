@@ -15,7 +15,7 @@ export function ForecastDetails() {
   return (
     <div>
       <h2 id="how" className="mb-3 mt-10 text-xl font-medium">What all these guesses are for</h2>
-      <p className="mb-3 text-sm text-muted">Nobody knows how fast AI will change jobs. Runway keeps three possible speeds in mind and uses the guesses and the real numbers to decide which is most likely. That decides the dates you see for your skills and jobs.</p>
+      <p className="mb-3 text-sm text-muted">Nobody knows how fast AI will change jobs. Jobbery keeps three possible speeds in mind and uses the guesses and the real numbers to decide which is most likely. That decides the dates you see for your skills and jobs.</p>
 
       <Card tone="raised">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -77,7 +77,7 @@ export function ForecastDetails() {
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           <Btn onClick={() => act("override", { weights: sl })} disabled={busy}>Use my numbers</Btn>
-          {w.usingOverride && <Btn variant="ghost" onClick={() => { setCustom(null); act("override", { weights: null }); }} disabled={busy}>Go back to Runway&apos;s numbers</Btn>}
+          {w.usingOverride && <Btn variant="ghost" onClick={() => { setCustom(null); act("override", { weights: null }); }} disabled={busy}>Go back to Jobbery&apos;s numbers</Btn>}
         </div>
       </details>
 

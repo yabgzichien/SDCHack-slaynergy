@@ -24,7 +24,7 @@ export default function MarketPage() {
     <div>
       <PageTitle title="Guess what the next official numbers will show"
         aside={<div className="num text-right text-sm"><p>You have {w.user.balance.toFixed(0)} points</p><p className="text-muted">Your vote counts {w.you.influence.toFixed(1)}×</p></div>}>
-        Free points, never money. The better your guesses, the more your vote counts in Runway&apos;s forecast of how fast AI changes jobs.
+        Free points, never money. The better your guesses, the more your vote counts in Jobbery&apos;s forecast of how fast AI changes jobs.
       </PageTitle>
 
       <ol className="mb-5 grid gap-2 sm:grid-cols-3">
