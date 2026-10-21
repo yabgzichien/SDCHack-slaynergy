@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server";
 import { computeView } from "@/lib/engine/view";
 import { computeWorld } from "@/lib/engine/world";
-import { skillById, personas, occupationById, roleById, INTERESTS, isEducation } from "@/lib/engine/data";
-import { initialState, type Profile, type SessionState } from "@/lib/engine/state";
+import { skillById, personas, occupationById, roleById, INTERESTS, isEducation, isStudyField, EDUCATION_RANK } from "@/lib/engine/data";
+import { initialState, STAY_ID, type Profile, type SessionState } from "@/lib/engine/state";
 import { normaliseOverride } from "@/lib/engine/futures";
 import { stateById } from "@/lib/engine/geo";
 import { respond } from "@/lib/server/respond";
 import { getSessionId } from "@/lib/server/session";
 import { loadState, logEvent, resetState, saveState } from "@/lib/server/store";
+import { badgeRecord, cardById, completionGate, gradeQuiz, MAX_TEXT } from "@/lib/engine/pathway";
+import type { PathwayWork } from "@/lib/engine/state";
+import crypto from "node:crypto";
 
 export const dynamic = "force-dynamic";
 
@@ -23,13 +26,15 @@ function cleanProfile(raw: Record<string, unknown>): Profile | string {
   if (!occupationById[occ]) return "Choose your previous job from the list.";
   const skills = Array.isArray(raw.skills) ? [...new Set(raw.skills.map(String))].filter((s) => skillById[s]) : [];
   if (skills.length < 1) return "Pick at least one skill you have.";
+  const education = isEducation(raw.education) ? raw.education : occupationById[occ].education;
   return {
     personaId: raw.personaId ? String(raw.personaId) : undefined,
     name: String(raw.name ?? "You").slice(0, 40) || "You",
     state: typeof raw.state === "string" && stateById[raw.state] ? raw.state : null,
     age: raw.age === null || raw.age === undefined || raw.age === "" ? null : Math.round(num(raw.age, 16, 80, 0)) || null,
     occupationId: occ,
-    education: isEducation(raw.education) ? raw.education : occupationById[occ].education,
+    education,
+    study: EDUCATION_RANK[education] >= 1 ? (isStudyField(raw.study) ? raw.study : occupationById[occ].sector) : null,
     years: Math.round(num(raw.years, 0, 40, 2)),
     skills,
     interests: (Array.isArray(raw.interests) ? raw.interests.map(String) : []).filter((i) => INTEREST_IDS.includes(i)).slice(0, 3),
@@ -38,6 +43,25 @@ function cleanProfile(raw: Record<string, unknown>): Profile | string {
     budget: raw.budget === "low" || raw.budget === "flexible" ? raw.budget : "free",
     synthetic: !!raw.synthetic,
   };
+}
+
+const text = (x: unknown) => String(x ?? "").slice(0, MAX_TEXT);
+const fields = (x: unknown, keys: string[]) => {
+  const r = (x && typeof x === "object" ? x : {}) as Record<string, unknown>;
+  return Object.fromEntries(keys.map((k) => [k, text(r[k])]));
+};
+
+// Only known fields are kept, each trimmed to a fixed length.
+function cleanPathway(raw: Record<string, unknown>, cardId: string | undefined): Partial<PathwayWork> {
+  const out: Partial<PathwayWork> = {};
+  const card = cardId ? cardById(cardId) : null;
+  if ("prompt" in raw) out.prompt = text(raw.prompt);
+  if ("template" in raw) out.template = text(raw.template);
+  if ("sheet" in raw && card) out.sheet = fields(raw.sheet, card.sheetHeadings.map((h) => h.id));
+  if ("resumeApplied" in raw) out.resumeApplied = !!raw.resumeApplied;
+  if ("showName" in raw) out.showName = !!raw.showName;
+  if ("publishPortfolio" in raw) out.publishPortfolio = !!raw.publishPortfolio;
+  return out;
 }
 
 export async function POST(req: Request) {
@@ -58,14 +82,14 @@ export async function POST(req: Request) {
       const p = personas.find((x) => x.id === body.personaId);
       if (!p) return bad("Unknown demo profile.");
       const o = occupationById[p.occupation];
-      state = { ...initialState(), profile: { personaId: p.id, name: p.name, age: p.age, state: p.state ?? null, occupationId: p.occupation, education: p.education, years: p.years, skills: o.skills, interests: p.interests, months: p.months, hoursPerWeek: p.hoursPerWeek, budget: "free", synthetic: true } };
+      state = { ...initialState(), profile: { personaId: p.id, name: p.name, age: p.age, state: p.state ?? null, occupationId: p.occupation, education: p.education, study: EDUCATION_RANK[p.education] >= 1 ? o.sector : null, years: p.years, skills: o.skills, interests: p.interests, months: p.months, hoursPerWeek: p.hoursPerWeek, budget: "free", synthetic: true } };
       await logEvent("profile", sid, { synthetic: true, persona: p.id, months: p.months });
       break;
     }
     case "setProfile": {
       const prof = cleanProfile((body.profile ?? {}) as Record<string, unknown>);
       if (typeof prof === "string") return bad(prof);
-      state = { ...state, profile: prof, chosenRoleId: null, approval: { status: "draft" }, progress: {} };
+      state = { ...state, profile: prof, chosenRoleId: null, approval: { status: "draft" }, progress: {}, pathway: {}, completion: { status: "none" } };
       await logEvent("profile", sid, { synthetic: prof.synthetic, occupation: prof.occupationId, months: prof.months });
       break;
     }
@@ -120,8 +144,8 @@ export async function POST(req: Request) {
     }
     case "chooseRole": {
       const id = String(body.roleId ?? "");
-      if (!roleById[id]) return bad("Unknown role.");
-      state = { ...state, chosenRoleId: id, approval: { status: "draft" }, progress: {} };
+      if (id !== STAY_ID && !roleById[id]) return bad("Unknown role.");
+      state = { ...state, chosenRoleId: id, approval: { status: "draft" }, progress: {}, pathway: {}, completion: { status: "none" } };
       break;
     }
     case "progress": {
@@ -139,6 +163,40 @@ export async function POST(req: Request) {
       if (state.approval.status !== "submitted") return bad("There is no plan waiting for approval.");
       state = { ...state, approval: { ...state.approval, status: "approved", approvedAt: new Date().toISOString(), note: String(body.note ?? "").slice(0, 500) } };
       await logEvent("plan_approved", sid, { role: state.approval.planRoleId, note: state.approval.note ? "added" : "none" });
+      break;
+    }
+    case "pathwaySave": {
+      if (state.completion.status === "confirmed") return bad("This pathway is finished and its badge is issued.");
+      const plan = computeView(state).plan;
+      const cardId = plan?.steps.find((s) => s.activity === "task")?.cardId;
+      state = { ...state, pathway: { ...state.pathway, ...cleanPathway((body.work ?? {}) as Record<string, unknown>, cardId) } };
+      break;
+    }
+    case "quizSubmit": {
+      const plan = computeView(state).plan;
+      const card = cardById(plan?.steps.find((s) => s.activity === "task")?.cardId ?? "");
+      if (!card) return bad("There is no AI quiz in this plan.");
+      const g = gradeQuiz(card, Array.isArray(body.flagged) ? body.flagged.map(String) : []);
+      const prev = state.pathway.quiz;
+      state = { ...state, pathway: { ...state.pathway, quiz: { attempts: (prev?.attempts ?? 0) + 1, passed: !!prev?.passed || g.passed, found: g.found, wrong: g.wrong } } };
+      break;
+    }
+    case "requestCompletion": {
+      const gate = completionGate(computeView(state).plan, state);
+      if (!gate.ok) return bad(gate.missing.join(" "));
+      state = { ...state, completion: { status: "requested", requestedAt: new Date().toISOString() } };
+      await logEvent("completion_requested", sid, { role: state.approval.planRoleId });
+      break;
+    }
+    case "confirmCompletion": {
+      if (state.completion.status !== "requested") return bad("There is no finished pathway waiting for confirmation.");
+      const plan = computeView(state).plan;
+      if (!plan || !completionGate(plan, state).ok) return bad("The pathway is not finished yet.");
+      const now = new Date().toISOString();
+      const id = crypto.randomBytes(9).toString("base64url");
+      const note = String(body.note ?? "").slice(0, 500);
+      await logEvent("badge_issued", sid, badgeRecord(plan, state, id, now));
+      state = { ...state, completion: { ...state.completion, status: "confirmed", confirmedAt: now, note, badgeId: id } };
       break;
     }
     default:

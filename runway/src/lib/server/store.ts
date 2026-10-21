@@ -100,6 +100,11 @@ export const logEvent = (type: string, sid: string, payload: unknown) => db().ap
 export const logHead = () => db().head();
 export const logAll = () => db().all();
 export const logRecent = (n: number) => db().recent(n);
+// A badge is read back from its log entry, so the public page shows exactly what was recorded.
+export async function findBadge(id: string): Promise<LogEntry | null> {
+  if (!/^[A-Za-z0-9_-]{6,32}$/.test(id)) return null;
+  return (await db().all()).find((e) => e.type === "badge_issued" && (JSON.parse(e.payload) as { id?: string }).id === id) ?? null;
+}
 
 export function verifyChain(entries: LogEntry[]): { ok: boolean; checked: number; brokenAt: number | null } {
   let prev = GENESIS;

@@ -1,4 +1,4 @@
-import { roles, roleById, skillById, series, courses, courseById, GROUP_LABEL, EDUCATION_RANK, isEducation, type Education, type SectorId, type GroupKey, type Role, type Course } from "./data";
+import { roles, roleById, skillById, series, courses, courseById, GROUP_LABEL, EDUCATION_RANK, isEducation, isStudyField, fieldLocked, type Education, type StudyField, type SectorId, type GroupKey, type Role, type Course } from "./data";
 import { expiryFor, durability, fmtYear, type SkillExpiry } from "./expiry";
 import type { Weights3 } from "./futures";
 import { clamp } from "./math";
@@ -7,6 +7,8 @@ import { FUTURE_IDS } from "./futures-def";
 // The ONLY inputs matching may see. Age, gender and background are not on this type, on purpose.
 export type MatchInput = {
   skills: string[]; months: number; hoursPerWeek: number; interests: string[]; goals: string[]; education: Education; field?: SectorId;
+  // What they studied. Only used for the entry check on field-locked degree jobs; when unknown, their last job's field stands in.
+  study?: StudyField | null;
 };
 export function pickInputs(p: Record<string, unknown> & Partial<MatchInput>): MatchInput {
   return {
@@ -17,6 +19,7 @@ export function pickInputs(p: Record<string, unknown> & Partial<MatchInput>): Ma
     goals: [...(p.goals ?? [])].sort(),
     education: isEducation(p.education) ? p.education : "diploma",
     field: p.field,
+    study: isStudyField(p.study) ? p.study : p.study === null ? null : undefined,
   };
 }
 
@@ -60,6 +63,7 @@ export function coverGaps(gaps: string[]): Pick[] {
   while (left.size) {
     let best: { c: Course; cover: string[]; score: number } | null = null;
     for (const c of courses) {
+      if (c.strand) continue;
       const cover = c.skills.filter((s) => left.has(s));
       if (!cover.length) continue;
       const score = cover.length / c.hours;
@@ -76,7 +80,7 @@ export function coverGaps(gaps: string[]): Pick[] {
 
 export type Gap = { skillId: string; name: string; importance: number; expiry: SkillExpiry };
 export type RoleMatch = {
-  roleId: string; title: string; onet: string; sector: SectorId; requires: Education; closest: boolean; blocked: boolean; sdgTarget: string; sdgWhy: string; group: GroupKey;
+  roleId: string; title: string; onet: string; sector: SectorId; requires: Education; closest: boolean; blocked: boolean; blockedBy: "education" | "field" | null; sdgTarget: string; sdgWhy: string; group: GroupKey;
   atRisk: boolean; penalty: number; overlap: number; outlook: number; demand: Demand; reach: number; interest: number;
   base: number; score: number; sdgMatch: boolean;
   weeks: number; courseWeeks: number; bufferWeeks: number; hours: number; reachable: boolean; deadlineWeeks: number;
@@ -106,7 +110,10 @@ export function matchRoles(input: MatchInput, w: Weights3, upTo: string): RoleMa
     const courseWeeks = Math.ceil(hours / Math.max(1, input.hoursPerWeek));
     const bufferWeeks = Math.ceil(r.minWeeks * (1 - overlap)) + 2; // practice, certification and applications shrink as you already have more of the skills
     const weeks = courseWeeks + bufferWeeks;
-    const blocked = EDUCATION_RANK[input.education] < EDUCATION_RANK[r.requires];
+    const study = input.study === undefined ? input.field : input.study;
+    const blockedBy = EDUCATION_RANK[input.education] < EDUCATION_RANK[r.requires] ? "education" as const
+      : fieldLocked(r) && study !== r.sector ? "field" as const : null;
+    const blocked = blockedBy !== null;
     const reachable = weeks <= deadlineWeeks && !blocked;
     const reach = clamp(1 - weeks / Math.max(1, deadlineWeeks), 0, 1);
     const tagFit = r.tags.length ? clamp(r.tags.filter((t) => input.interests.includes(t)).length / Math.min(2, r.tags.length), 0, 1) : 0;
@@ -114,7 +121,7 @@ export function matchRoles(input: MatchInput, w: Weights3, upTo: string): RoleMa
     const base = WEIGHTS.overlap * overlap + WEIGHTS.outlook * outlook + WEIGHTS.demand * demand.score + WEIGHTS.reach * reach + WEIGHTS.interest * interest - riskPenalty(outlook);
     const sdgMatch = input.goals.includes(r.sdg.target);
     out.push({
-      roleId: r.id, title: r.title, onet: r.onet, sector: r.sector, requires: r.requires, closest: r.closest, blocked, sdgTarget: r.sdg.target, sdgWhy: r.sdg.why, group: r.group,
+      roleId: r.id, title: r.title, onet: r.onet, sector: r.sector, requires: r.requires, closest: r.closest, blocked, blockedBy, sdgTarget: r.sdg.target, sdgWhy: r.sdg.why, group: r.group,
       atRisk: outlook < AT_RISK_BELOW, penalty: riskPenalty(outlook), overlap, outlook, demand, reach, interest, base, score: base + (sdgMatch ? SDG_BONUS : 0), sdgMatch,
       weeks, courseWeeks, bufferWeeks, hours, reachable, deadlineWeeks,
       gaps: gapIds.map((s) => ({ skillId: s, name: skillById[s].name, importance: r.skills[s], expiry: exp(s) })),

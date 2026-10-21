@@ -1309,5 +1309,65 @@
   ],
   "checked": "2026-10-20",
   "linkStatus": "200"
+ },
+ {
+  "id": "ai_fluency",
+  "title": "AI Fluency: Framework & Foundations",
+  "provider": "Anthropic Academy",
+  "url": "https://anthropic.skilljar.com/ai-fluency-framework-foundations",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "ai_tools"
+  ],
+  "checked": "2026-10-21",
+  "linkStatus": "200",
+  "strand": "ai"
+ },
+ {
+  "id": "ms_work_smarter",
+  "title": "Work smarter with AI",
+  "provider": "Microsoft Learn",
+  "url": "https://learn.microsoft.com/en-us/training/paths/work-smarter-with-ai/",
+  "hours": 1,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "ai_tools"
+  ],
+  "checked": "2026-10-21",
+  "linkStatus": "200",
+  "strand": "ai"
+ },
+ {
+  "id": "alison_interview",
+  "title": "A Complete Job Interview Skills Guide",
+  "provider": "Alison",
+  "url": "https://alison.com/course/a-complete-job-interview-skills-guide",
+  "hours": 3.5,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "communication"
+  ],
+  "checked": "2026-10-21",
+  "linkStatus": "200",
+  "strand": "people"
+ },
+ {
+  "id": "google_interview_ai",
+  "title": "Prepare and Practice for Interviews with AI",
+  "provider": "Google, on Coursera",
+  "url": "https://www.coursera.org/learn/google-prepare-and-practice-for-interviews-with-ai",
+  "hours": 2,
+  "cost": "Free to enrol",
+  "funding": "Free",
+  "skills": [
+   "communication"
+  ],
+  "checked": "2026-10-21",
+  "linkStatus": "200",
+  "strand": "people"
  }
 ]

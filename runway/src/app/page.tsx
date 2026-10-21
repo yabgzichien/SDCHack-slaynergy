@@ -24,8 +24,8 @@ function Dashboard() {
   const weeks = plan?.deadlineWeeks ?? Math.floor(p.months * 4.345 - 2);
   const fading = v.profileSkills.filter((s) => !s.expiry.durable && s.expiry.expectedYear < 2031).length;
   const top = [...v.world.futures].sort((a, b) => b.weight - a.weight)[0];
-  const next = plan?.steps.find((s) => !st.progress[s.id]) ?? null;
-  const done = plan ? plan.steps.filter((s) => st.progress[s.id]).length : 0;
+  const next = plan?.steps.find((s) => !v.pathway.done[s.id]) ?? null;
+  const done = plan ? plan.steps.filter((s) => v.pathway.done[s.id]).length : 0;
   const a = st.approval;
   const role = v.chosen ?? v.lasting ?? v.matches[0];
   const mapFact = (() => {
@@ -35,7 +35,7 @@ function Dashboard() {
   })();
   const fact = [
     `${p.months} months, ${p.hoursPerWeek} hours a week`,
-    fading ? `${fading} of ${v.profileSkills.length} fade before 2031` : "None fades before 2031",
+    fading ? `AI could take over ${fading} of ${v.profileSkills.length} skills by 2031` : "Your skills look safe until 2031",
     `Most likely: ${FUTURE_NAME[top.id].toLowerCase()} AI, ${pct(top.weight)}`,
     v.lasting ? `Best: ${v.lasting.title}` : `${v.matches.length} jobs within reach`,
     mapFact,
@@ -70,7 +70,7 @@ function Dashboard() {
 
       <Card className="mt-4">
         <h2 className="mb-3 text-base font-semibold">Your runway</h2>
-        {plan ? <RunwayStrip plan={plan} progress={st.progress} /> : <p className="text-sm text-muted">Choose a job to see your plan on your runway.</p>}
+        {plan ? <RunwayStrip plan={plan} progress={v.pathway.done} /> : <p className="text-sm text-muted">Choose a job to see your plan on your runway.</p>}
         {next && (
           <div className="mt-5 flex flex-wrap items-end justify-between gap-3 rounded-2xl bg-raised p-4">
             <div className="min-w-0">

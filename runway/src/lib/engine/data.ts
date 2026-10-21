@@ -23,6 +23,8 @@ export const EDUCATION_LABEL: Record<Education, string> = {
   degree: "Bachelor's degree", master: "Master's degree", phd: "PhD",
 };
 export const isEducation = (x: unknown): x is Education => typeof x === "string" && x in EDUCATION_RANK;
+// What a person studied, for diploma level and above. "other" means a field outside this app's sectors.
+export type StudyField = SectorId | "other";
 export type SectorId = "finance" | "business" | "computing" | "engineering" | "science" | "health" | "service" | "logistics" | "trades" | "education";
 export const SECTORS: { id: SectorId; label: string; blurb: string }[] = [
   { id: "computing", label: "Computing and IT", blurb: "Software, testing, networks, data" },
@@ -36,6 +38,13 @@ export const SECTORS: { id: SectorId; label: string; blurb: string }[] = [
   { id: "trades", label: "Skilled trades and technical", blurb: "Electrical, HVAC, machining, maintenance" },
   { id: "education", label: "Education and training", blurb: "Teaching support, curriculum, training" },
 ];
+export const isStudyField = (x: unknown): x is StudyField => x === "other" || SECTORS.some((s) => s.id === x);
+// Degree jobs that need a degree in their own field (professional registration, such as BEM for engineers or MIA for
+// accountants). A degree in another field does not open them.
+const FIELD_LOCKED_SECTORS: SectorId[] = ["engineering", "science", "health"];
+const FIELD_LOCKED_ROLES = ["accountant", "auditor"];
+export const fieldLocked = (r: { id: string; sector: SectorId; requires: Education }) =>
+  r.requires === "degree" && (FIELD_LOCKED_SECTORS.includes(r.sector) || FIELD_LOCKED_ROLES.includes(r.id));
 export type Role = {
   id: string; title: string; onet: string; group: GroupKey; skills: Record<string, number>;
   sdg: { target: string; why: string }; tags: string[]; minWeeks: number;
@@ -44,8 +53,11 @@ export type Role = {
 export type Course = {
   id: string; title: string; provider: string; url: string; hours: number; cost: string; funding: string;
   skills: string[]; checked: string; linkStatus: string;
+  // "ai" or "people": taught in every plan's AI-at-work or people-skills strand, so gap matching leaves it out.
+  strand?: "ai" | "people";
 };
-export type Occupation = { id: string; title: string; isco: string; iscoTitle: string; skills: string[]; education: Education; sector: SectorId };
+// evolved: the target role that is this same job as it is changing (more AI review and design, less routine work), if one exists.
+export type Occupation = { id: string; title: string; isco: string; iscoTitle: string; skills: string[]; education: Education; sector: SectorId; evolved?: string };
 export type Persona = {
   id: string; name: string; label: string; age: number; occupation: string; years: number; months: number;
   hoursPerWeek: number; interests: string[]; synthetic: boolean; education: Education; state?: string;

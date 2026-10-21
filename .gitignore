@@ -11,6 +11,7 @@ handoff.md
 !README.md
 !**/README.md
 docs/
+*.docx
 
 # Secrets and keys
 .env

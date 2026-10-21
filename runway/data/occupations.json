@@ -12,7 +12,8 @@
    "communication"
   ],
   "education": "diploma",
-  "sector": "finance"
+  "sector": "finance",
+  "evolved": "loan_officer"
  },
  {
   "id": "ap_ar_clerk",
@@ -27,7 +28,8 @@
    "collections"
   ],
   "education": "diploma",
-  "sector": "finance"
+  "sector": "finance",
+  "evolved": "billing_clerk"
  },
  {
   "id": "bookkeeper",
@@ -69,7 +71,8 @@
    "data_entry"
   ],
   "education": "diploma",
-  "sector": "business"
+  "sector": "business",
+  "evolved": "comp_benefits_specialist"
  },
  {
   "id": "bank_teller",
@@ -96,7 +99,8 @@
    "spreadsheets"
   ],
   "education": "diploma",
-  "sector": "business"
+  "sector": "business",
+  "evolved": "office_supervisor"
  },
  {
   "id": "loan_clerk",
@@ -110,7 +114,8 @@
    "spreadsheets"
   ],
   "education": "diploma",
-  "sector": "finance"
+  "sector": "finance",
+  "evolved": "loan_officer"
  },
  {
   "id": "collections",
@@ -137,7 +142,8 @@
    "communication"
   ],
   "education": "diploma",
-  "sector": "computing"
+  "sector": "computing",
+  "evolved": "qa_tester_software"
  },
  {
   "id": "software_dev",
@@ -152,7 +158,8 @@
    "software_testing"
   ],
   "education": "degree",
-  "sector": "computing"
+  "sector": "computing",
+  "evolved": "software_developer"
  },
  {
   "id": "it_support_job",
@@ -166,7 +173,8 @@
    "communication"
   ],
   "education": "diploma",
-  "sector": "computing"
+  "sector": "computing",
+  "evolved": "user_support"
  },
  {
   "id": "civil_eng_job",
@@ -180,7 +188,8 @@
    "hse_safety"
   ],
   "education": "degree",
-  "sector": "engineering"
+  "sector": "engineering",
+  "evolved": "civil_engineer"
  },
  {
   "id": "mech_eng_job",
@@ -194,7 +203,8 @@
    "lean_manufacturing"
   ],
   "education": "degree",
-  "sector": "engineering"
+  "sector": "engineering",
+  "evolved": "mechanical_engineer"
  },
  {
   "id": "elec_eng_job",
@@ -208,7 +218,8 @@
    "hse_safety"
   ],
   "education": "degree",
-  "sector": "engineering"
+  "sector": "engineering",
+  "evolved": "electrical_engineer"
  },
  {
   "id": "qaqc_exec",
@@ -222,7 +233,8 @@
    "communication"
   ],
   "education": "diploma",
-  "sector": "engineering"
+  "sector": "engineering",
+  "evolved": "quality_control_analyst"
  },
  {
   "id": "lab_analyst",
@@ -236,7 +248,8 @@
    "hse_safety"
   ],
   "education": "degree",
-  "sector": "science"
+  "sector": "science",
+  "evolved": "chemist"
  },
  {
   "id": "retail_job",
@@ -250,7 +263,8 @@
    "communication"
   ],
   "education": "spm",
-  "sector": "service"
+  "sector": "service",
+  "evolved": "retail_salesperson"
  },
  {
   "id": "hotel_job",
@@ -264,7 +278,8 @@
    "data_entry"
   ],
   "education": "spm",
-  "sector": "service"
+  "sector": "service",
+  "evolved": "hotel_front_desk"
  },
  {
   "id": "warehouse_job",
@@ -278,7 +293,8 @@
    "dispatch_planning"
   ],
   "education": "spm",
-  "sector": "logistics"
+  "sector": "logistics",
+  "evolved": "warehouse_clerk"
  },
  {
   "id": "cs_exec",
@@ -292,6 +308,7 @@
    "sales"
   ],
   "education": "diploma",
-  "sector": "service"
+  "sector": "service",
+  "evolved": "customer_service_rep"
  }
 ]

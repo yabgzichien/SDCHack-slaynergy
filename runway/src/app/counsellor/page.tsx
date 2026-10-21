@@ -1,11 +1,13 @@
 "use client";
 import { useState } from "react";
 import { useApp } from "@/components/AppProvider";
+import { Portfolio } from "@/components/Pathway";
 import { Bar, Btn, Card, Chip, DemoLabel, Estimate, FutureBar, H, PageTitle, SdgTag, Skeleton, pct, sdgName } from "@/components/ui";
 
 export default function CounsellorPage() {
   const { view, state, catalog, act, busy } = useApp();
   const [note, setNote] = useState("");
+  const [doneNote, setDoneNote] = useState("");
   if (!view || !state) return <Skeleton lines={5} />;
   const p = state.profile, plan = view.plan, a = state.approval;
   if (!p || !plan) {
@@ -41,6 +43,7 @@ export default function CounsellorPage() {
             <p className="text-sm text-muted">The worker has not sent the plan yet. In the worker view, open <b>Plan</b> and choose <b>Send to counsellor</b>.</p>
           )}
         </Card>
+      {state.completion.status !== "none" && <CompletionReview note={doneNote} setNote={setDoneNote} />}
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <H>The worker</H>
@@ -86,7 +89,7 @@ export default function CounsellorPage() {
             {plan.steps.map((s) => (
               <li key={s.id} className="flex flex-wrap items-baseline justify-between gap-2 rounded-2xl bg-raised px-4 py-2">
                 <span><span className="num text-xs text-muted">Weeks {s.weekStart}{s.weekEnd > s.weekStart ? `–${s.weekEnd}` : ""}</span> {s.title}</span>
-                <span className="text-xs text-muted">{s.funding}</span>
+                <span className="text-xs text-muted">{view.pathway.done[s.id] ? "Done · " : ""}{s.strand === "ai" ? "AI at work" : s.strand === "people" ? "People skills" : s.funding}</span>
               </li>
             ))}
           </ol>
@@ -94,6 +97,31 @@ export default function CounsellorPage() {
         </Card>
 
       </div>
+    </div>
+  );
+}
+
+// Second sign-off: the counsellor reads the finished work before a badge is issued.
+function CompletionReview({ note, setNote }: { note: string; setNote: (s: string) => void }) {
+  const { view, state, act, busy } = useApp();
+  if (!view || !state) return null;
+  const c = state.completion;
+  return (
+    <div className="mb-4">
+      <Card tone={c.status === "confirmed" ? "rise" : "raised"}>
+        <H sub="The worker says every step is done, including the courses and the mock interview with you. Check, then confirm. Only then is the badge issued.">Finished pathway</H>
+        {c.status === "confirmed" ? (
+          <p className="text-sm"><b>Confirmed</b> {c.confirmedAt ? `on ${new Date(c.confirmedAt).toLocaleString()}` : ""}. The badge is recorded in the tamper-evident log. {c.badgeId && <a className="underline decoration-control underline-offset-2" href={`/badge/${c.badgeId}`}>See the badge</a>}</p>
+        ) : (
+          <>
+            <label className="block text-sm font-medium">Note to the worker (optional)
+              <textarea value={note} onChange={(e) => setNote(e.target.value)} maxLength={500} rows={2} className="mt-1 w-full rounded-2xl border border-control bg-raised p-3" placeholder="For example: we did the mock interview on Tuesday; strong answers." />
+            </label>
+            <div className="mt-3"><Btn onClick={() => act("confirmCompletion", { note })} disabled={busy}>Confirm completion and issue the badge</Btn></div>
+          </>
+        )}
+      </Card>
+      <Portfolio counsellor />
     </div>
   );
 }

@@ -44,9 +44,9 @@ export default function JobDetailPage() {
               </li>
             ))}
           </ul>
-          {m.penalty > 0.001 && <p className="num mt-3 text-sm">Minus {Math.round(m.penalty * 100)} because some of its skills fade soon.</p>}
+          {m.penalty > 0.001 && <p className="num mt-3 text-sm">Minus {Math.round(m.penalty * 100)} because AI may take over some of its skills soon.</p>}
           {m.sdgMatch && <p className="num mt-1 text-sm">Plus 12 because it serves a goal you picked.</p>}
-          <p className="mt-3 text-sm">Job ads for work like this are {Math.abs(m.demand.trend) < 0.03 ? "steady" : m.demand.trend > 0 ? `up ${Math.abs(m.demand.trend * 100).toFixed(0)}%` : `down ${Math.abs(m.demand.trend * 100).toFixed(0)}%`} compared with earlier months.</p>
+          <p className="mt-3 text-sm">Job ads for work like this are {Math.abs(m.demand.trend) < 0.03 ? "steady" : m.demand.trend > 0 ? `up ${Math.abs(m.demand.trend * 100).toFixed(0)}%` : `down ${Math.abs(m.demand.trend * 100).toFixed(0)}%`} compared with earlier in the year.</p>
           <More>
             <p>The score adds up the parts above, weighted: {m.parts.map((p) => `${p.label.toLowerCase()} ${Math.round(p.weight * 100)}%`).join(", ")}.</p>
             <p>Job demand: {m.demand.label.toLowerCase()} were {m.demand.recent.toFixed(1)}% of online job ads in {m.demand.latest.replace("Q", " Q")}, against their average for {m.demand.period.replace(/Q/g, " Q")}, adjusted for the few quarters available.</p>
@@ -61,11 +61,11 @@ export default function JobDetailPage() {
             {m.gaps.map((g) => (
               <li key={g.skillId} className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-raised px-4 py-3 text-sm">
                 <span>{g.name}</span>
-                <span className="flex items-center gap-2"><SdgTag target={g.sdgTarget} /><span className={`num ${g.expiry.durable ? "text-rise" : "text-fall"}`}>{g.expiry.durable ? "lasts past 2040" : `fades ${g.expiry.expected}`}</span></span>
+                <span className="flex items-center gap-2"><SdgTag target={g.sdgTarget} /><span className={`num ${g.expiry.durable ? "text-rise" : "text-fall"}`}>{g.expiry.durable ? "safe past 2040" : `AI could do it by ${g.expiry.expected}`}</span></span>
               </li>
             ))}
           </ul>
-          <div className="mt-4 flex flex-wrap gap-1.5"><SdgTag target={m.sdgTarget} why={m.sdgWhy} /><Chip>About {m.weeks} weeks to get ready</Chip>{m.atRisk && <Chip tone="fall">Some skills fade soon</Chip>}</div>
+          <div className="mt-4 flex flex-wrap gap-1.5"><SdgTag target={m.sdgTarget} why={m.sdgWhy} /><Chip>About {m.weeks} weeks to get ready</Chip>{m.atRisk && <Chip tone="fall">AI may take over some skills soon</Chip>}</div>
           <p className="mt-2 text-sm">{m.sdgWhy}</p>
           {m.tradeoff && <p className="mt-2 text-sm text-muted">{m.tradeoff}</p>}
         </Card>

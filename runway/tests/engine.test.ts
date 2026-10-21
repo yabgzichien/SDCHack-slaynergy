@@ -3,7 +3,7 @@ import { occupations, personas, roles, skills, courses, sdg, series, skillById }
 import { matchRoles, pickInputs } from "@/lib/engine/matching";
 import { computeWorld } from "@/lib/engine/world";
 import { computeView } from "@/lib/engine/view";
-import { initialState, type SessionState } from "@/lib/engine/state";
+import { initialState, STAY_ID, type SessionState } from "@/lib/engine/state";
 import { futureWeights } from "@/lib/engine/futures";
 import { liveQuestions, replayHistory } from "@/lib/engine/replay";
 import { ladder, futureProbs } from "@/lib/engine/questions";
@@ -11,6 +11,8 @@ import { runTape } from "@/lib/engine/tape";
 import { quoteBuy } from "@/lib/market-math";
 import { newMarket, price, tradeToward, cost } from "@/lib/engine/lmsr";
 import { verifyChain, entryHash, type LogEntry } from "@/lib/server/store";
+import { taskCards, gradeQuiz, completionGate, badgeRecord, linkedinAddUrl } from "@/lib/engine/pathway";
+import { buildPlan } from "@/lib/engine/plan";
 
 const hafiz = (): SessionState => {
   const p = personas[0];
@@ -308,7 +310,7 @@ describe("resume scan", () => {
 });
 
 
-import { EDUCATION_RANK, SECTORS, type Education } from "@/lib/engine/data";
+import { EDUCATION_RANK, SECTORS, type Education, type StudyField } from "@/lib/engine/data";
 
 describe("sectors and qualifications", () => {
   const profileFor = (occupationId: string, education: Education): SessionState => {
@@ -345,6 +347,38 @@ describe("sectors and qualifications", () => {
     const a = computeView(profileFor("civil_eng_job", "degree")).matches.filter((m) => m.requires !== "degree").map((m) => m.roleId);
     const b = computeView(profileFor("civil_eng_job", "diploma")).matches.map((m) => m.roleId);
     expect(b.every((id) => a.includes(id))).toBe(true);
+  });
+});
+
+describe("field of study and staying in your job", () => {
+  const prof = (occupationId: string, education: Education, study?: StudyField | null): SessionState => {
+    const o = occupations.find((x) => x.id === occupationId)!;
+    return { ...initialState(), profile: { name: "T", occupationId, education, study, years: 5, skills: o.skills, interests: [], months: 6, hoursPerWeek: 10, budget: "free", synthetic: true } };
+  };
+  it("never offers an engineering or science degree job to someone who studied another field", () => {
+    const v = computeView(prof("software_dev", "degree", "computing"));
+    expect(v.matches.some((m) => ["engineering", "science"].includes(m.sector) && m.requires === "degree")).toBe(false);
+    expect(v.unreachable.find((u) => u.roleId === "chemical_engineer")?.need).toBe("Needs a degree in engineering");
+    expect(computeView(prof("civil_eng_job", "degree", "engineering")).matches[0].roleId).toBe("civil_engineer");
+  });
+  it("labels a changing job softly and a highest-exposure job as shrinking fast, with a bridge towards a lasting job", () => {
+    const dev = computeView(prof("software_dev", "degree", "computing")).stay!;
+    expect(dev.status).toBe("changing");
+    expect(dev.growing.map((g) => g.skillId)).toContain("ai_tools");
+    const clerk = computeView(prof("data_entry", "spm")).stay!;
+    expect(clerk.status).toBe("fast");
+    expect(clerk.toward).not.toBeNull();
+    expect(clerk.toward!.outlook).toBeGreaterThanOrEqual(0.7);
+  });
+  it("choosing to stay gives a reshape plan for a changing job and a bridge plan for a fast-fading one", () => {
+    const dev = computeView({ ...prof("software_dev", "degree", "computing"), chosenRoleId: STAY_ID }).plan!;
+    expect(dev.kind).toBe("reshape");
+    expect(dev.steps.at(-1)!.kind).toBe("adapt");
+    expect(dev.steps.some((s) => s.kind === "apply")).toBe(false);
+    const clerk = computeView({ ...prof("data_entry", "spm"), chosenRoleId: STAY_ID });
+    expect(clerk.plan!.kind).toBe("bridge");
+    expect(clerk.plan!.stayIn).toBe("Data entry clerk");
+    expect(clerk.plan!.roleId).toBe(clerk.stay!.toward!.roleId);
   });
 });
 
@@ -423,3 +457,95 @@ describe("job map: states from public data", () => {
     expect(JSON.stringify(computeView(a).matches.map((m) => [m.roleId, m.score]))).toBe(JSON.stringify(computeView(b).matches.map((m) => [m.roleId, m.score])));
   });
 });
+
+describe("pathway: three strands, task card, badge", () => {
+  const finance = () => {
+    const s = hafiz();
+    const v = computeView(s);
+    return { s: { ...s, chosenRoleId: "budget_analyst" } as SessionState, v };
+  };
+  it("builds a plan with job, AI and people steps, each SDG-tagged", () => {
+    const { s } = finance();
+    const plan = computeView(s).plan!;
+    expect(new Set(plan.steps.map((x) => x.strand))).toEqual(new Set(["job", "ai", "people"]));
+    for (const st of plan.steps) expect(st.skills.length).toBeGreaterThan(0);
+    expect(plan.steps.find((x) => x.activity === "task")?.cardId).toBe("finance_variance");
+    expect(plan.steps.map((x) => x.activity).filter(Boolean)).toEqual(["resume", "task"]);
+  });
+  it("teaches people skills with existing online courses, not Runway's own", () => {
+    const plan = computeView(finance().s).plan!;
+    const ppl = plan.steps.filter((x) => x.strand === "people" && x.kind === "course");
+    expect(ppl.map((x) => x.course?.id)).toEqual(["alison_interview", "google_interview_ai", "coursera_comm"]);
+    expect(ppl.every((x) => x.url?.startsWith("https://") && !x.activity)).toBe(true);
+  });
+  it("teaches AI with existing courses, then a short quiz, and never repeats them in the job strand", () => {
+    const plan = computeView(finance().s).plan!;
+    const ai = plan.steps.filter((x) => x.strand === "ai");
+    expect(ai.map((x) => x.course?.id ?? x.id)).toEqual(["ai_fluency", "ms_work_smarter", "task"]);
+    expect(ai.every((x) => x.kind !== "course" || x.url?.startsWith("https://"))).toBe(true);
+    expect(plan.steps.filter((x) => x.strand === "job" && x.skills.every((k) => k.id === "ai_tools")).length).toBe(0);
+    expect(plan.steps.find((x) => x.id === "task")!.hours).toBe(1);
+  });
+  it("counts the quiz as done once passed; the portfolio piece is optional", () => {
+    const { s } = finance();
+    const passed = { ...s, pathway: { quiz: { attempts: 1, passed: true, found: ["a3", "a7", "a8"], wrong: [] } } };
+    expect(computeView(passed).pathway.done.task).toBe(true);
+  });
+  it("uses a plain practice step where no task card exists yet", () => {
+    const st = plan0("computing");
+    expect(st?.activity).toBeUndefined();
+    expect(st?.strand).toBe("ai");
+  });
+  it("grades the quiz: all mistakes, at most one wrong tap", () => {
+    const card = taskCards[0];
+    expect(gradeQuiz(card, ["a3", "a7", "a8"]).passed).toBe(true);
+    expect(gradeQuiz(card, ["a3", "a7", "a8", "a1"]).passed).toBe(true);
+    expect(gradeQuiz(card, ["a3", "a7", "a8", "a1", "a2"]).passed).toBe(false);
+    expect(gradeQuiz(card, ["a3", "a7"]).passed).toBe(false);
+    expect(gradeQuiz(card, ["a3", "a3", "zz"]).found).toEqual(["a3"]);
+  });
+  it("keeps the planted mistakes out of the browser view until found", () => {
+    const { s } = finance();
+    const card = computeView(s).pathway.card!;
+    expect(card.sampleAnswer.every((a) => !a.reveal && !("mistake" in a))).toBe(true);
+    const s2 = { ...s, pathway: { prompt: "x", quiz: { attempts: 1, passed: false, found: ["a3"], wrong: [] } } };
+    expect(computeView(s2).pathway.card!.sampleAnswer.filter((a) => a.reveal).map((a) => a.id)).toEqual(["a3"]);
+  });
+  it("does not complete activity steps by ticking, and gates the badge", () => {
+    const { s } = finance();
+    const plan = computeView(s).plan!;
+    const ticked = { ...s, progress: Object.fromEntries(plan.steps.map((x) => [x.id, true])), approval: { status: "approved" as const } };
+    expect(computeView(ticked).pathway.done.task).toBe(false);
+    expect(completionGate(plan, ticked).ok).toBe(false);
+    const card = taskCards[0];
+    const work = {
+      prompt: "Act as a budget analyst", template: "Act as a budget analyst. Use only the data.",
+      quiz: { attempts: 2, passed: true, found: ["a3", "a7", "a8"], wrong: [] },
+      sheet: Object.fromEntries(card.sheetHeadings.map((h) => [h.id, "Something long enough here"])),
+      resumeApplied: true,
+    };
+    const resume = { skillIds: [], found: [], words: 0 } as unknown as SessionState["resume"];
+    const full = { ...ticked, pathway: work, resume };
+    expect(completionGate(plan, full)).toEqual({ ok: true, missing: [] });
+    const rec = badgeRecord(plan, full, "abc123def", "2026-10-21T00:00:00.000Z");
+    expect(rec.holder).toBe("A Runway learner");
+    expect(rec.portfolio).toBeNull();
+    expect(rec.title).toBe("Runway pathway completed · Budget analyst");
+    expect(rec.title.toLowerCase()).not.toContain("certified");
+    const shown = badgeRecord(plan, { ...full, pathway: { ...work, showName: true, publishPortfolio: true } }, "abc123def", "2026-10-21T00:00:00.000Z");
+    expect(shown.holder).toBe("Hafiz");
+    expect(shown.portfolio?.template).toContain("budget analyst");
+  });
+  it("prefills the LinkedIn add-certification link", () => {
+    const u = new URL(linkedinAddUrl({ title: "Runway pathway completed · Budget analyst", id: "abc", issued: "2026-10-21T00:00:00.000Z" }, "https://x.test/badge/abc"));
+    expect(u.searchParams.get("startTask")).toBe("CERTIFICATION_NAME");
+    expect(u.searchParams.get("issueMonth")).toBe("10");
+    expect(u.searchParams.get("certUrl")).toBe("https://x.test/badge/abc");
+  });
+});
+
+function plan0(sector: string) {
+  const role = roles.find((r) => r.sector === sector)!;
+  const m = { ...matchRoles(pickInputs({ skills: ["spreadsheets"], months: 6, hoursPerWeek: 10, interests: [], goals: [] }), computeWorld(initialState()).weights, "2026Q1").find((x) => x.roleId === role.id)! };
+  return buildPlan(m, 10).steps.find((x) => x.strand === "ai");
+}

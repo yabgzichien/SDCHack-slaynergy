@@ -26,7 +26,7 @@ export default function TrustPage() {
       </Card>
 
       <Card>
-        <H sub="Every bet, data release, plan submission and approval is added to a chain where each record includes the hash of the one before. Changing any record breaks every later hash.">Tamper-evident log</H>
+        <H sub="Every guess, data update, plan and approval is saved in a chain. Each record is locked to the one before it, so nobody can secretly change one.">A record nobody can secretly change</H>
         {log ? (
           <>
             <p className="text-sm"><Chip tone={log.ok ? "rise" : "fall"}>{log.ok ? "Chain verified" : `Broken at record ${log.brokenAt}`}</Chip> <span className="num">{log.checked} records checked.</span></p>
@@ -46,7 +46,7 @@ export default function TrustPage() {
             <li key={d.name}><p className="font-medium">{d.name}</p><p className="text-sm text-muted">Latest used: {d.detail}. Licence: {d.licence}.</p><SourceChip name="open source page" date={`retrieved ${d.date}`} url={d.url} /></li>
           ))}
         </ul>
-        <p className="mt-3 text-sm text-muted">Made-up (synthetic) data: the demo profiles and the ~200 simulated forecasters. They are always labelled.</p>
+        <p className="mt-3 text-sm text-muted">Made-up (synthetic) data: the demo profiles and the ~200 computer-made players in the guessing game. They are always labelled.</p>
       </Card>
 
       <Card>
@@ -54,8 +54,8 @@ export default function TrustPage() {
         <ul className="list-disc space-y-1 pl-5 text-sm">
           <li>It never invents jobs, courses or statistics. Roles and courses come from fixed, checked lists; scores are computed; explanations are filled from templates with a source and date.</li>
           <li>It uses no real CVs or personal data, and no paid or hosted AI model at run time.</li>
-          <li>It never uses real money. Forecasters earn points, rank and influence only.</li>
-          <li>It uses no language model. Matching and forecasting are statistics you can read in the code: a scoring rule, a market maker (LMSR) and the Hedge rule for influence.</li>
+          <li>It never uses real money. Players only win points and a bigger vote.</li>
+          <li>It uses no AI chatbot. Matching and forecasting are plain maths you can read in the code.</li>
           <li>It never decides for you. You choose; a counsellor reviews and approves. Estimates are not predictions of certainty.</li>
         </ul>
       </Card>

@@ -1,7 +1,7 @@
 import type { Weights3 } from "./futures";
 import type { ResumeSummary } from "./resume";
 import type { Order } from "./tape";
-import type { Education } from "./data";
+import type { Education, StudyField } from "./data";
 
 export type Profile = {
   personaId?: string;
@@ -12,6 +12,8 @@ export type Profile = {
   state?: string | null;
   occupationId: string;
   education: Education;
+  // What they studied (diploma and above). Only checks entry to field-locked degree jobs. Older sessions lack it.
+  study?: StudyField | null;
   years: number;
   skills: string[];
   interests: string[];
@@ -27,6 +29,24 @@ export type Approval = {
   note?: string;
   planRoleId?: string;
 };
+// The worker's own pathway work: the AI quiz, the optional portfolio piece and the resume step. Kept in the session only.
+export type PathwayWork = {
+  prompt?: string;
+  quiz?: { attempts: number; passed: boolean; found: string[]; wrong: string[] };
+  template?: string;
+  sheet?: Record<string, string>;
+  resumeApplied?: boolean;
+  // Shown on the public badge page only if the worker opts in.
+  showName?: boolean;
+  publishPortfolio?: boolean;
+};
+export type Completion = {
+  status: "none" | "requested" | "confirmed";
+  requestedAt?: string;
+  confirmedAt?: string;
+  note?: string;
+  badgeId?: string;
+};
 export type Clock = { t0: string; t1?: string };
 export type SessionState = {
   v: 1;
@@ -36,13 +56,18 @@ export type SessionState = {
   clock: Clock | null;
   goals: string[];
   override: Weights3 | null;
+  // A role id, or STAY_ID for staying in (or bridging from) the current job.
   chosenRoleId: string | null;
   approval: Approval;
   progress: Record<string, boolean>;
   resume: ResumeSummary | null;
+  pathway: PathwayWork;
+  completion: Completion;
 };
 
+export const STAY_ID = "stay";
 export const initialState = (): SessionState => ({
   v: 1, profile: null, release: 0, orders: [], clock: null, goals: [], override: null, chosenRoleId: null,
   approval: { status: "draft" }, progress: {}, resume: null,
+  pathway: {}, completion: { status: "none" },
 });

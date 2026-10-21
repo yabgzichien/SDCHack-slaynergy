@@ -16,10 +16,10 @@ import { STATES } from "@/lib/engine/geo";
 // Onboarding: seven short screens. The resume comes first because it fills in most of the rest.
 // Nothing is saved until the last screen; the draft lives in this tab only.
 type Draft = {
-  name: string; age: string; state: string; occupationId: string; education: string; years: number; skills: string[];
+  name: string; age: string; state: string; occupationId: string; education: string; study: string; years: number; skills: string[];
   months: number; hours: number; interests: string[];
   resume: null | { score: number; band: string; occupation: string | null; found: number; fixes: string[]; sample?: boolean };
-  touched: { education?: boolean; skills?: boolean };
+  touched: { education?: boolean; study?: boolean; skills?: boolean };
 };
 const KEY = "runway-onboarding-v2";
 const STEPS = ["resume", "job", "education", "skills", "time", "interests", "about"] as const;
@@ -32,12 +32,14 @@ const EDU_SUB: Record<string, string> = {
   spm: "Sijil Pelajaran Malaysia", skm: "Sijil Kemahiran Malaysia, levels 1 to 3", stpm: "Or A-Levels, Asasi", diploma: "Including advanced diplomas",
   degree: "Bachelor's or professional degree", master: "Including MBA", phd: "Doctorate",
 };
+// Levels that have a field of study. Below these (SPM, SKM, STPM) the study question is not asked.
+const HAS_FIELD = ["diploma", "degree", "master", "phd"];
 const INTEREST_ICON: Record<string, LucideIcon> = {
   numbers: Calculator, people: Users, technology: Laptop, sustainability: Leaf, health: HeartPulse, justice: Scale, teaching: Presentation, building: Hammer, science: FlaskConical,
 };
 
 const blank = (cat: Catalog): Draft => ({
-  name: "", age: "", state: "", occupationId: "", education: cat.education.find((e) => e.id === "diploma")?.id ?? cat.education[0]?.id ?? "", years: 2, skills: [], months: 6, hours: 10, interests: [], resume: null, touched: {},
+  name: "", age: "", state: "", occupationId: "", education: cat.education.find((e) => e.id === "diploma")?.id ?? cat.education[0]?.id ?? "", study: "", years: 2, skills: [], months: 6, hours: 10, interests: [], resume: null, touched: {},
 });
 
 export default function StartPage() {
@@ -65,7 +67,7 @@ function Wizard({ cat }: { cat: Catalog }) {
   const [d, setD] = useState<Draft>(() => {
     if (saved) return { ...blank(cat), ...saved.d };
     const p = state?.profile;
-    if (p && !p.personaId) return { ...blank(cat), name: p.name === "You" ? "" : p.name, age: p.age ? String(p.age) : "", state: p.state ?? "", occupationId: p.occupationId, education: p.education, years: p.years, skills: p.skills, months: p.months, hours: p.hoursPerWeek, interests: p.interests, touched: { education: true, skills: true } };
+    if (p && !p.personaId) return { ...blank(cat), name: p.name === "You" ? "" : p.name, age: p.age ? String(p.age) : "", state: p.state ?? "", occupationId: p.occupationId, education: p.education, study: p.study ?? "", years: p.years, skills: p.skills, months: p.months, hours: p.hoursPerWeek, interests: p.interests, touched: { education: true, study: !!p.study, skills: true } };
     return blank(cat);
   });
   useEffect(() => { try { sessionStorage.setItem(KEY, JSON.stringify({ d, i })); } catch { /* ignore */ } }, [d, i]);
@@ -75,9 +77,11 @@ function Wizard({ cat }: { cat: Catalog }) {
   const set = (patch: Partial<Draft>) => setD((x) => ({ ...x, ...patch }));
   const pickJob = (id: string) => {
     const o = cat.occupations.find((x) => x.id === id)!;
-    setD((x) => ({ ...x, occupationId: id, education: x.touched.education ? x.education : o.education, skills: x.touched.skills ? x.skills : [...new Set([...o.skills, ...(x.resume ? x.skills : [])])] }));
+    setD((x) => ({ ...x, occupationId: id, education: x.touched.education ? x.education : o.education, study: x.touched.study ? x.study : o.sector, skills: x.touched.skills ? x.skills : [...new Set([...o.skills, ...(x.resume ? x.skills : [])])] }));
   };
-  const canGo: Record<Step, boolean> = { resume: true, job: !!occ, education: !!d.education, skills: d.skills.length > 0, time: true, interests: true, about: !!occ && d.skills.length > 0 };
+  const hasField = HAS_FIELD.includes(d.education);
+  const study = hasField ? d.study || occ?.sector || "" : null;
+  const canGo: Record<Step, boolean> = { resume: true, job: !!occ, education: !!d.education && (!hasField || !!study), skills: d.skills.length > 0, time: true, interests: true, about: !!occ && d.skills.length > 0 };
   const go = (n: number) => {
     const k = Math.max(0, Math.min(STEPS.length - 1, n));
     if (k !== i) {
@@ -93,7 +97,7 @@ function Wizard({ cat }: { cat: Catalog }) {
   useEffect(() => () => { if (walkTimer.current !== null) window.clearTimeout(walkTimer.current); }, []);
   const next = () => { if (canGo[step]) go(i + 1); };
   const finish = async () => {
-    const r = await act("setProfile", { profile: { name: d.name.trim() || "You", age: d.age ? Number(d.age) : null, state: d.state || null, occupationId: d.occupationId, education: d.education, years: d.years, skills: d.skills, interests: d.interests, months: d.months, hoursPerWeek: d.hours, budget: "free", synthetic: !!d.resume?.sample || (answered && !!state?.profile?.synthetic) } });
+    const r = await act("setProfile", { profile: { name: d.name.trim() || "You", age: d.age ? Number(d.age) : null, state: d.state || null, occupationId: d.occupationId, education: d.education, study, years: d.years, skills: d.skills, interests: d.interests, months: d.months, hoursPerWeek: d.hours, budget: "free", synthetic: !!d.resume?.sample || (answered && !!state?.profile?.synthetic) } });
     if (r) { try { sessionStorage.removeItem(KEY); } catch { /* ignore */ } router.push("/skills"); }
   };
 
@@ -152,6 +156,14 @@ function Wizard({ cat }: { cat: Catalog }) {
           <Q title="What is your highest qualification?" help="Some jobs need a diploma or a degree. We only use this to check entry requirements.">
             <Options value={d.education} onPick={(v) => set({ education: v, touched: { ...d.touched, education: true } })} cols={2}
               options={cat.education.map((e) => ({ id: e.id, label: e.label, sub: EDU_SUB[e.id], icon: EDU_ICON[e.id] }))} />
+            {hasField && (
+              <div className="mt-8">
+                <h2 className="text-lg font-medium">What did you study?</h2>
+                <p className="mb-3 mt-1 text-sm text-muted">{occ && !d.touched.study ? `We guessed from your last job as ${occ.title.toLowerCase()}. ` : ""}Engineering, science, health and accounting jobs need a degree in that field.</p>
+                <Options value={study ?? ""} onPick={(v) => set({ study: v, touched: { ...d.touched, study: true } })} cols={2}
+                  options={[...cat.sectors.map((x) => ({ id: x.id, label: x.label })), { id: "other", label: "Something else" }]} />
+              </div>
+            )}
             <p className="mt-4 text-sm text-muted">Done a bootcamp or a professional certificate such as ACCA? Add its skills on the next screen.</p>
           </Q>
         )}
