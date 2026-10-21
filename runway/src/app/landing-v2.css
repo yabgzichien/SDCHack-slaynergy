@@ -199,9 +199,9 @@
 /* Results journey: the mascot follows the active section while the links remain native links. */
 .app-journey-inner { width:min(calc(100% - 48px),1120px); margin:0 auto; padding-bottom:12px; }
 .app-journey-steps { position:relative; }
-.app-journey-steps ol { position:relative; z-index:1; width:100%; grid-template-columns:repeat(5,minmax(0,1fr)); gap:0; padding:12px 0 2px; }
-.app-journey-track { position:absolute; top:26px; left:10%; width:80%; height:3px; border-radius:99px; background:#c7dcc6; }
-.app-journey-fill { display:block; width:calc(var(--result-index) * 25%); height:100%; border-radius:inherit; background:#487b53; transition:width .55s cubic-bezier(.2,.75,.25,1); }
+.app-journey-steps ol { position:relative; z-index:1; width:100%; grid-template-columns:repeat(var(--result-count),minmax(0,1fr)); gap:0; padding:12px 0 2px; }
+.app-journey-track { position:absolute; top:26px; left:calc(50% / var(--result-count)); width:calc(100% - 100% / var(--result-count)); height:3px; border-radius:99px; background:#c7dcc6; }
+.app-journey-fill { display:block; width:calc(var(--result-index) * 100% / (var(--result-count) - 1)); height:100%; border-radius:inherit; background:#487b53; transition:width .55s cubic-bezier(.2,.75,.25,1); }
 .app-journey-item { flex-direction:column; min-height:75px; gap:25px; padding:0 4px 5px; text-align:center; white-space:normal; }
 .app-journey-item:hover,.app-journey-item.is-current { background:transparent; }
 .app-journey-item.is-done { color:#305d40; }
@@ -209,7 +209,7 @@
 .app-journey-item.is-current > span:first-child { opacity:0; }
 .app-journey-label { line-height:1.2; }
 .app-journey-label-short { display:none; }
-.app-journey-bird { position:absolute; z-index:3; top:-4px; left:calc(10% + var(--result-index) * 20%); width:50px; height:64px; transform:translateX(-50%); pointer-events:none; transition:left .55s cubic-bezier(.2,.75,.25,1); }
+.app-journey-bird { position:absolute; z-index:3; top:-4px; left:calc((var(--result-index) + .5) * 100% / var(--result-count)); width:50px; height:64px; transform:translateX(-50%); pointer-events:none; transition:left .55s cubic-bezier(.2,.75,.25,1); }
 .app-journey-bird-face { display:block; width:50px; height:64px; background-image:url('/cockatiel-progress-expressions.webp'); background-repeat:no-repeat; background-size:250px 83.33px; background-position:calc(var(--result-index) * -50px) -7px; animation:journey-face-roll .55s cubic-bezier(.2,.75,.25,1) both; }
 @keyframes journey-face-roll { from { transform:rotate(-80deg); } to { transform:rotate(0); } }
 .app-journey-edit { display:table; margin:4px auto 0; padding:6px 10px; border-radius:8px; color:#305d40; font-size:13px; font-weight:650; text-decoration:underline; text-underline-offset:3px; }

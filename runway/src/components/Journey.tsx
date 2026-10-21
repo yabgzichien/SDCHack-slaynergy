@@ -35,7 +35,7 @@ export function useJourney() {
   const path = usePathname();
   const { state } = useApp();
   const hasProfile = !!state?.profile;
-  const approved = state?.approval.status === "approved";
+  const planned = !!state?.chosenRoleId;
   const cur = currentStep(path);
   const stored = useSyncExternalStore(subscribe, readFurthest, () => 0);
   useEffect(() => { if (hasProfile && cur > readFurthest()) writeFurthest(cur); }, [cur, hasProfile]);
@@ -46,7 +46,7 @@ export function useJourney() {
     if (isDone(i)) return "done";
     return "todo";
   };
-  const isDone = (i: number) => (i === 0 ? hasProfile : i === STEPS.length - 1 ? approved : hasProfile && i < Math.max(furthest, cur));
+  const isDone = (i: number) => (i === 0 ? hasProfile : i === STEPS.length - 1 ? planned : hasProfile && i < Math.max(furthest, cur));
   return { cur, status, isDone, hasProfile };
 }
 
@@ -97,7 +97,7 @@ export function StepRail({ onPick }: { onPick?: () => void }) {
 export function StepBar() {
   const { cur, status } = useJourney();
   const resultIndex = cur - 1;
-  const progressStyle = { "--result-index": Math.max(0, resultIndex) } as CSSProperties;
+  const progressStyle = { "--result-index": Math.max(0, resultIndex), "--result-count": RESULT_STEPS.length } as CSSProperties;
   return (
     <nav className="app-journey" aria-label="Your steps">
       <div className="app-journey-inner">
