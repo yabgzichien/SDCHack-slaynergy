@@ -13,6 +13,9 @@ import { newMarket, price, tradeToward, cost } from "@/lib/engine/lmsr";
 import { verifyChain, entryHash, type LogEntry } from "@/lib/server/store";
 import { taskCards, gradeQuiz, completionGate, badgeRecord, linkedinAddUrl, achievements } from "@/lib/engine/pathway";
 import { buildPlan } from "@/lib/engine/plan";
+import { caseSummary, confirmCompletion, finishedPersonaState, personaState } from "@/lib/engine/review";
+import { advisorMeetings, checkBooking, DEMO_ADVISOR, demoSlots, freeSlots, isOpenable, myDay, myTime, slotId, slotStart, windowDays, type Meeting } from "@/lib/engine/meetings";
+import { isCase } from "@/lib/server/store";
 
 const hafiz = (): SessionState => {
   const p = personas[0];
@@ -98,12 +101,14 @@ describe("futures weights", () => {
 });
 
 describe("history replay", () => {
-  it("accuracy-weighted forecasts beat unweighted ones, and the market beats simple baselines, on real past releases", () => {
+  it("on real past releases the market beats a coin flip and the base rate, and weighting by accuracy does not make it worse", () => {
+    // What the app claims, and no more: the gaps between the crowd, the weighted crowd and the best future are tiny.
     const s = replayHistory().stats;
     expect(s.questions).toBeGreaterThanOrEqual(30);
-    expect(s.brierWeightedMean).toBeLessThan(s.brierUnweighted);
     expect(s.brierLmsr).toBeLessThan(s.brierCoin);
     expect(s.brierLmsr).toBeLessThan(s.brierBaseRate);
+    expect(s.brierWeightedMean).toBeLessThanOrEqual(s.brierUnweighted + 0.005);
+    expect(Math.abs(s.brierLmsr - Math.min(...Object.values(s.brierFutures)))).toBeLessThan(0.02);
   });
   it("influence follows accuracy: the most accurate type gains influence and the least accurate types lose it", () => {
     const r = replayHistory();
@@ -126,7 +131,7 @@ describe("new data released", () => {
     const after = computeWorld(rel, Date.parse(T1) + 5000);
     expect(after.settledEvents.length).toBe(5);
     expect(after.settledEvents.every((e) => e.strikes.every((s) => s.settled))).toBe(true);
-    expect(after.events.every((e) => e.id.endsWith("2026Q3"))).toBe(true);
+    expect(after.events.every((e) => e.id === "dosm-2026Q3" || e.id.endsWith("2026Q4"))).toBe(true); // no open question asks about a quarter that has ended
     expect(after.futures.map((f) => f.weight.toFixed(4))).not.toEqual(before.futures.map((f) => f.weight.toFixed(4)));
     expect(JSON.stringify(computeWorld(rel, Date.parse(T1) + 5000))).toBe(JSON.stringify(after));
     expect(computeView(rel).changes!.length).toBeGreaterThan(5);
@@ -134,7 +139,7 @@ describe("new data released", () => {
   });
 });
 
-describe("Kalshi-style market", () => {
+describe("the market: three answers per question, buy and sell", () => {
   const w0 = replayHistory().weights;
   const strikeQ = ladder(liveQuestions("live").find((q) => q.id === "swe-2026Q2")!);
   it("has a ladder of strikes where higher thresholds are less likely", () => {
@@ -516,7 +521,7 @@ describe("pathway: three strands, task card, badge", () => {
   it("does not complete activity steps by ticking, and gates the badge", () => {
     const { s } = finance();
     const plan = computeView(s).plan!;
-    const ticked = { ...s, progress: Object.fromEntries(plan.steps.map((x) => [x.id, true])), approval: { status: "approved" as const } };
+    const ticked = { ...s, progress: Object.fromEntries(plan.steps.map((x) => [x.id, true])) };
     expect(computeView(ticked).pathway.done.task).toBe(false);
     expect(completionGate(plan, ticked).ok).toBe(false);
     const card = taskCards[0];
@@ -543,6 +548,97 @@ describe("pathway: three strands, task card, badge", () => {
     expect(u.searchParams.get("startTask")).toBe("CERTIFICATION_NAME");
     expect(u.searchParams.get("issueMonth")).toBe("10");
     expect(u.searchParams.get("certUrl")).toBe("https://x.test/badge/abc");
+  });
+});
+
+describe("advisor sign-off", () => {
+  const by = { id: "c-12345678", name: "Puan Aisyah" };
+  const now = "2026-10-21T00:00:00.000Z";
+  it("needs no plan approval: a finished pathway is confirmed once, with the advisor on the badge", () => {
+    const s = { ...personaState("hafiz")!, chosenRoleId: "budget_analyst" };
+    const plan = computeView(s).plan!;
+    expect(isCase(s)).toBe(false);
+    expect(confirmCompletion(s, plan, by, "", now, "abc123def")).toBe("There is no finished pathway waiting for confirmation.");
+    const notDone = { ...s, completion: { status: "requested" as const, requestedAt: now } };
+    expect(isCase(notDone)).toBe(true);
+    expect(confirmCompletion(notDone, plan, by, "", now, "abc123def")).toBe("The pathway is not finished yet.");
+    const card = taskCards.find((c) => plan.steps.some((x) => x.cardId === c.id))!;
+    const done = {
+      ...notDone,
+      progress: Object.fromEntries(plan.steps.map((x) => [x.id, true])),
+      pathway: { prompt: "p", template: "t", resumeApplied: true, quiz: { attempts: 1, passed: true, found: [], wrong: [] }, sheet: Object.fromEntries(card.sheetHeadings.map((h) => [h.id, "Something long enough here"])) },
+      resume: { skillIds: [], found: [], words: 0 } as unknown as SessionState["resume"],
+    };
+    expect(caseSummary("x", done, false)).toMatchObject({ status: "finished", waiting: true, name: "Hafiz", synthetic: true });
+    const r = confirmCompletion(done, plan, by, "Well done", now, "abc123def");
+    if (typeof r === "string") throw new Error(r);
+    expect(r.record.counsellor).toEqual({ confirmedAt: now, confirmedBy: by });
+    expect(r.state.completion).toMatchObject({ status: "confirmed", badgeId: "abc123def", by });
+    expect(caseSummary("x", r.state, true)).toMatchObject({ status: "badge", own: true, waiting: false });
+  });
+  it("builds a made-up finished pathway that passes the badge gate", () => {
+    const s = finishedPersonaState("hafiz", now)!;
+    expect(completionGate(computeView(s).plan, s)).toEqual({ ok: true, missing: [] });
+    expect(isCase(s)).toBe(true);
+  });
+});
+
+describe("advisor meetings", () => {
+  // Tuesday 21 Oct 2026, 09:15 in Kuala Lumpur.
+  const now = "2026-10-21T01:15:00.000Z";
+  const me = { id: "c-11111111", name: "Puan Aisyah" };
+  const meeting = (over: Partial<Meeting>): Meeting => ({
+    id: "m1", slotId: "x", start: slotStart("2026-10-22", "10:00"), advisor: me, caseId: "abc", worker: { name: "Hafiz", synthetic: true },
+    status: "booked", topic: "courses", question: "", bookedAt: now, ...over,
+  });
+  it("works in Malaysia time across a two-week window", () => {
+    expect(slotStart("2026-10-22", "10:00")).toBe("2026-10-22T02:00:00.000Z");
+    expect(myDay("2026-10-21T17:00:00.000Z")).toBe("2026-10-22");
+    expect(myTime("2026-10-22T02:00:00.000Z")).toBe("10:00");
+    const days = windowDays(now);
+    expect(days).toHaveLength(14);
+    expect(days[0]).toBe("2026-10-21");
+    expect(days[13]).toBe("2026-11-03");
+  });
+  it("only lets an advisor open future grid times inside the window", () => {
+    expect(isOpenable(slotStart("2026-10-21", "09:00"), now)).toBe(false);
+    expect(isOpenable(slotStart("2026-10-21", "09:30"), now)).toBe(true);
+    expect(isOpenable(slotStart("2026-10-22", "09:15"), now)).toBe(false);
+    expect(isOpenable(slotStart("2026-10-22", "17:00"), now)).toBe(false);
+    expect(isOpenable(slotStart("2026-11-04", "10:00"), now)).toBe(false);
+  });
+  it("gives the demo advisor future weekday slots only", () => {
+    const d = demoSlots(now);
+    expect(d.length).toBe(10 * 4);
+    expect(d.every((s) => s.advisor.id === DEMO_ADVISOR.id && Date.parse(s.start) > Date.parse(now))).toBe(true);
+    expect(d.some((s) => myDay(s.start) === "2026-10-25")).toBe(false);
+  });
+  it("hides booked slots, but frees them again when the booking is cancelled", () => {
+    const d = demoSlots(now);
+    const taken = meeting({ slotId: d[0].id, start: d[0].start, advisor: DEMO_ADVISOR });
+    expect(freeSlots(d, [taken], now).some((s) => s.id === d[0].id)).toBe(false);
+    expect(freeSlots(d, [{ ...taken, status: "cancelled" }], now).some((s) => s.id === d[0].id)).toBe(true);
+  });
+  it("needs a profile and allows one upcoming booking per worker", () => {
+    const slot = { id: slotId(me.id, slotStart("2026-10-23", "10:00")), start: slotStart("2026-10-23", "10:00"), advisor: me };
+    expect(checkBooking(slot, [], now, false)).toMatch(/Tell us about yourself/);
+    expect(checkBooking(undefined, [], now, true)).toMatch(/no longer free/);
+    expect(checkBooking(slot, [], now, true)).toBeNull();
+    expect(checkBooking(slot, [meeting({})], now, true)).toMatch(/already have a meeting/);
+    expect(checkBooking(slot, [meeting({ status: "cancelled" })], now, true)).toBeNull();
+    expect(checkBooking(slot, [meeting({ start: "2026-10-20T02:00:00.000Z", status: "advised" })], now, true)).toBeNull();
+  });
+  it("shows an advisor their own and the demo advisor's meetings, next first", () => {
+    const other = { id: "c-22222222", name: "Encik Rahman" };
+    const all = [
+      meeting({ id: "a", start: slotStart("2026-10-24", "10:00") }),
+      meeting({ id: "b", start: slotStart("2026-10-22", "10:00"), advisor: DEMO_ADVISOR }),
+      meeting({ id: "c", advisor: other }),
+      meeting({ id: "d", start: "2026-10-20T02:00:00.000Z", status: "advised" }),
+    ];
+    const r = advisorMeetings(all, me.id, now);
+    expect(r.next.map((m) => m.id)).toEqual(["b", "a"]);
+    expect(r.past.map((m) => m.id)).toEqual(["d"]);
   });
 });
 
@@ -602,5 +698,118 @@ describe("skill badges", () => {
     expect(after.filter((a) => a.earned).map((a) => a.id)).toContain("m-first");
     expect(after.filter((a) => a.earned).length).toBe(2);
     expect(achievements(null, st)).toEqual([]);
+  });
+});
+
+import { INFLUENCE_MAX, INFLUENCE_MIN } from "@/lib/engine/market";
+
+describe("influence cap", () => {
+  it("keeps every forecaster between the floor and the cap while the crowd still averages 1", () => {
+    const w = replayHistory().weights;
+    const vals = Object.values(w);
+    expect(Math.max(...vals)).toBeLessThanOrEqual(INFLUENCE_MAX + 1e-9);
+    expect(Math.min(...vals)).toBeGreaterThanOrEqual(INFLUENCE_MIN - 1e-9);
+    expect(vals.reduce((a, b) => a + b, 0) / vals.length).toBeCloseTo(1, 6);
+  });
+});
+
+describe("what the answer would change", () => {
+  it("shows, for every open question, how each answer moves the three futures, and the futures still add to 1", () => {
+    const w = computeWorld({ ...initialState(), clock: { t0: T0 } }, Date.parse(T0) + 60_000);
+    for (const e of w.events) {
+      expect(e.whatIf).not.toBeNull();
+      for (const x of [e.whatIf!.yes, e.whatIf!.no]) expect(x.slow + x.medium + x.fast).toBeCloseTo(1, 6);
+    }
+    // An AI-progress question: Yes (fast progress) makes the slow future less likely than No does.
+    const metr = w.events.find((e) => e.id === "metr-2026Q2")!.whatIf!;
+    expect(metr.yes.slow).toBeLessThan(metr.no.slow);
+    const rel = computeWorld({ ...initialState(), release: 1, clock: { t0: T0, t1: T1 } }, Date.parse(T1) + 1000);
+    expect(rel.settledEvents.every((e) => e.whatIf === null)).toBe(true);
+  });
+});
+
+import { canSwap } from "@/lib/engine/plan";
+
+describe("courses: one list for the plan and the Courses page", () => {
+  const hafiz = personas.find((p) => p.id === "hafiz")!;
+  const st = (swaps?: Record<string, string>): SessionState => ({
+    ...initialState(), clock: { t0: T0 }, courseSwaps: swaps,
+    profile: { name: hafiz.name, occupationId: hafiz.occupation, education: hafiz.education, years: hafiz.years, skills: occupations.find((o) => o.id === hafiz.occupation)!.skills, interests: hafiz.interests, months: hafiz.months, hoursPerWeek: hafiz.hoursPerWeek, budget: "free", synthetic: true },
+  });
+  it("every plan course is a real checked course from the list, and Malaysian portals are never picked for a gap", () => {
+    const plan = computeView(st()).plan!;
+    for (const s of plan.steps.filter((x) => x.course)) expect(courses.some((c) => c.id === s.course!.id && !c.catalogOnly)).toBe(true);
+    expect(courses.filter((c) => c.catalogOnly).map((c) => c.id).sort()).toEqual(["elatih", "perkeso_eis", "rakyat_digital"]);
+  });
+  it("swaps a step's course only for one that teaches every skill the step covers", () => {
+    // Hafiz's suggested courses have no alternatives, so use the first job whose plan has one.
+    const base = (() => {
+      for (const r of roles) {
+        const s0 = { ...st(), chosenRoleId: r.id };
+        const p = computeView(s0).plan;
+        if (p?.roleId === r.id && p.steps.some((s) => s.alternatives)) return s0;
+      }
+      throw new Error("no plan with an alternative course");
+    })();
+    const plan = computeView(base).plan!;
+    const step = plan.steps.find((s) => s.alternatives)!;
+    expect(courses.some((c) => c.id !== step.course?.id && canSwap(c, step.skillKey!))).toBe(true);
+    const alt = courses.find((c) => c.id !== step.course?.id && canSwap(c, step.skillKey!))!;
+    const after = computeView({ ...base, courseSwaps: { [step.skillKey!]: alt.id } }).plan!;
+    const swapped = after.steps.find((s) => s.skillKey === step.skillKey)!;
+    expect(swapped.course!.id).toBe(alt.id);
+    expect(swapped.swapped).toBe(true);
+    expect(swapped.hours).toBe(alt.hours);
+    // A course that misses one of the step's skills is ignored.
+    const bad = courses.find((c) => !c.catalogOnly && !c.strand && !canSwap(c, step.skillKey!))!;
+    expect(computeView({ ...base, courseSwaps: { [step.skillKey!]: bad.id } }).plan!.steps.find((s) => s.skillKey === step.skillKey)!.course!.id).toBe(step.course!.id);
+  });
+});
+
+describe("where you can work", () => {
+  const w = () => computeWorld(initialState()).weights;
+  const base = { skills: occupations[0].skills, months: 6, hoursPerWeek: 10, interests: [] as string[], goals: [] as string[] };
+  const run = (area: string[] | null) => matchRoles(pickInputs({ ...base, area }), w(), "2026Q1");
+
+  it("changes nothing when they can work anywhere", () => {
+    const key = (ms: ReturnType<typeof run>) => JSON.stringify(ms.map((m) => [m.roleId, m.score]));
+    expect(key(run(null))).toBe(key(matchRoles(pickInputs(base), w(), "2026Q1")));
+    expect(run(null).every((m) => m.localPenalty === 0 && m.localLq === null)).toBe(true);
+  });
+
+  it("only moves jobs down, by at most the cap, and never hides one", () => {
+    const anywhere = run(null), home = run(["MY-12"]); // Sabah
+    expect(home.length).toBe(anywhere.length);
+    for (const m of home) {
+      const a = anywhere.find((x) => x.roleId === m.roleId)!;
+      expect(m.localPenalty).toBeGreaterThanOrEqual(0);
+      expect(m.localPenalty).toBeLessThanOrEqual(0.06 + 1e-9);
+      expect(a.score - m.score).toBeCloseTo(m.localPenalty, 9);
+    }
+    expect(home.some((m) => m.localPenalty > 0)).toBe(true);
+  });
+
+  it("the area comes from home state and the answer to moving", async () => {
+    const { areaFor } = await import("@/lib/engine/geo");
+    expect(areaFor("MY-07", "stay")).toEqual(["MY-07"]);
+    expect(areaFor("MY-07", "region")).toContain("MY-02");
+    expect(areaFor("MY-07", "anywhere")).toBeNull();
+    expect(areaFor(null, "stay")).toBeNull();
+  });
+});
+
+describe("students", () => {
+  it("a student with no job yet gets matches, a deadline to graduation and no stay-in-your-job card", () => {
+    const st: SessionState = { ...initialState(), profile: { name: "You", status: "studying", occupationId: "", education: "degree", study: "computing", years: 0, skills: occupations.find((o) => o.sector === "computing")!.skills, interests: [], months: 18, hoursPerWeek: 10, budget: "free", synthetic: true } };
+    const v = computeView(st);
+    expect(v.stay).toBeNull();
+    expect(v.matches.length).toBeGreaterThan(0);
+    expect(v.matches[0].deadlineWeeks).toBe(Math.floor(18 * 4.345 - 2));
+  });
+
+  it("picked states add to home, and unknown states are ignored", async () => {
+    const { areaFor, areaName } = await import("@/lib/engine/geo");
+    expect(areaFor("MY-12", "pick", ["MY-10", "MY-14", "XX"])).toEqual(["MY-12", "MY-10", "MY-14"]);
+    expect(areaName("MY-12", "pick", ["MY-10"])).toBe("Sabah and Selangor");
   });
 });

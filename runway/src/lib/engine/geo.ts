@@ -93,3 +93,43 @@ export function compareMove(sector: SectorId, home: StateId | null | undefined, 
 export function bestStates(sector: SectorId, home: StateId | null | undefined, n = 3, group?: GroupKey): StateJobs[] {
   return stateJobs(sector, group).filter((x) => x.id !== home).sort((a, b) => b.workers - a.workers || a.uRate - b.uRate).slice(0, n);
 }
+
+// ---------- where you can work ----------
+// The usual five-region grouping of Malaysia's states, used for "nearby states".
+export const REGIONS: { id: string; name: string; states: StateId[] }[] = [
+  { id: "north", name: "the northern states", states: ["MY-09", "MY-02", "MY-07", "MY-08"] },
+  { id: "central", name: "the central states", states: ["MY-10", "MY-14", "MY-16", "MY-05"] },
+  { id: "south", name: "the southern states", states: ["MY-01", "MY-04"] },
+  { id: "east", name: "the east coast", states: ["MY-03", "MY-11", "MY-06"] },
+  { id: "borneo", name: "Sabah, Sarawak and Labuan", states: ["MY-12", "MY-13", "MY-15"] },
+];
+export const regionOf = (id: StateId) => REGIONS.find((r) => r.states.includes(id)) ?? null;
+export type Reach = "stay" | "region" | "pick" | "anywhere";
+export const isReach = (x: unknown): x is Reach => x === "stay" || x === "region" || x === "pick" || x === "anywhere";
+
+// The states someone can work in, or null for anywhere (or when we do not know where they live).
+// "pick": home plus the states they chose.
+export function areaFor(home: StateId | null | undefined, move: Reach | null | undefined, moveTo?: StateId[] | null): StateId[] | null {
+  if (!home || !stateById[home] || !move || move === "anywhere") return null;
+  if (move === "stay") return [home];
+  if (move === "pick") return [...new Set([home, ...(moveTo ?? []).filter((s) => stateById[s])])];
+  return regionOf(home)?.states ?? [home];
+}
+export function areaName(home: StateId, move: Reach, moveTo?: StateId[] | null): string {
+  if (move === "region") return regionOf(home)?.name ?? stateById[home].name;
+  if (move === "pick") {
+    const names = [...new Set([home, ...(moveTo ?? [])])].filter((s) => stateById[s]).map((s) => stateById[s].name);
+    return names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}` : names[0];
+  }
+  return stateById[home].name;
+}
+
+// How common a job is in an area, against Malaysia as a whole (1 = as common as average, 0.5 = half as common).
+export function areaConcentration(sector: SectorId, group: GroupKey, area: StateId[]): number {
+  const rows = stateJobs(sector, group);
+  const inArea = rows.filter((r) => area.includes(r.id));
+  const sum = (xs: StateJobs[], f: (x: StateJobs) => number) => xs.reduce((a, x) => a + f(x), 0);
+  const local = sum(inArea, (r) => r.workers) / Math.max(1e-9, sum(inArea, (r) => r.employed));
+  const all = sum(rows, (r) => r.workers) / Math.max(1e-9, sum(rows, (r) => r.employed));
+  return all > 0 ? local / all : 1;
+}

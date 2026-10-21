@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { BriefcaseBusiness, Coins, MapPin, Plane, Users } from "lucide-react";
 import { useApp } from "@/components/AppProvider";
@@ -20,7 +21,7 @@ export default function MapPage() {
   const { view, state, act, busy } = useApp();
   const [roleId, setRoleId] = useState<string | null>(null);
   const [measure, setMeasure] = useState<Measure>("jobs");
-  const [move, setMove] = useState(true);
+  const [move, setMove] = useState(state?.profile?.move !== "stay");
   const [picked, setPicked] = useState<string | null>(null);
 
   const matches = view?.matches ?? [];
@@ -132,7 +133,7 @@ export default function MapPage() {
                 <li>Pay {cmp.wageGap! >= 0 ? `${rm(cmp.wageGap!)} higher` : `${rm(-cmp.wageGap!)} lower`} a month</li>
                 <li>Unemployment {Math.abs(cmp.uGap!) < 0.05 ? "about the same" : cmp.uGap! < 0 ? `${(-cmp.uGap!).toFixed(1)} points lower` : `${cmp.uGap!.toFixed(1)} points higher`}</li>
               </ul>
-              <p className="mt-2 text-xs text-muted">Higher pay often comes with higher rent. Talk a move through with your counsellor; Jobbery does not advise on where to live.</p>
+              <p className="mt-2 text-xs text-muted">Higher pay often comes with higher rent. Talk a move through with an <Link href="/advisor" className="underline decoration-control underline-offset-2 hover:text-ink">advisor</Link>; Jobbery does not advise on where to live.</p>
             </div>
           ) : !home ? <p className="mt-4 text-sm text-muted">Choose your state above to compare it with others.</p> : null}
         </Card>

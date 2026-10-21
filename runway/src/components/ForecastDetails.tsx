@@ -46,20 +46,21 @@ export function ForecastDetails() {
             {w.futures.map((f) => <li key={f.id}><span className="text-ink">{f.name}:</span> {f.blurb}</li>)}
           </ul>
           <p>The sources are DOSM Job Market Insights (job ads) and Epoch AI benchmark results (AI test scores). Replaying {r.questions} past releases set today&apos;s starting chances. Until the next release, the market&apos;s prices tilt them a little.</p>
-          <p>In this demo the other players are made by the computer, and most of them read the three futures themselves, so their prices mostly echo them. The new information comes from the real releases and from your own trades.</p>
+          <p>In this demo the other players are made by the computer, and most of them read the three futures themselves, so their prices mostly echo them. The new information comes from the real releases. Your guesses are scored the same way, but one player can only move the Yes % a little.</p>
           <p className="text-ink">How accurate was it on the {r.questions} replayed questions? (error score: 0 is perfect, lower is better)</p>
           <dl className="num max-w-md space-y-1.5">
             {[
-              ["Players, with better players counting more", r.brierWeighted, true],
-              ["The Yes % on each question", r.brierLmsr, false],
-              ["All players counting the same", r.brierUnweighted, false],
-              ["Always saying 50%", r.brierCoin, false],
-              ["Always guessing what usually happened before", r.brierBaseRate, false],
-            ].map(([k, v, best]) => (
-              <div key={k as string} className="flex justify-between gap-3"><dt className={best ? "font-medium text-ink" : ""}>{k as string}</dt><dd className={best ? "font-medium text-ink" : ""}>{(v as number).toFixed(3)}</dd></div>
+              ["Players, with better players counting more", r.brierWeighted],
+              ["The Yes % on each question", r.brierLmsr],
+              ["All players counting the same", r.brierUnweighted],
+              [`${r.bestFuture} on its own`, r.brierBestFuture],
+              ["Always saying 50%", r.brierCoin],
+              ["Always guessing what usually happened before", r.brierBaseRate],
+            ].map(([k, v]) => (
+              <div key={k as string} className="flex justify-between gap-3"><dt>{k as string}</dt><dd>{(v as number).toFixed(3)}</dd></div>
             ))}
           </dl>
-          <p>It only beats a coin flip by a little, because these questions are hard. Letting better players count more helps most.</p>
+          <p>Honestly: nothing here beats a coin flip by much, because one quarter&apos;s change is hard to call, and the gaps between the top rows are too small to matter. We also tried other public signals (seasonal patterns, the overall hiring cycle, other AI tests moving together); none did better. So the guessing does not make the app smarter than its own model. Its job is to keep score in public: every question settles on an official release, so the three AI speeds are judged on real numbers, not on opinion.</p>
         </More>
         </More>
       </Card>

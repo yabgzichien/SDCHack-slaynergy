@@ -10,6 +10,7 @@
     "test": "vitest run",
     "data:build": "node scripts/build-series.mjs && node scripts/build-geo.mjs",
     "anchor": "node scripts/anchor-log.mjs",
+    "anchor:forecasts": "tsx scripts/anchor-forecasts.ts",
     "typecheck": "tsc --noEmit",
     "build:map": "node scripts/build-map.mjs"
   },

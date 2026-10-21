@@ -6,6 +6,7 @@ import { useApp } from "@/components/AppProvider";
 import { DemoLabel, PageTitle, Skeleton } from "@/components/ui";
 import { FeaturedMarkets, MarketCard } from "@/components/MarketCards";
 import { ForecastDetails } from "@/components/ForecastDetails";
+import { MarketTabs } from "@/components/MarketTabs";
 
 const HOW = [
   { icon: Vote, text: "Pick a question and an answer, then guess Yes or No." },
@@ -22,6 +23,7 @@ export default function MarketPage() {
   const released = w.release === 1;
   return (
     <div>
+      <MarketTabs />
       <PageTitle title="Guess what the next official numbers will show"
         aside={<div className="num text-right text-sm"><p>You have {w.user.balance.toFixed(0)} points</p><p className="text-muted">Your vote counts {w.you.influence.toFixed(1)}×</p></div>}>
         Free points, never money. The better your guesses, the more your vote counts in Jobbery&apos;s forecast of how fast AI changes jobs.
@@ -37,7 +39,7 @@ export default function MarketPage() {
       </ol>
 
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-base font-semibold">{released ? "Open: answered when the Jul to Sep 2026 numbers come out" : "Open: answered when the Apr to Jun 2026 numbers come out"}</h2>
+        <h2 className="text-base font-semibold">{released ? "Still open: DOSM answers the job question on 17 Nov 2026, Epoch AI the AI questions in Jan 2027" : "Open: answered when the Apr to Jun 2026 numbers come out"}</h2>
         <DemoLabel />
       </div>
       <FeaturedMarkets events={w.events} />

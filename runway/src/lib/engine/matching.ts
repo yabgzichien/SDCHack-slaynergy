@@ -3,12 +3,15 @@ import { expiryFor, durability, fmtYear, type SkillExpiry } from "./expiry";
 import type { Weights3 } from "./futures";
 import { clamp } from "./math";
 import { FUTURE_IDS } from "./futures-def";
+import { areaConcentration } from "./geo";
 
 // The ONLY inputs matching may see. Age, gender and background are not on this type, on purpose.
 export type MatchInput = {
   skills: string[]; months: number; hoursPerWeek: number; interests: string[]; goals: string[]; education: Education; field?: SectorId;
   // What they studied. Only used for the entry check on field-locked degree jobs; when unknown, their last job's field stands in.
   study?: StudyField | null;
+  // The states they can work in (home, or home's region), from their own answer. Null: anywhere, or not said.
+  area?: string[] | null;
 };
 export function pickInputs(p: Record<string, unknown> & Partial<MatchInput>): MatchInput {
   return {
@@ -20,6 +23,7 @@ export function pickInputs(p: Record<string, unknown> & Partial<MatchInput>): Ma
     education: isEducation(p.education) ? p.education : "diploma",
     field: p.field,
     study: isStudyField(p.study) ? p.study : p.study === null ? null : undefined,
+    area: Array.isArray(p.area) && p.area.length ? [...p.area].map(String).sort() : null,
   };
 }
 
@@ -31,6 +35,10 @@ export const AT_RISK_PENALTY = 0.08;
 export const PENALTY_FROM = 0.7, PENALTY_FULL = 0.4;
 export const riskPenalty = (outlook: number) => AT_RISK_PENALTY * clamp((PENALTY_FROM - outlook) / (PENALTY_FROM - PENALTY_FULL), 0, 1);
 export const SDG_BONUS = 0.12;
+// Where they can work: a job that is scarce there (by DOSM state figures) moves down, but is never hidden.
+// The penalty grows smoothly from 0 (as common as the national average) to 6 points (40% of average or less).
+export const LOCAL_PENALTY = 0.06, LOCAL_FROM = 1, LOCAL_FULL = 0.4, FEW_NEARBY_BELOW = 0.7;
+export const localPenalty = (lq: number | null) => lq === null ? 0 : LOCAL_PENALTY * clamp((LOCAL_FROM - lq) / (LOCAL_FROM - LOCAL_FULL), 0, 1);
 export const WEEKS_PER_MONTH = 4.345;
 
 // ---------- demand from DOSM major-group trend ----------
@@ -63,7 +71,7 @@ export function coverGaps(gaps: string[]): Pick[] {
   while (left.size) {
     let best: { c: Course; cover: string[]; score: number } | null = null;
     for (const c of courses) {
-      if (c.strand) continue;
+      if (c.strand || c.catalogOnly) continue;
       const cover = c.skills.filter((s) => left.has(s));
       if (!cover.length) continue;
       const score = cover.length / c.hours;
@@ -81,7 +89,9 @@ export function coverGaps(gaps: string[]): Pick[] {
 export type Gap = { skillId: string; name: string; importance: number; expiry: SkillExpiry };
 export type RoleMatch = {
   roleId: string; title: string; onet: string; sector: SectorId; requires: Education; closest: boolean; blocked: boolean; blockedBy: "education" | "field" | null; sdgTarget: string; sdgWhy: string; group: GroupKey;
-  atRisk: boolean; penalty: number; overlap: number; outlook: number; demand: Demand; reach: number; interest: number;
+  atRisk: boolean; penalty: number;
+  // How common the job is where they can work, against Malaysia (1 = average); null when they can work anywhere.
+  localLq: number | null; localPenalty: number; fewNearby: boolean; overlap: number; outlook: number; demand: Demand; reach: number; interest: number;
   base: number; score: number; sdgMatch: boolean;
   weeks: number; courseWeeks: number; bufferWeeks: number; hours: number; reachable: boolean; deadlineWeeks: number;
   gaps: Gap[]; have: string[]; picks: Pick[];
@@ -118,11 +128,12 @@ export function matchRoles(input: MatchInput, w: Weights3, upTo: string): RoleMa
     const reach = clamp(1 - weeks / Math.max(1, deadlineWeeks), 0, 1);
     const tagFit = r.tags.length ? clamp(r.tags.filter((t) => input.interests.includes(t)).length / Math.min(2, r.tags.length), 0, 1) : 0;
     const interest = clamp(0.5 * tagFit + (input.field && input.field === r.sector ? 0.5 : 0), 0, 1);
-    const base = WEIGHTS.overlap * overlap + WEIGHTS.outlook * outlook + WEIGHTS.demand * demand.score + WEIGHTS.reach * reach + WEIGHTS.interest * interest - riskPenalty(outlook);
+    const localLq = input.area ? areaConcentration(r.sector, r.group, input.area) : null;
+    const base = WEIGHTS.overlap * overlap + WEIGHTS.outlook * outlook + WEIGHTS.demand * demand.score + WEIGHTS.reach * reach + WEIGHTS.interest * interest - riskPenalty(outlook) - localPenalty(localLq);
     const sdgMatch = input.goals.includes(r.sdg.target);
     out.push({
       roleId: r.id, title: r.title, onet: r.onet, sector: r.sector, requires: r.requires, closest: r.closest, blocked, blockedBy, sdgTarget: r.sdg.target, sdgWhy: r.sdg.why, group: r.group,
-      atRisk: outlook < AT_RISK_BELOW, penalty: riskPenalty(outlook), overlap, outlook, demand, reach, interest, base, score: base + (sdgMatch ? SDG_BONUS : 0), sdgMatch,
+      atRisk: outlook < AT_RISK_BELOW, penalty: riskPenalty(outlook), localLq, localPenalty: localPenalty(localLq), fewNearby: localLq !== null && localLq < FEW_NEARBY_BELOW, overlap, outlook, demand, reach, interest, base, score: base + (sdgMatch ? SDG_BONUS : 0), sdgMatch,
       weeks, courseWeeks, bufferWeeks, hours, reachable, deadlineWeeks,
       gaps: gapIds.map((s) => ({ skillId: s, name: skillById[s].name, importance: r.skills[s], expiry: exp(s) })),
       have: Object.keys(r.skills).filter((s) => have.has(s)),

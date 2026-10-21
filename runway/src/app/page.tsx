@@ -25,7 +25,6 @@ function Dashboard() {
   const fading = v.profileSkills.filter((s) => !s.expiry.durable && s.expiry.expectedYear < 2031).length;
   const next = plan?.steps.find((s) => !v.pathway.done[s.id]) ?? null;
   const done = plan ? plan.steps.filter((s) => v.pathway.done[s.id]).length : 0;
-  const a = st.approval;
   const role = v.chosen ?? v.lasting ?? v.matches[0];
   const mapFact = (() => {
     if (!role) return "Where the jobs are";
@@ -37,7 +36,7 @@ function Dashboard() {
     fading ? `AI could take over ${fading} of ${v.profileSkills.length} skills by 2031` : "Your skills look safe until 2031",
     v.lasting ? `Best: ${v.lasting.title}` : `${v.matches.length} jobs within reach`,
     mapFact,
-    plan ? `${done} of ${plan.steps.length} steps · ${a.status === "approved" ? "approved" : a.status === "submitted" ? "waiting for review" : "not sent yet"}` : "Choose a job first",
+    plan ? `${done} of ${plan.steps.length} steps done` : "Choose a job first",
   ];
   const nextStep = STEPS.findIndex((_, i) => status(i) !== "done");
   return (

@@ -1,7 +1,7 @@
 import cardsJson from "../../../data/task-cards.json";
 import type { SectorId } from "./data";
 import type { Plan, PlanStep } from "./plan";
-import type { PathwayWork, SessionState } from "./state";
+import type { PathwayWork, SessionState, Signer } from "./state";
 
 // The pathway beyond courses: a short AI quiz after the AI courses (plus an optional portfolio piece) and the people strand (resume rewrite, then existing interview and communication courses).
 // Everything here is pre-written and hand-checked. Nothing calls an AI model; the "AI answer" is a labelled sample.
@@ -57,7 +57,7 @@ export function stepDone(step: PlanStep, state: SessionState): boolean {
 export const doneMap = (plan: Plan, state: SessionState) => Object.fromEntries(plan.steps.map((s) => [s.id, stepDone(s, state)]));
 
 // Motivation badges: earned as the worker goes, one per finished step plus a few milestones. They are self-reported progress
-// (a ticked course is the worker's word), so they are labelled as such. The counsellor-confirmed pathway badge is the verified one.
+// (a ticked course is the worker's word), so they are labelled as such. The advisor-confirmed pathway badge is the verified one.
 export type Achievement = { id: string; title: string; detail: string; kind: "skill" | "ai" | "people" | "milestone"; earned: boolean };
 export function achievements(plan: Plan | null, state: SessionState): Achievement[] {
   if (!plan) return [];
@@ -76,7 +76,7 @@ export function achievements(plan: Plan | null, state: SessionState): Achievemen
   const n = plan.steps.length;
   out.push({ id: "m-first", title: "First step", detail: "Finished your first step.", kind: "milestone", earned: finished >= 1 });
   out.push({ id: "m-half", title: "Halfway", detail: "Finished half of your plan.", kind: "milestone", earned: n > 0 && finished * 2 >= n });
-  out.push({ id: "m-all", title: "Every step done", detail: "Finished all steps. Ask your counsellor to confirm.", kind: "milestone", earned: n > 0 && finished === n });
+  out.push({ id: "m-all", title: "Every step done", detail: "Finished all steps. Ask an advisor to confirm.", kind: "milestone", earned: n > 0 && finished === n });
   return out;
 }
 
@@ -84,7 +84,6 @@ export function achievements(plan: Plan | null, state: SessionState): Achievemen
 export function completionGate(plan: Plan | null, state: SessionState): { ok: boolean; missing: string[] } {
   if (!plan) return { ok: false, missing: ["Choose a job and make a plan."] };
   const missing: string[] = [];
-  if (state.approval.status !== "approved") missing.push("Your counsellor approves the plan.");
   const left = plan.steps.filter((s) => !stepDone(s, state));
   if (left.length) missing.push(`Finish ${left.length} more step${left.length === 1 ? "" : "s"}.`);
   const task = plan.steps.find((s) => s.activity === "task");
@@ -98,11 +97,13 @@ export type BadgeRecord = {
   steps: { title: string; strand: string; url?: string; provider?: string }[];
   quiz: { card: string; attempts: number } | null;
   portfolio: { card: string; template: string; sheet: Record<string, string> } | null;
-  counsellor: { approvedPlanAt?: string; confirmedAt: string };
+  // approvedPlanAt and approvedBy appear only on badges issued while plans still needed approval;
+  // confirmedBy is missing on the earliest badges, issued before advisors signed in.
+  counsellor: { approvedPlanAt?: string; confirmedAt: string; approvedBy?: Signer; confirmedBy?: Signer };
 };
 
 // The public badge record. The name and the portfolio appear only if the worker opted in.
-export function badgeRecord(plan: Plan, state: SessionState, id: string, now: string): BadgeRecord {
+export function badgeRecord(plan: Plan, state: SessionState, id: string, now: string, by?: Signer): BadgeRecord {
   const w = state.pathway ?? {};
   const task = plan.steps.find((s) => s.activity === "task");
   const card = task?.cardId ? cardById(task.cardId) : null;
@@ -117,7 +118,7 @@ export function badgeRecord(plan: Plan, state: SessionState, id: string, now: st
     steps: plan.steps.map((s) => ({ title: s.title, strand: s.strand, url: s.url, provider: s.provider })),
     quiz: card && w.quiz ? { card: card.title, attempts: w.quiz.attempts } : null,
     portfolio: w.publishPortfolio && card && w.template?.trim() && w.sheet && sheetDone(card, w) ? { card: card.title, template: w.template, sheet: w.sheet } : null,
-    counsellor: { approvedPlanAt: state.approval.approvedAt, confirmedAt: now },
+    counsellor: { confirmedAt: now, confirmedBy: by },
   };
 }
 

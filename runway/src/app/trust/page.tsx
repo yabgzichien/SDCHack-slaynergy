@@ -26,12 +26,13 @@ export default function TrustPage() {
       </Card>
 
       <Card>
-        <H sub="Every guess, data update, plan and approval is saved in a chain. Each record is locked to the one before it, so nobody can secretly change one.">A record nobody can secretly change</H>
+        <H sub="Every guess, data update, piece of advice and badge sign-off is saved in a chain. Each record is locked to the one before it, so nobody can secretly change one.">A record nobody can secretly change</H>
         {log ? (
           <>
             <p className="text-sm"><Chip tone={log.ok ? "rise" : "fall"}>{log.ok ? "Chain verified" : `Broken at record ${log.brokenAt}`}</Chip> <span className="num">{log.checked} records checked.</span></p>
             {log.head && <p className="num mt-2 break-all rounded-2xl bg-raised p-3 text-xs">Latest fingerprint (record {log.head.seq}): {log.head.hash}</p>}
             <p className="mt-2 text-sm text-muted">The latest fingerprint is published to the public GitHub repository (<code>anchors/</code>), so no one, including us, can quietly rewrite the record. Only meaningless fingerprints leave the app; no data is stored on a blockchain.</p>
+            <p className="mt-2 text-sm text-muted">The crowd&apos;s forecasts for the questions still open (DOSM on 17 Nov 2026, Epoch AI in Jan 2027) are also saved in <code>anchors/</code> before the numbers come out, so anyone can check them afterwards.</p>
             {log.recent.length > 0 && (
               <ul className="num mt-2 space-y-0.5 text-xs text-muted">{log.recent.slice(0, 6).map((r) => <li key={r.seq}>#{r.seq} · {r.ts.slice(0, 19).replace("T", " ")} · {r.type} · {r.hash.slice(0, 12)}…</li>)}</ul>
             )}
@@ -56,7 +57,7 @@ export default function TrustPage() {
           <li>It uses no real CVs or personal data, and no paid or hosted AI model at run time.</li>
           <li>It never uses real money. Players only win points and a bigger vote.</li>
           <li>It uses no AI chatbot. Matching and forecasting are plain maths you can read in the code.</li>
-          <li>It never decides for you. You choose; a counsellor reviews and approves. Estimates are not predictions of certainty.</li>
+          <li>It never decides for you. You choose, and can book an advisor for a second opinion. An advisor confirms a finished pathway before its badge is issued. Estimates are not predictions of certainty.</li>
         </ul>
       </Card>
     </div>

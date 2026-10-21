@@ -29,7 +29,7 @@ export default function JobsPage() {
   if (!best) {
     return (
       <div>
-        <PageTitle title={`No new job is reachable in ${p.months} months yet.`}>With {p.hoursPerWeek} hours a week, every other job here needs more time. You can stay in your job and keep it up to date, or try more months or weekly hours.</PageTitle>
+        <PageTitle title={`No new job is reachable in ${p.months} months yet.`}>With {p.hoursPerWeek} hours a week, every other job here needs more time. {view.stay ? "You can stay in your job and keep it up to date, or try" : "Try"} more months or weekly hours.</PageTitle>
         {stayCard}
         <div className="mt-4"><Btn href="/start" variant="ghost">Change my answers</Btn></div>
       </div>
@@ -72,7 +72,7 @@ export default function JobsPage() {
               <li key={m.roleId}>
                 <LinkRow href={`/jobs/${m.roleId}`} aside={<p className="num text-xl">{Math.round(m.score * 100)}</p>}>
                   <p className="font-medium">{m.title}</p>
-                  <p className="text-sm text-muted">About {m.weeks} weeks · {sdgName(m.sdgTarget)}{m.atRisk ? " · AI may take over some skills" : ""}</p>
+                  <p className="text-sm text-muted">About {m.weeks} weeks · {sdgName(m.sdgTarget)}{m.atRisk ? " · AI may take over some skills" : ""}{m.fewNearby ? " · few near you" : ""}</p>
                 </LinkRow>
               </li>
             ))}

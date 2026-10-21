@@ -33,10 +33,10 @@ export function SiteHeader() {
           <span className="landing-dropdown-caption">Your journey</span>
           {STEPS.map((step) => <Link key={step.href} href={step.href} aria-current={step.match.some((match) => path === match || path.startsWith(`${match}/`)) ? "page" : undefined}>{step.label}</Link>)}
           <span className="landing-dropdown-caption">Explore</span>
-          <Link href="/market">Prediction market</Link><Link href="/counsellor">Counsellor view</Link><Link href="/trends">Job market trends</Link><Link href="/trust">Our approach</Link>
+          <Link href="/market">Prediction market</Link><Link href="/advisor">Meet an advisor</Link><Link href="/counsellor">Advisor view</Link><Link href="/trends">Job market trends</Link><Link href="/trust">Our approach</Link>
           {state?.profile && <button disabled={busy || !view} onClick={async () => { try { sessionStorage.removeItem("runway-onboarding-v2"); } catch { /* ignore */ } forgetProgress(); await act("reset"); router.push("/"); }}>Start over</button>}
         </div></details>
-        <details className="landing-mobile-menu"><summary aria-label="Open navigation menu"><Menu size={23} aria-hidden /></summary><nav aria-label="Mobile navigation" className="landing-dropdown"><Link href="/about#about">About Us</Link><Link href="/start" aria-current={path === "/start" ? "page" : undefined}>Evaluate Yourself</Link><Link href="/about#statistics">Statistics</Link><Link href="/forecast" aria-current={path === "/forecast" ? "page" : undefined}>Forecast</Link><Link href="/courses" aria-current={path === "/courses" ? "page" : undefined}>Courses</Link><Link href="/">Your dashboard</Link><Link href="/market">Prediction market</Link><Link href="/counsellor">Counsellor view</Link></nav></details>
+        <details className="landing-mobile-menu"><summary aria-label="Open navigation menu"><Menu size={23} aria-hidden /></summary><nav aria-label="Mobile navigation" className="landing-dropdown"><Link href="/about#about">About Us</Link><Link href="/start" aria-current={path === "/start" ? "page" : undefined}>Evaluate Yourself</Link><Link href="/about#statistics">Statistics</Link><Link href="/forecast" aria-current={path === "/forecast" ? "page" : undefined}>Forecast</Link><Link href="/courses" aria-current={path === "/courses" ? "page" : undefined}>Courses</Link><Link href="/">Your dashboard</Link><Link href="/market">Prediction market</Link><Link href="/advisor">Meet an advisor</Link><Link href="/counsellor">Advisor view</Link></nav></details>
       </div>
     </header>
   );

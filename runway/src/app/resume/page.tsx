@@ -125,7 +125,7 @@ function Result({ analysis: a, fileName, onAgain }: { analysis: ResumeAnalysis; 
     // No profile yet: hand the findings to the onboarding, which asks the remaining questions one at a time.
     const o = cat.occupations.find((x) => x.id === a.occupation?.id);
     const draft = {
-      name: "", age: "", state: "", occupationId: o?.id ?? "", education: a.education ?? o?.education ?? "", years: Math.round(a.years ?? 2), skills: chosen,
+      name: "", age: "", state: "", occupationId: o?.id ?? "", education: a.education ?? o?.education ?? "", years: Math.round(a.years ?? 0), skills: chosen,
       months: 6, hours: 10, interests: [], touched: { education: !!a.education, skills: true },
       resume: { score: a.score, band: a.band, occupation: o?.title ?? null, found: a.skills.length, fixes: fixes.slice(0, 2).map((f) => f.title) },
     };

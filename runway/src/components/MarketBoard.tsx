@@ -4,8 +4,8 @@ import { CartesianGrid, Line, LineChart, ReferenceDot, ResponsiveContainer, Tool
 import type { EventView } from "@/lib/engine/world";
 import { MAX_MOVE, MAX_MOVE_WINDOW, MAX_PER_ANSWER, MOVE_WINDOW_S, moveAllowance, quoteBuy, quoteSell } from "@/lib/market-math";
 import { useApp } from "./AppProvider";
-import { Btn, Card, Chip, DemoLabel, SourceChip } from "./ui";
-import { STRIKE_COLORS, paysOut } from "./MarketCards";
+import { Btn, Card, Chip, DemoLabel, FUTURE_COLOR, FUTURE_NAME, SourceChip, pct as fpct } from "./ui";
+import { STRIKE_COLORS } from "./MarketCards";
 
 type Execution = { orderId: string; t: number; side: "yes" | "no"; action: "buy" | "sell"; shares: number; points: number; avg: number; priceBefore: number; priceAfter: number };
 type Strike = {
@@ -24,6 +24,7 @@ export function MarketBoard({ event }: { event: EventView }) {
   const { act, busy, refresh, view } = useApp();
   const [feed, setFeed] = useState<Feed | null>(null);
   const [sel, setSel] = useState(1);
+  const [more, setMore] = useState(false);
   const [side, setSide] = useState<"yes" | "no">("yes");
   const [mode, setMode] = useState<"buy" | "sell">("buy");
   const [amount, setAmount] = useState("25");
@@ -101,7 +102,7 @@ export function MarketBoard({ event }: { event: EventView }) {
           </div>
           <div className="mt-2 flex flex-wrap items-end gap-x-3 gap-y-1">
             <p className="num text-[2.5rem] leading-none" aria-live="polite">{pct(yesP)}</p>
-            <p className="pb-1 text-sm text-muted">of players think Yes</p>
+            <p className="pb-1 text-sm text-muted">of players think Yes (mostly computer-made)</p>
             {!settled && <p className={`num pb-1 text-sm ${dChange >= 0 ? "text-rise" : "text-fall"}`} title="Change over the last hour">{dChange >= 0 ? "up" : "down"} {Math.abs(dChange)} in the last hour</p>}
           </div>
           <div className="mt-3 h-56" role="img" aria-label={`How the Yes % changed over time, now ${pct(yesP)}`}>
@@ -118,7 +119,7 @@ export function MarketBoard({ event }: { event: EventView }) {
             </ResponsiveContainer>
           </div>
           <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-            <p className="num text-xs text-muted">The line shows how the Yes % changed. {cur.trades.toLocaleString()} guesses so far. Black dots are your guesses.</p>
+            <p className="num text-xs text-muted">The line shows how the Yes % changed. {cur.trades.toLocaleString()} guesses so far, nearly all by computer-made players. Black dots are your guesses.</p>
             <div role="tablist" aria-label="Chart range" className="flex gap-1">
               {RANGES.map((r) => <button key={r.id} role="tab" aria-selected={range === r.id} onClick={() => setRange(r.id)} className={`press min-h-9 rounded-full px-3 text-xs ${range === r.id ? "bg-surface2 font-medium" : "text-muted hover:bg-surface"}`}>{r.label}</button>)}
             </div>
@@ -127,9 +128,10 @@ export function MarketBoard({ event }: { event: EventView }) {
 
         <Card>
           <h2 className="mb-1 text-base font-semibold">Choose what to guess on</h2>
-          <p className="mb-3 text-sm text-muted">The same question asked three ways, from easier to harder. The % is how many think Yes.</p>
+          <p className="mb-3 text-sm text-muted">{more ? "The same question asked three ways, from easier to harder. The % is how many think Yes." : "The main question counts for your score. The % is how many think Yes."}</p>
           <ul className="space-y-1.5">
             {strikes.map((s, i) => {
+              if (!more && i !== 1 && i !== sel) return null;
               const yes = s.settled ? (s.settled.outcome ? 1 : 0) : s.price;
               const active = i === sel;
               const pos = s.position.yes > 1e-6 || s.position.no > 1e-6;
@@ -142,7 +144,6 @@ export function MarketBoard({ event }: { event: EventView }) {
                     </button>
                     <div className="text-right">
                       <p className="num text-xl leading-none">{pct(yes)}</p>
-                      {!s.settled && <p className="num mt-1 text-xs text-muted" title="What each point on Yes returns if Yes is right">pays {paysOut(s.price)}</p>}
                     </div>
                   </div>
                   {s.settled ? (
@@ -157,9 +158,12 @@ export function MarketBoard({ event }: { event: EventView }) {
               );
             })}
           </ul>
+          {strikes.length > 1 && <button onClick={() => setMore(!more)} aria-expanded={more} className="press mt-2 min-h-9 rounded-full px-3 text-sm text-muted underline decoration-control underline-offset-2 hover:text-ink">{more ? "Show only the main question" : `Show ${strikes.length - 1} easier and harder versions`}</button>}
           <p className="mt-4 text-sm text-muted">{event.reason}</p>
           <div className="mt-2"><SourceChip name={event.source.name} date={`answered by ${event.settles}`} url={event.source.url} /></div>
         </Card>
+
+        {!settled && event.whatIf && <WhatIf event={event} you={view?.whatIfYou?.[event.id] ?? null} override={!!view?.world.usingOverride} />}
       </div>
 
       <aside className="min-w-0 space-y-4 lg:sticky lg:top-6 lg:self-start">
@@ -177,7 +181,6 @@ export function MarketBoard({ event }: { event: EventView }) {
 
           <div className="mt-3 grid grid-cols-2 gap-2" role="group" aria-label="Side">
             {(["yes", "no"] as const).map((s) => {
-              const p = s === "yes" ? yesP : 1 - yesP;
               const on = side === s;
               return <button key={s} aria-pressed={on} disabled={settled}
                 onClick={() => { setSide(s); setMsg(null); if (mode === "sell") setAmount(String(Math.floor(s === "yes" ? cur.position.yes : cur.position.no))); }}
@@ -236,4 +239,40 @@ export function MarketBoard({ event }: { event: EventView }) {
 
 function Row({ k, v, strong }: { k: string; v: string; strong?: boolean }) {
   return <div className="flex justify-between gap-3"><dt className="text-muted">{k}</dt><dd className={`text-right ${strong ? "text-lg" : ""}`}>{v}</dd></div>;
+}
+
+// Why this question matters to you: what the main answer would do to the three AI speeds and to your own dates.
+function WhatIf({ event, you, override }: { event: EventView; you: { skill: string; now: string; yes: string; no: string } | null; override: boolean }) {
+  const w = event.whatIf!;
+  const ids = ["slow", "medium", "fast"] as const;
+  const col = (label: string, x: typeof w.yes, date: string | undefined) => (
+    <div className="rounded-2xl bg-surface2/60 px-4 py-3">
+      <p className="text-sm font-medium">{label}</p>
+      <dl className="num mt-2 space-y-1 text-sm">
+        {ids.map((id) => {
+          const d = Math.round((x[id] - w.now[id]) * 100);
+          return (
+            <div key={id} className="flex justify-between gap-3">
+              <dt className="inline-flex items-center gap-2 whitespace-nowrap text-muted"><span className="inline-block h-2 w-2 rounded-full" style={{ background: FUTURE_COLOR[id] }} aria-hidden />{FUTURE_NAME[id]} AI</dt>
+              <dd className="whitespace-nowrap">{fpct(x[id])} <span className={d === 0 ? "text-muted" : d > 0 ? "text-rise" : "text-fall"}>({d > 0 ? "+" : d < 0 ? "−" : "±"}{Math.abs(d)})</span></dd>
+            </div>
+          );
+        })}
+      </dl>
+      {date && <p className="mt-2 text-sm">Your skill fades around <span className="num font-medium">{date}</span></p>}
+    </div>
+  );
+  return (
+    <Card>
+      <h2 className="mb-1 text-base font-semibold">What the answer would change</h2>
+      <p className="mb-3 text-sm text-muted">When the real numbers settle the main question, the AI speed that predicted it better becomes more likely. Today: slow {fpct(w.now.slow)}, medium {fpct(w.now.medium)}, fast {fpct(w.now.fast)}.</p>
+      <div className="grid gap-2 sm:grid-cols-2">
+        {col("If the answer is Yes", w.yes, you?.yes)}
+        {col("If the answer is No", w.no, you?.no)}
+      </div>
+      {you && <p className="mt-3 text-sm text-muted">Your skill most at risk is <span className="text-ink">{you.skill}</span>, now expected to fade around <span className="num text-ink">{you.now}</span>. Your plan and job list move with it.</p>}
+      {override && <p className="mt-3 text-sm text-muted">You set the AI speeds yourself, so your own dates stay as you set them.</p>}
+      <p className="mt-2 text-xs text-muted">Your guess does not decide this; only the real release does. Estimates, not certainties.</p>
+    </Card>
+  );
 }

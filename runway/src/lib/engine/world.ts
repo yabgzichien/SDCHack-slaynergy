@@ -4,7 +4,7 @@ import { crowdTilt, futureWeights, normaliseOverride, type Weights3 } from "./fu
 import { FORECASTERS, KIND_LABEL, brier, forecasterName, updateWeights, START_BALANCE, type Kind, type MarketRun, type Weights } from "./market";
 import { liveQuestions, replayHistory, updateScores } from "./replay";
 import { eventTitle, factFor, ladder, type Question, type Strike } from "./questions";
-import { ETA } from "./market";
+import { ETA, INFLUENCE_MAX } from "./market";
 import type { SessionState } from "./state";
 import { baseRun, runTape, type Execution, type TapeResult } from "./tape";
 import { mean } from "./math";
@@ -20,6 +20,8 @@ export type StrikeView = {
 export type EventView = {
   id: string; quarter: string; title: string; short: string; text: string; source: { name: string; url: string }; settles: string; reason: string;
   phase: "live" | "next"; strikes: StrikeView[]; clockStart: number; nowT: number; fact: string | null; settled: boolean;
+  // What the main answer would do to the three futures once it settles, before anyone knows the answer. Null once settled.
+  whatIf: { now: Weights3; yes: Weights3; no: Weights3 } | null;
 };
 // You are scored like every simulated forecaster: on each question's headline line (the middle strike).
 // Your forecast there is the chance you left the market at after your last trade; no trade counts as 50%.
@@ -43,7 +45,7 @@ export type World = {
   forecasters: ForecasterRow[];
   kindSummary: { kind: string; count: number; influence: number }[];
   user: { balance: number; netCash: number; won: number; rank: number | null; of: number; roi: number | null; orders: number; positionValue: number };
-  replay: { questions: number; brierLmsr: number; brierWeighted: number; brierUnweighted: number; brierCoin: number; brierBaseRate: number };
+  replay: { questions: number; brierLmsr: number; brierWeighted: number; brierUnweighted: number; brierCoin: number; brierBaseRate: number; brierBestFuture: number; bestFuture: string };
   you: YouStats;
   agentRoi: Record<string, number>; // points won per point spent on settled markets, per simulated forecaster
   clericalHistory: { q: string; share: number }[];
@@ -104,6 +106,13 @@ export function computeWorld(state: SessionState, nowMs: number = Date.now()): W
   const stored = futureWeights(S, { slow: 0, medium: 0, fast: 0 });
   const shown = futureWeights(S, tilt);
   const weights = state.override ? normaliseOverride(state.override) : shown;
+  // "What if?": settle one open question's main answer as Yes or No, keep the crowd's tilt from the others.
+  const whatIf: Record<string, EventView["whatIf"]> = {};
+  openBase.forEach((r, i) => {
+    const rest = crowdTilt(openBase.filter((_, j) => j !== i));
+    const settle = (o: boolean) => futureWeights(updateScores(S, [{ ...r, q: { ...r.q, outcome: o } }]), rest);
+    whatIf[open.events[i].q.id] = { now: shown, yes: settle(true), no: settle(false) };
+  });
 
   const t20 = top20(W);
   let netCash = 0, won = 0, buyPoints = 0, pnlSettled = 0, orders = 0, positionValue = 0;
@@ -148,6 +157,7 @@ export function computeWorld(state: SessionState, nowMs: number = Date.now()): W
       return {
         id: q.id, quarter: q.quarter, title: eventTitle(q), short: q.kind === "dosm" ? "Office admin jobs" : series.epoch[q.series].name, text: q.text, source: q.source, settles: q.settles, reason: q.reason, phase,
         strikes: views, clockStart: ph.t0, nowT: ph.nowT, fact: settleNow ? factFor(q) : null, settled: settleNow,
+        whatIf: settleNow ? null : whatIf[q.id] ?? null,
       };
     });
 
@@ -185,7 +195,8 @@ export function computeWorld(state: SessionState, nowMs: number = Date.now()): W
     weights, usingOverride: !!state.override, scores: S, forecasters, kindSummary,
     user: { balance: START_BALANCE + netCash + won, netCash, won, rank, of: Object.keys(roi).length + 1, roi: userRoi, orders, positionValue },
     clericalHistory: series.dosm.quarters.filter((d) => d.q >= "2023Q1" && d.q <= asOfQuarter).map((d) => ({ q: d.q, share: d.clerical_share })),
-    replay: { questions: base.stats.questions, brierLmsr: base.stats.brierLmsr, brierWeighted: base.stats.brierWeightedMean, brierUnweighted: base.stats.brierUnweighted, brierCoin: base.stats.brierCoin, brierBaseRate: base.stats.brierBaseRate },
+    replay: { questions: base.stats.questions, brierLmsr: base.stats.brierLmsr, brierWeighted: base.stats.brierWeightedMean, brierUnweighted: base.stats.brierUnweighted, brierCoin: base.stats.brierCoin, brierBaseRate: base.stats.brierBaseRate,
+      ...(() => { const f = FUTURES.reduce((a, b) => (base.stats.brierFutures[b.id] < base.stats.brierFutures[a.id] ? b : a)); return { brierBestFuture: base.stats.brierFutures[f.id], bestFuture: f.name }; })() },
     you, agentRoi: roi,
   };
 }
@@ -200,6 +211,9 @@ export type Leaderboard = {
   released: boolean; rows: LeaderRow[]; eta: number;
   history: { q: string; byKind: Record<Kind, number> }[]; kinds: { kind: Kind; label: string; count: number; brier: number; influence: number }[];
   baselines: { coin: number; baseRate: number; market: number; weighted: number; unweighted: number };
+  // Where the computer-made players' records come from: real past releases, replayed in order before you arrived.
+  track: { questions: number; from: string; to: string; quarters: number };
+  influenceMax: number;
 };
 
 export function computeLeaderboard(state: SessionState, nowMs: number = Date.now()): Leaderboard {
@@ -230,6 +244,8 @@ export function computeLeaderboard(state: SessionState, nowMs: number = Date.now
     : base.influenceHistory;
   return {
     released, rows, eta: ETA, history, kinds,
+    track: { questions: base.stats.questions, from: base.stats.perQuarter[0].q, to: base.stats.perQuarter[base.stats.perQuarter.length - 1].q, quarters: base.stats.perQuarter.length },
+    influenceMax: INFLUENCE_MAX,
     baselines: { coin: base.stats.brierCoin, baseRate: base.stats.brierBaseRate, market: base.stats.brierLmsr, weighted: base.stats.brierWeightedMean, unweighted: base.stats.brierUnweighted },
   };
 }

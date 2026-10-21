@@ -4,13 +4,15 @@ import { computeWorld } from "@/lib/engine/world";
 import { skillById, personas, occupationById, roleById, INTERESTS, isEducation, isStudyField, EDUCATION_RANK } from "@/lib/engine/data";
 import { initialState, STAY_ID, type Profile, type SessionState } from "@/lib/engine/state";
 import { normaliseOverride } from "@/lib/engine/futures";
-import { stateById } from "@/lib/engine/geo";
+import { stateById, isReach } from "@/lib/engine/geo";
 import { respond } from "@/lib/server/respond";
 import { getSessionId } from "@/lib/server/session";
 import { loadState, logEvent, resetState, saveState } from "@/lib/server/store";
-import { badgeRecord, cardById, completionGate, gradeQuiz, MAX_TEXT } from "@/lib/engine/pathway";
+import { cardById, completionGate, gradeQuiz, MAX_TEXT } from "@/lib/engine/pathway";
+import { canSwap } from "@/lib/engine/plan";
+import { personaState } from "@/lib/engine/review";
+import { courseById } from "@/lib/engine/data";
 import type { PathwayWork } from "@/lib/engine/state";
-import crypto from "node:crypto";
 import { MAX_PER_ANSWER, moveAllowance } from "@/lib/market-math";
 
 export const dynamic = "force-dynamic";
@@ -23,23 +25,30 @@ const num = (x: unknown, lo: number, hi: number, d: number) => {
 };
 
 function cleanProfile(raw: Record<string, unknown>): Profile | string {
+  const status = raw.status === "studying" ? "studying" as const : "working" as const;
   const occ = String(raw.occupationId ?? "");
-  if (!occupationById[occ]) return "Choose your previous job from the list.";
+  if (!occupationById[occ] && !(status === "studying" && occ === "")) return "Choose your previous job from the list.";
   const skills = Array.isArray(raw.skills) ? [...new Set(raw.skills.map(String))].filter((s) => skillById[s]) : [];
   if (skills.length < 1) return "Pick at least one skill you have.";
-  const education = isEducation(raw.education) ? raw.education : occupationById[occ].education;
+  const fallbackEdu = occupationById[occ]?.education ?? "degree";
+  const education = isEducation(raw.education) ? raw.education : fallbackEdu;
+  const fallbackStudy = occupationById[occ]?.sector ?? "business";
   return {
     personaId: raw.personaId ? String(raw.personaId) : undefined,
     name: String(raw.name ?? "You").slice(0, 40) || "You",
     state: typeof raw.state === "string" && stateById[raw.state] ? raw.state : null,
+    move: isReach(raw.move) ? raw.move : null,
+    moveTo: raw.move === "pick" && Array.isArray(raw.moveTo) ? [...new Set(raw.moveTo.map(String))].filter((s) => stateById[s]).slice(0, 16) : [],
+    status,
     age: raw.age === null || raw.age === undefined || raw.age === "" ? null : Math.round(num(raw.age, 16, 80, 0)) || null,
     occupationId: occ,
     education,
-    study: EDUCATION_RANK[education] >= 1 ? (isStudyField(raw.study) ? raw.study : occupationById[occ].sector) : null,
+    study: EDUCATION_RANK[education] >= 1 ? (isStudyField(raw.study) ? raw.study : fallbackStudy) : null,
     years: Math.round(num(raw.years, 0, 40, 2)),
     skills,
     interests: (Array.isArray(raw.interests) ? raw.interests.map(String) : []).filter((i) => INTEREST_IDS.includes(i)).slice(0, 3),
-    months: Math.round(num(raw.months, 1, 6, 6)),
+    // Students count months to graduation, up to two years; job seekers' support lasts at most about six months.
+    months: Math.round(num(raw.months, 1, status === "studying" ? 24 : 6, 6)),
     hoursPerWeek: Math.round(num(raw.hoursPerWeek, 1, 40, 10)),
     budget: raw.budget === "low" || raw.budget === "flexible" ? raw.budget : "free",
     synthetic: !!raw.synthetic,
@@ -80,17 +89,17 @@ export async function POST(req: Request) {
       return respond(state);
     }
     case "startPersona": {
+      const fresh = personaState(String(body.personaId ?? ""));
       const p = personas.find((x) => x.id === body.personaId);
-      if (!p) return bad("Unknown demo profile.");
-      const o = occupationById[p.occupation];
-      state = { ...initialState(), profile: { personaId: p.id, name: p.name, age: p.age, state: p.state ?? null, occupationId: p.occupation, education: p.education, study: EDUCATION_RANK[p.education] >= 1 ? o.sector : null, years: p.years, skills: o.skills, interests: p.interests, months: p.months, hoursPerWeek: p.hoursPerWeek, budget: "free", synthetic: true } };
+      if (!fresh || !p) return bad("Unknown demo profile.");
+      state = fresh;
       await logEvent("profile", sid, { synthetic: true, persona: p.id, months: p.months });
       break;
     }
     case "setProfile": {
       const prof = cleanProfile((body.profile ?? {}) as Record<string, unknown>);
       if (typeof prof === "string") return bad(prof);
-      state = { ...state, profile: prof, chosenRoleId: null, approval: { status: "draft" }, progress: {}, pathway: {}, completion: { status: "none" } };
+      state = { ...state, profile: prof, chosenRoleId: null, progress: {}, pathway: {}, completion: { status: "none" }, courseSwaps: {} };
       await logEvent("profile", sid, { synthetic: prof.synthetic, occupation: prof.occupationId, months: prof.months });
       break;
     }
@@ -130,7 +139,7 @@ export async function POST(req: Request) {
       break;
     }
     case "homeState": {
-      // Changing your state changes only the job map, so the plan and its approval are kept.
+      // A new state can reorder the jobs, but the job they chose, its plan and its approval are kept.
       if (!state.profile) return bad("Make a profile first.");
       const st = typeof body.state === "string" && stateById[body.state] ? body.state : null;
       state = { ...state, profile: { ...state.profile, state: st } };
@@ -149,24 +158,27 @@ export async function POST(req: Request) {
     case "chooseRole": {
       const id = String(body.roleId ?? "");
       if (id !== STAY_ID && !roleById[id]) return bad("Unknown role.");
-      state = { ...state, chosenRoleId: id, approval: { status: "draft" }, progress: {}, pathway: {}, completion: { status: "none" } };
+      state = { ...state, chosenRoleId: id, progress: {}, pathway: {}, completion: { status: "none" }, courseSwaps: {} };
+      break;
+    }
+    case "swapCourse": {
+      // Choose another course for one plan step. It must teach every skill that step covers; null goes back to the suggestion.
+      if (state.completion.status === "confirmed") return bad("This pathway is finished and its badge is issued.");
+      const plan = computeView(state).plan;
+      const key = String(body.skillKey ?? "");
+      const step = plan?.steps.find((s) => s.skillKey === key);
+      if (!step) return bad("That course is not part of your plan.");
+      const courseId = body.courseId === null ? null : String(body.courseId ?? "");
+      if (courseId !== null && !canSwap(courseById[courseId], key)) return bad("That course does not cover every skill this step teaches.");
+      const swaps = { ...(state.courseSwaps ?? {}) };
+      if (courseId === null) delete swaps[key]; else swaps[key] = courseId;
+      // A new course starts unticked, so a pending request to confirm the finished pathway is withdrawn.
+      state = { ...state, courseSwaps: swaps, progress: { ...state.progress, [step.id]: false }, completion: state.completion.status === "requested" ? { status: "none" } : state.completion };
+      await logEvent("course_swapped", sid, { step: step.id, course: courseId ?? "suggested" });
       break;
     }
     case "progress": {
       state = { ...state, progress: { ...state.progress, [String(body.stepId ?? "")]: !!body.done } };
-      break;
-    }
-    case "submit": {
-      const v = computeView(state);
-      if (!v.plan) return bad("Make a profile first.");
-      state = { ...state, approval: { status: "submitted", submittedAt: new Date().toISOString(), planRoleId: v.plan.roleId } };
-      await logEvent("plan_submitted", sid, { role: v.plan.roleId, weeks: v.plan.totalWeeks });
-      break;
-    }
-    case "approve": {
-      if (state.approval.status !== "submitted") return bad("There is no plan waiting for approval.");
-      state = { ...state, approval: { ...state.approval, status: "approved", approvedAt: new Date().toISOString(), note: String(body.note ?? "").slice(0, 500) } };
-      await logEvent("plan_approved", sid, { role: state.approval.planRoleId, note: state.approval.note ? "added" : "none" });
       break;
     }
     case "pathwaySave": {
@@ -186,23 +198,16 @@ export async function POST(req: Request) {
       break;
     }
     case "requestCompletion": {
-      const gate = completionGate(computeView(state).plan, state);
+      const plan = computeView(state).plan;
+      const gate = completionGate(plan, state);
       if (!gate.ok) return bad(gate.missing.join(" "));
       state = { ...state, completion: { status: "requested", requestedAt: new Date().toISOString() } };
-      await logEvent("completion_requested", sid, { role: state.approval.planRoleId });
+      await logEvent("completion_requested", sid, { role: plan?.roleId });
       break;
     }
-    case "confirmCompletion": {
-      if (state.completion.status !== "requested") return bad("There is no finished pathway waiting for confirmation.");
-      const plan = computeView(state).plan;
-      if (!plan || !completionGate(plan, state).ok) return bad("The pathway is not finished yet.");
-      const now = new Date().toISOString();
-      const id = crypto.randomBytes(9).toString("base64url");
-      const note = String(body.note ?? "").slice(0, 500);
-      await logEvent("badge_issued", sid, badgeRecord(plan, state, id, now));
-      state = { ...state, completion: { ...state.completion, status: "confirmed", confirmedAt: now, note, badgeId: id } };
-      break;
-    }
+    case "confirmCompletion":
+      // The sign-off belongs to the advisor, who acts on the worker's case through /api/counsellor.
+      return NextResponse.json({ error: "Only a signed-in advisor can do this. Open the advisor view." }, { status: 403 });
     default:
       return bad("Unknown action.");
   }

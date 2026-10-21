@@ -1,4 +1,4 @@
-import { courses, skillById, type Course, type SectorId } from "./data";
+import { courseById, courses, skillById, type Course, type SectorId } from "./data";
 import { cardForSector } from "./pathway";
 import { durability, type SkillExpiry } from "./expiry";
 import { coverGaps, type Pick, type RoleMatch } from "./matching";
@@ -13,6 +13,9 @@ export type PlanStep = {
   funding: string; cost: string; course?: Course; checked?: string;
   // job: courses for the gap. ai: working with AI. people: resume, story and interviews.
   strand: Strand;
+  // Course steps: the gap skills this step covers, as one key ("a+b"). The worker can swap in another course that
+  // covers all of them (see SessionState.courseSwaps); swapped marks a course they chose themselves.
+  skillKey?: string; swapped?: boolean; alternatives?: number;
   // Steps with an activity are done when the work is saved in Runway, not by ticking (see pathway.stepDone).
   activity?: "task" | "resume";
   cardId?: string;
@@ -28,10 +31,18 @@ export type Plan = {
   note: string;
 };
 
-// Course steps, long-lasting skills first, starting at week 1.
-function courseSteps(gaps: { skillId: string; expiry: SkillExpiry }[], picksIn: Pick[], hoursPerWeek: number): { steps: PlanStep[]; week: number } {
+export const skillKey = (ids: string[]) => [...ids].sort().join("+");
+// A course may replace a step only if it is a real course (not a portal) and teaches every skill the step covers.
+export const canSwap = (c: Course | undefined, key: string): boolean => !!c && !c.catalogOnly && !c.strand && key.split("+").every((s) => c.skills.includes(s));
+export type Swaps = Record<string, string>;
+
+// Course steps, long-lasting skills first, starting at week 1. Swaps replace a step's course with the worker's choice.
+function courseSteps(gaps: { skillId: string; expiry: SkillExpiry }[], picksIn: Pick[], hoursPerWeek: number, swaps: Swaps = {}): { steps: PlanStep[]; week: number } {
   const gapDur = Object.fromEntries(gaps.map((g) => [g.skillId, durability(g.expiry)]));
-  const picks = [...picksIn].sort((a, b) => {
+  const picks = picksIn.map((p) => {
+    const c = courseById[swaps[skillKey(p.skillIds)]];
+    return c && canSwap(c, skillKey(p.skillIds)) && c.id !== p.course?.id ? { ...p, course: c, hours: c.hours, swapped: true } : p;
+  }).sort((a, b) => {
     const da = Math.min(...a.skillIds.map((s) => gapDur[s] ?? 1));
     const db = Math.min(...b.skillIds.map((s) => gapDur[s] ?? 1));
     return db - da; // long-lasting skills first
@@ -51,7 +62,8 @@ function courseSteps(gaps: { skillId: string; expiry: SkillExpiry }[], picksIn: 
       shortLivedNote: short ? "This skill is expected to be automated soon. Learn it for the job, but do not rely on it for the long run." : undefined,
       funding: p.course ? p.course.funding : "PERKESO training support (to confirm with your counsellor)",
       cost: p.course ? p.course.cost : "To be confirmed", course: p.course ?? undefined, checked: p.course?.checked,
-      strand: "job",
+      strand: "job", skillKey: skillKey(p.skillIds), swapped: "swapped" in p ? true : undefined,
+      alternatives: courses.filter((c) => c.id !== p.course?.id && canSwap(c, skillKey(p.skillIds))).length,
     });
     week += w;
   });
@@ -120,8 +132,8 @@ const notAiOnly = (st: PlanStep) => !(st.skills.length && st.skills.every((k) =>
 
 const aiSkill = () => ({ id: "ai_tools", name: skillById.ai_tools.name, sdgTarget: skillById.ai_tools.sdg.target, sdgWhy: skillById.ai_tools.sdg.why });
 
-export function buildPlan(m: RoleMatch, hoursPerWeek: number, stayIn?: string): Plan {
-  const { steps: gapSteps } = courseSteps(m.gaps, m.picks, hoursPerWeek);
+export function buildPlan(m: RoleMatch, hoursPerWeek: number, stayIn?: string, swaps?: Swaps): Plan {
+  const { steps: gapSteps } = courseSteps(m.gaps, m.picks, hoursPerWeek, swaps);
   const jobSteps = relayout(gapSteps.filter(notAiOnly), hoursPerWeek);
   const steps: PlanStep[] = [resumeStep(), ...jobSteps];
   const start = jobSteps.length ? jobSteps[jobSteps.length - 1].weekEnd + 1 : 1;
@@ -151,15 +163,15 @@ export function buildPlan(m: RoleMatch, hoursPerWeek: number, stayIn?: string): 
       layer1,
       layer2: `Your new job as ${m.title} serves UN goal ${m.sdgTarget.split(".")[0]} (target ${m.sdgTarget}): ${m.sdgWhy}`,
     },
-    note: `${stayIn ? `Keep working as ${stayIn.toLowerCase()} for income while you train. ` : ""}A plan is a suggestion. You choose, and your counsellor reviews and approves it.`,
+    note: `${stayIn ? `Keep working as ${stayIn.toLowerCase()} for income while you train. ` : ""}A plan is a suggestion. You choose; book an advisor if you want a second opinion.`,
   };
 }
 
 // Staying in your job: learn the skills that are growing in it, use AI on your real work, then take on more of that work.
 export const ADAPT_WEEKS = 2;
-export function buildReshapePlan(job: string, growing: { skillId: string; expiry: SkillExpiry }[], deadlineWeeks: number, hoursPerWeek: number, sector?: SectorId): Plan {
+export function buildReshapePlan(job: string, growing: { skillId: string; expiry: SkillExpiry }[], deadlineWeeks: number, hoursPerWeek: number, sector?: SectorId, swaps?: Swaps): Plan {
   const picks = coverGaps(growing.map((g) => g.skillId));
-  const { steps: gapSteps } = courseSteps(growing, picks, hoursPerWeek);
+  const { steps: gapSteps } = courseSteps(growing, picks, hoursPerWeek, swaps);
   const jobSteps = relayout(gapSteps.filter(notAiOnly), hoursPerWeek);
   const steps: PlanStep[] = [resumeStep(), ...jobSteps];
   const ai = aiSteps(jobSteps.length ? jobSteps[jobSteps.length - 1].weekEnd + 1 : 1, ADAPT_WEEKS, hoursPerWeek, sector, "Use AI tools on a real task from your job, then check and correct their output");
@@ -176,6 +188,6 @@ export function buildReshapePlan(job: string, growing: { skillId: string; expiry
     totalWeeks: week - 1, deadlineWeeks, hours: picks.reduce((a, p) => a + p.hours, 0) + 2 * ADAPT_WEEKS * hoursPerWeek,
     steps,
     summary: { layer1, layer2: "Keeping your skills up to date as AI changes your job supports decent work and productivity through upgrading skills (target 8.2)." },
-    note: "A plan is a suggestion. You choose, and your counsellor reviews and approves it.",
+    note: "A plan is a suggestion. You choose; book an advisor if you want a second opinion.",
   };
 }

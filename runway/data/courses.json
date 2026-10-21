@@ -1369,5 +1369,47 @@
   "checked": "2026-10-21",
   "linkStatus": "200",
   "strand": "people"
+ },
+ {
+  "id": "elatih",
+  "title": "e-LATiH: HRD Corp's online learning platform",
+  "provider": "HRD Corp (Human Resource Development Corporation)",
+  "url": "https://elatih.hrdcorp.gov.my/",
+  "hours": 0,
+  "cost": "Free courses available (others RM30 to RM1,750)",
+  "funding": "HRD Corp",
+  "skills": [],
+  "checked": "2026-10-21",
+  "linkStatus": "200",
+  "catalogOnly": true,
+  "note": "Malaysia's government learning platform with free and paid courses in digital technology, finance, leadership, languages and more. Filter for free courses after you sign up. Ask your counsellor or employer which paid courses HRD Corp funding can cover."
+ },
+ {
+  "id": "perkeso_eis",
+  "title": "PERKESO reskilling for workers who lost their job (MYFutureJobs)",
+  "provider": "PERKESO (Social Security Organisation)",
+  "url": "https://myfuturejobs.gov.my/",
+  "hours": 0,
+  "cost": "Free for eligible workers",
+  "funding": "PERKESO",
+  "skills": [],
+  "checked": "2026-10-21",
+  "linkStatus": "200",
+  "catalogOnly": true,
+  "note": "Workers insured under the Employment Insurance System (EIS) who lose their job can apply for upskilling and reskilling programmes, career counselling and job matching through MYFutureJobs. Confirm your eligibility with your counsellor or PERKESO."
+ },
+ {
+  "id": "rakyat_digital",
+  "title": "Rakyat Digital Literacy Hub",
+  "provider": "Ministry of Digital, Malaysia",
+  "url": "https://rakyatdigital.gov.my/en/literacy-hub",
+  "hours": 0,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [],
+  "checked": "2026-10-21",
+  "linkStatus": "200",
+  "catalogOnly": true,
+  "note": "The government's free digital literacy courses: online banking and e-wallets, spotting scams and false news, staying safe on social media, and AI basics including generative AI and AI safety. A good first step before the job courses if you are new to digital tools."
  }
 ]

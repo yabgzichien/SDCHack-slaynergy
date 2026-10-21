@@ -1,7 +1,8 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import type { SessionState } from "../engine/state";
+import type { Meeting, Slot } from "../engine/meetings";
+import type { SessionState, Signer } from "../engine/state";
 import { initialState } from "../engine/state";
 
 // Storage: Postgres when DATABASE_URL is set (Replit), otherwise a local SQLite file.
@@ -21,7 +22,21 @@ interface Driver {
   head(): Promise<LogEntry | null>;
   all(): Promise<LogEntry[]>;
   recent(n: number): Promise<LogEntry[]>;
+  putCase(id: string, sid: string): Promise<void>;
+  dropCase(sid: string): Promise<void>;
+  cases(): Promise<{ id: string; sid: string; state: string }[]>;
+  slots(after: string): Promise<{ id: string; start: string; advisor: string }[]>;
+  addSlot(id: string, start: string, advisor: string): Promise<void>;
+  removeSlot(id: string): Promise<void>;
+  // False when the slot already has a live booking (the partial unique index refuses it).
+  insertMeeting(id: string, slotId: string, sid: string, start: string, status: string, data: string): Promise<boolean>;
+  updateMeeting(id: string, status: string, data: string): Promise<void>;
+  meetings(): Promise<{ sid: string; data: string }[]>;
 }
+
+const MEETING_TABLES = `CREATE TABLE IF NOT EXISTS slots (id TEXT PRIMARY KEY, start TEXT NOT NULL, advisor TEXT NOT NULL);
+  CREATE TABLE IF NOT EXISTS meetings (id TEXT PRIMARY KEY, slot_id TEXT NOT NULL, sid TEXT NOT NULL, start TEXT NOT NULL, status TEXT NOT NULL, data TEXT NOT NULL);
+  CREATE UNIQUE INDEX IF NOT EXISTS meetings_live_slot ON meetings (slot_id) WHERE status <> 'cancelled';`;
 
 function sqliteDriver(): Driver {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -31,7 +46,9 @@ function sqliteDriver(): Driver {
   const db = new Database(file);
   db.pragma("journal_mode = WAL");
   db.exec(`CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, state TEXT NOT NULL, updated_at INTEGER NOT NULL);
-           CREATE TABLE IF NOT EXISTS log (seq INTEGER PRIMARY KEY, ts TEXT NOT NULL, type TEXT NOT NULL, session TEXT NOT NULL, payload TEXT NOT NULL, prev TEXT NOT NULL, hash TEXT NOT NULL);`);
+           CREATE TABLE IF NOT EXISTS log (seq INTEGER PRIMARY KEY, ts TEXT NOT NULL, type TEXT NOT NULL, session TEXT NOT NULL, payload TEXT NOT NULL, prev TEXT NOT NULL, hash TEXT NOT NULL);
+           CREATE TABLE IF NOT EXISTS cases (id TEXT PRIMARY KEY, sid TEXT NOT NULL UNIQUE, updated_at INTEGER NOT NULL);
+           ${MEETING_TABLES}`);
   const appendTx = db.transaction((type: string, session: string, payload: string): LogEntry => {
     const last = db.prepare("SELECT * FROM log ORDER BY seq DESC LIMIT 1").get() as LogEntry | undefined;
     const base = { seq: (last?.seq ?? 0) + 1, ts: new Date().toISOString(), type, session, payload, prev: last?.hash ?? GENESIS };
@@ -47,6 +64,18 @@ function sqliteDriver(): Driver {
     async head() { return (db.prepare("SELECT * FROM log ORDER BY seq DESC LIMIT 1").get() as LogEntry | undefined) ?? null; },
     async all() { return db.prepare("SELECT * FROM log ORDER BY seq ASC").all() as LogEntry[]; },
     async recent(n) { return db.prepare("SELECT * FROM log ORDER BY seq DESC LIMIT ?").all(n) as LogEntry[]; },
+    async putCase(id, sid) { db.prepare("INSERT INTO cases (id,sid,updated_at) VALUES (?,?,?) ON CONFLICT(id) DO UPDATE SET updated_at=excluded.updated_at").run(id, sid, Date.now()); },
+    async dropCase(sid) { db.prepare("DELETE FROM cases WHERE sid=?").run(sid); },
+    async cases() { return db.prepare("SELECT c.id, c.sid, s.state FROM cases c JOIN sessions s ON s.id = c.sid ORDER BY c.updated_at DESC LIMIT 200").all() as { id: string; sid: string; state: string }[]; },
+    async slots(after) { return db.prepare("SELECT id, start, advisor FROM slots WHERE start > ? ORDER BY start").all(after) as { id: string; start: string; advisor: string }[]; },
+    async addSlot(id, start, advisor) { db.prepare("INSERT OR IGNORE INTO slots (id,start,advisor) VALUES (?,?,?)").run(id, start, advisor); },
+    async removeSlot(id) { db.prepare("DELETE FROM slots WHERE id=?").run(id); },
+    async insertMeeting(id, slotId, sid, start, status, data) {
+      try { db.prepare("INSERT INTO meetings (id,slot_id,sid,start,status,data) VALUES (?,?,?,?,?,?)").run(id, slotId, sid, start, status, data); return true; }
+      catch (err) { if (String((err as { code?: string }).code).startsWith("SQLITE_CONSTRAINT")) return false; throw err; }
+    },
+    async updateMeeting(id, status, data) { db.prepare("UPDATE meetings SET status=?, data=? WHERE id=?").run(status, data, id); },
+    async meetings() { return db.prepare("SELECT sid, data FROM meetings ORDER BY start DESC LIMIT 1000").all() as { sid: string; data: string }[]; },
   };
 }
 
@@ -57,7 +86,9 @@ function pgDriver(url: string): Driver {
   let ready: Promise<void> | null = null;
   const init = () => (ready ??= (async () => {
     await pool.query(`CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, state TEXT NOT NULL, updated_at BIGINT NOT NULL);
-      CREATE TABLE IF NOT EXISTS log (seq BIGINT PRIMARY KEY, ts TEXT NOT NULL, type TEXT NOT NULL, session TEXT NOT NULL, payload TEXT NOT NULL, prev TEXT NOT NULL, hash TEXT NOT NULL);`);
+      CREATE TABLE IF NOT EXISTS log (seq BIGINT PRIMARY KEY, ts TEXT NOT NULL, type TEXT NOT NULL, session TEXT NOT NULL, payload TEXT NOT NULL, prev TEXT NOT NULL, hash TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS cases (id TEXT PRIMARY KEY, sid TEXT NOT NULL UNIQUE, updated_at BIGINT NOT NULL);
+      ${MEETING_TABLES}`);
   })());
   const toEntry = (r: Record<string, unknown>): LogEntry => ({ ...(r as unknown as LogEntry), seq: Number(r.seq) });
   return {
@@ -81,12 +112,26 @@ function pgDriver(url: string): Driver {
     async head() { await init(); const r = await pool.query("SELECT * FROM log ORDER BY seq DESC LIMIT 1"); return r.rows[0] ? toEntry(r.rows[0]) : null; },
     async all() { await init(); return (await pool.query("SELECT * FROM log ORDER BY seq ASC")).rows.map(toEntry); },
     async recent(n) { await init(); return (await pool.query("SELECT * FROM log ORDER BY seq DESC LIMIT $1", [n])).rows.map(toEntry); },
+    async putCase(id, sid) { await init(); await pool.query("INSERT INTO cases (id,sid,updated_at) VALUES ($1,$2,$3) ON CONFLICT (id) DO UPDATE SET updated_at=EXCLUDED.updated_at", [id, sid, Date.now()]); },
+    async dropCase(sid) { await init(); await pool.query("DELETE FROM cases WHERE sid=$1", [sid]); },
+    async cases() { await init(); return (await pool.query("SELECT c.id, c.sid, s.state FROM cases c JOIN sessions s ON s.id = c.sid ORDER BY c.updated_at DESC LIMIT 200")).rows; },
+    async slots(after) { await init(); return (await pool.query("SELECT id, start, advisor FROM slots WHERE start > $1 ORDER BY start", [after])).rows; },
+    async addSlot(id, start, advisor) { await init(); await pool.query("INSERT INTO slots (id,start,advisor) VALUES ($1,$2,$3) ON CONFLICT (id) DO NOTHING", [id, start, advisor]); },
+    async removeSlot(id) { await init(); await pool.query("DELETE FROM slots WHERE id=$1", [id]); },
+    async insertMeeting(id, slotId, sid, start, status, data) {
+      await init();
+      try { await pool.query("INSERT INTO meetings (id,slot_id,sid,start,status,data) VALUES ($1,$2,$3,$4,$5,$6)", [id, slotId, sid, start, status, data]); return true; }
+      catch (err) { if ((err as { code?: string }).code === "23505") return false; throw err; }
+    },
+    async updateMeeting(id, status, data) { await init(); await pool.query("UPDATE meetings SET status=$1, data=$2 WHERE id=$3", [status, data, id]); },
+    async meetings() { await init(); return (await pool.query("SELECT sid, data FROM meetings ORDER BY start DESC LIMIT 1000")).rows; },
   };
 }
 
-const g = globalThis as unknown as { __runwayDb?: Driver };
+// Kept on globalThis so hot reloads reuse one connection. Bump the key when the driver gains methods or tables.
+const g = globalThis as unknown as { __runwayDb3?: Driver };
 function db(): Driver {
-  return (g.__runwayDb ??= process.env.DATABASE_URL ? pgDriver(process.env.DATABASE_URL) : sqliteDriver());
+  return (g.__runwayDb3 ??= process.env.DATABASE_URL ? pgDriver(process.env.DATABASE_URL) : sqliteDriver());
 }
 
 export async function loadState(id: string): Promise<SessionState> {
@@ -94,8 +139,28 @@ export async function loadState(id: string): Promise<SessionState> {
   if (!raw) return initialState();
   try { return { ...initialState(), ...(JSON.parse(raw) as SessionState) }; } catch { return initialState(); }
 }
-export const saveState = (id: string, s: SessionState) => db().putState(id, JSON.stringify(s));
-export const resetState = (id: string) => db().deleteState(id);
+// A session becomes an advisor case once the worker asks for their finished pathway to be confirmed.
+// Cases are listed by their anonymised id, the same id the hash log uses, so the raw session id never leaves the server.
+export const isCase = (s: SessionState) => s.completion.status !== "none";
+export async function saveState(id: string, s: SessionState) {
+  await db().putState(id, JSON.stringify(s));
+  if (isCase(s)) await db().putCase(anonymise(id), id); else await db().dropCase(id);
+}
+export async function resetState(id: string) { await db().dropCase(id); await db().deleteState(id); }
+export type Case = { id: string; sid: string; state: SessionState };
+const parse = (raw: string): SessionState => { try { return { ...initialState(), ...(JSON.parse(raw) as SessionState) }; } catch { return initialState(); } };
+export const listCases = async (): Promise<Case[]> => (await db().cases()).map((c) => ({ id: c.id, sid: c.sid, state: parse(c.state) })).filter((c) => isCase(c.state));
+export const findCase = async (id: string) => (await listCases()).find((c) => c.id === id) ?? null;
+// Advisor slots and meetings. Meetings keep the raw session id server-side only; callers strip it before responding.
+export type StoredMeeting = Meeting & { sid: string };
+export const openSlots = async (after: string): Promise<Slot[]> => (await db().slots(after)).map((r) => ({ id: r.id, start: r.start, advisor: JSON.parse(r.advisor) as Signer }));
+export const addSlot = (s: Slot) => db().addSlot(s.id, s.start, JSON.stringify(s.advisor));
+export const removeSlot = (id: string) => db().removeSlot(id);
+export const insertMeeting = (m: Meeting, sid: string) => db().insertMeeting(m.id, m.slotId, sid, m.start, m.status, JSON.stringify(m));
+export const updateMeeting = (m: Meeting) => db().updateMeeting(m.id, m.status, JSON.stringify(m));
+export const listMeetings = async (): Promise<StoredMeeting[]> => (await db().meetings()).map((r) => ({ ...(JSON.parse(r.data) as Meeting), sid: r.sid }));
+export const meetingsOf = async (sid: string) => (await listMeetings()).filter((m) => m.sid === sid);
+export const findMeeting = async (id: string) => (await listMeetings()).find((m) => m.id === id) ?? null;
 export const logEvent = (type: string, sid: string, payload: unknown) => db().append(type, anonymise(sid), JSON.stringify(payload));
 export const logHead = () => db().head();
 export const logAll = () => db().all();

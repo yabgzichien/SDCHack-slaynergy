@@ -181,7 +181,9 @@ function buildIlo() {
 }
 
 const dosm = buildDosm(path.join(RAW, "dosm", "jmi_q2_2026.xlsx"), "2026Q2");
-const EPOCH_CUTOFF = "2026Q2"; // demo data cut-off: the release the app replays (see docs/data-feasibility.md)
+// Last complete quarter. The app still holds 2026 Q2 back as the release it replays; Q3 (closed 30 Sep 2026) is only used
+// to set the thresholds of the open Oct to Dec 2026 questions, so no open question asks about a quarter that has ended.
+const EPOCH_CUTOFF = "2026Q3";
 const epoch = {};
 for (const e of EPOCH) {
   epoch[e.id] = { name: e.name, unit: e.unit, short: e.short, replayOnly: !!e.replayOnly, frontier: frontier(e.file, e.col, e.tf).filter((p) => p.q <= EPOCH_CUTOFF) };

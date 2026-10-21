@@ -3,14 +3,18 @@ import Link from "next/link";
 import { useApp } from "@/components/AppProvider";
 import { Btn, Card, Chip, H } from "@/components/ui";
 import type { PlanStep } from "@/lib/engine/plan";
+import type { View } from "@/lib/engine/view";
+import type { SessionState } from "@/lib/engine/state";
 
 // Where each in-app activity lives.
 export const activityHref = (s: PlanStep) =>
   s.activity === "task" ? "/plan/task" : s.activity === "resume" ? "/resume" : null;
 
 // The worker's optional portfolio piece after the AI quiz: the reusable prompt and the "how I do this task" sheet.
-export function Portfolio({ counsellor }: { counsellor?: boolean }) {
-  const { view, state } = useApp();
+// The advisor view passes the case it is reviewing; the worker's own pages use their session.
+export function Portfolio({ counsellor, data }: { counsellor?: boolean; data?: { view: View; state: SessionState } }) {
+  const app = useApp();
+  const { view, state } = data ?? app;
   const card = view?.pathway.card;
   const w = state?.pathway;
   if (!card || !w || (!w.template && !w.sheet && !w.quiz)) return null;
@@ -52,7 +56,7 @@ export function BadgeShelf() {
   const mark = { skill: "◆", ai: "✦", people: "●", milestone: "★" } as const;
   return (
     <Card className="mt-4">
-      <H sub={`${earned} of ${list.length} earned · self-reported progress; the counsellor-confirmed pathway badge below is the verified one`}>Your skill badges</H>
+      <H sub={`${earned} of ${list.length} earned · self-reported progress; the advisor-confirmed pathway badge below is the verified one`}>Your skill badges</H>
       <div className="h-2 overflow-hidden rounded-full bg-surface2" role="progressbar" aria-valuemin={0} aria-valuemax={list.length} aria-valuenow={earned} aria-label="Badges earned">
         <div className="h-full rounded-full bg-[var(--accent)] transition-all" style={{ width: `${(earned / list.length) * 100}%` }} />
       </div>
@@ -68,7 +72,7 @@ export function BadgeShelf() {
   );
 }
 
-// Finishing: ask the counsellor to confirm, then share the badge.
+// Finishing: ask an advisor to confirm, then share the badge.
 export function BadgePanel() {
   const { view, state, act, busy } = useApp();
   if (!view || !state) return null;
@@ -80,25 +84,25 @@ export function BadgePanel() {
       <p className="text-sm font-medium">Your pathway badge</p>
       {c.status === "confirmed" && c.badgeId ? (
         <>
-          <p className="mt-1 text-sm">Your counsellor confirmed you finished the pathway. Your badge is ready to share.</p>
+          <p className="mt-1 text-sm">{c.by ? c.by.name : "Your advisor"} confirmed you finished the pathway. Your badge is ready to share.</p>
           {c.note && <p className="mt-2 rounded-2xl bg-raised p-3 text-sm">&ldquo;{c.note}&rdquo;</p>}
           <div className="mt-3"><Btn href={`/badge/${c.badgeId}`}>See and share your badge</Btn></div>
         </>
       ) : c.status === "requested" ? (
         <>
-          <p className="mt-1 text-sm">Waiting for your counsellor to confirm. For the demo, open the counsellor view and confirm as them.</p>
-          <div className="mt-3"><Btn href="/counsellor" variant="ghost">Open the counsellor view</Btn></div>
+          <p className="mt-1 text-sm">Waiting for an advisor to confirm. For the demo, open the advisor view and sign in as one.</p>
+          <div className="mt-3"><Btn href="/counsellor" variant="ghost">Open the advisor view</Btn></div>
         </>
       ) : (
         <>
-          <p className="mt-1 text-sm text-muted">When every step is done and the AI check is passed, your counsellor confirms it and you get a badge to add to LinkedIn. It says you completed the pathway; it is not a qualification.</p>
+          <p className="mt-1 text-sm text-muted">When every step is done and the AI check is passed, an advisor confirms it and you get a badge to add to LinkedIn. It says you completed the pathway; it is not a qualification.</p>
           {!gate.ok && <ul className="mt-2 list-disc pl-5 text-sm text-muted">{gate.missing.map((m) => <li key={m}>{m}</li>)}</ul>}
           <fieldset className="mt-3 space-y-2 text-sm">
             <legend className="sr-only">What the public badge page shows</legend>
             <label className="flex items-center gap-2"><input type="checkbox" className="h-4 w-4 accent-[var(--accent)]" checked={!!w.showName} onChange={(e) => act("pathwaySave", { work: { showName: e.target.checked } })} />Show my name on the public badge page</label>
             <label className="flex items-center gap-2"><input type="checkbox" className="h-4 w-4 accent-[var(--accent)]" checked={!!w.publishPortfolio} onChange={(e) => act("pathwaySave", { work: { publishPortfolio: e.target.checked } })} />Show my portfolio piece on it</label>
           </fieldset>
-          <div className="mt-3"><Btn onClick={() => act("requestCompletion")} disabled={busy || !gate.ok}>Ask my counsellor to confirm</Btn></div>
+          <div className="mt-3"><Btn onClick={() => act("requestCompletion")} disabled={busy || !gate.ok}>Ask an advisor to confirm</Btn></div>
         </>
       )}
     </div>

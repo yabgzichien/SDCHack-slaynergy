@@ -2,6 +2,8 @@ import { KIND_LABEL } from "./market";
 import { skills, skillById, roles, roleById, occupations, occupationById, series, sdg, sourceById, SECTORS, EDUCATION_LABEL, EDUCATION_RANK, quarterIndex, type SectorId } from "./data";
 import { computeWorld, type World } from "./world";
 import { expiryFor, durability, fmtYear, NOW, THRESHOLD, type SkillExpiry } from "./expiry";
+import type { Weights3 } from "./futures";
+import { areaFor } from "./geo";
 import { matchRoles, pickInputs, demandFor, tradeoff, AT_RISK_BELOW, type RoleMatch } from "./matching";
 import { buildPlan, buildReshapePlan, type Plan } from "./plan";
 import { FUTURES, FUTURE_IDS } from "./futures-def";
@@ -42,6 +44,8 @@ export type View = {
   resume: ResumeSummary | null;
   resumeTips: ReturnType<typeof tailorTips> | null;
   changes: Change[] | null;
+  // For each open question: how your soonest-fading skill's date would move if the main answer settles Yes or No.
+  whatIfYou: Record<string, { skill: string; now: string; yes: string; no: string }>;
   data: { name: string; detail: string; url: string; date: string; licence: string }[];
 };
 // The task card as the browser sees it: the planted mistakes stay on the server until the worker finds them.
@@ -171,7 +175,7 @@ function viewCore(state: SessionState, release: 0 | 1): View {
   if (p) {
     const occ = occupationById[p.occupationId];
     const study = p.study !== undefined ? p.study : EDUCATION_RANK[p.education] >= 1 ? occ?.sector : null;
-    const input = pickInputs({ skills: p.skills, months: p.months, hoursPerWeek: p.hoursPerWeek, interests: p.interests, goals: state.goals, education: p.education, field: occ?.sector, study });
+    const input = pickInputs({ skills: p.skills, months: p.months, hoursPerWeek: p.hoursPerWeek, interests: p.interests, goals: state.goals, education: p.education, field: occ?.sector, study, area: areaFor(p.state, p.move, p.moveTo) });
     const all = matchRoles(input, wt, world.asOfQuarter);
     const reachable = all.filter((m) => m.reachable);
     const toView = (m: RoleMatch): RoleMatchView => ({
@@ -188,23 +192,23 @@ function viewCore(state: SessionState, release: 0 | 1): View {
     lasting = matches.find((m) => m.outlook >= LASTING_OUTLOOK) ?? null;
     const quick = Math.min(BRIDGE_WEEKS, Math.floor((matches[0]?.deadlineWeeks ?? 0) / 2));
     bridge = matches.find((m) => m.outlook < LASTING_OUTLOOK && m.weeks <= quick && m.roleId !== lasting?.roleId) ?? null;
-    if (occ) {
+    if (occ && p.status !== "studying") {
       const s = stayFor(occ.id, p.skills, wt);
       const toward = s.fast ? lasting : null;
       stay = { ...s.view, toward };
       if (state.chosenRoleId === STAY_ID) {
-        if (toward) { chosen = toward; plan = buildPlan(all.find((m) => m.roleId === toward.roleId)!, p.hoursPerWeek, occ.title); }
+        if (toward) { chosen = toward; plan = buildPlan(all.find((m) => m.roleId === toward.roleId)!, p.hoursPerWeek, occ.title, state.courseSwaps); }
         else {
           const ev = occ.evolved ? all.find((m) => m.roleId === occ.evolved) : undefined;
           chosen = ev ? toView(ev) : null;
-          plan = buildReshapePlan(occ.title, s.growing, Math.floor(p.months * 4.345 - 2), p.hoursPerWeek, occ.sector);
+          plan = buildReshapePlan(occ.title, s.growing, Math.floor(p.months * 4.345 - 2), p.hoursPerWeek, occ.sector, state.courseSwaps);
         }
       }
     }
     if (!plan) {
       const pick = (state.chosenRoleId && matches.find((m) => m.roleId === state.chosenRoleId)) || lasting || matches[0] || null;
       chosen = pick;
-      if (pick) plan = buildPlan(all.find((m) => m.roleId === pick.roleId)!, p.hoursPerWeek);
+      if (pick) plan = buildPlan(all.find((m) => m.roleId === pick.roleId)!, p.hoursPerWeek, undefined, state.courseSwaps);
     }
   }
   const targets = new Set<string>();
@@ -222,7 +226,15 @@ function viewCore(state: SessionState, release: 0 | 1): View {
     asOf: world.asOfQuarter,
     source: { name: "METR time horizon, via Epoch AI", url: sourceById.epoch.url },
   };
-  return { world, radar, profileSkills, pace, matches, unreachable, sectors, chosen, lasting, bridge, stay, plan, pathway: pathwayView(plan, state), sdgSummary, resume, resumeTips, changes: null, data };
+  const whatIfYou: View["whatIfYou"] = {};
+  const soonest = profileSkills.find((x) => !expiryFor(x.skillId, wt).durable);
+  if (soonest && !world.usingOverride) {
+    for (const e of world.events) if (e.whatIf) {
+      const at = (w: Weights3) => fmtYear(expiryFor(soonest.skillId, w).expected);
+      whatIfYou[e.id] = { skill: soonest.name, now: at(wt), yes: at(e.whatIf.yes), no: at(e.whatIf.no) };
+    }
+  }
+  return { world, radar, profileSkills, pace, whatIfYou, matches, unreachable, sectors, chosen, lasting, bridge, stay, plan, pathway: pathwayView(plan, state), sdgSummary, resume, resumeTips, changes: null, data };
 }
 
 const SECTOR_NOUN: Record<SectorId, string> = {

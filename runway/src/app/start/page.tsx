@@ -6,26 +6,26 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   Award, BookOpen, BriefcaseBusiness, Calculator, CalendarClock, Check, Clock, FileText, FlaskConical, GraduationCap, Hammer, HeartPulse,
-  Laptop, Leaf, Library, Microscope, Presentation, Scale, ScrollText, Sparkles, Users, UserRound, Wrench, type LucideIcon,
+  Laptop, Leaf, Library, MapPin, Microscope, Presentation, Scale, ScrollText, Sparkles, Users, UserRound, Wrench, type LucideIcon,
 } from "lucide-react";
 import { useApp, type Catalog } from "@/components/AppProvider";
 import { Btn, Skeleton } from "@/components/ui";
 import { SAMPLE_RESUME } from "@/lib/sample-resume";
-import { STATES } from "@/lib/engine/geo";
+import { STATES, regionOf, type Reach } from "@/lib/engine/geo";
 
-// Onboarding: seven short screens. The resume comes first because it fills in most of the rest.
+// Onboarding: eight short screens. After the name, the resume comes first because it fills in most of the rest.
 // Nothing is saved until the last screen; the draft lives in this tab only.
 type Draft = {
-  name: string; age: string; state: string; occupationId: string; education: string; study: string; years: number; skills: string[];
+  name: string; status: "" | "working" | "studying"; age: string; state: string; move: Reach | ""; moveTo: string[]; occupationId: string; education: string; study: string; years: number; skills: string[];
   months: number; hours: number; interests: string[];
   resume: null | { score: number; band: string; occupation: string | null; found: number; fixes: string[]; sample?: boolean };
   touched: { education?: boolean; study?: boolean; skills?: boolean };
 };
-const KEY = "runway-onboarding-v2";
-const STEPS = ["resume", "job", "education", "skills", "time", "interests", "about"] as const;
+const KEY = "runway-onboarding-v4";
+const STEPS = ["name", "resume", "job", "education", "skills", "time", "interests", "where"] as const;
 type Step = (typeof STEPS)[number];
-const STEP_LABEL: Record<Step, string> = { resume: "Resume", job: "Last job", education: "Qualification", skills: "Skills", time: "Time", interests: "Interests", about: "About you" };
-const STEP_ICON: Record<Step, LucideIcon> = { resume: FileText, job: BriefcaseBusiness, education: GraduationCap, skills: Sparkles, time: CalendarClock, interests: HeartPulse, about: UserRound };
+const STEP_LABEL: Record<Step, string> = { name: "You", resume: "Resume", job: "Last job", education: "Qualification", skills: "Skills", time: "Time", interests: "Interests", where: "Where" };
+const STEP_ICON: Record<Step, LucideIcon> = { name: UserRound, resume: FileText, job: BriefcaseBusiness, education: GraduationCap, skills: Sparkles, time: CalendarClock, interests: HeartPulse, where: MapPin };
 
 const EDU_ICON: Record<string, LucideIcon> = { spm: BookOpen, skm: Wrench, stpm: Library, diploma: ScrollText, degree: GraduationCap, master: Award, phd: Microscope };
 const EDU_SUB: Record<string, string> = {
@@ -39,7 +39,7 @@ const INTEREST_ICON: Record<string, LucideIcon> = {
 };
 
 const blank = (cat: Catalog): Draft => ({
-  name: "", age: "", state: "", occupationId: "", education: cat.education.find((e) => e.id === "diploma")?.id ?? cat.education[0]?.id ?? "", study: "", years: 2, skills: [], months: 6, hours: 10, interests: [], resume: null, touched: {},
+  name: "", status: "", age: "", state: "", move: "", moveTo: [], occupationId: "", education: cat.education.find((e) => e.id === "diploma")?.id ?? cat.education[0]?.id ?? "", study: "", years: 0, skills: [], months: 6, hours: 10, interests: [], resume: null, touched: {},
 });
 
 export default function StartPage() {
@@ -67,7 +67,7 @@ function Wizard({ cat }: { cat: Catalog }) {
   const [d, setD] = useState<Draft>(() => {
     if (saved) return { ...blank(cat), ...saved.d };
     const p = state?.profile;
-    if (p && !p.personaId) return { ...blank(cat), name: p.name === "You" ? "" : p.name, age: p.age ? String(p.age) : "", state: p.state ?? "", occupationId: p.occupationId, education: p.education, study: p.study ?? "", years: p.years, skills: p.skills, months: p.months, hours: p.hoursPerWeek, interests: p.interests, touched: { education: true, study: !!p.study, skills: true } };
+    if (p && !p.personaId) return { ...blank(cat), name: p.name === "You" ? "" : p.name, status: p.status ?? "working", moveTo: p.moveTo ?? [], age: p.age ? String(p.age) : "", state: p.state ?? "", move: p.move ?? "", occupationId: p.occupationId, education: p.education, study: p.study ?? "", years: p.years, skills: p.skills, months: p.months, hours: p.hoursPerWeek, interests: p.interests, touched: { education: true, study: !!p.study, skills: true } };
     return blank(cat);
   });
   useEffect(() => { try { sessionStorage.setItem(KEY, JSON.stringify({ d, i })); } catch { /* ignore */ } }, [d, i]);
@@ -79,9 +79,17 @@ function Wizard({ cat }: { cat: Catalog }) {
     const o = cat.occupations.find((x) => x.id === id)!;
     setD((x) => ({ ...x, occupationId: id, education: x.touched.education ? x.education : o.education, study: x.touched.study ? x.study : o.sector, skills: x.touched.skills ? x.skills : [...new Set([...o.skills, ...(x.resume ? x.skills : [])])] }));
   };
+  const studying = d.status === "studying";
+  // A student with no job yet: suggest the skills that jobs in their field of study most often list.
+  const fieldSkills = useMemo(() => {
+    const n = new Map<string, number>();
+    for (const o of cat.occupations) if (o.sector === (d.study || "business")) for (const k of o.skills) n.set(k, (n.get(k) ?? 0) + 1);
+    return [...n.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10).map(([k]) => k);
+  }, [cat, d.study]);
   const hasField = HAS_FIELD.includes(d.education);
   const study = hasField ? d.study || occ?.sector || "" : null;
-  const canGo: Record<Step, boolean> = { resume: true, job: !!occ, education: !!d.education && (!hasField || !!study), skills: d.skills.length > 0, time: true, interests: true, about: !!occ && d.skills.length > 0 };
+  const ready = (studying || !!occ) && d.skills.length > 0;
+  const canGo: Record<Step, boolean> = { name: !!d.status, resume: true, job: studying || !!occ, education: !!d.education && (!hasField || !!study), skills: d.skills.length > 0, time: true, interests: true, where: ready && (!d.state || (!!d.move && (d.move !== "pick" || d.moveTo.length > 0))) };
   const go = (n: number) => {
     const k = Math.max(0, Math.min(STEPS.length - 1, n));
     if (k !== i) {
@@ -97,13 +105,13 @@ function Wizard({ cat }: { cat: Catalog }) {
   useEffect(() => () => { if (walkTimer.current !== null) window.clearTimeout(walkTimer.current); }, []);
   const next = () => { if (canGo[step]) go(i + 1); };
   const finish = async () => {
-    const r = await act("setProfile", { profile: { name: d.name.trim() || "You", age: d.age ? Number(d.age) : null, state: d.state || null, occupationId: d.occupationId, education: d.education, study, years: d.years, skills: d.skills, interests: d.interests, months: d.months, hoursPerWeek: d.hours, budget: "free", synthetic: !!d.resume?.sample || (answered && !!state?.profile?.synthetic) } });
+    const r = await act("setProfile", { profile: { name: d.name.trim() || "You", age: d.age ? Number(d.age) : null, status: d.status || "working", state: d.state || null, move: d.state && d.move ? d.move : null, moveTo: d.move === "pick" ? d.moveTo : [], occupationId: occ ? d.occupationId : "", education: d.education, study, years: occ ? d.years : 0, skills: d.skills, interests: d.interests, months: d.months, hoursPerWeek: d.hours, budget: "free", synthetic: !!d.resume?.sample || (answered && !!state?.profile?.synthetic) } });
     if (r) { try { sessionStorage.removeItem(KEY); sessionStorage.setItem("jobbery-results-arrival", "1"); } catch { /* ignore */ } router.push("/skills"); }
   };
 
   // Enter continues from anywhere on the question, not only from inside a text field.
   const enter = useRef<() => void>(() => {});
-  useEffect(() => { enter.current = () => { if (step === "about") { if (canGo.about && !busy) finish(); } else if (step !== "resume") next(); }; });
+  useEffect(() => { enter.current = () => { if (step === "where") { if (canGo.where && !busy) finish(); } else if (step !== "resume") next(); }; });
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement;
@@ -141,25 +149,61 @@ function Wizard({ cat }: { cat: Catalog }) {
         </ol>
       </div>
 
-      <form onSubmit={(e) => { e.preventDefault(); if (step === "about") finish(); else next(); }}>
-        {step === "resume" && <ResumeStep d={d} setD={setD} cat={cat} onDone={() => go(i + 1)} />}
-        {step === "job" && (
-          <Q title="What was your last job?" help={d.resume?.occupation ? "We read this from your resume. Change it if it is wrong." : "Pick the closest one. It tells us which skills you probably have."}>
-            <JobPicker cat={cat} value={d.occupationId} onPick={pickJob} />
-            <div className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-surface px-5 py-4">
-              <p className="text-base">Years of work, all jobs</p>
-              <Stepper value={d.years} min={0} max={40} onChange={(v) => set({ years: v })} unit={d.years === 1 ? "year" : "years"} />
+      <form onSubmit={(e) => { e.preventDefault(); if (step === "where") finish(); else next(); }}>
+        {step === "name" && (
+          <Q title="First, a little about you" help="Your name is optional. We use it to greet you and on your plan, never to choose or rank jobs.">
+            <label className="block">
+              <span className="mb-2 block text-sm text-muted">First name</span>
+              <TextInput value={d.name} onChange={(v) => set({ name: v })} placeholder="For example, Aina" maxLength={40} label="First name" autoComplete="given-name" />
+            </label>
+            <div className="mt-8">
+              <h2 className="text-lg font-medium">What are you doing now?</h2>
+              <p className="mb-3 mt-1 text-sm text-muted">Students plan towards graduation; everyone else towards a job deadline.</p>
+              <Options value={d.status} cols={2} onPick={(v) => {
+                const st = v as Draft["status"];
+                set(st === "studying"
+                  ? { status: st, education: HAS_FIELD.includes(d.education) ? d.education : "degree", months: Math.max(d.months, 6) }
+                  : { status: st, months: Math.min(d.months, 6) });
+              }}
+                options={[
+                  { id: "working", label: "Working, or looking for work", sub: "Including if you lost your job", icon: BriefcaseBusiness },
+                  { id: "studying", label: "Studying", sub: "Diploma, degree, master's, PhD or postdoc", icon: GraduationCap },
+                ]} />
             </div>
           </Q>
         )}
+        {step === "resume" && <ResumeStep d={d} setD={setD} cat={cat} onDone={() => go(i + 1)} />}
+        {step === "job" && (
+          <Q title={studying ? "Any part-time job or internship?" : "What was your last job?"}
+            help={d.resume?.occupation ? "We read this from your resume. Change it if it is wrong." : studying ? "Pick the closest one, or choose none. It tells us which skills you probably have." : "Pick the closest one. It tells us which skills you probably have."}>
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-surface px-5 py-4" aria-live="polite">
+              <div className="min-w-0">
+                <p className="text-sm text-muted">{studying ? "Your job or internship" : "Your last job"}</p>
+                <p className="text-xl font-medium">{occ ? occ.title : studying ? "None yet" : "Not picked yet"}</p>
+                {occ && <p className="text-sm text-muted">{cat.sectors.find((x) => x.id === occ.sector)?.label}</p>}
+              </div>
+              {occ && (
+                <div className="flex flex-col items-end gap-1">
+                  <span className="text-sm text-muted">Years of work, all jobs</span>
+                  <Stepper compact value={d.years} min={0} max={40} onChange={(v) => set({ years: v })} unit={d.years === 1 ? "year" : "years"} />
+                </div>
+              )}
+            </div>
+            {studying && (
+              <button type="button" aria-pressed={!occ} onClick={() => setD((x) => ({ ...x, occupationId: "", years: 0, skills: x.touched.skills ? x.skills : [] }))}
+                className={`press mb-3 flex min-h-12 w-full items-center rounded-2xl px-4 text-left ${!occ ? "bg-primary text-primaryink" : "bg-surface hover:bg-surface2"}`}>No job or internship yet</button>
+            )}
+            <JobPicker cat={cat} value={d.occupationId} onPick={pickJob} />
+          </Q>
+        )}
         {step === "education" && (
-          <Q title="What is your highest qualification?">
+          <Q title={studying ? "What are you studying for?" : "What is your highest qualification?"} help={studying ? "We plan as if you will have it when you graduate. We only use this to check entry requirements." : undefined}>
             <Options value={d.education} onPick={(v) => set({ education: v, touched: { ...d.touched, education: true } })} cols={2}
-              options={cat.education.map((e) => ({ id: e.id, label: e.label, sub: EDU_SUB[e.id], icon: EDU_ICON[e.id] }))} />
+              options={cat.education.filter((e) => !studying || HAS_FIELD.includes(e.id)).map((e) => ({ id: e.id, label: e.label, sub: studying && e.id === "phd" ? "Doctorate, or a postdoc" : EDU_SUB[e.id], icon: EDU_ICON[e.id] }))} />
             {hasField && (
               <div className="mt-8">
                 <h2 className="text-lg font-medium">What did you study?</h2>
-                <p className="mb-3 mt-1 text-sm text-muted">{occ && !d.touched.study ? `We guessed from your last job as ${occ.title.toLowerCase()}. ` : ""}Engineering, science, health and accounting jobs need a degree in that field.</p>
+                <p className="mb-3 mt-1 text-sm text-muted">{occ && !d.touched.study && !studying ? `We guessed from your last job as ${occ.title.toLowerCase()}. ` : ""}Engineering, science, health and accounting jobs need a degree in that field.</p>
                 <Options value={study ?? ""} onPick={(v) => set({ study: v, touched: { ...d.touched, study: true } })} cols={2}
                   options={[...cat.sectors.map((x) => ({ id: x.id, label: x.label })), { id: "other", label: "Something else" }]} />
               </div>
@@ -168,16 +212,25 @@ function Wizard({ cat }: { cat: Catalog }) {
           </Q>
         )}
         {step === "skills" && (
-          <Q title="Which of these skills do you have?" help={`Filled in from ${d.resume ? "your resume and " : ""}your last job${occ ? ` as ${occ.title.toLowerCase()}` : ""}. Untick any you do not have.`}>
-            <SkillPicker cat={cat} value={d.skills} suggested={occ?.skills ?? []} onChange={(v) => set({ skills: v, touched: { ...d.touched, skills: true } })} />
+          <Q title="Which of these skills do you have?" help={occ
+            ? `Filled in from ${d.resume ? "your resume and " : ""}your ${studying ? "job" : "last job"} as ${occ.title.toLowerCase()}. Untick any you do not have.`
+            : "These are common in jobs in your field of study. Tick the ones you have from your course, projects or work."}>
+            <SkillPicker cat={cat} value={d.skills} suggested={occ?.skills ?? fieldSkills} onChange={(v) => set({ skills: v, touched: { ...d.touched, skills: true } })} />
           </Q>
         )}
         {step === "time" && (
-          <Q title="How much time do you have?" help="Jobbery only suggests jobs you can get ready for in this time.">
-            <Group icon={CalendarClock} label="Months to find a new job" note="Job-seeker support usually lasts 3 to 6 months.">
-              <Options value={String(d.months)} onPick={(v) => set({ months: Number(v) })} cols={3}
-                options={[1, 2, 3, 4, 5, 6].map((m) => ({ id: String(m), label: `${m} ${m === 1 ? "month" : "months"}` }))} />
-            </Group>
+          <Q title="How much time do you have?" help={studying ? "Jobbery only suggests jobs you can get ready for by the time you graduate." : "Jobbery only suggests jobs you can get ready for in this time."}>
+            {studying ? (
+              <Group icon={CalendarClock} label="Months until you graduate" note="Pick the closest. More than two years away? Choose 24 and come back later.">
+                <Options value={String(d.months)} onPick={(v) => set({ months: Number(v) })} cols={3}
+                  options={[3, 6, 9, 12, 18, 24].map((m) => ({ id: String(m), label: `${m} months` }))} />
+              </Group>
+            ) : (
+              <Group icon={CalendarClock} label="Months to find a new job" note="Job-seeker support usually lasts 3 to 6 months.">
+                <Options value={String(d.months)} onPick={(v) => set({ months: Number(v) })} cols={3}
+                  options={[1, 2, 3, 4, 5, 6].map((m) => ({ id: String(m), label: `${m} ${m === 1 ? "month" : "months"}` }))} />
+              </Group>
+            )}
             <Group icon={Clock} label="Hours per week you’d like to spend learning a new skill" note="A plan you can keep beats a plan that looks fast.">
               <Options value={String(d.hours)} onPick={(v) => set({ hours: Number(v) })} cols={3}
                 options={[5, 8, 10, 15, 20, 30].map((h) => ({ id: String(h), label: `${h} hours` }))} />
@@ -202,19 +255,46 @@ function Wizard({ cat }: { cat: Catalog }) {
             <p className="mt-3 text-sm text-muted">{d.interests.length} of 3 picked</p>
           </Q>
         )}
-        {step === "about" && (
-          <Q title={state?.profile && !state.profile.personaId ? "Your answers are saved." : "Last one: about you"} help={state?.profile && !state.profile.personaId ? "Tap any question in the bar above to change it. Name and state are optional and never used to rank jobs." : "Both optional. Neither is used to choose or rank jobs."}>
+        {step === "where" && (
+          <Q title={state?.profile && !state.profile.personaId ? "Your answers are saved." : "Last one: where do you live now?"}
+            help={state?.profile && !state.profile.personaId ? "Tap any question in the bar above to change it." : "Then tell us if you would move. Jobs that are scarce where you can work move down a little. None are hidden."}>
             <label className="block">
-              <span className="mb-2 block text-sm text-muted">First name</span>
-              <TextInput value={d.name} onChange={(v) => set({ name: v })} placeholder="For example, Aina" maxLength={40} label="First name" autoComplete="given-name" />
-            </label>
-            <label className="mt-6 block">
-              <span className="mb-2 block text-sm text-muted">State you live in, for the job map</span>
-              <select value={d.state} onChange={(e) => set({ state: e.target.value })} className="min-h-14 w-full rounded-2xl border border-control bg-raised px-4 text-base">
+              <span className="mb-2 block text-sm text-muted">State you live in</span>
+              <select value={d.state} onChange={(e) => set({ state: e.target.value, move: e.target.value ? d.move : "", moveTo: d.moveTo.filter((x) => x !== e.target.value) })} className="min-h-14 w-full rounded-2xl border border-control bg-raised px-4 text-base">
                 <option value="">Prefer not to say</option>
                 {STATES.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
               </select>
             </label>
+            {d.state ? (
+              <div className="mt-8">
+                <h2 className="text-lg font-medium">Would you relocate for a job?</h2>
+                <p className="mb-3 mt-1 text-sm text-muted">Counted with DOSM figures on how many people work in each kind of job, state by state.</p>
+                <Options value={d.move} onPick={(v) => set({ move: v as Reach })}
+                  options={[
+                    { id: "stay", label: "No, only in my state", sub: STATES.find((s) => s.id === d.state)?.name },
+                    { id: "region", label: "Yes, to nearby states", sub: (() => { const r = regionOf(d.state); return r ? `Anywhere in ${r.name}` : undefined; })() },
+                    { id: "pick", label: "Yes, to states I choose" },
+                    { id: "anywhere", label: "Yes, anywhere in Malaysia" },
+                  ]} />
+                {d.move === "pick" && (
+                  <fieldset className="mt-4">
+                    <legend className="mb-2 text-sm text-muted">Which states? Pick as many as you like.</legend>
+                    <div className="flex flex-wrap gap-2">
+                      {STATES.filter((s) => s.id !== d.state).map((s) => {
+                        const on = d.moveTo.includes(s.id);
+                        return (
+                          <button type="button" key={s.id} aria-pressed={on} onClick={() => set({ moveTo: on ? d.moveTo.filter((x) => x !== s.id) : [...d.moveTo, s.id] })}
+                            className={`press min-h-10 rounded-full px-4 text-sm ${on ? "bg-primary text-primaryink" : "bg-surface hover:bg-surface2"}`}>{s.name}</button>
+                        );
+                      })}
+                    </div>
+                    <p className="mt-2 text-sm text-muted">{d.moveTo.length ? `${d.moveTo.length} picked` : "Pick at least one."}</p>
+                  </fieldset>
+                )}
+              </div>
+            ) : (
+              <p className="mt-3 text-sm text-muted">Without a state, every job is ranked as if you could work anywhere in Malaysia.</p>
+            )}
             {error && <p role="alert" className="mt-3 text-sm text-negative">{error}</p>}
           </Q>
         )}
@@ -222,8 +302,8 @@ function Wizard({ cat }: { cat: Catalog }) {
         <div className="mt-10 flex items-center justify-between gap-3">
           {i > 0 ? <Btn variant="quiet" onClick={() => go(i - 1)}>Back</Btn> : <Link href="/" className="text-sm underline decoration-control underline-offset-2">Cancel</Link>}
           <div className="flex items-center gap-2">
-            {step === "about"
-              ? <Btn type="submit" disabled={busy || !canGo.about} className="min-h-12 px-6 text-base">{state?.profile && !state.profile.personaId ? "Save and see results" : "Show my results"}</Btn>
+            {step === "where"
+              ? <Btn type="submit" disabled={busy || !canGo.where} className="min-h-12 px-6 text-base">{state?.profile && !state.profile.personaId ? "Save and see results" : "Show my results"}</Btn>
               : step !== "resume" && <Btn type="submit" disabled={!canGo[step]} className="min-h-12 px-6 text-base">Continue</Btn>}
           </div>
         </div>
@@ -285,12 +365,14 @@ function Options({ value, onPick, options, cols = 1 }: { value: string; onPick: 
   );
 }
 
-function Stepper({ value, min, max, onChange, unit }: { value: number; min: number; max: number; onChange: (v: number) => void; unit: string }) {
-  const b = "press flex h-14 w-14 items-center justify-center rounded-full bg-surface text-2xl hover:bg-surface2 disabled:opacity-40";
+function Stepper({ value, min, max, onChange, unit, compact }: { value: number; min: number; max: number; onChange: (v: number) => void; unit: string; compact?: boolean }) {
+  const b = compact
+    ? "press flex h-10 w-10 items-center justify-center rounded-full bg-raised text-xl hover:bg-surface2 disabled:opacity-40"
+    : "press flex h-14 w-14 items-center justify-center rounded-full bg-surface text-2xl hover:bg-surface2 disabled:opacity-40";
   return (
-    <div className="flex items-center gap-5">
+    <div className={`flex items-center ${compact ? "gap-3" : "gap-5"}`}>
       <button type="button" className={b} onClick={() => onChange(Math.max(min, value - 1))} disabled={value <= min} aria-label="One year less">−</button>
-      <p className="num min-w-28 text-center" aria-live="polite"><span className="text-5xl">{value}</span> <span className="text-muted">{unit}</span></p>
+      <p className={`num text-center ${compact ? "min-w-20" : "min-w-28"}`} aria-live="polite"><span className={compact ? "text-2xl" : "text-5xl"}>{value}</span> <span className="text-muted">{unit}</span></p>
       <button type="button" className={b} onClick={() => onChange(Math.min(max, value + 1))} disabled={value >= max} aria-label="One year more">+</button>
     </div>
   );
@@ -299,11 +381,17 @@ function Stepper({ value, min, max, onChange, unit }: { value: number; min: numb
 function JobPicker({ cat, value, onPick }: { cat: Catalog; value: string; onPick: (id: string) => void }) {
   const [q, setQ] = useState("");
   const list = useMemo(() => cat.occupations.filter((o) => o.title.toLowerCase().includes(q.trim().toLowerCase())), [cat, q]);
+  const box = useRef<HTMLDivElement>(null);
+  // Coming back to this question, scroll the list (not the page) so the picked job is visible.
+  useEffect(() => {
+    const el = box.current?.querySelector<HTMLElement>('[aria-checked="true"]');
+    if (box.current && el) box.current.scrollTop = el.offsetTop - 8;
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <div>
       <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search, for example clerk or engineer" aria-label="Search jobs" autoFocus={!value}
         className="mb-3 min-h-12 w-full rounded-2xl border border-control bg-raised px-4" />
-      <div role="radiogroup" aria-label="Last job" className="max-h-[22rem] space-y-1.5 overflow-y-auto pr-1">
+      <div ref={box} role="radiogroup" aria-label="Last job" className="relative max-h-[22rem] space-y-1.5 overflow-y-auto pr-1">
         {list.map((o) => {
           const on = value === o.id;
           return (
