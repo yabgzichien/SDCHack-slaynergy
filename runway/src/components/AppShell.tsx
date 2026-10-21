@@ -12,6 +12,7 @@ type Item = { href: string; label: string; match?: string[]; count?: number };
 
 // Additional destinations alongside the guided steps.
 const EXTRA: Item[] = [
+  { href: "/trends", label: "Job market trends", match: ["/trends", "/radar"] },
   { href: "/courses", label: "Courses" },
   { href: "/market", label: "Prediction market", match: ["/market", "/leaderboard"] },
   { href: "/counsellor", label: "Counsellor view" },
