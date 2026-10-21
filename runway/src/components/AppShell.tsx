@@ -1,14 +1,18 @@
 "use client";
+import "@/app/landing-v2.css";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { useApp } from "./AppProvider";
 import { STEPS, StepBar, StepRail, forgetProgress } from "./Journey";
+import { SiteHeader } from "./SiteHeader";
 
 type Item = { href: string; label: string; match?: string[]; count?: number };
 
-// Besides the five steps, only two places: the forecasting market and the counsellor's side. The rest is linked from pages.
+// Additional destinations alongside the guided steps.
 const EXTRA: Item[] = [
+  { href: "/courses", label: "Courses" },
   { href: "/market", label: "Prediction market", match: ["/market", "/leaderboard"] },
   { href: "/counsellor", label: "Counsellor view" },
 ];
@@ -16,14 +20,8 @@ const OTHER: Item[] = [
   { href: "/changes", label: "What changed" }, { href: "/trends", label: "Job market trends" }, { href: "/trust", label: "How we keep this honest" },
 ];
 
-// Runway's mark: a runway seen from above, its centre line dashed.
-export function Mark({ size = 24 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden>
-      <rect x="5" y="1.5" width="14" height="21" rx="3" fill="var(--ink)" />
-      <path d="M12 4.5v3M12 10.5v3M12 16.5v3" stroke="var(--bg)" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  );
+export function Mark({ size = 36 }: { size?: number }) {
+  return <Image src="/cockatiel-ai-icon-v2.png" alt="" width={size} height={size} aria-hidden />;
 }
 
 function isActive(path: string, it: Item) {
@@ -96,6 +94,8 @@ function SidebarBody({ onPick }: { onPick?: () => void }) {
 export function AppShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const path = usePathname(); // every menu link closes the sheet itself (onPick)
+  const { state } = useApp();
+  const landing = path === "/" && !state?.profile;
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
@@ -103,6 +103,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
   const title = STEPS.find((s) => s.match.some((m) => path === m || path.startsWith(`${m}/`)))?.label ?? [...EXTRA, ...OTHER].find((it) => isActive(path, it))?.label ?? "Jobbery";
+  if (landing || path === "/start" || path === "/courses") return <div className="landing-page public-shell"><SiteHeader /><main id="main" className={landing ? "public-home" : path === "/start" ? "public-start" : "public-courses"}>{children}</main></div>;
   return (
     <div className="min-h-screen lg:flex">
       <aside className="sticky top-0 hidden h-screen w-[252px] shrink-0 overflow-y-auto border-r border-line bg-raised px-3 py-6 lg:block" aria-label="Main">
@@ -113,7 +114,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <button onClick={() => setOpen(true)} className="press -ml-2 flex h-10 w-10 items-center justify-center rounded-full hover:bg-surface" aria-label="Open menu" aria-expanded={open}>
           <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden><path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
         </button>
-        <Link href="/" className="flex items-center gap-2 font-semibold"><Mark size={20} /></Link>
+        <Link href="/" className="flex items-center gap-2 font-semibold"><Mark size={30} /></Link>
         <p className="min-w-0 flex-1 truncate text-sm">{title}</p>
       </header>
 

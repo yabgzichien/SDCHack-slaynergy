@@ -77,6 +77,8 @@
 }
 
 html { -webkit-text-size-adjust: 100%; }
+.site-cursor { position: fixed; z-index: 2147483647; top: 0; left: 0; width: 56px; height: 56px; pointer-events: none; visibility: hidden; will-change: transform; }
+body.has-site-cursor, body.has-site-cursor * { cursor: none !important; }
 body {
   background: var(--bg);
   color: var(--ink);

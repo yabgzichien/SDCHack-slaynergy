@@ -1,8 +1,9 @@
 "use client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 import { useApp } from "@/components/AppProvider";
+import { LandingIntro } from "@/components/LandingIntro";
 import { STEPS, useJourney } from "@/components/Journey";
 import { RunwayStrip } from "@/components/RunwayStrip";
 import { Btn, Card, FUTURE_NAME, PageTitle, Skeleton, pct } from "@/components/ui";
@@ -12,55 +13,7 @@ import type { SectorId } from "@/lib/engine/data";
 export default function Home() {
   const { view, state } = useApp();
   if (!view || !state) return <Skeleton lines={4} />;
-  return state.profile ? <Dashboard /> : <Intro />;
-}
-
-const PROMISE = [
-  "Your last job, skills and time. About two minutes.",
-  "Which of your skills AI is likely to take over, and when.",
-  "Three possible speeds of AI progress, and how likely each is.",
-  "Jobs you can get ready for in the time you have.",
-  "Where those jobs are in Malaysia, if you would move.",
-  "Free courses, week by week. A counsellor approves it.",
-];
-
-function Intro() {
-  const { act, busy, catalog } = useApp();
-  const router = useRouter();
-  const demo = async () => { if (await act("startPersona", { personaId: "hafiz" })) router.push("/skills"); };
-  return (
-    <div>
-      <div className="rounded-[28px] border border-line bg-raised p-6 sm:p-9">
-        <PageTitle title="Find a job that lasts, before your time runs out.">
-          A clearer path from your last role to your next opportunity—built around your skills, time and Malaysia’s job market.
-        </PageTitle>
-        <div className="flex flex-wrap items-center gap-3">
-          <Btn href="/start" className="min-h-12 px-6 text-base">Get started</Btn>
-          <Btn variant="ghost" onClick={demo} disabled={busy || !catalog} className="min-h-12 border border-line px-6 text-base">Try it as Hafiz</Btn>
-        </div>
-        <p className="mt-3 text-sm text-muted">Hafiz is a made-up profile: 27, a bank operations executive in Kedah with five months to find work.</p>
-      </div>
-
-      <ol className="mt-7 grid gap-3 xl:grid-cols-6" aria-label="The six steps">
-        {STEPS.map((s, i) => {
-          const Icon = s.icon;
-          return (
-            <li key={s.href} className="relative flex items-center gap-4 rounded-[20px] border border-line bg-raised p-4 xl:flex-col xl:items-start xl:gap-3">
-              <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-surface2 text-accent"><Icon size={20} strokeWidth={1.7} aria-hidden /></span>
-              <div>
-                <p className="font-semibold"><span className="num text-accent">{String(i + 1).padStart(2, "0")}. </span>{s.label}</p>
-                <p className="mt-1 text-sm leading-relaxed text-muted">{PROMISE[i]}</p>
-              </div>
-            </li>
-          );
-        })}
-      </ol>
-
-      <p className="mt-8 max-w-3xl border-l-2 border-accent pl-4 text-sm leading-relaxed text-muted">
-        Jobbery does not give one fixed score. Forecasts are tied to official job data, every number shows its source and date, and you stay in charge of the decision.
-      </p>
-    </div>
-  );
+  return state.profile ? <Dashboard /> : <LandingIntro />;
 }
 
 function Dashboard() {
@@ -91,7 +44,7 @@ function Dashboard() {
   const nextStep = STEPS.findIndex((_, i) => status(i) !== "done");
   return (
     <div>
-      <PageTitle title={`${p.name === "You" ? "You" : p.name}, you have ${weeks} weeks of runway.`}>
+      <PageTitle title={`${p.name === "You" ? "You" : p.name}, you have ${weeks} weeks of runway.`} aside={<Image src="/cockatiel-mascot.png" alt="" width={112} height={112} className="hidden h-28 w-28 object-contain sm:block" />}>
         {plan ? `Your plan for ${plan.title} takes ${plan.totalWeeks} of them.` : "Pick a job to plan for."}
       </PageTitle>
 
