@@ -2,6 +2,7 @@ import { cost, newMarket, price as lprice, tradeToward, type Lmsr } from "./lmsr
 import { clamp, gaussian, hashString, logit, mulberry32, sigmoid } from "./math";
 import { FORECASTERS, runMarket, type MarketRun, type Weights } from "./market";
 import type { Question } from "./questions";
+import { moveAllowance, moveLimit } from "../market-math";
 
 // A market's "tape": every trade in time order, so the chart can move in real time.
 //  - history (t < 0): the ~200 simulated forecasters' opening trades, spread over the last 6 hours
@@ -101,7 +102,9 @@ export function runTape(q: Question, w: Weights, wkey: string, orders: Order[], 
     const before = lprice(m);
     let shares = 0, points = 0;
     if (o.action === "buy") {
-      shares = sharesForPoints(m, o.side, Math.max(0, o.amount));
+      // One guess may move the price by at most MAX_MOVE; points beyond that stay with the player.
+      const cap = Math.max(0, Math.abs(m.b * logit(moveLimit(before, o.side, moveAllowance(executions, o.t))) - (m.qy - m.qn)));
+      shares = Math.min(sharesForPoints(m, o.side, Math.max(0, o.amount)), cap);
       points = cost(withShares(m, o.side, shares)) - cost(m);
       if (o.side === "yes") { m.qy += shares; pos.yes += shares; pos.yesCost += points; } else { m.qn += shares; pos.no += shares; pos.noCost += points; }
     } else {

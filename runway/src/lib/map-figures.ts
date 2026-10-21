@@ -1,6 +1,6 @@
-// The figures behind the job map for one kind of work and one measure, shared by the map page and its preview on Jobs.
+// The figures behind the job map for one kind of work (sector, and occupation group when known) and one measure, shared by the map page and its preview on Jobs.
 import { STATES, stateJobs, type StateJobs } from "@/lib/engine/geo";
-import type { SectorId } from "@/lib/engine/data";
+import type { GroupKey, SectorId } from "@/lib/engine/data";
 import { rampFor, type MapValue, type Measure } from "@/lib/map-scale";
 
 export const rm = (x: number) => `RM ${Math.round(x).toLocaleString()}`;
@@ -13,8 +13,8 @@ const quantileBins = (xs: number[]) => { const s = [...xs].sort((a, b) => a - b)
 
 export const metricOf = (r: StateJobs, m: Measure) => (m === "jobs" ? r.workers : m === "unemployment" ? r.uRate : r.medianWage);
 
-export function mapFigures(sector: SectorId, measure: Measure) {
-  const rows = stateJobs(sector);
+export function mapFigures(sector: SectorId, measure: Measure, group?: GroupKey) {
+  const rows = stateJobs(sector, group);
   const values: MapValue[] = rows.map((r) => ({
     id: r.id,
     value: metricOf(r, measure),

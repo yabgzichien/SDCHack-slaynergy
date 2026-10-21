@@ -2,7 +2,9 @@
 // Sources (all open):
 //   OpenDOSM lfs_qtr_state      Quarterly labour force by state (CC BY 4.0)            data/raw/opendosm/lfs_qtr_state.csv
 //   OpenDOSM wages_state        Annual salaries and wages by state (CC BY 4.0)          data/raw/opendosm/wages_state.csv
-//   data.gov.my (DOSM)          Employed persons by industry and state, 1982-2021 (CC BY) data/raw/opendosm/employed_industry_state_1982_2021.csv
+//   DOSM LFS Report 2024        Employed persons by state and industry (Table B4.8)    data/raw/dosm/lfs2024_employed_state_industry.csv
+//                               Employed persons by state and occupation (Table B4.5)  data/raw/dosm/lfs2024_employed_state_occupation.csv
+//                               (both extracted from the report PDF by scripts/extract-state-occupation.mjs)
 //   geoBoundaries gbOpen MYS ADM1, simplified (OpenStreetMap; ODbL 1.0)                 data/raw/geo/mys_adm1_simplified.geojson
 import fs from "node:fs";
 import path from "node:path";
@@ -16,18 +18,8 @@ const STATES = [
 ];
 const byName = Object.fromEntries(STATES.map(([id, name]) => [name.toUpperCase(), id]));
 
-// Industry sections (MSIC 2008) as named in the DOSM file -> short keys used by the app.
-const INDUSTRY = {
-  "Agriculture, forestry and fishing": "agriculture", "Mining and quarrying": "mining", "Manufacturing": "manufacturing",
-  "Electricity, gas, steam and air conditioning supply": "utilities", "Water supply; sewerage, waste management and remediation activities": "water",
-  "Construction": "construction", "Wholesale and retail trade, repair of motor vehicles and motorcycles": "trade",
-  "Transportation and storage": "transport", "Accommodation and food service activities": "accommodation",
-  "Information and communication": "ict", "Financial and insurance/takaful activities": "finance", "Real estate activities": "realestate",
-  "Professional, scientific and technical activities": "professional", "Administrative and support service activities": "admin",
-  "Public administration and defence; compulsory social security": "public", "Education": "education",
-  "Human health and social work activities": "health", "Arts, entertainment and recreation": "arts", "Others service activities": "otherservices",
-  "Activities of households as employers": "households",
-};
+const LFS_YEAR = 2024; // the Labour Force Survey Report the two state tables come from
+const OCCUPATIONS = ["managers", "professionals", "technicians", "clerical", "service", "agriculture", "craft", "operators", "elementary"];
 
 function parseCsv(text) {
   const rows = [];
@@ -57,39 +49,41 @@ const lfsYearAgo = `${Number(lfsLatest.slice(0, 4)) - 1}${lfsLatest.slice(4)}`;
 // ---- wages by state (annual) ----
 const wages = parseCsv(fs.readFileSync(path.join(RAW, "opendosm/wages_state.csv"), "utf8")).filter((r) => r.sex === "both");
 const wagesLatest = wages.map((r) => r.date).sort().at(-1);
-// ---- employed persons by industry and state (annual, to 2021) ----
-const ind = parseCsv(fs.readFileSync(path.join(RAW, "opendosm/employed_industry_state_1982_2021.csv"), "utf8"));
-const indYear = String(Math.max(...ind.map((r) => Number(r.Year))));
-const indRows = ind.filter((r) => r.Year === indYear);
-for (const r of indRows) if (!INDUSTRY[r.Industry]) throw new Error(`Unknown industry label: ${r.Industry}`);
+// ---- employed persons by state and industry / occupation (annual LFS report tables, thousands) ----
+const indRows = parseCsv(fs.readFileSync(path.join(RAW, `dosm/lfs${LFS_YEAR}_employed_state_industry.csv`), "utf8"));
+const occRows = parseCsv(fs.readFileSync(path.join(RAW, `dosm/lfs${LFS_YEAR}_employed_state_occupation.csv`), "utf8"));
+const INDUSTRIES = Object.keys(indRows[0]).filter((k) => k !== "state" && k !== "total");
+const pick = (row, keys) => Object.fromEntries(keys.map((k) => [k, num(row[k])]));
 
 const states = STATES.map(([id, name, short]) => {
   const L = lfs.find((r) => r.state === name && r.date === lfsLatest);
   const P = lfs.find((r) => r.state === name && r.date === lfsYearAgo);
   const W = wages.find((r) => r.state === name && r.date === wagesLatest);
   if (!L || !P || !W) throw new Error(`Missing labour or wage data for ${name}`);
-  const industry = {};
-  for (const r of indRows.filter((x) => x.State.toUpperCase() === name.toUpperCase())) industry[INDUSTRY[r.Industry]] = num(r["Employed person in Thousands"]);
-  if (Object.keys(industry).length < 15) throw new Error(`Industry data missing for ${name}`);
-  for (const k of Object.values(INDUSTRY)) industry[k] ??= 0; // a section with no row is nil
+  const I = indRows.find((r) => r.state === name), O = occRows.find((r) => r.state === name);
+  if (!I || !O) throw new Error(`Industry or occupation data missing for ${name}`);
   return {
     id, name, short,
     lfs: { quarter: quarterOf(lfsLatest), labourForce: num(L.lf), employed: num(L.lf_employed), unemployed: num(L.lf_unemployed), uRate: num(L.u_rate), uRateYearAgo: num(P.u_rate) },
     wages: { year: Number(wagesLatest.slice(0, 4)), median: num(W.wages_median), mean: num(W.wages_mean) },
-    industry,
+    industry: pick(I, INDUSTRIES),
+    occupation: pick(O, OCCUPATIONS),
   };
 });
-const nat = indRows.filter((r) => r.State === "MALAYSIA");
+const natInd = indRows.find((r) => r.state === "Malaysia"), natOcc = occRows.find((r) => r.state === "Malaysia");
 const out = {
   generatedAt: new Date().toISOString().slice(0, 10),
   sources: [
     { id: "lfs_state", name: "OpenDOSM: Quarterly Principal Labour Force Statistics by State (lfs_qtr_state)", url: "https://open.dosm.gov.my/data-catalogue/lfs_qtr_state", latest: quarterOf(lfsLatest), licence: "CC BY 4.0" },
     { id: "wages_state", name: "OpenDOSM: Annual Salaries & Wages by State (wages_state)", url: "https://open.dosm.gov.my/data-catalogue/wages_state", latest: wagesLatest.slice(0, 4), licence: "CC BY 4.0" },
-    { id: "industry_state", name: "DOSM via data.gov.my: Employed persons by industry and state, 1982-2021", url: "https://archive.data.gov.my/data/dataset/employed-persons-by-industry-and-state", latest: indYear, licence: "CC BY" },
+    { id: "industry_state", name: `DOSM Labour Force Survey Report ${LFS_YEAR}, Table B4.8: Employed persons by state and industry`, url: `https://storage.dosm.gov.my/labour/lfs_annual_${LFS_YEAR}.pdf`, latest: String(LFS_YEAR), licence: "DOSM publication" },
+    { id: "occupation_state", name: `DOSM Labour Force Survey Report ${LFS_YEAR}, Table B4.5: Employed persons by state and occupation`, url: `https://storage.dosm.gov.my/labour/lfs_annual_${LFS_YEAR}.pdf`, latest: String(LFS_YEAR), licence: "DOSM publication" },
     { id: "boundaries", name: "geoBoundaries gbOpen MYS ADM1 (simplified), from OpenStreetMap", url: "https://www.geoboundaries.org/countryDownloads.html", latest: "2017 boundaries", licence: "ODbL 1.0" },
   ],
-  industryYear: Number(indYear),
-  nationalIndustry: Object.fromEntries(nat.map((r) => [INDUSTRY[r.Industry], num(r["Employed person in Thousands"])])),
+  industryYear: LFS_YEAR,
+  occupationYear: LFS_YEAR,
+  nationalIndustry: pick(natInd, INDUSTRIES),
+  nationalOccupation: pick(natOcc, OCCUPATIONS),
   states,
 };
 fs.writeFileSync(path.resolve("data/states.json"), JSON.stringify(out, null, 1) + "\n");
@@ -111,5 +105,5 @@ const features = geo.features.map((f) => {
 });
 fs.mkdirSync(path.resolve("public/geo"), { recursive: true });
 fs.writeFileSync(path.resolve("public/geo/malaysia-states.json"), JSON.stringify({ type: "FeatureCollection", features }));
-console.log(`states.json: ${states.length} states, labour force ${quarterOf(lfsLatest)}, wages ${wagesLatest.slice(0, 4)}, industry ${indYear}`);
+console.log(`states.json: ${states.length} states, labour force ${quarterOf(lfsLatest)}, wages ${wagesLatest.slice(0, 4)}, industry and occupation ${LFS_YEAR}`);
 console.log(`malaysia-states.json: ${(fs.statSync(path.resolve("public/geo/malaysia-states.json")).size / 1024).toFixed(0)} KB`);

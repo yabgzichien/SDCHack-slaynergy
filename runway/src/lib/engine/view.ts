@@ -8,7 +8,7 @@ import { FUTURES, FUTURE_IDS } from "./futures-def";
 import { STAY_ID, type SessionState } from "./state";
 import { mean } from "./math";
 import { tailorTips, type ResumeSummary } from "./resume";
-import { cardById, completionGate, doneMap, gradeQuiz, promptChecklist, type TaskCard } from "./pathway";
+import { achievements, cardById, completionGate, doneMap, gradeQuiz, promptChecklist, type Achievement, type TaskCard } from "./pathway";
 
 export type RadarSkill = {
   skillId: string; name: string; expected: string; expectedYear: number; byFuture: Record<string, string>;
@@ -49,6 +49,7 @@ export type CardView = Omit<TaskCard, "sampleAnswer"> & { sampleAnswer: { id: st
 export type PathwayView = {
   done: Record<string, boolean>;
   gate: { ok: boolean; missing: string[] };
+  achievements: Achievement[];
   card: CardView | null;
   promptCovers: string[];
 };
@@ -65,6 +66,7 @@ function pathwayView(plan: Plan | null, state: SessionState): PathwayView {
   return {
     done: plan ? doneMap(plan, state) : {},
     gate: completionGate(plan, state),
+    achievements: achievements(plan, state),
     card, promptCovers: c && w.prompt ? promptChecklist(c, w.prompt) : [],
   };
 }

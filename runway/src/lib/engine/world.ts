@@ -23,7 +23,7 @@ export type EventView = {
 };
 // You are scored like every simulated forecaster: on each question's headline line (the middle strike).
 // Your forecast there is the chance you left the market at after your last trade; no trade counts as 50%.
-export const MAX_ORDER = 500;
+export const MAX_ORDER = 50; // points per guess at normal influence; at most double that for the most accurate players
 export type YouStats = {
   forecasts: { eventId: string; title: string; forecast: number | null; outcome: boolean | null }[];
   brier: number | null; scored: number; traded: number; influenceBefore: number; influence: number; maxOrder: number;

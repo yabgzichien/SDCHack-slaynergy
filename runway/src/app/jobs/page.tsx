@@ -7,7 +7,7 @@ import { ChevronRight, HandHeart, MapPin, TrendingDown, TrendingUp } from "lucid
 import { MalaysiaMap } from "@/components/MalaysiaMap";
 import { mapFigures, times } from "@/lib/map-figures";
 import { stateById } from "@/lib/engine/geo";
-import type { SectorId } from "@/lib/engine/data";
+import { roleById, type GroupKey, type SectorId } from "@/lib/engine/data";
 import type { StayView, RoleMatchView } from "@/lib/engine/view";
 import { STAY_ID } from "@/lib/engine/state";
 import { Btn, Card, Chip, LinkRow, NextRow, PageTitle, SdgTag, Skeleton, sdgName } from "@/components/ui";
@@ -62,7 +62,7 @@ export default function JobsPage() {
 
       <div className="mt-4">{stayCard}</div>
 
-      <MapTeaser roleTitle={best.title} sector={best.sector as SectorId} home={p.state ?? null} />
+      <MapTeaser roleTitle={best.title} sector={best.sector as SectorId} group={roleById[best.roleId]?.group} home={p.state ?? null} />
 
       <div className="mt-4 grid gap-4 lg:grid-cols-12">
         <Card className="lg:col-span-7">
@@ -143,8 +143,8 @@ function StayCard({ stay, bridge, chosen, busy, onChoose }: { stay: StayView; br
 }
 
 // The map, small, right under the best job: where jobs like it are, and one line comparing your state with the best one.
-function MapTeaser({ roleTitle, sector, home }: { roleTitle: string; sector: SectorId; home: string | null }) {
-  const fig = mapFigures(sector, "jobs");
+function MapTeaser({ roleTitle, sector, group, home }: { roleTitle: string; sector: SectorId; group?: GroupKey; home: string | null }) {
+  const fig = mapFigures(sector, "jobs", group);
   const ranked = [...fig.rows].sort((a, b) => b.workers - a.workers);
   const homeRow = home ? fig.rows.find((r) => r.id === home) : null;
   const top = ranked.find((r) => r.id !== home) ?? ranked[0];

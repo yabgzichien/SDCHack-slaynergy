@@ -7,7 +7,7 @@ import { STEPS, useJourney } from "@/components/Journey";
 import { RunwayStrip } from "@/components/RunwayStrip";
 import { Btn, Card, PageTitle, Skeleton } from "@/components/ui";
 import { stateJobs } from "@/lib/engine/geo";
-import type { SectorId } from "@/lib/engine/data";
+import { roleById, type SectorId } from "@/lib/engine/data";
 
 export default function Home() {
   const { view, state } = useApp();
@@ -74,7 +74,7 @@ function Dashboard() {
   const role = v.chosen ?? v.lasting ?? v.matches[0];
   const mapFact = (() => {
     if (!role) return "Where the jobs are";
-    const r = [...stateJobs(role.sector as SectorId)].sort((x, y) => y.workers - x.workers);
+    const r = [...stateJobs(role.sector as SectorId, roleById[role.roleId]?.group)].sort((x, y) => y.workers - x.workers);
     return `Most jobs: ${r[0].short}`;
   })();
   const fact = [

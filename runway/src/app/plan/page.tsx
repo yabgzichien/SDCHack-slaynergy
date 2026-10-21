@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useApp } from "@/components/AppProvider";
 import { RunwayStrip } from "@/components/RunwayStrip";
 import { Btn, Card, Chip, H, More, PageTitle, SdgTag, Skeleton, SourceChip } from "@/components/ui";
-import { activityHref, BadgePanel, Portfolio } from "@/components/Pathway";
+import { activityHref, BadgePanel, BadgeShelf, Portfolio } from "@/components/Pathway";
 import type { PlanStep } from "@/lib/engine/plan";
 
 const STRAND: Record<PlanStep["strand"], string> = { job: "Job skills", ai: "AI at work", people: "People skills" };
@@ -90,6 +90,8 @@ export default function PlanPage() {
         </ol>
         <p className="mt-3 text-sm text-muted">{plan.note}</p>
       </Card>
+
+      <BadgeShelf />
 
       <Portfolio />
 

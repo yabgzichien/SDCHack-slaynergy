@@ -1,17 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { occupations, personas, roles, skills, courses, sdg, series, skillById } from "@/lib/engine/data";
 import { matchRoles, pickInputs } from "@/lib/engine/matching";
-import { computeWorld } from "@/lib/engine/world";
+import { computeWorld, MAX_ORDER } from "@/lib/engine/world";
 import { computeView } from "@/lib/engine/view";
 import { initialState, STAY_ID, type SessionState } from "@/lib/engine/state";
 import { futureWeights } from "@/lib/engine/futures";
 import { liveQuestions, replayHistory } from "@/lib/engine/replay";
 import { ladder, futureProbs } from "@/lib/engine/questions";
 import { runTape } from "@/lib/engine/tape";
-import { quoteBuy } from "@/lib/market-math";
+import { MAX_MOVE, MAX_MOVE_WINDOW, quoteBuy } from "@/lib/market-math";
 import { newMarket, price, tradeToward, cost } from "@/lib/engine/lmsr";
 import { verifyChain, entryHash, type LogEntry } from "@/lib/server/store";
-import { taskCards, gradeQuiz, completionGate, badgeRecord, linkedinAddUrl } from "@/lib/engine/pathway";
+import { taskCards, gradeQuiz, completionGate, badgeRecord, linkedinAddUrl, achievements } from "@/lib/engine/pathway";
 import { buildPlan } from "@/lib/engine/plan";
 
 const hafiz = (): SessionState => {
@@ -153,20 +153,20 @@ describe("Kalshi-style market", () => {
   it("lets you buy Yes or No, moves the price, and sells back for less than the max payout", () => {
     const m = strikeQ[1].id;
     const base = runTape(strikeQ[1], w0, "W0", [], 120);
-    const buyYes = runTape(strikeQ[1], w0, "W0", [{ id: "o1", market: m, t: 60, side: "yes", action: "buy", amount: 100 }], 120);
-    const buyNo = runTape(strikeQ[1], w0, "W0", [{ id: "o1", market: m, t: 60, side: "no", action: "buy", amount: 100 }], 120);
+    const buyYes = runTape(strikeQ[1], w0, "W0", [{ id: "o1", market: m, t: 60, side: "yes", action: "buy", amount: 5 }], 120);
+    const buyNo = runTape(strikeQ[1], w0, "W0", [{ id: "o1", market: m, t: 60, side: "no", action: "buy", amount: 5 }], 120);
     expect(buyYes.price).toBeGreaterThan(base.price);
     expect(buyNo.price).toBeLessThan(base.price);
-    expect(buyYes.position.yes).toBeGreaterThan(100); // each contract costs under 1 point
-    expect(buyNo.position.no).toBeGreaterThan(100);
+    expect(buyYes.position.yes).toBeGreaterThan(5); // each contract costs under 1 point
+    expect(buyNo.position.no).toBeGreaterThan(5);
     const sold = runTape(strikeQ[1], w0, "W0", [
-      { id: "o1", market: m, t: 60, side: "yes", action: "buy", amount: 100 },
+      { id: "o1", market: m, t: 60, side: "yes", action: "buy", amount: 5 },
       { id: "o2", market: m, t: 61, side: "yes", action: "sell", amount: 1000 },
     ], 120);
     expect(sold.position.yes).toBeCloseTo(0, 6); // you can sell at most what you hold
     const half = buyYes.position.yes / 2;
     const s2 = runTape(strikeQ[1], w0, "W0", [
-      { id: "o1", market: m, t: 60, side: "yes", action: "buy", amount: 100 },
+      { id: "o1", market: m, t: 60, side: "yes", action: "buy", amount: 5 },
       { id: "o2", market: m, t: 62, side: "yes", action: "sell", amount: half },
     ], 120);
     expect(s2.position.yes).toBeCloseTo(half, 6);
@@ -176,18 +176,20 @@ describe("Kalshi-style market", () => {
   it("the ticket's instant quote matches the server's executed order", () => {
     const m = strikeQ[1].id;
     const before = runTape(strikeQ[1], w0, "W0", [], 120);
-    const q = quoteBuy(before.price, "yes", 75);
-    const after = runTape(strikeQ[1], w0, "W0", [{ id: "o1", market: m, t: 119.9, side: "yes", action: "buy", amount: 75 }], 120);
-    const ex = after.executions[0];
-    expect(ex.shares).toBeCloseTo(q.shares, 1);
-    expect(ex.points).toBeCloseTo(75, 3);
-    expect(ex.priceAfter).toBeCloseTo(q.priceAfter, 2);
+    for (const amount of [5, 50]) { // 5 points is under the move cap; 50 points hits it
+      const q = quoteBuy(before.price, "yes", amount);
+      const after = runTape(strikeQ[1], w0, "W0", [{ id: "o1", market: m, t: 119.9, side: "yes", action: "buy", amount }], 120);
+      const ex = after.executions[0];
+      expect(ex.shares).toBeCloseTo(q.shares, 1);
+      expect(ex.points).toBeCloseTo(q.points, 2);
+      expect(ex.priceAfter).toBeCloseTo(q.priceAfter, 2);
+    }
   });
   it("pays 1 point per winning contract at settlement and keeps your points balanced", () => {
     const sweBase = "swe-2026Q2~1"; // settles Yes (+4.8 points)
     const st: SessionState = { ...initialState(), clock: { t0: T0 }, orders: [
-      { id: "o1", market: sweBase, t: 30, side: "yes", action: "buy", amount: 100 },
-      { id: "o2", market: "hle-2026Q2~1", t: 40, side: "yes", action: "buy", amount: 50 }, // HLE settles No
+      { id: "o1", market: sweBase, t: 30, side: "yes", action: "buy", amount: 10 },
+      { id: "o2", market: "hle-2026Q2~1", t: 40, side: "yes", action: "buy", amount: 8 }, // HLE settles No
     ] };
     const rel: SessionState = { ...st, release: 1, clock: { t0: T0, t1: T1 } };
     const w = computeWorld(rel, Date.parse(T1) + 1000);
@@ -195,10 +197,10 @@ describe("Kalshi-style market", () => {
     const hle = w.settledEvents.find((e) => e.id === "hle-2026Q2")!.strikes[1];
     expect(swe.settled!.outcome).toBe(true);
     expect(hle.settled!.outcome).toBe(false);
-    expect(swe.settled!.payout).toBeGreaterThan(100); // more than 100 contracts, each paying 1
+    expect(swe.settled!.payout).toBeGreaterThan(swe.executions[0].points); // more contracts than points paid, each paying 1
     expect(swe.settled!.pnl).toBeGreaterThan(0);
     expect(hle.settled!.payout).toBe(0);
-    expect(hle.settled!.pnl).toBeCloseTo(-50, 3);
+    expect(hle.settled!.pnl).toBeCloseTo(-hle.executions[0].points, 3);
     expect(w.user.balance).toBeCloseTo(1000 + swe.settled!.pnl + hle.settled!.pnl, 6);
   });
 });
@@ -412,7 +414,7 @@ describe("leaderboard: influence follows accuracy", () => {
     expect(good.influence).toBeGreaterThan(1);
     expect(bad.influence).toBeLessThan(1);
     expect(good.rank!).toBeLessThan(bad.rank!);
-    expect(computeWorld(bets(true), Date.parse(T1) + 1000).you.maxOrder).toBeGreaterThan(500);
+    expect(computeWorld(bets(true), Date.parse(T1) + 1000).you.maxOrder).toBeGreaterThan(MAX_ORDER);
   });
   it("the more accurate a simulated forecaster, the more influence it ends with", () => {
     const rows = computeLeaderboard(bets(true), Date.parse(T1) + 1000).rows.filter((r) => !r.you);
@@ -549,3 +551,56 @@ function plan0(sector: string) {
   const m = { ...matchRoles(pickInputs({ skills: ["spreadsheets"], months: 6, hoursPerWeek: 10, interests: [], goals: [] }), computeWorld(initialState()).weights, "2026Q1").find((x) => x.roleId === role.id)! };
   return buildPlan(m, 10).steps.find((x) => x.strand === "ai");
 }
+
+describe("one player cannot swing the market", () => {
+  const base: SessionState = { ...initialState(), clock: { t0: T0 } };
+  const now = Date.parse(T0);
+  const priceAt = (st: SessionState, sec: number, id: string) => computeWorld(st, now + sec * 1000).events.find((e) => e.id === id)!.strikes[1].price;
+  const ids = computeWorld(base, now + 600_000).events.map((e) => e.id);
+  const w0 = replayHistory().weights;
+  const strikeQ = ladder(liveQuestions("live").find((q) => q.id === "swe-2026Q2")!);
+
+  it("caps a single guess at a 3-point move and does not charge the unused points", () => {
+    const m = strikeQ[1].id;
+    const before = runTape(strikeQ[1], w0, "W0", [], 120);
+    const ex = runTape(strikeQ[1], w0, "W0", [{ id: "o1", market: m, t: 119.9, side: "yes", action: "buy", amount: MAX_ORDER }], 120).executions[0];
+    expect(Math.abs(ex.priceAfter - ex.priceBefore)).toBeLessThanOrEqual(MAX_MOVE + 1e-9);
+    expect(ex.points).toBeLessThan(MAX_ORDER);
+    expect(before.price).toBeCloseTo(ex.priceBefore, 9);
+  });
+
+  it("the most one player can push any question, with every point allowed in quick guesses, is 5 points, and it fades", () => {
+    for (const id of ids) {
+      for (const side of ["yes", "no"] as const) {
+        const orders = Array.from({ length: 10 }, (_, i) => ({ id: `o${i}`, market: `${id}~1`, t: 300 + i, side, action: "buy" as const, amount: 10 }));
+        const st = { ...base, orders };
+        const now0 = Math.abs(priceAt(st, 311, id) - priceAt(base, 311, id));
+        const later = Math.abs(priceAt(st, 900, id) - priceAt(base, 900, id));
+        expect(now0, `${id} ${side}`).toBeLessThanOrEqual(MAX_MOVE_WINDOW + 1e-6);
+        expect(later, `${id} ${side} after 10 minutes`).toBeLessThan(0.01);
+      }
+    }
+  });
+
+  it("one player's pressure barely changes how likely each AI speed looks", () => {
+    const orders = ids.map((id, i) => ({ id: `o${i}`, market: `${id}~1`, t: 300, side: "yes" as const, action: "buy" as const, amount: MAX_ORDER }));
+    const a = computeWorld(base, now + 301_000).weights, b = computeWorld({ ...base, orders }, now + 301_000).weights;
+    for (const k of Object.keys(a) as (keyof typeof a)[]) expect(Math.abs(b[k] - a[k]), k).toBeLessThan(0.01);
+  });
+});
+
+describe("skill badges", () => {
+  it("are earned one per finished step, plus milestones, and none are earned at the start", () => {
+    const st = hafiz();
+    const m = matchRoles(pickInputs(st.profile!), computeWorld(st).weights, "2026Q1")[0];
+    const plan = buildPlan(m, 10);
+    const none = achievements(plan, st);
+    expect(none.length).toBe(plan.steps.length + 3);
+    expect(none.every((a) => !a.earned)).toBe(true);
+    const first = plan.steps.find((s) => !s.activity)!;
+    const after = achievements(plan, { ...st, progress: { [first.id]: true } });
+    expect(after.filter((a) => a.earned).map((a) => a.id)).toContain("m-first");
+    expect(after.filter((a) => a.earned).length).toBe(2);
+    expect(achievements(null, st)).toEqual([]);
+  });
+});

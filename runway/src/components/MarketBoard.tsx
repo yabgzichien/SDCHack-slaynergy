@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { CartesianGrid, Line, LineChart, ReferenceDot, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { EventView } from "@/lib/engine/world";
-import { quoteBuy, quoteSell } from "@/lib/market-math";
+import { MAX_MOVE, MAX_MOVE_WINDOW, MAX_PER_ANSWER, MOVE_WINDOW_S, moveAllowance, quoteBuy, quoteSell } from "@/lib/market-math";
 import { useApp } from "./AppProvider";
 import { Btn, Card, Chip, DemoLabel, SourceChip } from "./ui";
 import { STRIKE_COLORS, paysOut } from "./MarketCards";
@@ -71,10 +71,15 @@ export function MarketBoard({ event }: { event: EventView }) {
   const yesP = settled ? (cur.settled?.outcome ? 1 : 0) : price;
   const held = side === "yes" ? cur.position.yes : cur.position.no;
   const amt = Math.max(0, Number(amount) || 0);
-  const q = mode === "buy" ? quoteBuy(price, side, amt) : quoteSell(price, side, Math.min(amt, held));
-  const tooBig = mode === "buy" && amt > maxOrder;
+  const allow = moveAllowance(cur.executions, feed.nowT);
+  const q = mode === "buy" ? quoteBuy(price, side, amt, undefined, allow) : quoteSell(price, side, Math.min(amt, held));
+  const usedHere = cur.executions.filter((x) => x.action === "buy").reduce((a, x) => a + x.points, 0);
+  const leftHere = Math.max(0, MAX_PER_ANSWER - usedHere);
+  const resting = mode === "buy" && allow < 0.001;
+  const tooBig = mode === "buy" && (amt > maxOrder || amt > leftHere + 1e-6);
+  const capped = mode === "buy" && q.shares > 0 && q.points < amt - 0.5;
   const insufficient = mode === "buy" ? amt > feed.balance + 1e-6 : amt > held + 1e-6;
-  const canPlace = !settled && !busy && amt > 0 && !insufficient && !tooBig && q.shares > 0.0001;
+  const canPlace = !settled && !busy && amt > 0 && !insufficient && !tooBig && !resting && q.shares > 0.0001;
   const hasPos = cur.position.yes > 1e-6 || cur.position.no > 1e-6;
   const dChange = Math.round(cur.change1h * 100);
 
@@ -181,12 +186,12 @@ export function MarketBoard({ event }: { event: EventView }) {
           </div>
 
           <label className="mt-4 block text-sm">
-            {mode === "buy" ? `How many points to put on it? (up to ${maxOrder})` : `How much to take back? (you have ${held.toFixed(1)} shares)`}
+            {mode === "buy" ? `How many points to put on it? (up to ${Math.min(maxOrder, Math.floor(leftHere))})` : `How much to take back? (you have ${held.toFixed(1)} shares)`}
             <input inputMode="decimal" value={amount} onChange={(e) => { setAmount(e.target.value.replace(/[^0-9.]/g, "")); setMsg(null); }} disabled={settled}
               className="num mt-1 min-h-12 w-full rounded-2xl border border-control bg-raised px-4 text-right text-xl" />
           </label>
           <div className="mt-2 flex flex-wrap gap-1.5">
-            {(mode === "buy" ? [10, 25, 50, 100] : [0.25, 0.5, 1]).map((v) => (
+            {(mode === "buy" ? [5, 10, 25, 50] : [0.25, 0.5, 1]).map((v) => (
               <button key={v} disabled={settled} onClick={() => setAmount(mode === "buy" ? String(Math.min(v, Math.floor(feed.balance))) : String(Math.floor(held * v * 10) / 10))}
                 className="press min-h-9 rounded-full bg-surface2 px-3 text-xs">{mode === "buy" ? `${v}` : v === 1 ? "All" : `${v * 100}%`}</button>
             ))}
@@ -202,11 +207,12 @@ export function MarketBoard({ event }: { event: EventView }) {
           </dl>
           <div className="mt-4">
             <Btn onClick={place} disabled={!canPlace} className="min-h-12 w-full text-base">
-              {settled ? "This question is answered" : tooBig ? `Up to ${maxOrder} points at a time` : insufficient ? (mode === "buy" ? "Not enough points" : "You do not have that much to take back") : mode === "buy" ? `Guess ${side === "yes" ? "Yes" : "No"}` : "Take back"}
+              {settled ? "This question is answered" : resting ? "Wait a few minutes to guess here again" : tooBig ? (amt > leftHere + 1e-6 ? `Only ${leftHere.toFixed(0)} points left for this answer` : `Up to ${maxOrder} points at a time`) : insufficient ? (mode === "buy" ? "Not enough points" : "You do not have that much to take back") : mode === "buy" ? `Guess ${side === "yes" ? "Yes" : "No"}` : "Take back"}
             </Btn>
           </div>
+          {capped && <p className="mt-2 text-sm text-muted">Only {q.points.toFixed(0)} of your {amt.toFixed(0)} points will be used: one guess can move the % by at most {Math.round(MAX_MOVE * 100)} points, and all your guesses on one answer by {Math.round(MAX_MOVE_WINDOW * 100)} points in {MOVE_WINDOW_S / 60} minutes.</p>}
           {msg && <p role="status" className={`mt-2 text-sm ${msg.ok ? "text-rise" : "text-negative"}`}>{msg.text}</p>}
-          <p className="mt-3 text-xs text-muted">The less likely an answer looks, the more you win if it is right. Wrong guesses lose the points you put in. Points only, never money.</p>
+          <p className="mt-3 text-xs text-muted">The less likely an answer looks, the more you win if it is right. Wrong guesses lose the points you put in. To keep it fair, one guess moves the % by at most {Math.round(MAX_MOVE * 100)} points, your guesses on one answer by at most {Math.round(MAX_MOVE_WINDOW * 100)} points in {MOVE_WINDOW_S / 60} minutes, and you can put at most {MAX_PER_ANSWER} points into each answer. Points only, never money.</p>
         </Card>
 
         <Card>

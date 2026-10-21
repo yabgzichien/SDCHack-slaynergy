@@ -56,6 +56,30 @@ export function stepDone(step: PlanStep, state: SessionState): boolean {
 }
 export const doneMap = (plan: Plan, state: SessionState) => Object.fromEntries(plan.steps.map((s) => [s.id, stepDone(s, state)]));
 
+// Motivation badges: earned as the worker goes, one per finished step plus a few milestones. They are self-reported progress
+// (a ticked course is the worker's word), so they are labelled as such. The counsellor-confirmed pathway badge is the verified one.
+export type Achievement = { id: string; title: string; detail: string; kind: "skill" | "ai" | "people" | "milestone"; earned: boolean };
+export function achievements(plan: Plan | null, state: SessionState): Achievement[] {
+  if (!plan) return [];
+  const out: Achievement[] = [];
+  let finished = 0;
+  for (const s of plan.steps) {
+    const earned = stepDone(s, state);
+    if (earned) finished++;
+    if (s.activity === "task") out.push({ id: `${s.id}-ai`, title: "AI checker", detail: "Found every planted mistake in an AI-written answer.", kind: "ai", earned });
+    else if (s.activity === "resume") out.push({ id: `${s.id}-resume`, title: "Resume ready", detail: "Scanned your resume and applied the fixes.", kind: "people", earned });
+    else if (s.strand === "job") {
+      const names = s.skills.map((k) => k.name);
+      out.push({ id: `${s.id}-skill`, title: names.length ? names.join(" + ") : "Job skill", detail: `Finished: ${s.title}`, kind: "skill", earned });
+    } else out.push({ id: `${s.id}-people`, title: s.title, detail: "Finished a people-skills step.", kind: "people", earned });
+  }
+  const n = plan.steps.length;
+  out.push({ id: "m-first", title: "First step", detail: "Finished your first step.", kind: "milestone", earned: finished >= 1 });
+  out.push({ id: "m-half", title: "Halfway", detail: "Finished half of your plan.", kind: "milestone", earned: n > 0 && finished * 2 >= n });
+  out.push({ id: "m-all", title: "Every step done", detail: "Finished all steps. Ask your counsellor to confirm.", kind: "milestone", earned: n > 0 && finished === n });
+  return out;
+}
+
 // What still stands between the worker and a badge.
 export function completionGate(plan: Plan | null, state: SessionState): { ok: boolean; missing: string[] } {
   if (!plan) return { ok: false, missing: ["Choose a job and make a plan."] };

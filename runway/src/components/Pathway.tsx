@@ -43,6 +43,31 @@ export function Portfolio({ counsellor }: { counsellor?: boolean }) {
   );
 }
 
+// Progress and skill badges, earned as steps are finished. Locked ones stay visible so the next goal is clear.
+export function BadgeShelf() {
+  const { view } = useApp();
+  const list = view?.pathway.achievements ?? [];
+  if (!list.length) return null;
+  const earned = list.filter((a) => a.earned).length;
+  const mark = { skill: "◆", ai: "✦", people: "●", milestone: "★" } as const;
+  return (
+    <Card className="mt-4">
+      <H sub={`${earned} of ${list.length} earned · self-reported progress; the counsellor-confirmed pathway badge below is the verified one`}>Your skill badges</H>
+      <div className="h-2 overflow-hidden rounded-full bg-surface2" role="progressbar" aria-valuemin={0} aria-valuemax={list.length} aria-valuenow={earned} aria-label="Badges earned">
+        <div className="h-full rounded-full bg-[var(--accent)] transition-all" style={{ width: `${(earned / list.length) * 100}%` }} />
+      </div>
+      <ul className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {list.map((a) => (
+          <li key={a.id} className={`flex items-start gap-3 rounded-2xl px-4 py-3 ${a.earned ? "bg-accentsoft" : "bg-raised opacity-60"}`}>
+            <span aria-hidden className={`mt-0.5 text-lg ${a.earned ? "text-accent" : "text-muted"}`}>{mark[a.kind]}</span>
+            <span className="min-w-0 text-sm"><span className="block font-medium">{a.title}<span className="sr-only">{a.earned ? " (earned)" : " (not earned yet)"}</span></span><span className="block text-xs text-muted">{a.earned ? a.detail : "Not earned yet"}</span></span>
+          </li>
+        ))}
+      </ul>
+    </Card>
+  );
+}
+
 // Finishing: ask the counsellor to confirm, then share the badge.
 export function BadgePanel() {
   const { view, state, act, busy } = useApp();
