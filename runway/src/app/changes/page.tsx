@@ -14,7 +14,7 @@ export default function ChangesPage() {
     return (
       <div>
         <PageTitle title="Nothing has changed yet.">Load the new figures from the menu, and this page lists every change they make, each with its source.</PageTitle>
-        <Btn href="/forecast" variant="ghost">See the forecast</Btn>
+        <Btn href="/skills" variant="ghost">See your skills</Btn>
       </div>
     );
   }

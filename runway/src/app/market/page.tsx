@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useApp } from "@/components/AppProvider";
 import { Card, Chip, DemoLabel, LinkRow, PageTitle, Skeleton, questionPlain } from "@/components/ui";
 import type { EventView } from "@/lib/engine/world";
+import { ForecastDetails } from "@/components/ForecastDetails";
 
 // One question: what can I forecast right now?
 export default function MarketPage() {
@@ -33,6 +34,7 @@ export default function MarketPage() {
           <ul className="space-y-2">{w.settledEvents.map((e) => <li key={e.id}><EventRow e={e} /></li>)}</ul>
         </Card>
       )}
+      <ForecastDetails />
     </div>
   );
 }

@@ -10,15 +10,18 @@ const yearOf = (label: string): number | null => {
 };
 
 // A skill's shelf life on a 2026–2040 axis: one dot per future, and a bar to the weighted date.
-export function ExpiryTrack({ byFuture, expected, durable, axis = true }: { byFuture: Record<string, string>; expected: string; durable: boolean; axis?: boolean }) {
+export function ExpiryTrack({ byFuture, expected, durable, axis = true, pick }: { byFuture: Record<string, string>; expected: string; durable: boolean; axis?: boolean; pick?: string }) {
+  // with a speed picked, the bar runs to that speed's date and its dot is drawn larger
+  const end = pick ? byFuture[pick] : expected;
+  const ended = pick ? !end.startsWith("after") : !durable;
   const x = (y: number | null) => (y === null ? 100 : Math.max(0, Math.min(100, ((y - FROM) / (TO - FROM)) * 100)));
   return (
     <div>
       <div className="relative h-6" role="img" aria-label={`Expected ${expected}. ${Object.entries(byFuture).map(([k, v]) => `${FUTURE_NAME[k]} future: ${v}`).join("; ")}`}>
         <div className="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-surface2" />
-        {!durable && <div className="bar-fill absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-fall" style={{ left: 0, width: `${x(yearOf(expected))}%` }} />}
+        {ended && <div className="bar-fill absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-fall" style={{ left: 0, width: `${x(yearOf(end))}%` }} />}
         {Object.entries(byFuture).map(([k, v]) => (
-          <span key={k} title={`${FUTURE_NAME[k]} future: ${v}`} className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-raised"
+          <span key={k} title={`${FUTURE_NAME[k]} future: ${v}`} className={`absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-raised transition-all ${pick && k !== pick ? "h-2 w-2 opacity-50" : pick ? "h-4 w-4" : "h-3 w-3"}`}
             style={{ left: `${x(yearOf(v))}%`, background: FUTURE_COLOR[k] }} />
         ))}
       </div>
