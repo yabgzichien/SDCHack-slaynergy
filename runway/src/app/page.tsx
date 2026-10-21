@@ -5,7 +5,7 @@ import { ChevronRight } from "lucide-react";
 import { useApp } from "@/components/AppProvider";
 import { STEPS, useJourney } from "@/components/Journey";
 import { RunwayStrip } from "@/components/RunwayStrip";
-import { Btn, Card, FUTURE_NAME, PageTitle, Skeleton, pct } from "@/components/ui";
+import { Btn, Card, PageTitle, Skeleton } from "@/components/ui";
 import { stateJobs } from "@/lib/engine/geo";
 import type { SectorId } from "@/lib/engine/data";
 
@@ -17,8 +17,8 @@ export default function Home() {
 
 const PROMISE = [
   "Your last job, skills and time. About two minutes.",
-  "Which of your skills AI is likely to take over, and when.",
-  "Three possible speeds of AI progress, and how likely each is.",
+  "When AI could take over each skill, at three speeds of AI progress.",
+
   "Jobs you can get ready for in the time you have.",
   "Where those jobs are in Malaysia, if you would move.",
   "Free courses, week by week. A counsellor approves it.",
@@ -31,7 +31,7 @@ function Intro() {
   return (
     <div>
       <PageTitle title="Find a job that lasts, before your time runs out.">
-        For office workers who have just been laid off. Six steps from your last job to a plan.
+        For office workers who have just been laid off. Five steps from your last job to a plan.
       </PageTitle>
       <div className="flex flex-wrap items-center gap-3">
         <Btn href="/start" className="min-h-12 px-6 text-base">Get started</Btn>
@@ -39,7 +39,7 @@ function Intro() {
       </div>
       <p className="mt-3 text-sm text-muted">Hafiz is made up: 27, a bank operations executive in Kedah with five months to find work.</p>
 
-      <ol className="mt-12 grid gap-3 xl:grid-cols-6" aria-label="The six steps">
+      <ol className="mt-12 grid gap-3 xl:grid-cols-5" aria-label="The five steps">
         {STEPS.map((s, i) => {
           const Icon = s.icon;
           return (
@@ -68,9 +68,8 @@ function Dashboard() {
   const plan = v.plan;
   const weeks = plan?.deadlineWeeks ?? Math.floor(p.months * 4.345 - 2);
   const fading = v.profileSkills.filter((s) => !s.expiry.durable && s.expiry.expectedYear < 2031).length;
-  const top = [...v.world.futures].sort((a, b) => b.weight - a.weight)[0];
-  const next = plan?.steps.find((s) => !st.progress[s.id]) ?? null;
-  const done = plan ? plan.steps.filter((s) => st.progress[s.id]).length : 0;
+  const next = plan?.steps.find((s) => !v.pathway.done[s.id]) ?? null;
+  const done = plan ? plan.steps.filter((s) => v.pathway.done[s.id]).length : 0;
   const a = st.approval;
   const role = v.chosen ?? v.lasting ?? v.matches[0];
   const mapFact = (() => {
@@ -81,7 +80,6 @@ function Dashboard() {
   const fact = [
     `${p.months} months, ${p.hoursPerWeek} hours a week`,
     fading ? `${fading} of ${v.profileSkills.length} fade before 2031` : "None fades before 2031",
-    `Most likely: ${FUTURE_NAME[top.id].toLowerCase()} AI, ${pct(top.weight)}`,
     v.lasting ? `Best: ${v.lasting.title}` : `${v.matches.length} jobs within reach`,
     mapFact,
     plan ? `${done} of ${plan.steps.length} steps · ${a.status === "approved" ? "approved" : a.status === "submitted" ? "waiting for review" : "not sent yet"}` : "Choose a job first",
@@ -93,7 +91,7 @@ function Dashboard() {
         {plan ? `Your plan for ${plan.title} takes ${plan.totalWeeks} of them.` : "Pick a job to plan for."}
       </PageTitle>
 
-      <ol className="grid gap-2 xl:grid-cols-6 xl:gap-3" aria-label="Your steps">
+      <ol className="grid gap-2 xl:grid-cols-5 xl:gap-3" aria-label="Your steps">
         {STEPS.map((s, i) => {
           const Icon = s.icon;
           const stt = status(i);
@@ -115,7 +113,7 @@ function Dashboard() {
 
       <Card className="mt-4">
         <h2 className="mb-3 text-base font-semibold">Your runway</h2>
-        {plan ? <RunwayStrip plan={plan} progress={st.progress} /> : <p className="text-sm text-muted">Choose a job to see your plan on your runway.</p>}
+        {plan ? <RunwayStrip plan={plan} progress={v.pathway.done} /> : <p className="text-sm text-muted">Choose a job to see your plan on your runway.</p>}
         {next && (
           <div className="mt-5 flex flex-wrap items-end justify-between gap-3 rounded-2xl bg-raised p-4">
             <div className="min-w-0">

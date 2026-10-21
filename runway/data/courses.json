@@ -1309,5 +1309,35 @@
   ],
   "checked": "2026-10-20",
   "linkStatus": "200"
+ },
+ {
+  "id": "ai_fluency",
+  "title": "AI Fluency: Framework & Foundations",
+  "provider": "Anthropic Academy",
+  "url": "https://anthropic.skilljar.com/ai-fluency-framework-foundations",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "ai_tools"
+  ],
+  "checked": "2026-10-21",
+  "linkStatus": "200",
+  "strand": "ai"
+ },
+ {
+  "id": "ms_work_smarter",
+  "title": "Work smarter with AI",
+  "provider": "Microsoft Learn",
+  "url": "https://learn.microsoft.com/en-us/training/paths/work-smarter-with-ai/",
+  "hours": 1,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "ai_tools"
+  ],
+  "checked": "2026-10-21",
+  "linkStatus": "200",
+  "strand": "ai"
  }
 ]

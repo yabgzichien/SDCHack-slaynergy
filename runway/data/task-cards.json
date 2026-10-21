@@ -1,0 +1,53 @@
+[
+  {
+    "id": "finance_variance",
+    "sector": "finance",
+    "title": "Monthly budget variance report",
+    "intro": "Every month, finance teams compare what was spent with what was budgeted and explain the big differences. AI can draft this in seconds, and it can also get numbers and reasons wrong. Your job is to ask it well, catch its mistakes and make the task repeatable.",
+    "onet": {
+      "code": "13-2031.00",
+      "occupation": "Budget Analysts",
+      "task": "Analyze monthly department budgeting and accounting reports to maintain expenditure controls.",
+      "url": "https://www.onetonline.org/link/summary/13-2031.00",
+      "checked": "2026-10-21"
+    },
+    "dataTitle": "Operations department, September 2026 (RM). Made-up numbers for practice.",
+    "rows": [
+      { "line": "Salaries", "budget": 120000, "actual": 118500, "note": "" },
+      { "line": "Rent", "budget": 25000, "actual": 25000, "note": "" },
+      { "line": "Utilities", "budget": 6000, "actual": 7200, "note": "Tariff increase from July" },
+      { "line": "Travel", "budget": 8000, "actual": 9440, "note": "" },
+      { "line": "Training", "budget": 5000, "actual": 2100, "note": "Two courses postponed to Q4" },
+      { "line": "Software subscriptions", "budget": 9000, "actual": 9900, "note": "" },
+      { "line": "Office supplies", "budget": 2500, "actual": 2350, "note": "" },
+      { "line": "Marketing", "budget": 12000, "actual": 15600, "note": "Year-end campaign launched early" },
+      { "line": "Professional fees", "budget": 7000, "actual": 6300, "note": "" },
+      { "line": "Repairs and maintenance", "budget": 3500, "actual": 4830, "note": "" }
+    ],
+    "promptGuide": [
+      { "id": "role", "text": "Say who the AI should act as (for example, a budget analyst).", "keywords": ["act as", "you are", "analyst", "accountant", "role"] },
+      { "id": "data", "text": "Give it the data, and say what each column means.", "keywords": ["table", "data", "below", "attached", "csv", "column", "budget"] },
+      { "id": "format", "text": "Ask for a format (short bullet points, a table, under 150 words).", "keywords": ["bullet", "table", "format", "words", "short", "summary", "sentences"] },
+      { "id": "working", "text": "Ask it to show its working, so you can check the numbers.", "keywords": ["show", "working", "calculation", "explain how", "step by step", "workings"] },
+      { "id": "noinvent", "text": "Tell it not to guess reasons that are not in the data.", "keywords": ["only use", "do not guess", "don't guess", "make up", "not in the data", "if unsure", "invent"] }
+    ],
+    "sampleAnswer": [
+      { "id": "a1", "text": "Total spending was RM201,220 against a budget of RM198,000, which is RM3,220 (1.6%) over budget." },
+      { "id": "a2", "text": "The largest overspend was Marketing, RM3,600 over budget (30%), because the year-end campaign launched early." },
+      { "id": "a3", "text": "Travel was RM1,440 over budget (18%) because of a new overseas client visit.", "mistake": { "kind": "Invented reason", "why": "The data gives no reason for Travel. The AI made one up. Ask the budget owner instead of guessing." } },
+      { "id": "a4", "text": "Utilities were RM1,200 over budget (20%), due to the tariff increase from July." },
+      { "id": "a5", "text": "Repairs and maintenance were RM1,330 over budget (38%)." },
+      { "id": "a6", "text": "Training was RM2,900 under budget (58%) because two courses were postponed to Q4." },
+      { "id": "a7", "text": "Office supplies were RM700 under budget (10%).", "mistake": { "kind": "Misread line", "why": "RM700 (10%) under budget belongs to Professional fees. Office supplies were RM150 (6%) under budget." } },
+      { "id": "a8", "text": "Together, the four overspending lines above total RM8,570.", "mistake": { "kind": "Wrong total", "why": "RM3,600 + RM1,440 + RM1,200 + RM1,330 = RM7,570, not RM8,570. Always add the numbers up yourself." } },
+      { "id": "a9", "text": "Next step: review the marketing campaign timing with the budget owner before next month's report." }
+    ],
+    "sheetHeadings": [
+      { "id": "goal", "label": "Goal", "hint": "What the report is for and who reads it." },
+      { "id": "inputs", "label": "Inputs", "hint": "Which files or systems the numbers come from." },
+      { "id": "steps", "label": "Steps", "hint": "What you do, in order, including what you ask the AI." },
+      { "id": "checks", "label": "Checks I always do", "hint": "For example: add up totals myself, match every reason to a note." },
+      { "id": "never", "label": "What I never let AI decide", "hint": "For example: reasons nobody gave, numbers I cannot trace." }
+    ]
+  }
+]

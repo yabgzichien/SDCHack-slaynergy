@@ -1,0 +1,81 @@
+"use client";
+import Link from "next/link";
+import { useApp } from "@/components/AppProvider";
+import { Btn, Card, Chip, H } from "@/components/ui";
+import type { PlanStep } from "@/lib/engine/plan";
+
+// Where each in-app activity lives.
+export const activityHref = (s: PlanStep) =>
+  s.activity === "task" ? "/plan/task" : s.activity === "resume" ? "/resume" : s.activity ? `/plan/interview#${s.activity}` : null;
+
+// The worker's optional portfolio piece after the AI quiz: the reusable prompt and the "how I do this task" sheet.
+export function Portfolio({ counsellor }: { counsellor?: boolean }) {
+  const { view, state } = useApp();
+  const card = view?.pathway.card;
+  const w = state?.pathway;
+  if (!card || !w || (!w.template && !w.sheet && !w.quiz)) return null;
+  return (
+    <Card className="mt-4">
+      <H sub={`After the AI quiz: ${card.title}`}>{counsellor ? "The worker's portfolio piece" : "Your portfolio piece"}</H>
+      <div className="flex flex-wrap gap-1.5">
+        {w.quiz && <Chip tone={w.quiz.passed ? "rise" : "neutral"}>{w.quiz.passed ? `Found all ${card.mistakes} AI mistakes` : `Check not passed yet`} · {w.quiz.attempts} {w.quiz.attempts === 1 ? "try" : "tries"}</Chip>}
+        {w.template && <Chip>Reusable prompt saved</Chip>}
+        {w.sheet && <Chip>How-I-do-it sheet saved</Chip>}
+      </div>
+      {w.template && (
+        <div className="mt-4">
+          <p className="text-sm font-medium">Reusable prompt</p>
+          <p className="mt-1 whitespace-pre-wrap rounded-2xl bg-raised p-3 text-sm">{w.template}</p>
+        </div>
+      )}
+      {w.sheet && (
+        <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+          {card.sheetHeadings.map((h) => (
+            <div key={h.id} className="rounded-2xl bg-raised p-3">
+              <dt className="text-sm font-medium">{h.label}</dt>
+              <dd className="mt-1 whitespace-pre-wrap text-sm">{w.sheet?.[h.id] || <span className="text-muted">Not written yet</span>}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+      {!counsellor && <p className="mt-3 text-sm text-muted">Add this to your resume and talk about it in interviews: it shows you can work with AI and catch its mistakes. <Link href="/plan/task" className="underline decoration-control underline-offset-2 hover:text-ink">Edit</Link></p>}
+    </Card>
+  );
+}
+
+// Finishing: ask the counsellor to confirm, then share the badge.
+export function BadgePanel() {
+  const { view, state, act, busy } = useApp();
+  if (!view || !state) return null;
+  const c = state.completion;
+  const gate = view.pathway.gate;
+  const w = state.pathway;
+  return (
+    <div className="mt-5 border-t border-ink/10 pt-4">
+      <p className="text-sm font-medium">Your pathway badge</p>
+      {c.status === "confirmed" && c.badgeId ? (
+        <>
+          <p className="mt-1 text-sm">Your counsellor confirmed you finished the pathway. Your badge is ready to share.</p>
+          {c.note && <p className="mt-2 rounded-2xl bg-raised p-3 text-sm">&ldquo;{c.note}&rdquo;</p>}
+          <div className="mt-3"><Btn href={`/badge/${c.badgeId}`}>See and share your badge</Btn></div>
+        </>
+      ) : c.status === "requested" ? (
+        <>
+          <p className="mt-1 text-sm">Waiting for your counsellor to confirm. For the demo, open the counsellor view and confirm as them.</p>
+          <div className="mt-3"><Btn href="/counsellor" variant="ghost">Open the counsellor view</Btn></div>
+        </>
+      ) : (
+        <>
+          <p className="mt-1 text-sm text-muted">When every step is done and the AI check is passed, your counsellor confirms it and you get a badge to add to LinkedIn. It says you completed the pathway; it is not a qualification.</p>
+          {!gate.ok && <ul className="mt-2 list-disc pl-5 text-sm text-muted">{gate.missing.map((m) => <li key={m}>{m}</li>)}</ul>}
+          <fieldset className="mt-3 space-y-2 text-sm">
+            <legend className="sr-only">What the public badge page shows</legend>
+            <label className="flex items-center gap-2"><input type="checkbox" className="h-4 w-4 accent-[var(--accent)]" checked={!!w.showName} onChange={(e) => act("pathwaySave", { work: { showName: e.target.checked } })} />Show my name on the public badge page</label>
+            <label className="flex items-center gap-2"><input type="checkbox" className="h-4 w-4 accent-[var(--accent)]" checked={!!w.publishPortfolio} onChange={(e) => act("pathwaySave", { work: { publishPortfolio: e.target.checked } })} />Show my portfolio piece on it</label>
+          </fieldset>
+          <div className="mt-3"><Btn onClick={() => act("requestCompletion")} disabled={busy || !gate.ok}>Ask my counsellor to confirm</Btn></div>
+        </>
+      )}
+    </div>
+  );
+}
