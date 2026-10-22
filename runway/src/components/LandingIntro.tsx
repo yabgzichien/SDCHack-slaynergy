@@ -2,10 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Binoculars, BookOpen, Check, Compass, RotateCcw } from "lucide-react";
-import { useApp } from "./AppProvider";
+import { LandingExplore } from "./LandingExplore";
 import { LandingSdgAnimation } from "./LandingSdgAnimation";
 
 const samplePeriods = [
@@ -32,8 +31,6 @@ function AnimatedNumber({ value, suffix }: { value: number; suffix: string }) {
 }
 
 export function LandingIntro() {
-  const { act, busy, catalog } = useApp();
-  const router = useRouter();
   const rootRef = useRef<HTMLDivElement>(null);
   const [sceneActive, setSceneActive] = useState(true);
   const [replayKey, setReplayKey] = useState(0);
@@ -41,7 +38,6 @@ export function LandingIntro() {
   const sceneRef = useRef<HTMLDivElement>(null);
   const [period, setPeriod] = useState(2);
   const sample = samplePeriods[period];
-  const demo = async () => { if (await act("startPersona", { personaId: "hafiz" })) router.push("/skills"); };
 
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -113,7 +109,7 @@ export function LandingIntro() {
         </section>
 
         <section id="about" className="landing-about" aria-labelledby="about-title">
-          <div className="landing-about-heading landing-reveal"><h2 id="about-title">What is Jobbery?</h2><p>Jobbery helps you explore career paths, understand how work is changing, and find learning opportunities to build a brighter, more inclusive future.</p></div>
+          <div className="landing-about-heading landing-reveal"><h2 id="about-title">What is Jobbery?</h2><p>“Jobbery” plays on the fear that AI is “robbing” people of jobs, then turns that worry into a place to discover what comes next. Jobbery helps you explore career paths, understand how work is changing, and find learning opportunities to build a brighter, more inclusive future.</p></div>
           <div className="landing-about-cards">
             <Link href="/start" className="landing-about-card landing-reveal"><span className="landing-about-icon"><Compass size={66} strokeWidth={1.4} aria-hidden="true" /></span><span className="landing-about-copy"><strong>Career help</strong><span>Discover careers that match your interests, strengths and values, with guidance for different education pathways.</span></span><span className="landing-about-arrow"><ArrowRight size={20} aria-hidden="true" /></span></Link>
             <Link href="/forecast" className="landing-about-card landing-reveal"><span className="landing-about-icon"><Binoculars size={66} strokeWidth={1.4} aria-hidden="true" /></span><span className="landing-about-copy"><strong>Future forecasts</strong><span>See how AI and other trends may shape jobs and skills, so you can make informed decisions about your next step.</span></span><span className="landing-about-arrow"><ArrowRight size={20} aria-hidden="true" /></span></Link>
@@ -121,16 +117,7 @@ export function LandingIntro() {
           </div>
         </section>
 
-        <section id="journey" className="landing-journey" aria-labelledby="journey-title">
-          <div className="landing-section-heading landing-reveal"><span className="landing-section-label">YOUR PATH FORWARD</span><h2 id="journey-title">Three steps<span className="landing-period">.</span></h2><p>Start where you are. Move at your own pace.</p></div>
-          <div className="landing-steps">
-            <article className="landing-step landing-reveal"><span className="landing-step-number">01</span><h3>Show us where you are</h3><p>Use your CV to save time or answer a few short questions. You can check everything before continuing.</p><div className="landing-step-actions"><Link href="/start" className="landing-primary">Get started <ArrowRight size={17} aria-hidden /></Link><button onClick={demo} disabled={busy || !catalog} className="landing-secondary">Try a sample</button></div></article>
-            <span className="landing-step-arrow landing-reveal" aria-hidden="true">→</span>
-            <article className="landing-step landing-reveal"><span className="landing-step-number">02</span><h3>See what fits</h3><p>Explore roles your skills could lead to, with job data and different AI forecasts in view.</p></article>
-            <span className="landing-step-arrow landing-reveal" aria-hidden="true">→</span>
-            <article className="landing-step landing-reveal"><span className="landing-step-number">03</span><h3>Make a plan</h3><p>Turn a role you choose into a week by week path you can review with a counsellor.</p></article>
-          </div>
-        </section>
+        <LandingExplore />
 
         <section id="statistics" className="landing-statistics" aria-labelledby="statistics-title">
           <div className="landing-stats-top landing-reveal"><div><span className="landing-section-label">INFORMATION & INSIGHT</span><h2 id="statistics-title">A changing world of work<span className="landing-period">.</span></h2><p>Explore the kind of signals Jobbery can help you make sense of.</p></div><div className="landing-sample-control"><label htmlFor="sample-period">Illustrative sample data · period</label><select id="sample-period" value={period} onChange={(e) => setPeriod(Number(e.target.value))}>{samplePeriods.map((item, index) => <option key={item.label} value={index}>{item.label}</option>)}</select></div></div>

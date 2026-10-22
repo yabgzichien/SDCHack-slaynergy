@@ -123,7 +123,7 @@ function Wizard({ cat }: { cat: Catalog }) {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <div className="onboarding-journey mb-10">
+      <div className="onboarding-journey mb-5">
         <div className="journey-track" aria-hidden="true"><span className="journey-track-fill" style={{ width: `${(i / (STEPS.length - 1)) * 100}%` }} /></div>
         <div className={`journey-bird${walking ? " is-walking" : ""}${walkingBack ? " is-returning" : ""}`} style={{ left: `${((i + 0.5) / STEPS.length) * 100}%` }} aria-hidden="true">
           <Image className="journey-bird-frame journey-bird-frame-a" src="/cockatiel-walk-step-a.png" alt="" width={1254} height={1254} priority />
@@ -156,7 +156,7 @@ function Wizard({ cat }: { cat: Catalog }) {
               <span className="mb-2 block text-sm text-muted">First name</span>
               <TextInput value={d.name} onChange={(v) => set({ name: v })} placeholder="For example, Aina" maxLength={40} label="First name" autoComplete="given-name" />
             </label>
-            <div className="mt-8">
+            <div className="mt-3">
               <h2 className="text-lg font-medium">What are you doing now?</h2>
               <p className="mb-3 mt-1 text-sm text-muted">Students plan towards graduation; everyone else towards a job deadline.</p>
               <Options value={d.status} cols={2} onPick={(v) => {
@@ -299,7 +299,7 @@ function Wizard({ cat }: { cat: Catalog }) {
           </Q>
         )}
 
-        <div className="mt-10 flex items-center justify-between gap-3">
+        <div className="mt-5 flex items-center justify-between gap-3">
           {i > 0 ? <Btn variant="quiet" onClick={() => go(i - 1)}>Back</Btn> : <Link href="/" className="text-sm underline decoration-control underline-offset-2">Cancel</Link>}
           <div className="flex items-center gap-2">
             {step === "where"
@@ -331,10 +331,10 @@ function Q({ title, help, children }: { title: string; help?: string; children: 
     <section ref={box}>
       <div className="flex items-center justify-between gap-4">
         <h1 ref={ref} tabIndex={-1} className="greeting text-[1.75rem] outline-none sm:text-[2.6rem]">{title}</h1>
-        <Image src="/cockatiel-thinking.png" alt="" width={88} height={88} className="h-16 w-16 shrink-0 object-contain sm:h-20 sm:w-20" />
+        <Image src="/cockatiel-thinking.png" alt="" width={88} height={88} className="h-12 w-12 shrink-0 object-contain sm:h-14 sm:w-14" />
       </div>
-      {help && <p className="mt-3 text-base text-muted">{help}</p>}
-      <div className="mt-8">{children}</div>
+      {help && <p className="mt-1 text-base text-muted">{help}</p>}
+      <div className="mt-3">{children}</div>
     </section>
   );
 }

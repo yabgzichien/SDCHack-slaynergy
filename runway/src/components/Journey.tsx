@@ -95,15 +95,16 @@ export function StepRail({ onPick }: { onPick?: () => void }) {
 
 // Shared journey navigation for every app page.
 export function StepBar() {
-  const { cur, status } = useJourney();
-  const resultIndex = cur - 1;
+  const { cur, status, hasProfile } = useJourney();
+  const lastCompleted = RESULT_STEPS.reduce((last, _step, index) => status(index + 1) === "done" ? index : last, -1);
+  const resultIndex = hasProfile ? (cur >= 1 ? cur - 1 : Math.max(0, lastCompleted)) : -1;
   const progressStyle = { "--result-index": Math.max(0, resultIndex), "--result-count": RESULT_STEPS.length } as CSSProperties;
   return (
     <nav className="app-journey" aria-label="Your steps">
       <div className="app-journey-inner">
         <div className="app-journey-steps" style={progressStyle}>
           <div className="app-journey-track" aria-hidden="true"><span className="app-journey-fill" /></div>
-          {resultIndex >= 0 && <span className="app-journey-bird" aria-hidden="true"><span key={cur} className="app-journey-bird-face" /></span>}
+          {resultIndex >= 0 && <span className="app-journey-bird" aria-hidden="true"><span className="app-journey-bird-face" /></span>}
           <ol>
         {RESULT_STEPS.map((s, index) => {
           const i = index + 1;
@@ -122,7 +123,7 @@ export function StepBar() {
         </div>
         <Link href="/start" className="app-journey-edit">Back to edit my details</Link>
       </div>
-      {resultIndex >= 0 && <p className="app-journey-current">Results section {resultIndex + 1} of {RESULT_STEPS.length}: {STEPS[cur].label}</p>}
+      {resultIndex >= 0 && <p className="app-journey-current">{cur >= 1 ? "Results section" : "Last reached section"} {resultIndex + 1} of {RESULT_STEPS.length}: {RESULT_STEPS[resultIndex].label}</p>}
     </nav>
   );
 }
