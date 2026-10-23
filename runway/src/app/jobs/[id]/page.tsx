@@ -1,18 +1,22 @@
 "use client";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useApp } from "@/components/AppProvider";
 import { useSpeed } from "@/components/useSpeed";
-import { Score, whyFits } from "@/components/JobBits";
+import { useSelectJob } from "@/components/useSelectJob";
+import { BriefWhy, Score, WhyThisJob } from "@/components/JobBits";
+import { JobBadge } from "@/components/JobIcon";
+import { GROUP_LABEL, GROUP_PAY, GROUP_PAY_SOURCE, roleById } from "@/lib/engine/data";
+import { stateJobs } from "@/lib/engine/geo";
 import { areaName } from "@/lib/engine/geo";
 import { Bar, Btn, Card, Chip, Estimate, H, More, PageTitle, SdgTag, Skeleton, SourceChip } from "@/components/ui";
 
 // One question: why does this job score what it does, and what am I missing?
 export default function JobDetailPage() {
-  const { view, state, act, busy } = useApp();
-  const router = useRouter();
+  const { view, state, busy } = useApp();
   const { id } = useParams<{ id: string }>();
   const { speed } = useSpeed(view);
+  const selectJob = useSelectJob();
   if (!view || !state) return <Skeleton lines={6} />;
   const m = view.matches.find((x) => x.roleId === id);
   const blocked = view.unreachable.find((x) => x.roleId === id);
@@ -28,14 +32,31 @@ export default function JobDetailPage() {
   }
   const chosen = view.chosen?.roleId === m.roleId;
   const where = state.profile?.state && state.profile.move && state.profile.move !== "anywhere" ? areaName(state.profile.state, state.profile.move, state.profile.moveTo) : null;
-  const choose = async () => { if (await act("chooseRole", { roleId: m.roleId })) router.push("/plan"); };
+  // Selecting moves on to the next step, the job map, which then shows this job.
+  const choose = () => selectJob(m.roleId);
   return (
     <div>
       <Link href="/jobs" className="mb-4 inline-block text-sm text-muted underline decoration-control underline-offset-2 hover:text-ink">Jobs</Link>
-      <PageTitle title={m.title} aside={<Score value={m.score} />}>{whyFits(m)}</PageTitle>
+      <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div className="flex min-w-0 items-start gap-4">
+          <JobBadge name={m.why.icon} size="lg" />
+          <div className="min-w-0">
+            <h1 className="greeting text-[1.75rem] sm:text-[2.5rem]">{m.title}</h1>
+            <div className="mt-3"><BriefWhy m={m} /></div>
+          </div>
+        </div>
+        <Score value={m.score} />
+      </header>
       <div className="mb-6 flex flex-wrap gap-2">
-        <Btn onClick={choose} disabled={busy || chosen} className="min-h-12 px-6 text-base">{chosen ? "This is your plan's job" : "Plan my path to this job"}</Btn>
+        <Btn onClick={choose} disabled={busy} className="min-h-12 px-6 text-base">{chosen ? "Selected: see it on the job map" : "Select job and see the job map"}</Btn>
       </div>
+
+      <Card tone="raised" className="mb-4">
+        <H sub="What you care about, what you know, and what AI will and will not do in this job.">Why this job</H>
+        <WhyThisJob m={m} speed={speed} />
+      </Card>
+
+      <Pay roleId={m.roleId} home={state.profile?.state ?? null} />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
@@ -77,5 +98,41 @@ export default function JobDetailPage() {
       </div>
       <div className="mt-4"><Estimate /></div>
     </div>
+  );
+}
+
+// Pay: the national figure for this job's occupation group (no per-job, per-state figure exists), then all-worker
+// median pay by state for context, labelled as such, with the worker's own state marked.
+function Pay({ roleId, home }: { roleId: string; home: string | null }) {
+  const r = roleById[roleId];
+  const pay = GROUP_PAY[r.group];
+  const states = [...stateJobs(r.sector, r.group)].sort((a, b) => b.medianWage - a.medianWage);
+  const rm = (x: number) => `RM${x.toLocaleString("en-MY")}`;
+  const top = states.slice(0, 5);
+  const mine = home ? states.find((x) => x.id === home) : null;
+  const shown = mine && !top.includes(mine) ? [...top, mine] : top;
+  return (
+    <Card className="mb-4">
+      <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
+        <div>
+          <H>Pay</H>
+          <p className="num text-[2rem] leading-none">{rm(pay.rm)}<span className="ml-1 text-base text-muted">a month</span></p>
+          <p className="mt-2 text-sm">{pay.kind === "median" ? "Median" : "Average"} pay for {GROUP_LABEL[r.group].toLowerCase()} across Malaysia.</p>
+          <p className="mt-1 text-sm text-muted">{pay.kind === "average" ? "DOSM gives only the average for this group, which is usually higher than the median. " : ""}DOSM does not publish pay for each job in each state.</p>
+          <div className="mt-2"><SourceChip name={GROUP_PAY_SOURCE.name} date={GROUP_PAY_SOURCE.date} url={GROUP_PAY_SOURCE.url} /></div>
+        </div>
+        <div>
+          <p className="text-sm font-medium">Median pay for all workers, by state</p>
+          <ul className="mt-2 space-y-1 text-sm">
+            {shown.map((x) => (
+              <li key={x.id} className={`flex justify-between gap-3 rounded-xl px-3 py-1.5 ${x.id === home ? "bg-accentsoft font-medium text-accentink" : ""}`}>
+                <span>{x.name}{x.id === home ? " (you)" : ""}</span><span className="num">{rm(x.medianWage)}</span>
+              </li>
+            ))}
+          </ul>
+          <Link href="/map" className="mt-2 inline-block text-sm underline decoration-control underline-offset-2 hover:text-ink">Compare every state on the job map</Link>
+        </div>
+      </div>
+    </Card>
   );
 }

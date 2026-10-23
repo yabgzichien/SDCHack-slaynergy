@@ -32,6 +32,19 @@
   --lane-ai: #d08a1e;
   --lane-apply: #b5573a;
   --lane-resume: #8a78c8;
+  /* Soft fills for the plan strands (job skills, AI at work, people skills) and milestones. */
+  --lane-learn-soft: #e2edf9;
+  --lane-ai-soft: #fdedd2;
+  --lane-resume-soft: #ece8fa;
+  --lane-learn-ink: #1f4c80;
+  --lane-ai-ink: #7a4a08;
+  --lane-resume-ink: #4b3a8f;
+  --gold: #c99a17;
+  --gold-soft: #fbf1cc;
+  /* Cue: "look here next" (current step, best job, selected job). Amber, so it never reads as green "good". */
+  --cue: #c9741a;
+  --cue-soft: #ffe9c7;
+  --cue-ink: #6b3d08;
 }
 @theme inline {
   --color-bg: var(--bg);
@@ -61,6 +74,17 @@
   --color-laneai: var(--lane-ai);
   --color-laneapply: var(--lane-apply);
   --color-laneresume: var(--lane-resume);
+  --color-cue: var(--cue);
+  --color-lanelearnsoft: var(--lane-learn-soft);
+  --color-laneaisoft: var(--lane-ai-soft);
+  --color-laneresumesoft: var(--lane-resume-soft);
+  --color-lanelearnink: var(--lane-learn-ink);
+  --color-laneaiink: var(--lane-ai-ink);
+  --color-laneresumeink: var(--lane-resume-ink);
+  --color-gold: var(--gold);
+  --color-goldsoft: var(--gold-soft);
+  --color-cuesoft: var(--cue-soft);
+  --color-cueink: var(--cue-ink);
   --font-sans: var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-instrument-serif), Georgia, serif;
 }
@@ -114,3 +138,8 @@ input[type="range"] { accent-color: var(--accent); width: 100%; }
 }
 
 /* Job map: state names drawn by the app over the shapes */
+
+/* A short amber pulse on something that just changed (the job now shown on the map), so the change is noticed. */
+@keyframes cue-flash { 0% { box-shadow: 0 0 0 0 rgb(201 116 26 / 0.55); background-color: var(--cue-soft); } 100% { box-shadow: 0 0 0 14px rgb(201 116 26 / 0); } }
+.cue-flash { animation: cue-flash 1.1s ease-out 1; }
+@media (prefers-reduced-motion: reduce) { .cue-flash { animation: none; } }

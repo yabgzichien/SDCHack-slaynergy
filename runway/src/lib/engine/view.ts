@@ -1,5 +1,5 @@
 import { KIND_LABEL } from "./market";
-import { skills, skillById, roles, roleById, occupations, occupationById, series, sdg, sourceById, SECTORS, EDUCATION_LABEL, EDUCATION_RANK, quarterIndex, type SectorId } from "./data";
+import { skills, skillById, roles, roleById, occupations, occupationById, series, sdg, sourceById, SECTORS, INTERESTS, EDUCATION_LABEL, EDUCATION_RANK, quarterIndex, type SectorId } from "./data";
 import { computeWorld, type World } from "./world";
 import { expiryFor, durability, fmtYear, NOW, THRESHOLD, type SkillExpiry } from "./expiry";
 import type { Weights3 } from "./futures";
@@ -96,6 +96,16 @@ export type RoleMatchView = Omit<RoleMatch, "gaps" | "picks"> & {
   tradeoff: string | null;
   sdgText: string;
   resumeFit: number | null;
+  // Why this job, in the worker's own terms: the interests they picked that it matches, whether it is in their field,
+  // the skills they already have, and the human core of the job against what AI is expected to do in it.
+  why: {
+    likes: string[]; inField: boolean;
+    have: { skillId: string; name: string }[];
+    humanEdge: { text: string; tag: string; source: string };
+    icon: string;
+    aiDoes: { skillId: string; name: string; byFuture: Record<string, string> }[];
+    staysYours: { skillId: string; name: string }[];
+  };
 };
 
 const eview = (e: SkillExpiry): SkillExpiryView => ({
@@ -184,6 +194,7 @@ function viewCore(state: SessionState, release: 0 | 1): View {
       ...m, weeks: planWeeks(m), tradeoff: tradeoff(m, reachable), sdgText: sdg[m.sdgTarget]?.text ?? "",
       resumeFit: state.resume ? tailorTips(state.resume.skillIds, roleById[m.roleId].skills).match : null,
       gaps: m.gaps.map((g) => ({ skillId: g.skillId, name: g.name, importance: g.importance, expiry: eview(g.expiry), sdgTarget: skillById[g.skillId].sdg.target })),
+      why: whyFor(m, p.interests, input.field, wt),
     });
     matches = reachable.map(toView);
     unreachable = all.filter((m) => !m.reachable).map((m) => ({ roleId: m.roleId, title: m.title, weeks: planWeeks(m), sector: m.sector, reason: m.blocked ? "qualification" as const : "time" as const, need: m.blockedBy === "field" ? `Needs a degree in ${SECTOR_NOUN[m.sector]}` : m.blocked ? `Needs a ${EDUCATION_LABEL[m.requires].toLowerCase()}` : `≈ ${m.weeks} weeks` }));
@@ -279,6 +290,27 @@ function stayFor(occId: string, have: string[], wt: World["weights"]) {
     byFuture: Object.fromEntries(FUTURE_IDS.map((f) => [f, Number.isFinite(x.expiry.byFuture[f]) ? fmtYear(x.expiry.byFuture[f]) : "after 2040"])) });
   return { growing: grow, fast, view: { occupationId: occ.id, title: occ.title, status, fast, outlook, ilo, fadeYear, fading: mine.map(show), growing: grow.map(show) } };
 }
+
+// A skill AI is expected to take over in time (durability under 1) goes under "AI will handle"; the rest stay the
+// worker's. General tools (AI tools, spreadsheets) are not a human edge, so they are left out; if nothing else lasts,
+// staysYours is empty and the card points to the human core sentence instead.
+function whyFor(m: RoleMatch, interests: string[], field: SectorId | undefined, wt: World["weights"]): RoleMatchView["why"] {
+  const r = roleById[m.roleId];
+  const own = Object.entries(r.skills).map(([id, imp]) => ({ id, imp, e: expiryFor(id, wt) }));
+  const fades = own.filter((x) => !x.e.durable && x.id !== "ai_tools").sort((a, b) => a.e.expected - b.e.expected);
+  const stays = own.filter((x) => x.e.durable && !GENERAL_TOOLS.has(x.id)).sort((a, b) => b.imp - a.imp);
+  const name = (id: string) => skillById[id].name;
+  return {
+    likes: INTERESTS.filter((i) => r.tags.includes(i.id) && interests.includes(i.id)).map((i) => i.label),
+    inField: !!field && field === r.sector,
+    have: m.have.filter((id) => id !== "ai_tools").map((id) => ({ skillId: id, name: name(id) })),
+    humanEdge: r.humanEdge, icon: r.icon,
+    aiDoes: fades.map((x) => ({ skillId: x.id, name: name(x.id), byFuture: Object.fromEntries(FUTURE_IDS.map((f) => [f, Number.isFinite(x.e.byFuture[f]) ? fmtYear(x.e.byFuture[f]) : "after 2040"])) })),
+    staysYours: stays.map((x) => ({ skillId: x.id, name: name(x.id) })),
+  };
+}
+
+const GENERAL_TOOLS = new Set(["ai_tools", "spreadsheets"]);
 
 export const LASTING_OUTLOOK = 0.7; // no "fading skills" penalty at or above this outlook
 export const BRIDGE_WEEKS = 8;

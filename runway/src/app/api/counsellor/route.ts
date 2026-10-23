@@ -101,6 +101,9 @@ export async function POST(req: Request) {
       const reason = String(body.reason ?? "").trim().slice(0, 300);
       if (reason.length < 3) return bad("Tell the worker why, so they can rebook.");
       await updateMeeting({ ...publicMeeting(m), status: "cancelled", cancelledAt: now, cancelledBy: "advisor", reason });
+      // The worker's meeting step is no longer ticked once their booking is cancelled.
+      const ws = await loadState(m.sid);
+      if (ws.pathway?.meetingBooked?.meetingId === m.id) { const { meetingBooked: _, ...rest } = ws.pathway; void _; await saveState(m.sid, { ...ws, pathway: rest }); }
       return NextResponse.json(await payload({ meeting: m.id }));
     }
     case "demoMeeting": {
@@ -121,6 +124,8 @@ export async function POST(req: Request) {
         bookedAt: now,
       };
       if (!(await insertMeeting(m, sid))) return bad("Could not book the demo meeting. Please try again.");
+      const ws = await loadState(sid);
+      await saveState(sid, { ...ws, pathway: { ...ws.pathway, meetingBooked: { meetingId: m.id, start: m.start, at: now } } });
       return NextResponse.json(await payload({ meeting: m.id }));
     }
     default:

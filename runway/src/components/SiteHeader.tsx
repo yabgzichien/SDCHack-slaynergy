@@ -20,7 +20,8 @@ export function SiteHeader() {
     document.querySelectorAll<HTMLDetailsElement>(".landing-header details[open]").forEach((detail) => { detail.open = false; });
   }, [path]);
   useEffect(() => {
-    const onScroll = () => setCompact(window.scrollY > 70);
+    // Hysteresis: shrinking the header changes page height, so one threshold would flip back and forth.
+    const onScroll = () => setCompact((c) => (c ? window.scrollY > 24 : window.scrollY > 110));
     window.addEventListener("scroll", onScroll, { passive: true });
     const frame = requestAnimationFrame(onScroll);
     return () => { cancelAnimationFrame(frame); window.removeEventListener("scroll", onScroll); };

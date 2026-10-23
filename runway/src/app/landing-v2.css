@@ -436,3 +436,22 @@
   .landing-speed strong { grid-row:span 2; font-size:40px; }
   .landing-stat-hero { flex-direction:column; gap:10px; }
 }
+
+/* Custom language dropdown */
+.lang-picker { position:relative; }
+.lang-trigger { display:inline-flex; align-items:center; gap:7px; height:44px; padding:0 12px; border:1px solid var(--line); border-radius:100px; background:#fff; font:inherit; font-size:14px; font-weight:700; cursor:pointer; transition:border-color .2s,box-shadow .2s; }
+.lang-trigger:hover { border-color:#9fc29f; box-shadow:0 2px 10px #213c321a; }
+.lang-trigger:focus-visible { outline:2px solid var(--orange); outline-offset:2px; }
+.lang-chevron { transition:transform .2s; }
+.lang-trigger[aria-expanded="true"] .lang-chevron { transform:rotate(180deg); }
+.lang-menu { position:absolute; right:0; top:calc(100% + 8px); z-index:60; min-width:180px; margin:0; padding:6px; list-style:none; background:#fff; border:1px solid var(--line); border-radius:16px; box-shadow:0 16px 40px #213c3229; animation:lang-pop .16s ease-out; }
+.lang-menu button { display:flex; width:100%; align-items:center; justify-content:space-between; gap:10px; min-height:42px; padding:0 12px; border:0; border-radius:10px; background:transparent; font:inherit; font-size:14px; font-weight:600; text-align:left; cursor:pointer; }
+.lang-menu button:hover,.lang-menu button:focus-visible { background:#eef6ec; outline:none; }
+.lang-menu button.is-active { background:#e2f0df; color:#2f5d45; }
+@keyframes lang-pop { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:none; } }
+@media (max-width:760px) { .lang-trigger { height:40px; padding:0 9px; font-size:13px; } }
+@media (prefers-reduced-motion:reduce) { .lang-menu { animation:none; } }
+
+/* Skills page title: heavy sans with the key phrase on a marker stripe */
+.app-page-main .greeting .skills-title { font-family:var(--font-sans); font-weight:800; letter-spacing:-.035em; line-height:1.14; color:#223d33; }
+.skills-title mark { color:#2f5d45; background:linear-gradient(transparent 58%, #f6c47f 58%, #f6c47f 94%, transparent 94%); border-radius:6px; padding:0 .18em; margin:0 -.1em; -webkit-box-decoration-break:clone; box-decoration-break:clone; }

@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { Gauge, Rabbit, Snail } from "lucide-react";
 import { useApp } from "@/components/AppProvider";
+import { useT } from "@/components/I18nProvider";
 import { useSpeed } from "@/components/useSpeed";
 import { ExpiryAxis, ExpiryTrack } from "@/components/ExpiryTrack";
 import { Btn, Card, Chip, Estimate, FUTURE_COLOR, More, NextRow, PageTitle, Skeleton, SourceChip, pct } from "@/components/ui";
@@ -16,6 +17,7 @@ const months = (m: number) => (m >= 10 ? Math.round(m) : Math.round(m * 2) / 2).
 // One question: which of my skills will last, and how does that change with the speed of AI?
 export default function SkillsPage() {
   const { view, state } = useApp();
+  const { lang } = useT();
   const { speed, likely, setSpeed: setChosen } = useSpeed(view);
   if (!view || !state) return <Skeleton lines={6} />;
   if (!state.profile) {
@@ -38,7 +40,9 @@ export default function SkillsPage() {
 
   return (
     <div>
-      <PageTitle title={fading.length ? `AI could do most of ${fading.length} of your ${mine.length} skills before 2031.` : `AI is unlikely to take over any of your ${mine.length} skills before 2031.`}>
+      <PageTitle title={<span className="skills-title">{fading.length
+        ? (lang === "en" ? <>AI could do most of <mark>{fading.length} of your {mine.length} skills</mark> before 2031.</> : `AI could do most of ${fading.length} of your ${mine.length} skills before 2031.`)
+        : (lang === "en" ? <>AI is unlikely to take over <mark>any of your {mine.length} skills</mark> before 2031.</> : `AI is unlikely to take over any of your ${mine.length} skills before 2031.`)}</span>}>
         Each date below is roughly when AI could do most of the work for that skill{speed === likely ? "" : `, if AI improves ${SPEED[speed].name.toLowerCase()}`}. After that date, the skill alone is less likely to get you hired. {lasting.length ? `Your safest skills: ${lasting.slice(0, 2).map((s) => s.name.toLowerCase()).join(" and ")}.` : ""}
       </PageTitle>
 
@@ -106,7 +110,7 @@ export default function SkillsPage() {
         <div className="mt-2"><Estimate /></div>
       </Card>
 
-      <NextRow back="/start" next="/forecast" nextLabel="Next: the forecast" />
+      <NextRow back="/start" next="/jobs" nextLabel="Next: jobs for you" />
     </div>
   );
 }

@@ -86,7 +86,10 @@ export default function AiQuizPage() {
             {passed ? (
               <p className="mt-3 flex items-center gap-2 text-sm font-medium" role="status"><Check size={16} aria-hidden /> You found every mistake. This is the skill employers need most: AI drafts, you check.</p>
             ) : (
-              <div className="mt-3"><Btn onClick={async () => { const d = await act("quizSubmit", { flagged }); if (d && !d.state.pathway.quiz?.passed) setFlagged(d.state.pathway.quiz?.found ?? []); }} disabled={busy || flagged.length === 0}>Check my answers</Btn></div>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <Btn onClick={async () => { const d = await act("quizSubmit", { flagged }); if (d && !d.state.pathway.quiz?.passed) setFlagged(d.state.pathway.quiz?.found ?? []); }} disabled={busy || flagged.length === 0}>Check my answers</Btn>
+                <button onClick={() => act("quizDemo")} disabled={busy} className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-dashed border-cue px-3 text-xs font-medium text-cueink hover:bg-cuesoft">Demo: mark every mistake correctly</button>
+              </div>
             )}
           </>
         )}
@@ -119,6 +122,7 @@ export default function AiQuizPage() {
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-3">
               <Btn onClick={() => act("pathwaySave", { work: { template: t, prompt: t, sheet: sh } })} disabled={busy || !t.trim()}>Save to my portfolio</Btn>
+              {!savedPrompt && <button onClick={() => { const demo = `Act as a ${card.onet.occupation.toLowerCase().replace(/s$/, "")}. Here is the data for: ${card.title.toLowerCase()}. Only use facts in the data, show your sums, and list anything you are unsure about so I can check it.`; const demoSheet = Object.fromEntries(card.sheetHeadings.map((h) => [h.id, h.hint])); setTemplate(demo); setSheet(demoSheet); act("pathwaySave", { work: { template: demo, prompt: demo, sheet: demoSheet } }); }} disabled={busy} className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-dashed border-cue px-3 text-xs font-medium text-cueink hover:bg-cuesoft">Demo: fill in a sample and save</button>}
               {savedPrompt && <span className="text-sm text-muted">Saved. Your prompt covers {covers.size} of {card.promptGuide.length} tips (checked by keywords, not by AI).</span>}
             </div>
             <More summary="Going further (optional)">

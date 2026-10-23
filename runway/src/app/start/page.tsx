@@ -11,6 +11,7 @@ import { useApp, type Catalog } from "@/components/AppProvider";
 import { StepBar } from "@/components/Journey";
 import { Btn, Skeleton } from "@/components/ui";
 import { SAMPLE_RESUME } from "@/lib/sample-resume";
+import { ResumePaper } from "@/components/ResumePaper";
 import { STATES, regionOf, type Reach } from "@/lib/engine/geo";
 import { occupationById, personas } from "@/lib/engine/data";
 
@@ -473,7 +474,7 @@ function ResumeStep({ d, setD, cat, onDone, autoSample }: { d: Draft; setD: (f: 
         {d.resume.sample && (
           <details className="mt-3 rounded-[22px] bg-surface px-5 py-3">
             <summary className="cursor-pointer text-sm font-medium">Preview the sample resume</summary>
-            <pre className="mt-3 max-h-80 overflow-y-auto whitespace-pre-wrap text-sm text-muted" style={{ fontFamily: "inherit" }}>{SAMPLE_RESUME}</pre>
+            <div className="mt-3 max-h-[34rem] overflow-y-auto rounded-2xl bg-surface2 p-3 sm:p-5"><ResumePaper text={SAMPLE_RESUME} /></div>
           </details>
         )}
         <p className="mt-3 text-sm text-muted">The full report, with before-and-after examples, is on <Link href="/resume" className="underline decoration-control underline-offset-2">Resume report</Link>. Your resume text was not saved.</p>

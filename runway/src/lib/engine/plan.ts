@@ -90,9 +90,10 @@ function meetStep(week: number): PlanStep {
   return { id: "meet", kind: "practice", strand: "people", activity: "meeting", weekStart: week, weekEnd: week, hours: 1,
     title: "Meet an advisor: a mock interview, advice, or anything else you want to ask", skills: [people("communication")], shortLived: false, funding: "Free", cost: "Free" };
 }
-function resumeStep(): PlanStep {
-  return { id: "resume", kind: "practice", strand: "people", activity: "resume", weekStart: 1, weekEnd: 1, hours: RESUME_HOURS,
-    title: "Rewrite your resume with the fixes from the scan", skills: [people("communication")], shortLived: false, funding: "Free", cost: "Free" };
+// After the courses, so the resume can show the new skills; before the advisor, who can review it.
+function resumeStep(week: number): PlanStep {
+  return { id: "resume", kind: "practice", strand: "people", activity: "resume", weekStart: week, weekEnd: week, hours: RESUME_HOURS,
+    title: "Update your resume with your new skills", skills: [people("communication")], shortLived: false, funding: "Free", cost: "Free" };
 }
 // The people-skills strand: existing free courses on interviews and workplace communication, in that order.
 // The communication course is skipped if the job strand already teaches it.
@@ -141,7 +142,7 @@ const aiSkill = () => ({ id: "ai_tools", name: skillById.ai_tools.name, sdgTarge
 export function buildPlan(m: RoleMatch, hoursPerWeek: number, stayIn?: string, swaps?: Swaps): Plan {
   const { steps: gapSteps } = courseSteps(m.gaps, m.picks, hoursPerWeek, swaps);
   const jobSteps = relayout(gapSteps.filter(notAiOnly), hoursPerWeek);
-  const steps: PlanStep[] = [resumeStep(), ...jobSteps];
+  const steps: PlanStep[] = [...jobSteps];
   const start = jobSteps.length ? jobSteps[jobSteps.length - 1].weekEnd + 1 : 1;
   let week = start;
   const buffer = m.bufferWeeks;
@@ -153,6 +154,7 @@ export function buildPlan(m: RoleMatch, hoursPerWeek: number, stayIn?: string, s
   const ppl = peopleSteps(week, hoursPerWeek, new Set(jobSteps.map((x) => x.course?.id ?? "")));
   steps.push(...ppl.steps);
   week = ppl.week;
+  steps.push(resumeStep(week));
   steps.push(meetStep(week));
   steps.push({
     id: "apply", kind: "apply", strand: "job", weekStart: week, weekEnd: week + apply - 1,
@@ -180,10 +182,11 @@ export function buildReshapePlan(job: string, growing: { skillId: string; expiry
   const picks = coverGaps(growing.map((g) => g.skillId));
   const { steps: gapSteps } = courseSteps(growing, picks, hoursPerWeek, swaps);
   const jobSteps = relayout(gapSteps.filter(notAiOnly), hoursPerWeek);
-  const steps: PlanStep[] = [resumeStep(), ...jobSteps];
+  const steps: PlanStep[] = [...jobSteps];
   const ai = aiSteps(jobSteps.length ? jobSteps[jobSteps.length - 1].weekEnd + 1 : 1, ADAPT_WEEKS, hoursPerWeek, sector, "Use AI tools on a real task from your job, then check and correct their output");
   steps.push(...ai.steps);
   let week = ai.week;
+  steps.push(resumeStep(week));
   steps.push(meetStep(week));
   const names = growing.filter((g) => g.skillId !== "ai_tools").map((g) => skillById[g.skillId].name.toLowerCase());
   steps.push({ id: "adapt", kind: "adapt", strand: "job", weekStart: week, weekEnd: week + ADAPT_WEEKS - 1, hours: ADAPT_WEEKS * hoursPerWeek, skills: [], shortLived: false, funding: "Free", cost: "Free",

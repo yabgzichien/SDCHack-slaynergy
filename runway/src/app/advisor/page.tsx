@@ -48,7 +48,7 @@ export default function AdvisorPage() {
           {next.length > 0 && (
             <Card className="mb-4" tone="accent">
               <H sub="One booking at a time. To pick a different time, cancel this one first.">Your next meeting</H>
-              <div className="space-y-2">{next.map((m) => <MeetingItem key={m.id} m={m} now={data.now} busy={busy} onCancel={() => send({ type: "cancel", meetingId: m.id })} />)}</div>
+              <div className="space-y-2">{next.map((m) => <MeetingItem key={m.id} m={m} now={data.now} busy={busy} onCancel={() => send({ type: "cancel", meetingId: m.id })} onDemo={() => send({ type: "demoAdvise", meetingId: m.id })} />)}</div>
             </Card>
           )}
 

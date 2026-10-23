@@ -201,6 +201,16 @@ export async function POST(req: Request) {
       state = { ...state, pathway: { ...state.pathway, quiz: { attempts: (prev?.attempts ?? 0) + 1, passed: !!prev?.passed || g.passed, found: g.found, wrong: g.wrong } } };
       break;
     }
+    case "quizDemo": {
+      // Demo shortcut, labelled as such in the app: flags exactly the planted mistakes and submits them.
+      const plan = computeView(state).plan;
+      const card = cardById(plan?.steps.find((s) => s.activity === "task")?.cardId ?? "");
+      if (!card) return bad("There is no AI quiz in this plan.");
+      const g = gradeQuiz(card, card.sampleAnswer.filter((a) => a.mistake).map((a) => a.id));
+      const prev = state.pathway.quiz;
+      state = { ...state, pathway: { ...state.pathway, quiz: { attempts: (prev?.attempts ?? 0) + 1, passed: true, found: g.found, wrong: [] } } };
+      break;
+    }
     case "claimBadge": {
       // Every step done, the advisor meeting included: the badge is logged and issued straight away.
       const r = issueBadge(state, computeView(state).plan, new Date().toISOString(), crypto.randomBytes(9).toString("base64url"));

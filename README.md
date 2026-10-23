@@ -71,9 +71,9 @@ flowchart TD
     G --> H[Jobs: reachable roles ranked<br/>match score + skills gap]
     H --> H2[Optional: pick SDG goals<br/>to re-rank jobs]
     H2 --> H
-    H --> M[Map: where jobs like this are<br/>compare states]
-    H --> I[Plan: week-by-week pathway<br/>job · AI at work · people skills]
-    I --> J[Do the steps<br/>courses, AI task card + quiz,<br/>60-second story, STAR answers,<br/>one advisor meeting]
+    H -->|Select job| M[Map: where jobs like this are<br/>compare states]
+    M --> I[Plan: week-by-week pathway<br/>job · AI at work · people skills]
+    I --> J[Do the steps<br/>courses, AI quiz,<br/>update resume with new skills,<br/>one advisor meeting]
     J --> K{All steps done, quiz passed<br/>and advisor met?}
     K -->|Not yet| J
     K -->|Yes| N([Shareable LinkedIn badge<br/>verifiable from the hash log])
@@ -186,6 +186,20 @@ For each role, the gap is the list of skills the worker doesn't have yet. Each m
 
 The more skills the worker already has, the fewer weeks of practice the role needs. So a civil engineer is matched to civil engineering, not to something unrelated.
 
+### Why this job: the explanation the worker sees
+
+The Jobs page reads as three numbered stops: **① your best job → ② other good matches → ③ where in Malaysia**, with an amber highlight and a "Next: compare 4 other jobs" cue to guide a first-time user. Each job has its own icon, and every card shows the same three short reasons as chips:
+
+| Reason | Built from |
+|---|---|
+| **Fits what you care about** | The interests the worker picked that match the role, and whether it is in their field. If none match, it says so. |
+| **Builds on what you know** | "You have 3 of 4 skills", and the skills still to add. |
+| **Hard for AI to take over** | A one-line **human core** for each of the 89 roles (e.g. "Earning the trust of people new to banking, face to face"), with its O\*NET page as the source, then an honest split: what **AI will handle** (skills that fade, with dates) and what **stays yours** (lasting skills). |
+
+**See why** opens the job page: the three reasons in full, the score breakdown, the skills gap, and **pay**. DOSM publishes no pay per job per state, so the page shows the national figure for the job's occupation group (DOSM Salaries & Wages Survey 2024: a median for managers, professionals and technicians, an average, labelled as such, for the other groups), next to all-worker median pay by state.
+
+**Select job** saves the choice and moves on to the Job Map. The map and the plan always follow the selected job, and switching jobs asks first if it would reset plan progress.
+
 ---
 
 ## 6. Personalised reskilling pathway
@@ -203,19 +217,22 @@ The worker can **swap a course** for another one that covers the same skills, wh
 
 ### Three strands
 
+Steps run in this order. Each strand has its own colour across the plan, the progress strip and the badges: **blue** job skills, **amber** AI at work, **purple** people skills.
+
 | Strand | Steps | Estimated time |
 |---|---|---|
-| **People** | Rewrite your resume (from the resume scan) | 2 h, week 1 |
 | **Job** | Gap courses, e.g. Khan Academy, Microsoft Learn, Coursera, Kaggle, freeCodeCamp, HRD Corp | From each course's listed hours |
-| **AI at work** | **AI task card:** *Ask* (write a prompt for a real task) → *Check* (a quiz: find 3 planted mistakes in a sample AI answer) → *Hand off* (a reusable prompt + a "how I do this task" sheet) | 4–6 h |
-| **People** | Your story in 60 seconds | 1 h |
-| **People** | Prepared answers using STAR (Situation, Task, Action, Result), including "a time you caught a mistake" | 3 h |
-| **People** | Rehearse, then a mock interview with an advisor | 2 h |
+| **AI at work** | Free AI courses, then a **short quiz**: find the planted mistakes in a sample AI answer about a real task from the worker's field. Optional portfolio piece: a reusable prompt + a "how I do this task" sheet | Course hours + 1 h |
+| **People** | Free interview and workplace-communication courses | From each course's listed hours |
+| **People** | **Update your resume with your new skills.** No new upload: the resume is rebuilt from the profile, the skills from the start-up resume scan, finished courses (marked *New*) and the portfolio piece, beside a checklist of the scan's fixes | 2 h |
+| **People** | Meet an advisor (a mock interview, the resume, or anything else) | 1 h |
 | **Job** | Apply for roles | Final weeks |
+
+The resume update comes **after** the courses, so it can show the new skills, and **before** the advisor, who can review it.
 
 **Example (synthetic):** Hafiz, 27, a bank operations executive, has 5 months and 10 hours a week. His plan lists every step with a date range, hours, cost (free) and funding label (*Free*, *PERKESO training support* or *HRD Corp once re-employed*).
 
-The task card, quiz answers, prompt and sheet become a **portfolio** the worker can show an employer. The finance task card (monthly budget variance report, from the O\*NET budget analyst task list) is written in full. Cards for the other sectors come in the final round.
+The quiz result, prompt and sheet become a **portfolio** the worker can show an employer (folded away on the Plan page until opened). The finance task card (monthly budget variance report, from the O\*NET budget analyst task list) is written in full. Cards for the other sectors come in the final round.
 
 **Plan types:** *switch* (train for a new job), *bridge* (keep the current job for income while training), *reshape* (stay in the job and add the skills that keep it going).
 
@@ -238,6 +255,7 @@ The task card, quiz answers, prompt and sheet become a **portfolio** the worker 
 
 - **A goal picker re-ranks jobs.** The worker picks the goals they care about. Matching roles get a bonus, and the trade-off is shown, e.g. "+3 weeks of training, but this role fights financial crime (SDG 16.4)".
 - **Every plan step shows its SDG**, taken from the skill it teaches.
+- **The Plan page shows each goal as an official-colour UN SDG tile** with its target numbers and the official target text, nothing hidden, including the new job's own goal.
 - **A two-layer summary shows how the career path contributes:**
   - *By reskilling, you advance* **4.4** (relevant skills for decent jobs) and **8.5** (full employment).
   - *Your new job serves* the role's own target, e.g. **12.6**.
@@ -293,7 +311,9 @@ The date shown is the average of the three futures, weighted by how likely each 
 
 The **Map** page shows, state by state, where jobs like the one the worker picked are found. The map of Malaysia can be dragged and zoomed, with quick views for all of Malaysia, Peninsular Malaysia, Sabah and Sarawak.
 
+- **The map comes first.** Above it, a compact row of job pills: the worker's **suggested** jobs, **their current job** (labelled), and **Other jobs**, a searchable list where every job is marked *Not suggested* (or *Not in reach yet*, preview only). The selected job is highlighted amber and a short "Showing … · Selected" line pulses when it changes.
 - **Colour the map by:** jobs like this · unemployment rate · median pay.
+- **All 16 states as a table** is always shown under the map.
 - **Each state's figures:** an estimated number of jobs like this, median monthly pay, unemployment rate.
 - **"Would you move for work?"** Pick your state, then any other state to compare: "*Selangor has 5.3× as many jobs like this as Kedah*", pay RM X higher or lower a month, unemployment Y points higher or lower.
 - **A note on cost of living:** higher pay often comes with higher rent. The page suggests talking a move through with an advisor. Jobbery shows the figures; it doesn't tell anyone where to live.
@@ -305,7 +325,7 @@ Malaysia publishes no open data on job ads by state and occupation. So "jobs lik
 
 ## 10. Advisor meetings
 
-Every plan includes **one meeting with an advisor**, placed just before applying. The worker chooses what it is for: a mock interview, advice, or anything else. The step is done when the advisor sends their advice after the meeting, and the worker can then claim their LinkedIn badge themselves. There is no separate sign-off: the human in the loop is the meeting.
+Every plan includes **one meeting with an advisor**, placed just before applying. The worker chooses what it is for: a mock interview, the resume, advice, or anything else. **The plan step is ticked as soon as the meeting is booked** (and unticked if it is cancelled). The LinkedIn badge still needs the advisor's advice after the meeting. There is no separate sign-off: the human in the loop is the meeting.
 
 **Worker side: "Meet an advisor" (`/advisor`)**
 - A two-week calendar of 30-minute slots in Malaysia time, pooled across all advisors.
@@ -318,7 +338,7 @@ Every plan includes **one meeting with an advisor**, placed just before applying
 
 | Tab | What the advisor does |
 |---|---|
-| **Meetings** | Sees the worker's question, profile, top jobs, plan and the futures behind the advice. Writes advice, which appears on the worker's Plan page and completes their "Meet an advisor" step. |
+| **Meetings** | Sees the worker's question, profile, top jobs, plan, the futures behind the advice, and **their resume drawn as a page** (rebuilt from their profile and finished steps, never the uploaded file). Writes advice, which appears on the worker's Plan page. |
 | **My free times** | Opens or closes half-hour slots on a 14-day grid. |
 
 The hash log records "advice given", the advisor's ID and a **hash of the note, not the note itself**.
@@ -328,9 +348,9 @@ The hash log records "advice given", the advisor's ID and a **hash of the note, 
 ## 11. Learner motivation
 
 - **A visible runway.** A progress strip shows the weeks of the plan against the worker's deadline, so they always know where they stand.
-- **Badges as they go:** one for each finished step (e.g. "Spreadsheets + Data analysis", "AI checker", "Resume ready"), plus milestones: *First step*, *Halfway*, *Every step done*. These are self-reported and labelled as such.
-- **Real evidence, not just ticks.** The AI task card, quiz, 60-second story and STAR answers complete only when the work is saved, and they build a portfolio.
-- **A verified LinkedIn badge** at the end, issued once every step is done (including one meeting with an advisor) and checkable by anyone at `/badge/[id]` against the hash log. The badge says "pathway completed", never "certified".
+- **Badges as they go:** one for each finished step (e.g. "Tax preparation and compliance", "AI checker", "Resume updated"), plus milestones: *First step*, *Halfway*, *Every step done*. Each badge has its strand's colour and icon (blue job skills, amber AI, purple people, gold milestones). They are self-reported and labelled as such.
+- **Real evidence, not just ticks.** The AI quiz and the resume update complete only when the work is done in Jobbery, and they build a portfolio.
+- **A verified LinkedIn badge** at the end, issued once every step is done (including advice from an advisor) and checkable by anyone at `/badge/[id]` against the hash log. The badge page shows a certificate-style badge, the completed steps grouped by strand, and the log record. It says "pathway completed", never "certified".
 - **The market leaderboard.** Forecasters earn an accuracy score, a rank and influence.
 
 ---
@@ -401,5 +421,18 @@ The app runs at http://localhost:3000. Other commands:
 | `npm run anchor` | Writes the hash log's fingerprint to `anchors/` |
 
 Without `DATABASE_URL`, sessions are kept in `.data/runway.db` (SQLite). On Replit, set `DATABASE_URL` to the built-in Postgres and `SESSION_SECRET` to a random string.
+
+### Demo shortcuts
+
+Steps that normally need the worker to stop and think have a dashed amber **"Demo:"** button, so the whole pathway can be shown in a few minutes:
+
+| Where | Button | What it does |
+|---|---|---|
+| AI quiz (`/plan/task`) | Demo: mark every mistake correctly | Passes the quiz |
+| Portfolio piece (`/plan/task`) | Demo: fill in a sample and save | Saves a sample prompt and sheet |
+| Resume update (`/plan/resume`) | Demo: apply every fix and finish | Ticks every fix and finishes the step |
+| Meet an advisor (`/advisor`) | Demo: skip to after the meeting | Sends labelled sample advice to the worker's own booked meeting |
+
+The sample worker Hafiz and a finance job (e.g. tax preparer) show every step; quizzes for other fields come later.
 
 For the advisor passcode and a judge's walkthrough, see [`runway/README.md`](runway/README.md).

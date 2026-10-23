@@ -476,7 +476,7 @@ describe("pathway: three strands, task card, badge", () => {
     expect(new Set(plan.steps.map((x) => x.strand))).toEqual(new Set(["job", "ai", "people"]));
     for (const st of plan.steps) expect(st.skills.length).toBeGreaterThan(0);
     expect(plan.steps.find((x) => x.activity === "task")?.cardId).toBe("finance_variance");
-    expect(plan.steps.map((x) => x.activity).filter(Boolean)).toEqual(["resume", "task", "meeting"]);
+    expect(plan.steps.map((x) => x.activity).filter(Boolean)).toEqual(["task", "resume", "meeting"]);
   });
   it("teaches people skills with existing online courses, not Jobbery's own", () => {
     const plan = computeView(finance().s).plan!;
@@ -824,5 +824,36 @@ describe("students", () => {
     const { areaFor, areaName } = await import("@/lib/engine/geo");
     expect(areaFor("MY-12", "pick", ["MY-10", "MY-14", "XX"])).toEqual(["MY-12", "MY-10", "MY-14"]);
     expect(areaName("MY-12", "pick", ["MY-10"])).toBe("Sabah and Selangor");
+  });
+});
+
+describe("why this job", () => {
+  it("splits each job's skills into what AI will handle and what stays the worker's, with no general tools as a human edge", () => {
+    const st = personaState("hafiz")!;
+    const v = computeView({ ...st, profile: { ...st.profile!, months: 6 } });
+    for (const m of v.matches) {
+      const ids = [...m.why.aiDoes, ...m.why.staysYours].map((s) => s.skillId);
+      expect(new Set(ids).size, m.roleId).toBe(ids.length);
+      expect(m.why.staysYours.some((s) => s.skillId === "ai_tools" || s.skillId === "spreadsheets"), m.roleId).toBe(false);
+      expect(m.why.humanEdge.text.length, m.roleId).toBeGreaterThan(20);
+    }
+    const mf = v.matches.find((m) => m.roleId === "fin_inclusion_officer")!;
+    expect(mf.why.aiDoes.map((s) => s.skillId)).toContain("loan_docs");
+    expect(mf.why.staysYours.map((s) => s.skillId)).toContain("fin_inclusion");
+    expect(mf.why.inField).toBe(true);
+  });
+});
+
+describe("plan order and step ticks", () => {
+  it("puts the resume update after the courses, ticks the meeting on booking, and needs no scan for the resume step", () => {
+    const st = personaState("hafiz")!;
+    const v = computeView(st);
+    const ids = v.plan!.steps.map((s) => s.id);
+    const lastCourse = Math.max(...v.plan!.steps.map((s, i) => (s.kind === "course" ? i : -1)));
+    expect(ids.indexOf("resume")).toBeGreaterThan(lastCourse);
+    expect(ids.indexOf("resume")).toBeLessThan(ids.indexOf("meet"));
+    const booked = computeView({ ...st, resume: null, pathway: { meetingBooked: { meetingId: "m1", start: "2026-11-01T02:00:00.000Z", at: "2026-10-23T00:00:00.000Z" }, resumeApplied: true } });
+    expect(booked.pathway.done.meet).toBe(true);
+    expect(booked.pathway.done.resume).toBe(true);
   });
 });

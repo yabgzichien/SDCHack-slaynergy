@@ -50,8 +50,8 @@ export function stepDone(step: PlanStep, state: SessionState): boolean {
   const w = state.pathway ?? {};
   switch (step.activity) {
     case "task": return taskDone(step.cardId ? cardById(step.cardId) : null, w);
-    case "resume": return !!state.resume && !!w.resumeApplied;
-    case "meeting": return !!w.advisorMet;
+    case "resume": return !!w.resumeApplied;
+    case "meeting": return !!w.advisorMet || !!w.meetingBooked;
     default: return !!state.progress[step.id];
   }
 }
@@ -68,8 +68,10 @@ export function achievements(plan: Plan | null, state: SessionState): Achievemen
     const earned = stepDone(s, state);
     if (earned) finished++;
     if (s.activity === "task") out.push({ id: `${s.id}-ai`, title: "AI checker", detail: "Found every planted mistake in an AI-written answer.", kind: "ai", earned });
-    else if (s.activity === "meeting") out.push({ id: `${s.id}-met`, title: "Met an advisor", detail: "Had a session with an advisor and got their advice.", kind: "people", earned });
-    else if (s.activity === "resume") out.push({ id: `${s.id}-resume`, title: "Resume ready", detail: "Scanned your resume and applied the fixes.", kind: "people", earned });
+    else if (s.activity === "meeting") out.push({ id: `${s.id}-met`, title: state.pathway?.advisorMet ? "Met an advisor" : "Advisor meeting booked", detail: state.pathway?.advisorMet ? "Had a session with an advisor and got their advice." : "Booked a session with an advisor.", kind: "people", earned });
+    else if (s.activity === "resume") out.push({ id: `${s.id}-resume`, title: "Resume updated", detail: "Updated your resume with your new skills and fixes.", kind: "people", earned });
+    else if (s.strand === "ai") out.push({ id: `${s.id}-ai`, title: s.title, detail: "Finished an AI-at-work step.", kind: "ai", earned });
+    else if (s.kind === "apply" || s.kind === "adapt") out.push({ id: `${s.id}-skill`, title: s.kind === "apply" ? "Applied for jobs" : "Put it to work", detail: `Finished: ${s.title}`, kind: "skill", earned });
     else if (s.strand === "job") {
       const names = s.skills.map((k) => k.name);
       out.push({ id: `${s.id}-skill`, title: names.length ? names.join(" + ") : "Job skill", detail: `Finished: ${s.title}`, kind: "skill", earned });

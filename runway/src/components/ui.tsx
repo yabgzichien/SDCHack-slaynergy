@@ -38,20 +38,20 @@ export function H({ children, sub, level = 2 }: { children: ReactNode; sub?: Rea
 }
 
 // The screen's title: one serif sentence that answers the screen's question, with one plain line under it.
-export function PageTitle({ title, children, aside }: { step?: string; title: ReactNode; children?: ReactNode; aside?: ReactNode }) {
+export function PageTitle({ title, children, aside, compact = false }: { step?: string; title: ReactNode; children?: ReactNode; aside?: ReactNode; compact?: boolean }) {
   return (
-    <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
+    <header className={`${compact ? "mb-4" : "mb-8"} flex flex-wrap items-end justify-between gap-4`}>
       <div className="max-w-3xl">
-        <h1 className="greeting text-[1.75rem] sm:text-[2.75rem]">{title}</h1>
-        {children && <p className="mt-3 text-base text-muted">{children}</p>}
+        <h1 className={`greeting ${compact ? "text-[1.5rem] sm:text-[2rem]" : "text-[1.75rem] sm:text-[2.75rem]"}`}>{title}</h1>
+        {children && <p className={`${compact ? "mt-1.5 text-sm" : "mt-3 text-base"} text-muted`}>{children}</p>}
       </div>
       {aside}
     </header>
   );
 }
 
-export function Chip({ children, tone = "neutral", title }: { children: ReactNode; tone?: "neutral" | "accent" | "demo" | "rise" | "fall" | "negative"; title?: string }) {
-  const t = { neutral: "bg-surface2 text-ink", accent: "bg-accentsoft text-accent", demo: "bg-surface2 text-demo", rise: "bg-risesoft text-rise", fall: "bg-fallsoft text-fall", negative: "bg-fallsoft text-negative" }[tone];
+export function Chip({ children, tone = "neutral", title }: { children: ReactNode; tone?: "neutral" | "accent" | "demo" | "rise" | "fall" | "negative" | "cue"; title?: string }) {
+  const t = { neutral: "bg-surface2 text-ink", accent: "bg-accentsoft text-accent", demo: "bg-surface2 text-demo", rise: "bg-risesoft text-rise", fall: "bg-fallsoft text-fall", negative: "bg-fallsoft text-negative", cue: "bg-cue text-white" }[tone];
   return <span title={title} className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${t}`}>{children}</span>;
 }
 
@@ -167,4 +167,34 @@ export function Stat({ label, value, caption, href }: { label: string; value: Re
   return href
     ? <Link href={href} className="press block min-h-32 rounded-[22px] bg-surface p-4 hover:bg-surface2">{body}</Link>
     : <div className="min-h-32 rounded-[22px] bg-surface p-4">{body}</div>;
+}
+
+// A numbered stop on a page that is read in order (the Jobs page: best job, other matches, where). The current stop is
+// filled, so a first-time visitor sees where to start.
+export function Stop({ n, title, sub, current = false, id, children }: { n: number; title: string; sub?: ReactNode; current?: boolean; id?: string; children: ReactNode }) {
+  return (
+    <section id={id} className="scroll-mt-24">
+      <div className="mb-3 flex items-center gap-3">
+        <span aria-hidden className={`num grid size-8 shrink-0 place-items-center rounded-full text-sm font-semibold ${current ? "bg-cue text-white" : "border-2 border-control text-muted"}`}>{n}</span>
+        <div>
+          <h2 className="text-lg font-semibold leading-tight"><span className="sr-only">Step {n}: </span>{title}</h2>
+          {sub && <p className="text-sm text-muted">{sub}</p>}
+        </div>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+// A native select, styled: rounded, roomy, a chevron, and an amber focus ring. Native keeps it accessible on phones.
+export function Select({ value, onChange, disabled, children, label, small = false }: { value: string; onChange: (v: string) => void; disabled?: boolean; children: ReactNode; label?: string; small?: boolean }) {
+  return (
+    <span className={`relative block ${small ? "" : "mt-1.5"}`}>
+      <select aria-label={label} value={value} disabled={disabled} onChange={(e) => onChange(e.target.value)}
+        className={`${small ? "min-h-9 rounded-full pl-3 pr-9 text-sm" : "min-h-12 rounded-2xl pl-4 pr-11 text-base"} w-full cursor-pointer appearance-none border border-control bg-raised py-1 font-medium text-ink shadow-[0_1px_2px_rgb(0_0_0/0.06)] transition-colors hover:border-ink/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-cue disabled:opacity-50`}>
+        {children}
+      </select>
+      <svg aria-hidden width="18" height="18" viewBox="0 0 20 20" className={`pointer-events-none absolute ${small ? "right-3" : "right-4"} top-1/2 -translate-y-1/2 text-muted`}><path d="M5 7.5l5 5 5-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+    </span>
+  );
 }

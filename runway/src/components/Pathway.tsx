@@ -3,12 +3,13 @@ import Link from "next/link";
 import { useApp } from "@/components/AppProvider";
 import { Btn, Card, Chip, H } from "@/components/ui";
 import type { PlanStep } from "@/lib/engine/plan";
+import { STRAND_STYLE } from "@/components/strands";
 import type { View } from "@/lib/engine/view";
 import type { SessionState } from "@/lib/engine/state";
 
 // Where each in-app activity lives.
 export const activityHref = (s: PlanStep) =>
-  s.activity === "task" ? "/plan/task" : s.activity === "resume" ? "/resume" : s.activity === "meeting" ? "/advisor" : null;
+  s.activity === "task" ? "/plan/task" : s.activity === "resume" ? "/plan/resume" : s.activity === "meeting" ? "/advisor" : null;
 
 // The worker's optional portfolio piece after the AI quiz: the reusable prompt and the "how I do this task" sheet.
 // The advisor view can pass a worker's data; the worker's own pages use their session.
@@ -26,6 +27,11 @@ export function Portfolio({ counsellor, data }: { counsellor?: boolean; data?: {
         {w.template && <Chip>Reusable prompt saved</Chip>}
         {w.sheet && <Chip>How-I-do-it sheet saved</Chip>}
       </div>
+      <details className="group mt-3">
+        <summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 text-sm text-muted underline decoration-control underline-offset-2 hover:text-ink [&::-webkit-details-marker]:hidden">
+          <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden className="transition-transform group-open:rotate-90"><path d="M4.5 2.5L8 6l-3.5 3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          Show the prompt and checklist
+        </summary>
       {w.template && (
         <div className="mt-4">
           <p className="text-sm font-medium">Reusable prompt</p>
@@ -42,31 +48,42 @@ export function Portfolio({ counsellor, data }: { counsellor?: boolean; data?: {
           ))}
         </dl>
       )}
+      </details>
       {!counsellor && <p className="mt-3 text-sm text-muted">Add this to your resume and talk about it in interviews: it shows you can work with AI and catch its mistakes. <Link href="/plan/task" className="underline decoration-control underline-offset-2 hover:text-ink">Edit</Link></p>}
     </Card>
   );
 }
 
 // Progress and skill badges, earned as steps are finished. Locked ones stay visible so the next goal is clear.
+// Each kind has its own colour and icon (see strands.ts): blue job skills, amber AI, purple people, gold milestones.
 export function BadgeShelf() {
   const { view } = useApp();
   const list = view?.pathway.achievements ?? [];
   if (!list.length) return null;
   const earned = list.filter((a) => a.earned).length;
-  const mark = { skill: "◆", ai: "✦", people: "●", milestone: "★" } as const;
+  const kindOf = (k: (typeof list)[number]["kind"]) => STRAND_STYLE[k === "skill" ? "job" : k];
   return (
     <Card className="mt-4">
       <H sub={`${earned} of ${list.length} earned · self-reported progress; the pathway badge below is the one to share`}>Your skill badges</H>
-      <div className="h-2 overflow-hidden rounded-full bg-surface2" role="progressbar" aria-valuemin={0} aria-valuemax={list.length} aria-valuenow={earned} aria-label="Badges earned">
-        <div className="h-full rounded-full bg-[var(--accent)] transition-all" style={{ width: `${(earned / list.length) * 100}%` }} />
+      <div className="flex h-2.5 gap-0.5 overflow-hidden rounded-full bg-surface2" role="progressbar" aria-valuemin={0} aria-valuemax={list.length} aria-valuenow={earned} aria-label="Badges earned">
+        {list.filter((a) => a.earned).map((a) => <div key={a.id} className={`h-full flex-1 ${kindOf(a.kind).solid}`} />)}
+        {list.filter((a) => !a.earned).map((a) => <div key={a.id} className="h-full flex-1" />)}
       </div>
       <ul className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-        {list.map((a) => (
-          <li key={a.id} className={`flex items-start gap-3 rounded-2xl px-4 py-3 ${a.earned ? "bg-accentsoft" : "bg-raised opacity-60"}`}>
-            <span aria-hidden className={`mt-0.5 text-lg ${a.earned ? "text-accent" : "text-muted"}`}>{mark[a.kind]}</span>
-            <span className="min-w-0 text-sm"><span className="block font-medium">{a.title}<span className="sr-only">{a.earned ? " (earned)" : " (not earned yet)"}</span></span><span className="block text-xs text-muted">{a.earned ? a.detail : "Not earned yet"}</span></span>
-          </li>
-        ))}
+        {list.map((a) => {
+          const k = kindOf(a.kind);
+          const Icon = k.icon;
+          return (
+            <li key={a.id} className={`flex items-start gap-3 rounded-2xl px-4 py-3 ${a.earned ? k.soft : "border-2 border-dashed border-control bg-raised"}`}>
+              <span aria-hidden className={`grid size-10 shrink-0 place-items-center rounded-full ${a.earned ? `${k.solid} text-white shadow-[0_2px_6px_rgb(0_0_0/0.15)]` : "bg-surface2 text-muted"}`}><Icon size={19} strokeWidth={2} /></span>
+              <span className="min-w-0 text-sm">
+                <span className={`block text-[11px] font-semibold uppercase tracking-wide ${a.earned ? k.ink : "text-muted"}`}>{k.label}</span>
+                <span className="block font-medium">{a.title}<span className="sr-only">{a.earned ? " (earned)" : " (not earned yet)"}</span></span>
+                <span className="block text-xs text-muted">{a.earned ? a.detail : "Not earned yet"}</span>
+              </span>
+            </li>
+          );
+        })}
       </ul>
     </Card>
   );

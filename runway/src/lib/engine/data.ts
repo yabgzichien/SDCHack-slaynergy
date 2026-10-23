@@ -49,6 +49,9 @@ export type Role = {
   id: string; title: string; onet: string; group: GroupKey; skills: Record<string, number>;
   sdg: { target: string; why: string }; tags: string[]; minWeeks: number;
   sector: SectorId; requires: Education; closest: boolean;
+  // The part of the job that rests on people, judgment or hands-on work, in one plain sentence, with its O*NET page.
+  humanEdge: { text: string; tag: string; source: string };
+  icon: string; // a lucide-react icon name, drawn by components/JobIcon
 };
 export type Course = {
   id: string; title: string; provider: string; url: string; hours: number; cost: string; funding: string;
@@ -95,6 +98,15 @@ export const roleById = Object.fromEntries(roles.map((x) => [x.id, x]));
 export const courseById = Object.fromEntries(courses.map((x) => [x.id, x]));
 export const occupationById = Object.fromEntries(occupations.map((x) => [x.id, x]));
 export const sourceById = Object.fromEntries(s.sources.map((x) => [x.id, x]));
+
+// Typical monthly pay for each occupation group across Malaysia (DOSM Salaries & Wages Survey Report 2024). DOSM's
+// release gives medians for the top three groups and only means for the rest, so each figure says which it is.
+// There is no pay figure per job per state; state figures elsewhere are for all workers in the state.
+export const GROUP_PAY: Record<GroupKey, { rm: number; kind: "median" | "average" }> = {
+  managers: { rm: 5990, kind: "median" }, professionals: { rm: 5821, kind: "median" }, technicians: { rm: 3541, kind: "median" },
+  clerical: { rm: 2931, kind: "average" }, service: { rm: 2561, kind: "average" }, craft: { rm: 2510, kind: "average" }, operators: { rm: 2404, kind: "average" },
+};
+export const GROUP_PAY_SOURCE = { name: "DOSM Salaries & Wages Survey Report", url: "https://www.dosm.gov.my/portal-main/release-content/salaries-and-wages-survey-report-2024", date: "2024" };
 
 export const GROUP_LABEL: Record<GroupKey, string> = {
   managers: "Managers", professionals: "Professionals", technicians: "Technicians and associate professionals",

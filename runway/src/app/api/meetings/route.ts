@@ -2,8 +2,9 @@ import crypto from "node:crypto";
 import { NextResponse } from "next/server";
 import { checkBooking, freeSlots, isTopic, MAX_QUESTION, upcoming, type Meeting } from "@/lib/engine/meetings";
 import { allSlots, publicMeeting } from "@/lib/server/meetings";
+import { recordMeeting } from "@/lib/engine/review";
 import { getSessionId } from "@/lib/server/session";
-import { anonymise, insertMeeting, listMeetings, loadState, updateMeeting } from "@/lib/server/store";
+import { anonymise, insertMeeting, listMeetings, loadState, saveState, updateMeeting } from "@/lib/server/store";
 
 export const dynamic = "force-dynamic";
 
@@ -49,12 +50,28 @@ export async function POST(req: Request) {
         status: "booked", topic: body.topic, question: String(body.question ?? "").trim().slice(0, MAX_QUESTION), bookedAt: now,
       };
       if (!(await insertMeeting(m, sid))) return bad("Someone booked that time a moment ago. Please pick another.", 409);
+      // Booking ticks the plan's meeting step; the advisor's advice still arrives after the meeting.
+      await saveState(sid, { ...state, pathway: { ...state.pathway, meetingBooked: { meetingId: m.id, start: m.start, at: now } } });
       return NextResponse.json(await payload(sid));
     }
     case "cancel": {
       const m = (await listMeetings()).find((x) => x.id === String(body.meetingId ?? "") && x.sid === sid);
       if (!m || !upcoming(m, now)) return bad("That meeting was not found, or it has already happened.");
       await updateMeeting({ ...publicMeeting(m), status: "cancelled", cancelledAt: now, cancelledBy: "worker" });
+      const st = await loadState(sid);
+      if (st.pathway?.meetingBooked?.meetingId === m.id) { const { meetingBooked: _, ...rest } = st.pathway; void _; await saveState(sid, { ...st, pathway: rest }); }
+      return NextResponse.json(await payload(sid));
+    }
+    case "demoAdvise": {
+      // Demo shortcut, labelled in the app: plays the advisor for the worker's own booked meeting, so a demo can skip
+      // the wait. Sends sample advice, which completes the plan's meeting step just as real advice does.
+      const m = (await listMeetings()).find((x) => x.id === String(body.meetingId ?? "") && x.sid === sid);
+      if (!m || m.status !== "booked") return bad("That meeting was not found, or it already has advice.");
+      const notes = "Demo advice (sample): your plan looks realistic. Finish the job-skills course first, then put your AI quiz work and new skills at the top of your resume. Practise answering \"tell me about a time you checked someone's work\" before interviews.";
+      await updateMeeting({ ...publicMeeting(m), status: "advised", notes, notesAt: now });
+      const st = await loadState(sid);
+      const met = recordMeeting(st, { at: now, by: m.advisor, meetingId: m.id, topic: m.topic });
+      if (met !== st) await saveState(sid, met);
       return NextResponse.json(await payload(sid));
     }
     default:

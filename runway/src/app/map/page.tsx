@@ -1,14 +1,18 @@
 "use client";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useRef, useState } from "react";
 import { BriefcaseBusiness, Coins, MapPin, Plane, Users } from "lucide-react";
 import { useApp } from "@/components/AppProvider";
+import { JobPicker, type PickKind } from "@/components/JobPicker";
+import { useSelectJob } from "@/components/useSelectJob";
+import { STAY_ID } from "@/lib/engine/state";
+import { currentJob, suggestedJobs } from "@/lib/suggested";
 import { MalaysiaMap, MapLegend } from "@/components/MalaysiaMap";
-import { Btn, Card, Chip, More, NextRow, PageTitle, Skeleton, SourceChip } from "@/components/ui";
+import { Btn, Card, Chip, More, NextRow, PageTitle, Select, Skeleton, SourceChip } from "@/components/ui";
 import { colourFor, type Measure } from "@/lib/map-scale";
 import { mapFigures, metricOf, people, rm, times } from "@/lib/map-figures";
-import { STATES, compareMove, geo, kindOfWork, occupationOf, stateJobs } from "@/lib/engine/geo";
-import { SECTORS, roleById, type SectorId } from "@/lib/engine/data";
+import { STATES, compareMove, geo, kindOfWork, occupationOf } from "@/lib/engine/geo";
+import { roleById, type GroupKey, type SectorId } from "@/lib/engine/data";
 
 const MEASURES: { id: Measure; label: string; icon: typeof Users }[] = [
   { id: "jobs", label: "Jobs", icon: Users },
@@ -19,21 +23,40 @@ const MEASURES: { id: Measure; label: string; icon: typeof Users }[] = [
 // One question: if I moved, where would jobs like mine be?
 export default function MapPage() {
   const { view, state, act, busy } = useApp();
-  const [roleId, setRoleId] = useState<string | null>(null);
+  const selectJob = useSelectJob();
+  // A job not in reach yet can only be previewed; every other pick is the saved selection (state.chosenRoleId).
+  const [preview, setPreview] = useState<string | null>(null);
+  const [flash, setFlash] = useState(0);
+  const pickerRef = useRef<HTMLDivElement>(null);
   const [measure, setMeasure] = useState<Measure>("jobs");
   const [move, setMove] = useState(state?.profile?.move !== "stay");
   const [picked, setPicked] = useState<string | null>(null);
 
   const matches = view?.matches ?? [];
   const unreachable = view?.unreachable ?? [];
-  const role = matches.find((m) => m.roleId === roleId) ?? unreachable.find((m) => m.roleId === roleId) ?? view?.chosen ?? matches[0] ?? null;
-  const locked = unreachable.find((m) => m.roleId === role?.roleId) ?? null;
-  // every job, grouped by kind of work (the map is the same for jobs of one kind), reachable ones first
-  const groups = SECTORS.map((sec) => ({ ...sec, ok: matches.filter((m) => m.sector === sec.id), later: unreachable.filter((m) => m.sector === sec.id) }))
-    .filter((g) => g.ok.length + g.later.length > 0);
-  const sector = (role?.sector ?? "finance") as SectorId;
-  const group = role ? roleById[role.roleId]?.group : undefined;
-  const fig = useMemo(() => mapFigures(sector, measure, group), [sector, measure, group]);
+  const suggested = view ? suggestedJobs(view) : [];
+  const current = currentJob(state?.profile?.status === "studying" ? undefined : state?.profile?.occupationId);
+  const chosenId = state?.chosenRoleId ?? null;
+  const later = preview ? unreachable.find((m) => m.roleId === preview) ?? null : null;
+  // What the map shows: a previewed out-of-reach job, else the selection, else the best suggested job.
+  const shown: { kind: PickKind; id: string; title: string; sector: SectorId; group?: GroupKey } | null =
+    later ? { kind: "later", id: later.roleId, title: later.title, sector: later.sector, group: roleById[later.roleId]?.group }
+    : chosenId === STAY_ID && current ? { kind: "current", ...current }
+    : (() => {
+      const m = (chosenId && matches.find((x) => x.roleId === chosenId)) || suggested[0];
+      return m ? { kind: suggested.some((x) => x.roleId === m.roleId) ? "suggested" as const : "other" as const, id: m.roleId, title: m.title, sector: m.sector, group: roleById[m.roleId]?.group } : null;
+    })();
+  const role = shown;
+  const locked = later;
+  const sector = (shown?.sector ?? "finance") as SectorId;
+  const group = shown?.group;
+  const pick = async (kind: PickKind, id: string, scroll = false) => {
+    if (kind === "later") setPreview(id);
+    else { setPreview(null); if (!(await selectJob(kind === "current" ? STAY_ID : id, null))) return; }
+    setPicked(null); setFlash((n) => n + 1);
+    if (scroll) pickerRef.current?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+  };
+  const fig = mapFigures(sector, measure, group);
   const home = state?.profile?.state ?? null;
 
   if (!view || !state) return <Skeleton lines={6} />;
@@ -50,10 +73,8 @@ export default function MapPage() {
   const homeRow = home ? rows.find((r) => r.id === home)! : null;
   const cmp = compareMove(sector, home, sel, group);
   const job = role.title.toLowerCase();
+  const kindLabel = { suggested: "Suggested", current: "Your current job", other: "Not suggested", later: "Preview only" }[role.kind];
 
-  // other reachable jobs that are unusually common in the selected state
-  const alsoHere = matches.filter((m) => m.roleId !== role.roleId).map((m) => ({ m, lq: stateJobs(m.sector as SectorId, roleById[m.roleId]?.group).find((x) => x.id === sel)!.lq }))
-    .filter((x) => x.lq >= 1.15).sort((a, b) => b.lq - a.lq || b.m.score - a.m.score).slice(0, 4);
 
   const title = !showMove && homeRow
     ? `About ${people(homeRow.workers)} people in ${homeRow.short} do work like ${job}.`
@@ -63,44 +84,25 @@ export default function MapPage() {
 
   return (
     <div>
-      <PageTitle title={title}>Where jobs like yours are in Malaysia, and how pay and unemployment compare. Tap a state to see it next to {homeRow ? homeRow.short : "your state"}.</PageTitle>
-
-      <Card tone="raised" className="mb-4 p-4 sm:p-5">
-        <div className="grid gap-4 lg:grid-cols-[1fr_1fr_1.3fr]">
-          <label className="block text-sm">
-            <span className="flex items-center gap-1.5 text-muted"><BriefcaseBusiness size={15} aria-hidden />Job</span>
-            <select value={role.roleId} onChange={(e) => { setRoleId(e.target.value); setPicked(null); }} className="mt-1.5 min-h-12 w-full rounded-2xl border border-control bg-raised px-3">
-              {groups.map((g) => (
-                <optgroup key={g.id} label={g.label}>
-                  {g.ok.map((m) => <option key={m.roleId} value={m.roleId}>{m.title}</option>)}
-                  {g.later.map((m) => <option key={m.roleId} value={m.roleId}>{m.title} (not in reach yet)</option>)}
-                </optgroup>
-              ))}
-            </select>
-            <p className="mt-1 text-xs text-muted">{locked ? `Not in reach yet: ${locked.need.charAt(0).toLowerCase()}${locked.need.slice(1)}.` : group ? `Shows ${occupationOf(group).toLowerCase()} in ${kindOfWork(sector)}.` : `Shows people in ${kindOfWork(sector)}.`}</p>
-          </label>
-          <label className="block text-sm">
-            <span className="flex items-center gap-1.5 text-muted"><MapPin size={15} aria-hidden />You live in</span>
-            <select value={home ?? ""} disabled={busy} onChange={(e) => { act("homeState", { state: e.target.value || null }); setPicked(null); }} className="mt-1.5 min-h-12 w-full rounded-2xl border border-control bg-raised px-3">
-              <option value="">Choose your state</option>
-              {STATES.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-            </select>
-          </label>
-          <div className="text-sm">
-            <span className="flex items-center gap-1.5 text-muted"><Plane size={15} aria-hidden />Would you move for work?</span>
-            <div role="radiogroup" aria-label="Would you move for work?" className="mt-1.5 grid min-h-12 grid-cols-2 gap-1 rounded-full bg-surface2 p-1">
-              {([[true, "Yes, anywhere"], [false, "No, stay home"]] as const).map(([v, l]) => (
-                <button key={String(v)} role="radio" aria-checked={showMove === v} onClick={() => { setMove(v); setPicked(null); }} disabled={!v && !home}
-                  className={`press rounded-full px-2 text-sm ${showMove === v ? "bg-primary font-medium text-primaryink" : "text-muted"} disabled:opacity-40`}>{l}</button>
-              ))}
-            </div>
-            {!home && <p className="mt-1 text-xs text-muted">Choose your state to compare.</p>}
-          </div>
-        </div>
-      </Card>
+      <PageTitle compact title={title}>Tap a state to compare it with {homeRow ? homeRow.short : "your state"}.</PageTitle>
 
       <Card tone="raised" className="min-w-0 p-3 sm:p-5">
-        <div role="tablist" aria-label="What the colours show" className="mb-4 grid grid-cols-3 gap-1 rounded-full bg-surface2 p-1 sm:inline-grid">
+        <div ref={pickerRef} className="scroll-mt-24 border-b border-line pb-3">
+          <JobPicker
+            suggested={suggested.map((m) => ({ id: m.roleId, title: m.title, icon: m.why.icon }))}
+            current={current}
+            others={[...matches.filter((m) => !suggested.some((x) => x.roleId === m.roleId)).map((m) => ({ id: m.roleId, title: m.title, icon: m.why.icon, sector: m.sector, later: false })),
+              ...unreachable.map((m) => ({ id: m.roleId, title: m.title, icon: roleById[m.roleId]?.icon, sector: m.sector, later: true }))]}
+            shown={{ kind: role.kind, id: role.id, title: role.title }} busy={busy} onPick={(k, id) => pick(k, id)} />
+          <p key={`${role.id}-${flash}`} role="status" className={`mt-2 rounded-xl px-2 py-1 text-xs text-muted ${flash ? "cue-flash" : ""}`}>
+            <span className="font-medium text-cueink">Showing {role.title}</span><span aria-hidden> · </span><span>{kindLabel}</span>
+            {role.kind !== "later" && <><span aria-hidden> · </span><span>Selected</span></>}<span aria-hidden className={locked ? "" : "hidden sm:inline"}> · </span>
+            <span className={locked ? "block sm:inline" : "hidden sm:inline"}>{locked ? (locked.reason === "time" ? `Not in reach yet: it needs ${locked.need.replace("≈ ", "about ")} of training, more than the time you have.` : `Not in reach yet: ${locked.need.charAt(0).toLowerCase()}${locked.need.slice(1)}.`) : group ? `Shows ${occupationOf(group).toLowerCase()} in ${kindOfWork(sector)}.` : `Shows people in ${kindOfWork(sector)}.`}</span>
+            {locked && <span> Your selection has not changed.</span>}
+          </p>
+        </div>
+        <div className="mb-4 mt-3 flex flex-wrap items-center justify-between gap-3">
+        <div role="tablist" aria-label="What the colours show" className="grid grid-cols-3 gap-1 rounded-full bg-surface2 p-1 sm:inline-grid">
           {MEASURES.map(({ id, label, icon: Icon }) => (
             <button key={id} role="tab" aria-selected={measure === id} onClick={() => setMeasure(id)}
               className={`press inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full px-1.5 text-xs sm:px-3 sm:text-sm ${measure === id ? "bg-raised font-medium shadow-[0_1px_3px_rgb(0_0_0/0.12)]" : "text-muted"}`}>
@@ -108,14 +110,33 @@ export default function MapPage() {
             </button>
           ))}
         </div>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+            <label className="flex items-center gap-2">
+              <span className="flex items-center gap-1.5 text-muted"><MapPin size={15} aria-hidden />You live in</span>
+              <Select small label="You live in" value={home ?? ""} disabled={busy} onChange={(v) => { act("homeState", { state: v || null }); setPicked(null); }}>
+                <option value="">Choose your state</option>
+                {STATES.map((st) => <option key={st.id} value={st.id}>{st.name}</option>)}
+              </Select>
+            </label>
+            <div className="flex items-center gap-2">
+              <span className="flex items-center gap-1.5 text-muted"><Plane size={15} aria-hidden />Would you move?</span>
+              <div role="radiogroup" aria-label="Would you move for work?" className="inline-grid grid-cols-2 gap-0.5 rounded-full bg-surface2 p-0.5">
+                {([[true, "Yes, anywhere"], [false, "No, stay home"]] as const).map(([v, l]) => (
+                  <button key={String(v)} role="radio" aria-checked={showMove === v} onClick={() => { setMove(v); setPicked(null); }} disabled={!v && !home}
+                    className={`press min-h-8 rounded-full px-3 text-sm ${showMove === v ? "bg-raised font-medium text-ink shadow-[0_1px_3px_rgb(0_0_0/0.12)]" : "text-muted"} disabled:opacity-40`}>{l}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
         <MalaysiaMap values={fig.values} bins={fig.bins} ramp={fig.ramp} selected={sel} home={home} dimOthers={!showMove} onSelect={setPicked}
           ariaLabel={`Map of Malaysia's states shaded by ${fig.legend.toLowerCase()}. The table further down has the same figures.`} />
         <div className="mt-4"><MapLegend title={fig.legend} bins={fig.bins} ramp={fig.ramp} fmt={fig.fmt} home={!!home} /></div>
         {!showMove && <p className="mt-3 text-sm text-muted">Showing your state only. Choose “Yes, anywhere” to compare all states.</p>}
       </Card>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-12">
-        <Card className="lg:col-span-7">
+      <div className="mt-4">
+        <Card>
           <div className="flex items-start justify-between gap-2">
             <h2 className="text-lg font-medium">{selRow.name}</h2>
             {sel === home && <Chip>Your state</Chip>}
@@ -137,24 +158,10 @@ export default function MapPage() {
             </div>
           ) : !home ? <p className="mt-4 text-sm text-muted">Choose your state above to compare it with others.</p> : null}
         </Card>
-        <Card className="lg:col-span-5">
-          <h2 className="text-base font-semibold">Your other jobs that are common here</h2>
-          {alsoHere.length ? (
-            <ul className="mt-2 space-y-1.5 text-sm">
-              {alsoHere.map(({ m, lq }) => (
-                <li key={m.roleId}>
-                  <button onClick={() => setRoleId(m.roleId)} className="press flex min-h-11 w-full items-center justify-between gap-2 rounded-2xl bg-raised px-3 py-2 text-left hover:bg-surface2">
-                    <span>{m.title}</span><span className="num shrink-0 text-muted">{times(lq)} the usual</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : <p className="mt-1 text-sm text-muted">None of your jobs is more common here than across Malaysia.</p>}
-        </Card>
       </div>
 
       <Card className="mt-4">
-        <More summary="All 16 states as a table">
+        <h2 className="mb-2 text-base font-semibold">All 16 states</h2>
           <div className="scroll-x">
             <table className="w-full text-sm text-ink">
               <caption className="sr-only">States ranked by the estimated number of people in this kind of work</caption>
@@ -183,7 +190,6 @@ export default function MapPage() {
               </tbody>
             </table>
           </div>
-        </More>
         <More summary="Where these figures come from">
           <p>Malaysia publishes no state figures for single jobs. So &quot;jobs like this&quot; is an estimate: the people working in the industries this job belongs to ({kindOfWork(sector)}){group ? <>, times the share of each state&apos;s workers who are {occupationOf(group).toLowerCase()}</> : null}. Both come from DOSM&apos;s Labour Force Survey {geo.industryYear} tables by state, scaled to each state&apos;s employment in {STATES[0].lfs.quarter.replace("Q", " Q")}. It shows where the work is, not a count of open vacancies.</p>
           <p>Sabah, Sarawak and Labuan are drawn closer to the peninsula than they really are, so every state fits at a readable size. State boundaries: geoBoundaries (OpenStreetMap contributors, ODbL).</p>

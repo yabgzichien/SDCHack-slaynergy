@@ -37,6 +37,8 @@ export type PathwayWork = {
   template?: string;
   sheet?: Record<string, string>;
   resumeApplied?: boolean;
+  // Set when the worker books an advisor meeting (cleared if they cancel); it ticks the plan's meeting step.
+  meetingBooked?: { meetingId: string; start: string; at: string };
   // Set when an advisor sends advice after a meeting with this worker; it completes the plan's meeting step.
   advisorMet?: { at: string; by: Signer; meetingId: string; topic: string };
   // Shown on the public badge page only if the worker opts in.

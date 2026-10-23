@@ -2,6 +2,8 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { ArrowRight, BookOpen, Briefcase, CalendarClock, Check, CircleCheck, Clock3, FileText, Landmark, ListChecks, Mic, Users, Wrench, type LucideIcon } from "lucide-react";
 import { useApp, type Catalog } from "@/components/AppProvider";
+import { ResumeSheet } from "@/components/ResumeSheet";
+import { buildResume } from "@/lib/build-resume";
 import { useSpeed } from "@/components/useSpeed";
 import { Bar, Btn, Card, Chip, DemoLabel, Estimate, FutureBar, H, PageTitle, SdgTag, Skeleton, pct, sdgName } from "@/components/ui";
 import { dayLabel, MAX_NOTES, myDay, myTime, slotStart, topicLabel, upcoming, whenLabel, type Meeting } from "@/lib/engine/meetings";
@@ -312,9 +314,18 @@ function WorkerDetails({ data }: { data: Worker }) {
   const p = state.profile, plan = view.plan;
   if (!p) return <Card><p className="text-sm">This worker has not told Jobbery about themselves yet.</p></Card>;
   const top3 = view.matches.slice(0, 3);
+  const resume = buildResume(state, view);
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       {plan ? <PlanCard plan={plan} done={view.pathway.done} /> : <Card className="lg:col-span-2"><p className="text-sm text-muted">They have not chosen a job to plan for yet.</p></Card>}
+
+      {resume && (
+        <Card className="lg:col-span-2">
+          <H sub={state.pathway?.resumeApplied ? "The worker marked their resume as updated. Built from their profile and finished plan steps; New marks skills learned on the plan." : "Not marked as updated yet. This is how it looks now, built from their profile and finished plan steps."}>Their resume</H>
+          <div className="rounded-2xl bg-surface2 p-3 sm:p-6"><ResumeSheet r={resume} /></div>
+          {resume.fixes.length > 0 && <p className="mt-3 text-sm text-muted">Fixes their resume scan found: {resume.fixes.map((f) => f.title).join("; ")}.</p>}
+        </Card>
+      )}
 
       <Card>
         <H>The worker</H>

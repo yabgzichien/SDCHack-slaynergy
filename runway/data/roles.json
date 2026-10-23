@@ -23,7 +23,13 @@
   "minWeeks": 8,
   "sector": "finance",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Advising owners on what the numbers mean and signing off on figures they will be held to.",
+   "source": "https://www.onetonline.org/link/summary/13-2011.01",
+   "tag": "Advises owners"
+  },
+  "icon": "Calculator"
  },
  {
   "id": "auditor",
@@ -48,7 +54,13 @@
   "minWeeks": 10,
   "sector": "finance",
   "requires": "degree",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Questioning people, spotting what does not add up and putting your name to the opinion.",
+   "source": "https://www.onetonline.org/link/summary/13-2011.02",
+   "tag": "Questions people"
+  },
+  "icon": "FileSearch"
  },
  {
   "id": "financial_analyst",
@@ -73,7 +85,13 @@
   "minWeeks": 8,
   "sector": "finance",
   "requires": "degree",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Judging which story the numbers tell and convincing managers to act on it.",
+   "source": "https://www.onetonline.org/link/summary/13-2051.00",
+   "tag": "Persuades managers"
+  },
+  "icon": "ChartLine"
  },
  {
   "id": "credit_analyst",
@@ -97,7 +115,13 @@
   "minWeeks": 6,
   "sector": "finance",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Weighing a borrower's character and context, not just the score, and owning the lending decision.",
+   "source": "https://www.onetonline.org/link/summary/13-2041.00",
+   "tag": "Judges borrowers"
+  },
+  "icon": "Scale"
  },
  {
   "id": "loan_officer",
@@ -122,7 +146,13 @@
   "minWeeks": 4,
   "sector": "finance",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Meeting borrowers, reading their situation and deciding whom the bank can trust.",
+   "source": "https://www.onetonline.org/link/summary/13-2072.00",
+   "tag": "Meets borrowers"
+  },
+  "icon": "Landmark"
  },
  {
   "id": "financial_examiner",
@@ -146,7 +176,13 @@
   "minWeeks": 10,
   "sector": "finance",
   "requires": "degree",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Interviewing bank staff on site and judging whether a firm is being honest.",
+   "source": "https://www.onetonline.org/link/summary/13-2061.00",
+   "tag": "Inspects on site"
+  },
+  "icon": "ClipboardCheck"
  },
  {
   "id": "aml_analyst",
@@ -172,7 +208,13 @@
   "minWeeks": 6,
   "sector": "finance",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Deciding which flagged cases are real crime and building a case others can act on.",
+   "source": "https://www.onetonline.org/link/summary/13-2099.04",
+   "tag": "Builds the case"
+  },
+  "icon": "ShieldAlert"
  },
  {
   "id": "compliance_specialist",
@@ -195,7 +237,13 @@
   "minWeeks": 6,
   "sector": "finance",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Reading grey areas in the rules and persuading colleagues to change how they work.",
+   "source": "https://www.onetonline.org/link/summary/13-1041.07",
+   "tag": "Reads grey areas"
+  },
+  "icon": "BookCheck"
  },
  {
   "id": "esg_assistant",
@@ -220,7 +268,13 @@
   "minWeeks": 6,
   "sector": "finance",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Checking claims against what really happens on the ground and asking teams for proof.",
+   "source": "https://www.onetonline.org/link/summary/13-1199.05",
+   "tag": "Checks real impact"
+  },
+  "icon": "Leaf"
  },
  {
   "id": "tax_preparer",
@@ -243,7 +297,13 @@
   "minWeeks": 6,
   "sector": "finance",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Sitting with clients to untangle their situation and standing behind the return they file.",
+   "source": "https://www.onetonline.org/link/summary/13-2082.00",
+   "tag": "Works with clients"
+  },
+  "icon": "Receipt"
  },
  {
   "id": "underwriter",
@@ -266,7 +326,13 @@
   "minWeeks": 8,
   "sector": "finance",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Judging unusual risks that do not fit the model and negotiating terms with agents.",
+   "source": "https://www.onetonline.org/link/summary/13-2053.00",
+   "tag": "Judges unusual risks"
+  },
+  "icon": "Umbrella"
  },
  {
   "id": "claims_admin",
@@ -291,7 +357,13 @@
   "minWeeks": 4,
   "sector": "finance",
   "requires": "spm",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Handling disputed claims and explaining decisions to worried patients and clinics.",
+   "source": "https://www.onetonline.org/link/summary/43-9041.01",
+   "tag": "Handles disputes"
+  },
+  "icon": "FileHeart"
  },
  {
   "id": "budget_analyst",
@@ -314,7 +386,13 @@
   "minWeeks": 6,
   "sector": "finance",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Negotiating trade-offs between departments and defending the budget to decision makers.",
+   "source": "https://www.onetonline.org/link/summary/13-2031.00",
+   "tag": "Negotiates trade-offs"
+  },
+  "icon": "PiggyBank"
  },
  {
   "id": "fin_inclusion_officer",
@@ -338,7 +416,13 @@
   "minWeeks": 4,
   "sector": "finance",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Earning the trust of people new to banking, face to face, and judging what they can really repay.",
+   "source": "https://www.onetonline.org/link/summary/13-2071.01",
+   "tag": "Earns trust face to face"
+  },
+  "icon": "HandCoins"
  },
  {
   "id": "bi_analyst",
@@ -363,7 +447,13 @@
   "minWeeks": 12,
   "sector": "computing",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Finding out what managers really need to know and turning it into decisions they trust.",
+   "source": "https://www.onetonline.org/link/summary/15-1199.08",
+   "tag": "Finds what matters"
+  },
+  "icon": "ChartColumn"
  },
  {
   "id": "management_analyst",
@@ -388,7 +478,13 @@
   "minWeeks": 10,
   "sector": "business",
   "requires": "degree",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Interviewing staff, reading the politics of a workplace and getting people to accept change.",
+   "source": "https://www.onetonline.org/link/summary/13-1111.00",
+   "tag": "Leads change"
+  },
+  "icon": "Briefcase"
  },
  {
   "id": "user_support",
@@ -412,7 +508,13 @@
   "minWeeks": 8,
   "sector": "computing",
   "requires": "spm",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Calming frustrated users and fixing problems on real machines that no script foresaw.",
+   "source": "https://www.onetonline.org/link/summary/15-1151.00",
+   "tag": "Calms users"
+  },
+  "icon": "Headset"
  },
  {
   "id": "procurement_agent",
@@ -436,7 +538,13 @@
   "minWeeks": 6,
   "sector": "logistics",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Negotiating with suppliers face to face and judging which vendors will keep their word.",
+   "source": "https://www.onetonline.org/link/summary/13-1023.00",
+   "tag": "Negotiates in person"
+  },
+  "icon": "Handshake"
  },
  {
   "id": "logistics_analyst",
@@ -460,7 +568,13 @@
   "minWeeks": 8,
   "sector": "logistics",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Working with drivers, warehouses and suppliers to fix problems when plans meet reality.",
+   "source": "https://www.onetonline.org/link/summary/13-1081.02",
+   "tag": "Fixes real problems"
+  },
+  "icon": "Route"
  },
  {
   "id": "hr_specialist",
@@ -483,7 +597,13 @@
   "minWeeks": 6,
   "sector": "business",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Handling sensitive conversations about hiring, conflict and dismissal with care and fairness.",
+   "source": "https://www.onetonline.org/link/summary/13-1071.00",
+   "tag": "Handles hard talks"
+  },
+  "icon": "Users"
  },
  {
   "id": "comp_benefits_specialist",
@@ -507,7 +627,13 @@
   "minWeeks": 6,
   "sector": "business",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Explaining pay and benefits to anxious staff and balancing fairness with cost.",
+   "source": "https://www.onetonline.org/link/summary/13-1141.00",
+   "tag": "Explains pay fairly"
+  },
+  "icon": "Wallet"
  },
  {
   "id": "training_specialist",
@@ -531,7 +657,13 @@
   "minWeeks": 8,
   "sector": "education",
   "requires": "degree",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Reading a room, keeping learners engaged and changing course when they are lost.",
+   "source": "https://www.onetonline.org/link/summary/13-1151.00",
+   "tag": "Reads the room"
+  },
+  "icon": "Presentation"
  },
  {
   "id": "customer_service_rep",
@@ -553,7 +685,13 @@
   "minWeeks": 2,
   "sector": "service",
   "requires": "spm",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Handling the upset customers and unusual cases that chatbots pass on to a person.",
+   "source": "https://www.onetonline.org/link/summary/43-4051.00",
+   "tag": "Handles upset customers"
+  },
+  "icon": "MessageCircle"
  },
  {
   "id": "billing_clerk",
@@ -576,7 +714,13 @@
   "minWeeks": 2,
   "sector": "finance",
   "requires": "spm",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Sorting out disputed bills with customers and catching errors before they go out.",
+   "source": "https://www.onetonline.org/link/summary/43-3021.02",
+   "tag": "Sorts out disputes"
+  },
+  "icon": "FileText"
  },
  {
   "id": "health_records_tech",
@@ -598,7 +742,13 @@
   "minWeeks": 12,
   "sector": "health",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Clarifying unclear notes with doctors and protecting patient privacy.",
+   "source": "https://www.onetonline.org/link/summary/29-2071.00",
+   "tag": "Protects privacy"
+  },
+  "icon": "FolderHeart"
  },
  {
   "id": "market_research_analyst",
@@ -622,7 +772,13 @@
   "minWeeks": 8,
   "sector": "business",
   "requires": "degree",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Talking to real customers, reading between the lines and framing what the findings mean.",
+   "source": "https://www.onetonline.org/link/summary/13-1161.00",
+   "tag": "Talks to customers"
+  },
+  "icon": "Search"
  },
  {
   "id": "office_supervisor",
@@ -645,7 +801,13 @@
   "minWeeks": 6,
   "sector": "business",
   "requires": "spm",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Leading a team day to day, solving people problems and keeping the office running.",
+   "source": "https://www.onetonline.org/link/summary/43-1011.00",
+   "tag": "Leads a team"
+  },
+  "icon": "Building2"
  },
  {
   "id": "software_developer",
@@ -668,7 +830,13 @@
   "minWeeks": 24,
   "sector": "computing",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Understanding what users really need and taking responsibility for code that ships.",
+   "source": "https://www.onetonline.org/link/summary/15-1132.00",
+   "tag": "Owns the code"
+  },
+  "icon": "Code"
  },
  {
   "id": "infosec_analyst",
@@ -692,7 +860,13 @@
   "minWeeks": 20,
   "sector": "computing",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Outthinking real attackers and making the call during a live incident.",
+   "source": "https://www.onetonline.org/link/summary/15-1122.00",
+   "tag": "Outthinks attackers"
+  },
+  "icon": "Shield"
  },
  {
   "id": "db_admin",
@@ -714,7 +888,13 @@
   "minWeeks": 14,
   "sector": "computing",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Owning the data a business cannot afford to lose and deciding what to do when it breaks.",
+   "source": "https://www.onetonline.org/link/summary/15-1141.00",
+   "tag": "Owns critical data"
+  },
+  "icon": "Database"
  },
  {
   "id": "web_developer",
@@ -738,7 +918,13 @@
   "minWeeks": 14,
   "sector": "computing",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Turning a client's vague idea into a working site and judging what users will find easy.",
+   "source": "https://www.onetonline.org/link/summary/15-1134.00",
+   "tag": "Shapes client ideas"
+  },
+  "icon": "Globe"
  },
  {
   "id": "qa_tester_software",
@@ -763,7 +949,13 @@
   "minWeeks": 10,
   "sector": "computing",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Thinking like an awkward user to find the bugs that automated tests miss.",
+   "source": "https://www.onetonline.org/link/summary/15-1199.01",
+   "tag": "Thinks like users"
+  },
+  "icon": "Bug"
  },
  {
   "id": "programmer",
@@ -786,7 +978,13 @@
   "minWeeks": 18,
   "sector": "computing",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Fitting new code into old, messy systems and owning the fix when it fails.",
+   "source": "https://www.onetonline.org/link/summary/15-1131.00",
+   "tag": "Fixes old systems"
+  },
+  "icon": "Terminal"
  },
  {
   "id": "network_admin",
@@ -809,7 +1007,13 @@
   "minWeeks": 12,
   "sector": "computing",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Fixing physical networks on site and deciding fast when systems go down.",
+   "source": "https://www.onetonline.org/link/summary/15-1142.00",
+   "tag": "Fixes on site"
+  },
+  "icon": "Network"
  },
  {
   "id": "cloud_engineer",
@@ -832,7 +1036,13 @@
   "minWeeks": 20,
   "sector": "computing",
   "requires": "diploma",
-  "closest": true
+  "closest": true,
+  "humanEdge": {
+   "text": "Designing systems around a firm's real limits on cost, risk and staff skill.",
+   "source": "https://www.onetonline.org/link/summary/15-1199.02",
+   "tag": "Designs around limits"
+  },
+  "icon": "Cloud"
  },
  {
   "id": "data_analyst_stats",
@@ -856,7 +1066,13 @@
   "minWeeks": 24,
   "sector": "computing",
   "requires": "degree",
-  "closest": true
+  "closest": true,
+  "humanEdge": {
+   "text": "Choosing the right question, spotting misleading data and explaining limits to non-experts.",
+   "source": "https://www.onetonline.org/link/summary/15-2041.00",
+   "tag": "Asks the right question"
+  },
+  "icon": "Sigma"
  },
  {
   "id": "systems_analyst",
@@ -880,7 +1096,13 @@
   "minWeeks": 14,
   "sector": "computing",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Bridging what users say they want and what the system can really do.",
+   "source": "https://www.onetonline.org/link/summary/15-1121.00",
+   "tag": "Bridges users and tech"
+  },
+  "icon": "Workflow"
  },
  {
   "id": "it_project_coordinator",
@@ -904,7 +1126,13 @@
   "minWeeks": 12,
   "sector": "computing",
   "requires": "diploma",
-  "closest": true
+  "closest": true,
+  "humanEdge": {
+   "text": "Keeping people, deadlines and competing demands aligned when plans slip.",
+   "source": "https://www.onetonline.org/link/summary/11-3021.00",
+   "tag": "Keeps people aligned"
+  },
+  "icon": "KanbanSquare"
  },
  {
   "id": "technical_writer",
@@ -927,7 +1155,13 @@
   "minWeeks": 8,
   "sector": "computing",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Interviewing engineers and testing steps yourself so instructions are right and clear.",
+   "source": "https://www.onetonline.org/link/summary/27-3042.00",
+   "tag": "Tests every step"
+  },
+  "icon": "PenLine"
  },
  {
   "id": "civil_engineer",
@@ -952,7 +1186,13 @@
   "minWeeks": 20,
   "sector": "engineering",
   "requires": "degree",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Taking legal responsibility for safe structures and making calls on site.",
+   "source": "https://www.onetonline.org/link/summary/17-2051.00",
+   "tag": "Signs off safety"
+  },
+  "icon": "Building"
  },
  {
   "id": "civil_technician",
@@ -976,7 +1216,13 @@
   "minWeeks": 10,
   "sector": "engineering",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Measuring and checking real sites, where conditions rarely match the drawings.",
+   "source": "https://www.onetonline.org/link/summary/17-3022.00",
+   "tag": "Works on real sites"
+  },
+  "icon": "Ruler"
  },
  {
   "id": "mechanical_engineer",
@@ -1001,7 +1247,13 @@
   "minWeeks": 20,
   "sector": "engineering",
   "requires": "degree",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Building and testing physical prototypes and owning safety decisions.",
+   "source": "https://www.onetonline.org/link/summary/17-2141.00",
+   "tag": "Builds prototypes"
+  },
+  "icon": "Cog"
  },
  {
   "id": "mechanical_technician",
@@ -1024,7 +1276,13 @@
   "minWeeks": 10,
   "sector": "engineering",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Setting up, testing and adjusting real machines with your hands.",
+   "source": "https://www.onetonline.org/link/summary/17-3027.00",
+   "tag": "Hands-on machines"
+  },
+  "icon": "Wrench"
  },
  {
   "id": "electrical_engineer",
@@ -1049,7 +1307,13 @@
   "minWeeks": 20,
   "sector": "engineering",
   "requires": "degree",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Designing safe power systems and signing off on work that could harm people if wrong.",
+   "source": "https://www.onetonline.org/link/summary/17-2071.00",
+   "tag": "Signs off safety"
+  },
+  "icon": "Zap"
  },
  {
   "id": "electronics_engineer",
@@ -1073,7 +1337,13 @@
   "minWeeks": 20,
   "sector": "engineering",
   "requires": "degree",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Debugging real circuits on the bench, where faults are physical and messy.",
+   "source": "https://www.onetonline.org/link/summary/17-2072.00",
+   "tag": "Debugs real circuits"
+  },
+  "icon": "Cpu"
  },
  {
   "id": "electronics_technician",
@@ -1097,7 +1367,13 @@
   "minWeeks": 10,
   "sector": "engineering",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Repairing and testing equipment by hand, often in tight or live conditions.",
+   "source": "https://www.onetonline.org/link/summary/17-3023.01",
+   "tag": "Hands-on repair"
+  },
+  "icon": "CircuitBoard"
  },
  {
   "id": "industrial_engineer",
@@ -1122,7 +1398,13 @@
   "minWeeks": 16,
   "sector": "engineering",
   "requires": "degree",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Walking the factory floor, watching how work is really done and winning workers over to change.",
+   "source": "https://www.onetonline.org/link/summary/17-2112.00",
+   "tag": "Wins workers over"
+  },
+  "icon": "Factory"
  },
  {
   "id": "qa_engineer_manufacturing",
@@ -1147,7 +1429,13 @@
   "minWeeks": 14,
   "sector": "engineering",
   "requires": "degree",
-  "closest": true
+  "closest": true,
+  "humanEdge": {
+   "text": "Investigating defects on the line and getting suppliers and staff to fix root causes.",
+   "source": "https://www.onetonline.org/link/summary/17-2112.00",
+   "tag": "Fixes root causes"
+  },
+  "icon": "BadgeCheck"
  },
  {
   "id": "quality_control_analyst",
@@ -1171,7 +1459,13 @@
   "minWeeks": 8,
   "sector": "engineering",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Handling samples and instruments by hand and deciding whether a batch can be released.",
+   "source": "https://www.onetonline.org/link/summary/19-4099.01",
+   "tag": "Releases batches"
+  },
+  "icon": "TestTube"
  },
  {
   "id": "chemical_engineer",
@@ -1196,7 +1490,13 @@
   "minWeeks": 20,
   "sector": "engineering",
   "requires": "degree",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Running real plants safely and deciding what to do when a process misbehaves.",
+   "source": "https://www.onetonline.org/link/summary/17-2041.00",
+   "tag": "Runs real plants"
+  },
+  "icon": "FlaskConical"
  },
  {
   "id": "environmental_engineer",
@@ -1221,7 +1521,13 @@
   "minWeeks": 18,
   "sector": "engineering",
   "requires": "degree",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Inspecting sites, working with communities and signing off on designs that protect people.",
+   "source": "https://www.onetonline.org/link/summary/17-2081.00",
+   "tag": "Works with communities"
+  },
+  "icon": "Trees"
  },
  {
   "id": "surveyor",
@@ -1243,7 +1549,13 @@
   "minWeeks": 12,
   "sector": "engineering",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Working outdoors on real ground and certifying boundaries that carry legal weight.",
+   "source": "https://www.onetonline.org/link/summary/17-1022.00",
+   "tag": "Works outdoors"
+  },
+  "icon": "MapPinned"
  },
  {
   "id": "hse_officer",
@@ -1267,7 +1579,13 @@
   "minWeeks": 10,
   "sector": "engineering",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Inspecting worksites in person and stopping unsafe work before someone gets hurt.",
+   "source": "https://www.onetonline.org/link/summary/29-9011.00",
+   "tag": "Stops unsafe work"
+  },
+  "icon": "HardHat"
  },
  {
   "id": "construction_manager",
@@ -1291,7 +1609,13 @@
   "minWeeks": 22,
   "sector": "engineering",
   "requires": "degree",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Leading crews on site, solving surprises daily and answering for safety and budget.",
+   "source": "https://www.onetonline.org/link/summary/11-9021.00",
+   "tag": "Leads crews on site"
+  },
+  "icon": "Construction"
  },
  {
   "id": "cost_estimator",
@@ -1315,7 +1639,13 @@
   "minWeeks": 10,
   "sector": "engineering",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Visiting sites, talking to contractors and judging risks that are not in the drawings.",
+   "source": "https://www.onetonline.org/link/summary/13-1051.00",
+   "tag": "Visits sites"
+  },
+  "icon": "Coins"
  },
  {
   "id": "cad_drafter",
@@ -1338,7 +1668,13 @@
   "minWeeks": 8,
   "sector": "engineering",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Working with engineers on site details and catching design clashes before they are built.",
+   "source": "https://www.onetonline.org/link/summary/17-3013.00",
+   "tag": "Catches clashes"
+  },
+  "icon": "DraftingCompass"
  },
  {
   "id": "chemist",
@@ -1362,7 +1698,13 @@
   "minWeeks": 12,
   "sector": "science",
   "requires": "degree",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Designing experiments, handling real chemicals safely and judging unexpected results.",
+   "source": "https://www.onetonline.org/link/summary/19-2031.00",
+   "tag": "Designs experiments"
+  },
+  "icon": "Atom"
  },
  {
   "id": "chemical_technician",
@@ -1385,7 +1727,13 @@
   "minWeeks": 8,
   "sector": "science",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Running hands-on lab work safely, where samples and equipment need careful handling.",
+   "source": "https://www.onetonline.org/link/summary/19-4031.00",
+   "tag": "Hands-on lab work"
+  },
+  "icon": "Beaker"
  },
  {
   "id": "biological_technician",
@@ -1409,7 +1757,13 @@
   "minWeeks": 8,
   "sector": "science",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Handling living samples by hand and noticing when an experiment goes wrong.",
+   "source": "https://www.onetonline.org/link/summary/19-4021.00",
+   "tag": "Handles live samples"
+  },
+  "icon": "Dna"
  },
  {
   "id": "microbiologist",
@@ -1433,7 +1787,13 @@
   "minWeeks": 14,
   "sector": "science",
   "requires": "degree",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Growing and testing living organisms in the lab and judging what the results mean.",
+   "source": "https://www.onetonline.org/link/summary/19-1022.00",
+   "tag": "Judges results"
+  },
+  "icon": "Microscope"
  },
  {
   "id": "environmental_scientist",
@@ -1457,7 +1817,13 @@
   "minWeeks": 14,
   "sector": "science",
   "requires": "degree",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Collecting samples in the field and explaining findings to communities and regulators.",
+   "source": "https://www.onetonline.org/link/summary/19-2041.00",
+   "tag": "Works in the field"
+  },
+  "icon": "Sprout"
  },
  {
   "id": "food_scientist",
@@ -1481,7 +1847,13 @@
   "minWeeks": 14,
   "sector": "science",
   "requires": "degree",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Tasting, testing and developing real food, and answering for its safety.",
+   "source": "https://www.onetonline.org/link/summary/19-1012.00",
+   "tag": "Tastes and tests"
+  },
+  "icon": "Wheat"
  },
  {
   "id": "food_technician",
@@ -1503,7 +1875,13 @@
   "minWeeks": 8,
   "sector": "science",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Testing real food samples by hand and catching safety problems before products ship.",
+   "source": "https://www.onetonline.org/link/summary/19-4011.02",
+   "tag": "Hands-on testing"
+  },
+  "icon": "Apple"
  },
  {
   "id": "medical_lab_technician",
@@ -1527,7 +1905,13 @@
   "minWeeks": 14,
   "sector": "health",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Handling patient samples by hand, where a mistake can affect a diagnosis.",
+   "source": "https://www.onetonline.org/link/summary/29-2012.00",
+   "tag": "Handles patient samples"
+  },
+  "icon": "Syringe"
  },
  {
   "id": "pharmacy_technician",
@@ -1551,7 +1935,13 @@
   "minWeeks": 10,
   "sector": "health",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Preparing medicines by hand and checking with patients and pharmacists before they leave.",
+   "source": "https://www.onetonline.org/link/summary/29-2052.00",
+   "tag": "Checks with patients"
+  },
+  "icon": "Pill"
  },
  {
   "id": "medical_assistant",
@@ -1575,7 +1965,13 @@
   "minWeeks": 8,
   "sector": "health",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Caring for patients in person, taking vitals and putting nervous people at ease.",
+   "source": "https://www.onetonline.org/link/summary/31-9092.00",
+   "tag": "Cares in person"
+  },
+  "icon": "Stethoscope"
  },
  {
   "id": "community_health_worker",
@@ -1599,7 +1995,13 @@
   "minWeeks": 8,
   "sector": "health",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Visiting families in their homes and earning the trust of the community.",
+   "source": "https://www.onetonline.org/link/summary/21-1094.00",
+   "tag": "Visits families"
+  },
+  "icon": "House"
  },
  {
   "id": "health_educator",
@@ -1623,7 +2025,13 @@
   "minWeeks": 12,
   "sector": "health",
   "requires": "degree",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Teaching people face to face in a way that fits their culture and changes habits.",
+   "source": "https://www.onetonline.org/link/summary/21-1091.00",
+   "tag": "Teaches face to face"
+  },
+  "icon": "HeartPulse"
  },
  {
   "id": "retail_salesperson",
@@ -1646,7 +2054,13 @@
   "minWeeks": 3,
   "sector": "service",
   "requires": "spm",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Helping shoppers in person, reading what they want and building loyalty.",
+   "source": "https://www.onetonline.org/link/summary/41-2031.00",
+   "tag": "Helps shoppers"
+  },
+  "icon": "ShoppingBag"
  },
  {
   "id": "retail_supervisor",
@@ -1669,7 +2083,13 @@
   "minWeeks": 6,
   "sector": "service",
   "requires": "spm",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Leading a shop-floor team and handling customers and staff problems as they happen.",
+   "source": "https://www.onetonline.org/link/summary/41-1011.00",
+   "tag": "Leads the shop floor"
+  },
+  "icon": "Store"
  },
  {
   "id": "sales_rep_technical",
@@ -1693,7 +2113,13 @@
   "minWeeks": 10,
   "sector": "service",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Building long-term client relationships and explaining technical products in person.",
+   "source": "https://www.onetonline.org/link/summary/41-4011.00",
+   "tag": "Builds relationships"
+  },
+  "icon": "FlaskRound"
  },
  {
   "id": "sales_rep",
@@ -1715,7 +2141,13 @@
   "minWeeks": 6,
   "sector": "service",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Building relationships and trust with buyers, which still closes most deals.",
+   "source": "https://www.onetonline.org/link/summary/41-4012.00",
+   "tag": "Builds trust"
+  },
+  "icon": "BadgeDollarSign"
  },
  {
   "id": "insurance_agent",
@@ -1738,7 +2170,13 @@
   "minWeeks": 10,
   "sector": "service",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Sitting with families to understand their needs and earning their trust over years.",
+   "source": "https://www.onetonline.org/link/summary/41-3021.00",
+   "tag": "Earns family trust"
+  },
+  "icon": "ShieldPlus"
  },
  {
   "id": "real_estate_agent",
@@ -1760,7 +2198,13 @@
   "minWeeks": 10,
   "sector": "service",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Showing homes in person, negotiating and guiding clients through a big decision.",
+   "source": "https://www.onetonline.org/link/summary/41-9022.00",
+   "tag": "Guides big decisions"
+  },
+  "icon": "KeyRound"
  },
  {
   "id": "travel_consultant",
@@ -1782,7 +2226,13 @@
   "minWeeks": 6,
   "sector": "service",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Planning complex trips around a client's wishes and fixing problems when travel goes wrong.",
+   "source": "https://www.onetonline.org/link/summary/41-3041.00",
+   "tag": "Fixes travel problems"
+  },
+  "icon": "Plane"
  },
  {
   "id": "hotel_front_desk",
@@ -1805,7 +2255,13 @@
   "minWeeks": 3,
   "sector": "service",
   "requires": "spm",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Welcoming guests in person and handling complaints and surprises on the spot.",
+   "source": "https://www.onetonline.org/link/summary/43-4081.00",
+   "tag": "Welcomes guests"
+  },
+  "icon": "ConciergeBell"
  },
  {
   "id": "food_service_manager",
@@ -1828,7 +2284,13 @@
   "minWeeks": 10,
   "sector": "service",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Leading kitchen and floor staff through busy shifts and keeping food safe.",
+   "source": "https://www.onetonline.org/link/summary/11-9051.00",
+   "tag": "Leads busy shifts"
+  },
+  "icon": "ChefHat"
  },
  {
   "id": "paralegal",
@@ -1852,7 +2314,13 @@
   "minWeeks": 12,
   "sector": "business",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Interviewing clients and witnesses and judging which details matter to the case.",
+   "source": "https://www.onetonline.org/link/summary/23-2011.00",
+   "tag": "Interviews people"
+  },
+  "icon": "Gavel"
  },
  {
   "id": "pr_specialist",
@@ -1875,7 +2343,13 @@
   "minWeeks": 8,
   "sector": "business",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Building relationships with journalists and handling a crisis with judgment.",
+   "source": "https://www.onetonline.org/link/summary/27-3031.00",
+   "tag": "Handles crises"
+  },
+  "icon": "Megaphone"
  },
  {
   "id": "warehouse_clerk",
@@ -1897,7 +2371,13 @@
   "minWeeks": 3,
   "sector": "logistics",
   "requires": "spm",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Checking real goods, sorting out damaged or missing stock and working with drivers.",
+   "source": "https://www.onetonline.org/link/summary/43-5071.00",
+   "tag": "Checks real goods"
+  },
+  "icon": "Package"
  },
  {
   "id": "production_planner",
@@ -1919,7 +2399,13 @@
   "minWeeks": 8,
   "sector": "logistics",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Juggling machines, people and late materials when the plan meets the factory floor.",
+   "source": "https://www.onetonline.org/link/summary/43-5061.00",
+   "tag": "Juggles the floor"
+  },
+  "icon": "CalendarClock"
  },
  {
   "id": "dispatcher",
@@ -1941,7 +2427,13 @@
   "minWeeks": 4,
   "sector": "logistics",
   "requires": "spm",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Making fast calls under pressure and keeping drivers and customers informed.",
+   "source": "https://www.onetonline.org/link/summary/43-5032.00",
+   "tag": "Decides under pressure"
+  },
+  "icon": "Truck"
  },
  {
   "id": "electrician",
@@ -1963,7 +2455,13 @@
   "minWeeks": 20,
   "sector": "trades",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Installing and repairing wiring by hand in real buildings, safely and to code.",
+   "source": "https://www.onetonline.org/link/summary/47-2111.00",
+   "tag": "Hands-on wiring"
+  },
+  "icon": "PlugZap"
  },
  {
   "id": "hvac_technician",
@@ -1985,7 +2483,13 @@
   "minWeeks": 14,
   "sector": "trades",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Diagnosing and repairing equipment on site, often in awkward spaces.",
+   "source": "https://www.onetonline.org/link/summary/49-9021.01",
+   "tag": "Repairs on site"
+  },
+  "icon": "Snowflake"
  },
  {
   "id": "machinist",
@@ -2007,7 +2511,13 @@
   "minWeeks": 14,
   "sector": "trades",
   "requires": "spm",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Setting up machines and making precise parts by hand, adjusting as you go.",
+   "source": "https://www.onetonline.org/link/summary/51-4041.00",
+   "tag": "Precise handwork"
+  },
+  "icon": "Drill"
  },
  {
   "id": "welder",
@@ -2028,7 +2538,13 @@
   "minWeeks": 10,
   "sector": "trades",
   "requires": "spm",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Joining metal by hand in real conditions, where skill and safety cannot be automated cheaply.",
+   "source": "https://www.onetonline.org/link/summary/51-4121.06",
+   "tag": "Skilled handwork"
+  },
+  "icon": "Flame"
  },
  {
   "id": "machinery_mechanic",
@@ -2051,7 +2567,13 @@
   "minWeeks": 14,
   "sector": "trades",
   "requires": "diploma",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Diagnosing and fixing machines on the factory floor when production is stopped.",
+   "source": "https://www.onetonline.org/link/summary/49-9041.00",
+   "tag": "Fixes machines on site"
+  },
+  "icon": "Wrench"
  },
  {
   "id": "teacher_assistant",
@@ -2074,7 +2596,13 @@
   "minWeeks": 6,
   "sector": "education",
   "requires": "spm",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Supporting children in person, noticing who is struggling and keeping them going.",
+   "source": "https://www.onetonline.org/link/summary/25-9041.00",
+   "tag": "Supports children"
+  },
+  "icon": "School"
  },
  {
   "id": "instructional_coordinator",
@@ -2097,6 +2625,12 @@
   "minWeeks": 12,
   "sector": "education",
   "requires": "degree",
-  "closest": false
+  "closest": false,
+  "humanEdge": {
+   "text": "Working with teachers to improve how they teach and winning their buy-in.",
+   "source": "https://www.onetonline.org/link/summary/25-9031.00",
+   "tag": "Coaches teachers"
+  },
+  "icon": "GraduationCap"
  }
 ]
