@@ -56,10 +56,11 @@ export function MarketCard({ e }: { e: EventView }) {
       <div className="flex items-start gap-3">
         <EventIcon eventId={e.id} />
         <div className="min-w-0">
-          <p className="font-medium leading-snug">{e.title}</p>
+          <h3 className="font-semibold leading-snug">{e.short}</h3>
           <p className="text-xs text-muted">{topicOf(e.id).tag}{held ? " · you guessed here" : ""}</p>
         </div>
       </div>
+      <p className="mt-3 text-sm leading-relaxed text-muted">{e.title}</p>
       <div className="mt-4 space-y-3"><OptionRow s={e.strikes[1]} i={1} compact /></div>
       <p className="mt-2 text-xs text-muted">+{e.strikes.length - 1} harder and easier versions inside</p>
       {e.fact && <p className="num mt-3 text-xs text-muted">{e.fact}</p>}
@@ -100,7 +101,8 @@ export function FeaturedMarkets({ events }: { events: EventView[] }) {
           </div>
         )}
       </div>
-      <Link href={`/market/${encodeURIComponent(e.id)}`} className="mt-3 block text-2xl font-semibold leading-tight hover:underline sm:text-[1.75rem]">{e.title}</Link>
+      <h3><Link href={`/market/${encodeURIComponent(e.id)}`} className="mt-3 block text-2xl font-semibold leading-tight hover:underline sm:text-[1.75rem]">{e.short}</Link></h3>
+      <p className="mt-2 font-medium">{e.title}</p>
       <p className="mt-1 text-sm text-muted">{e.text}</p>
 
       <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">

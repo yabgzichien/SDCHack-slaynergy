@@ -186,6 +186,7 @@
   min-height:100vh;
 }
 .app-page-shell::before { opacity:.22; }
+.app-page-shell.has-career-pattern::before { opacity:.85; }
 .app-page-main { position:relative; width:min(calc(100% - 48px),1120px); min-height:55vh; margin:0 auto; padding:52px 0 92px; color:var(--ink); font-family:var(--font-instrument-sans),sans-serif; animation:public-enter .55s cubic-bezier(.2,.8,.2,1) both; }
 .app-page-main .greeting { font-family:'Libre Baskerville',Georgia,serif; line-height:1.2; letter-spacing:-.055em; }
 .app-page-footer { position:relative; display:grid; gap:8px; width:min(calc(100% - 48px),1120px); margin:0 auto; padding:28px 0 45px; border-top:1px solid var(--line); color:var(--muted); font-family:var(--font-instrument-sans),sans-serif; font-size:12px; line-height:1.6; }

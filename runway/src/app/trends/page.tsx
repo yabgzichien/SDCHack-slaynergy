@@ -4,6 +4,7 @@ import { useApp } from "@/components/AppProvider";
 import { useSpeed } from "@/components/useSpeed";
 import { AiCapability, JobGroupShares } from "@/components/AiTrendCharts";
 import { Card, H, PageTitle, SdgTag, Skeleton, SourceChip } from "@/components/ui";
+import { SourceDisclosure } from "@/components/SourceDisclosure";
 
 // One question: what is changing in the job market? Written for someone who has never read a chart like this.
 export default function TrendsPage() {
@@ -14,8 +15,8 @@ export default function TrendsPage() {
   const hist = w.clericalHistory.map((d) => ({ q: d.q.replace("Q", " Q"), share: d.share }));
   const last = hist[hist.length - 1];
   return (
-    <div>
-      <PageTitle title="How AI is changing jobs in Malaysia">
+    <div className="statistics-page">
+      <PageTitle title={<span className="statistics-headline-highlight">How AI is changing jobs in Malaysia</span>}>
         Which jobs are being hired more, which are being hired less, and how quickly AI is getting better. All numbers come from public government and research data. Each one says where it came from.
       </PageTitle>
 
@@ -34,7 +35,7 @@ export default function TrendsPage() {
           </ResponsiveContainer>
         </div>
         <p className="mt-2 text-sm text-muted">Line going down means fewer job ads are for office admin. DOSM changed what this series covers from 2025 Q3, so Jobbery compares demand only with quarters since then.</p>
-        <div className="mt-1"><SourceChip name="DOSM Job Market Insights" date={w.release ? "2026 Q2 release, 18 Aug 2026" : "to 2026 Q1"} url={r.sources.find((s) => s.name.startsWith("DOSM"))?.url} /></div>
+        <SourceDisclosure><SourceChip name="DOSM Job Market Insights" date={w.release ? "2026 Q2 release, 18 Aug 2026" : "to 2026 Q1"} url={r.sources.find((s) => s.name.startsWith("DOSM"))?.url} /></SourceDisclosure>
       </Card>
 
       <div className="mt-4"><JobGroupShares asOfQuarter={w.asOfQuarter} /></div>
@@ -72,7 +73,7 @@ export default function TrendsPage() {
           <ul className="space-y-1 text-sm">{r.rising.map((s) => <li key={s.skillId} className="flex justify-between gap-2"><span>{s.name}</span><SdgTag target={s.sdgTarget} /></li>)}</ul>
         </Card>
       </div>
-      <div className="mt-4 flex flex-col gap-1">{r.sources.map((s) => <SourceChip key={s.name} name={s.name} date={s.date} url={s.url} />)}</div>
+      <SourceDisclosure>{r.sources.map((s) => <SourceChip key={s.name} name={s.name} date={s.date} url={s.url} />)}</SourceDisclosure>
     </div>
   );
 }

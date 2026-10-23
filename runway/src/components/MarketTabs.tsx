@@ -11,7 +11,7 @@ const TABS = [
 export function MarketTabs({ rank }: { rank?: string | null }) {
   const path = usePathname();
   return (
-    <nav aria-label="Forecasting" className="mb-6 inline-flex rounded-2xl bg-surface2 p-1">
+    <nav aria-label="Forecasting" className="mb-3 flex w-fit rounded-2xl bg-surface2 p-1">
       {TABS.map((t) => {
         const on = path === t.href || path.startsWith(`${t.href}/`);
         return (

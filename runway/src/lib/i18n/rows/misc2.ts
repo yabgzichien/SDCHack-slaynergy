@@ -2,6 +2,8 @@ import type { Row } from "../index";
 
 // Goal labels, leaderboard summary, odds and ends found by checking every string in the source.
 export const MISC2: Row[] = [
+  ["View sources", "Lihat sumber", "查看来源", "ஆதாரங்களைக் காண்க"],
+  ["Hide sources", "Sembunyikan sumber", "隐藏来源", "ஆதாரங்களை மறைக்கவும்"],
   ["Social protection for all", "Perlindungan sosial untuk semua", "人人享有社会保护", "அனைவருக்கும் சமூகப் பாதுகாப்பு"],
   ["Health care and protection from health costs", "Penjagaan kesihatan dan perlindungan daripada kos kesihatan", "医疗保健及免受医疗费用冲击的保护", "சுகாதாரப் பராமரிப்பும் சுகாதாரச் செலவுகளிலிருந்து பாதுகாப்பும்"],
   ["Skills for decent jobs", "Kemahiran untuk pekerjaan yang bermaruah", "体面工作所需的技能", "கண்ணியமான வேலைகளுக்கான திறன்கள்"],

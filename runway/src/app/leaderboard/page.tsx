@@ -39,7 +39,7 @@ export default function LeaderboardPage() {
   const pinYou = kind === "all" && !shown.includes(you);
 
   return (
-    <div>
+    <div className="leaderboard-page">
       <MarketTabs rank={you.rank ? `#${you.rank}` : null} />
       <PageTitle title={you.rank ? `You are ${ord(you.rank)} out of ${ranked} players.` : "Who forecasts best?"}
         aside={<DemoLabel />}>

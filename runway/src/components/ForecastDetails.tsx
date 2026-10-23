@@ -13,13 +13,13 @@ export function ForecastDetails() {
   const r = w.replay;
 
   return (
-    <div>
-      <h2 id="how" className="mb-3 mt-10 text-xl font-medium">What all these guesses are for</h2>
+    <section id="how" className="forecast-section forecast-results" aria-labelledby="forecast-purpose-title">
+      <div className="forecast-section-heading"><h2 id="forecast-purpose-title">Why forecasts matter</h2></div>
       <p className="mb-3 text-sm text-muted">Nobody knows how fast AI will change jobs. Jobbery keeps three possible speeds in mind and uses the guesses and the real numbers to decide which is most likely. That decides the dates you see for your skills and jobs.</p>
 
       <Card tone="raised">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-base font-semibold">How fast is AI changing jobs? Our best guess</h2>
+          <h3 className="text-base font-semibold">The AI outlook</h3>
           {w.usingOverride ? <Chip tone="fall">You set these yourself</Chip> : <span className="text-sm text-muted">{w.release ? "Updated with the Apr to Jun 2026 numbers" : "Using numbers up to Mar 2026"}</span>}
         </div>
         <div className="mt-4"><FutureBar futures={w.futures} height={16} /></div>
@@ -35,13 +35,13 @@ export function ForecastDetails() {
           ))}
         </div>
         <div className="mt-4"><Estimate /></div>
-        <More summary="Where do these numbers come from?">
+        <More summary="How we calculate this">
           <ol className="list-decimal space-y-2 pl-5">
           <li>Each speed (slow, medium, fast) predicts what the next official numbers will be: Malaysian job ads and AI test scores.</li>
           <li>When the real numbers come out, the speed that predicted best becomes more likely.</li>
           <li>Before then, players guess on the questions above. Players who were right before count more.</li>
         </ol>
-        <More summary="For experts: exact settings and accuracy">
+        <More summary="Methods and accuracy">
           <ul className="list-disc space-y-1 pl-5">
             {w.futures.map((f) => <li key={f.id}><span className="text-ink">{f.name}:</span> {f.blurb}</li>)}
           </ul>
@@ -66,7 +66,7 @@ export function ForecastDetails() {
       </Card>
 
       <details className="mt-4 rounded-[22px] bg-surface p-5 sm:p-6">
-        <summary className="min-h-11 cursor-pointer py-2 font-medium">Disagree? Set the speeds yourself</summary>
+        <summary className="min-h-11 cursor-pointer py-2 font-semibold">Set your own outlook</summary>
         <p className="text-sm text-muted">Your choice changes every skill date, job score and your plan, and is marked as yours. The three always add up to 100%.</p>
         <div className="mt-4 grid gap-4 sm:grid-cols-3">
           {(["slow", "medium", "fast"] as const).map((k) => (
@@ -82,6 +82,6 @@ export function ForecastDetails() {
         </div>
       </details>
 
-    </div>
+    </section>
   );
 }

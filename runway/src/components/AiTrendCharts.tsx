@@ -2,6 +2,7 @@
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { series, sourceById, type DosmQuarter } from "@/lib/engine/data";
 import { Card, H, SourceChip } from "@/components/ui";
+import { SourceDisclosure } from "@/components/SourceDisclosure";
 
 // DOSM job groups are ISCO-08 major groups, so each group's exposure is the mean ILO score of its 4-digit occupations.
 const GROUPS: { key: keyof DosmQuarter; label: string; isco: string }[] = [
@@ -60,10 +61,10 @@ export function JobGroupShares({ asOfQuarter }: { asOfQuarter: string }) {
         })}
       </div>
       <p className="mt-2 text-sm text-muted">From 2023 to {qLabel(asOfQuarter)}. The government changed how it counts job ads in 2025 Q3, so a sudden jump there may not be real. &quot;AI can do&quot; is based on a 2025 UN study (ILO) of what AI is able to do in each job, not what companies have actually done yet.</p>
-      <div className="mt-1 flex flex-col gap-1">
+      <SourceDisclosure>
         <SourceChip name="DOSM Job Market Insights" date={`to ${qLabel(asOfQuarter)}`} url={sourceById.dosm.url} />
         <SourceChip name="ILO (UN labour agency) study of AI and jobs" date="2025 scores" url={sourceById.ilo.url} />
-      </div>
+      </SourceDisclosure>
     </Card>
   );
 }
@@ -124,7 +125,7 @@ export function AiCapability({ asOfQuarter }: { asOfQuarter: string }) {
       <p className="mt-2 text-sm text-muted">
         {summary} Scores are out of 100.
       </p>
-      <div className="mt-1"><SourceChip name="Epoch AI (AI test results)" date={`to ${qLabel(asOfQuarter)}`} url={sourceById.epoch.url} /></div>
+      <SourceDisclosure><SourceChip name="Epoch AI (AI test results)" date={`to ${qLabel(asOfQuarter)}`} url={sourceById.epoch.url} /></SourceDisclosure>
     </Card>
   );
 }
