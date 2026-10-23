@@ -30,10 +30,3 @@ export function futureWeights(scores: Scores, tilt: Scores): Weights3 {
   return out;
 }
 
-export function normaliseOverride(w: Partial<Weights3>): Weights3 {
-  const v = FUTURE_IDS.map((id) => Math.max(0, Number(w[id] ?? 0)));
-  const z = v.reduce((a, b) => a + b, 0) || 1;
-  const out = {} as Weights3;
-  FUTURE_IDS.forEach((id, i) => (out[id] = v[i] / z));
-  return out;
-}

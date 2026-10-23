@@ -5,7 +5,7 @@ import { useApp } from "./AppProvider";
 const STAGES = [
   "Loading the real Apr to Jun 2026 job numbers (published 18 Aug 2026)",
   "Checking every question against the real numbers",
-  "Scoring every player's guesses, yours too",
+  "Scoring every player's predictions, yours too",
   "Updating how fast we think AI is moving",
   "Updating your skills, jobs and plan",
 ];

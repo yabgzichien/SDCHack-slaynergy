@@ -346,7 +346,6 @@ function WorkerDetails({ data }: { data: Worker }) {
         <H sub="Weights are estimates from the prediction market.">The futures behind this advice</H>
         <FutureBar futures={view.world.futures} />
         <ul className="mt-2 space-y-1 text-sm">{view.world.futures.map((f) => <li key={f.id} className="flex justify-between"><span>{f.name}</span><b className="num">{pct(f.weight)}</b></li>)}</ul>
-        {view.world.usingOverride && <p className="mt-2 text-sm text-fall">The worker set their own weights.</p>}
         <div className="mt-2"><DemoLabel /></div>
         <div className="mt-3"><Estimate /></div>
       </Card>

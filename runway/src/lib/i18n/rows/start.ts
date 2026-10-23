@@ -46,7 +46,7 @@ export const START: Row[] = [
   ["Dismiss", "Tolak", "忽略", "நிராகரி"],
   ["Loading the real Apr to Jun 2026 job numbers (published 18 Aug 2026)", "Memuatkan angka pekerjaan sebenar Apr hingga Jun 2026 (diterbitkan 18 Ogos 2026)", "正在加载 2026 年 4 月至 6 月的真实就业数字（2026 年 8 月 18 日发布）", "ஏப்ரல் முதல் ஜூன் 2026 வரையிலான உண்மை வேலை எண்களை ஏற்றுகிறது (18 ஆகஸ்ட் 2026 அன்று வெளியிடப்பட்டது)"],
   ["Checking every question against the real numbers", "Menyemak setiap soalan dengan angka sebenar", "正在用真实数字核对每个问题", "ஒவ்வொரு கேள்வியையும் உண்மை எண்களுடன் சரிபார்க்கிறது"],
-  ["Scoring every player's guesses, yours too", "Menilai tekaan setiap pemain, termasuk anda", "正在为每位玩家的猜测评分，包括你的", "ஒவ்வொரு வீரரின் யூகங்களையும், உங்களுடையதையும் மதிப்பிடுகிறது"],
+  ["Scoring every player's predictions, yours too", "Menilai ramalan setiap pemain, termasuk anda", "正在为每位玩家的预测评分，包括你的", "ஒவ்வொரு வீரரின் கணிப்புகளையும், உங்களுடையதையும் மதிப்பிடுகிறது"],
   ["Updating how fast we think AI is moving", "Mengemas kini anggaran kami tentang betapa pantas AI bergerak", "正在更新我们对 AI 进步速度的判断", "AI எவ்வளவு வேகமாக நகர்கிறது என்ற எங்கள் கணிப்பைப் புதுப்பிக்கிறது"],
   ["Updating your skills, jobs and plan", "Mengemas kini kemahiran, pekerjaan dan pelan anda", "正在更新你的技能、工作和计划", "உங்கள் திறன்கள், வேலைகள் மற்றும் திட்டத்தைப் புதுப்பிக்கிறது"],
   // Onboarding

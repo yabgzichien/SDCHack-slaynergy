@@ -302,7 +302,7 @@ The date shown is the average of the three futures, weighted by how likely each 
 
 - In the replay of real past releases, the market only just beats a coin flip (Brier 0.242 vs 0.25). One quarter's change is hard to call. The market's main job is to **score the futures in public against official numbers**.
 - The crowd's forecasts for open questions are **hashed into the repo before the data comes out** (`runway/anchors/`), so nobody, including us, can change them afterwards.
-- Every screen shows "these are estimates, not certainties", and the worker can set the future weights themselves.
+- Every screen shows "these are estimates, not certainties", and the worker can switch between slow, medium and fast to see their dates under each. To disagree with the chances, they guess on an open question, and that guess is scored like everyone else's.
 - **Points only, never money.** Gambling law, Muslim users and financially vulnerable users all rule out real money.
 
 ---

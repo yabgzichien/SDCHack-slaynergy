@@ -857,3 +857,13 @@ describe("plan order and step ticks", () => {
     expect(booked.pathway.done.resume).toBe(true);
   });
 });
+
+describe("the market keeps moving in long sessions", () => {
+  it("simulated players still trade hours after the session started", () => {
+    const w0 = replayHistory().weights;
+    const q = ladder(liveQuestions("live").find((x) => x.id === "swe-2026Q2")!)[1];
+    const at = (h: number) => runTape(q, w0, "long", [], h * 3600);
+    expect(at(5).trades).toBeGreaterThan(at(3).trades);
+    expect(at(5).series.some((p) => p.t > 4 * 3600)).toBe(true);
+  });
+});

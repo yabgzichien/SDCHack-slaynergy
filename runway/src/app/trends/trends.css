@@ -1,0 +1,43 @@
+:is(.statistics-page, .forecast-page, .leaderboard-page) :is(h1, h2, h3) {
+  font-family: var(--font-instrument-sans), sans-serif;
+  font-weight: 700;
+}
+
+.app-page-main:has(> .forecast-page, > .leaderboard-page) {
+  padding-top: 24px;
+}
+
+.app-page-main :is(.statistics-page, .forecast-page, .leaderboard-page) h1.greeting {
+  font-family: var(--font-instrument-sans), sans-serif;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.045em;
+}
+
+:is(.statistics-page, .forecast-page) > header {
+  justify-content: center;
+  text-align: center;
+}
+
+:is(.statistics-page, .forecast-page) > header > div:first-child {
+  width: 100%;
+  max-width: 64rem;
+}
+
+:is(.statistics-page, .forecast-page) > header p {
+  max-width: 52rem;
+  margin-inline: auto;
+}
+
+.forecast-page > header > div:last-child:not(:first-child) {
+  width: 100%;
+  text-align: center;
+}
+
+.statistics-headline-highlight {
+  padding-inline: 0.06em;
+  border-radius: 0.06em;
+  background: linear-gradient(transparent 58%, #f8c982 58%, #f8c982 94%, transparent 94%);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}

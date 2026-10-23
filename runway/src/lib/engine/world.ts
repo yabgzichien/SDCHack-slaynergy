@@ -1,6 +1,6 @@
 import { series } from "./data";
 import { FUTURES, FUTURE_IDS, type FutureId } from "./futures-def";
-import { crowdTilt, futureWeights, normaliseOverride, type Weights3 } from "./futures";
+import { crowdTilt, futureWeights, type Weights3 } from "./futures";
 import { FORECASTERS, KIND_LABEL, brier, forecasterName, updateWeights, START_BALANCE, type Kind, type MarketRun, type Weights } from "./market";
 import { liveQuestions, replayHistory, updateScores } from "./replay";
 import { eventTitle, factFor, ladder, type Question, type Strike } from "./questions";
@@ -25,7 +25,7 @@ export type EventView = {
 };
 // You are scored like every simulated forecaster: on each question's headline line (the middle strike).
 // Your forecast there is the chance you left the market at after your last trade; no trade counts as 50%.
-export const MAX_ORDER = 50; // points per guess at normal influence; at most double that for the most accurate players
+export const MAX_ORDER = 50; // points per prediction at normal influence; at most double that for the most accurate players
 export type YouStats = {
   forecasts: { eventId: string; title: string; forecast: number | null; outcome: boolean | null }[];
   brier: number | null; scored: number; traded: number; influenceBefore: number; influence: number; maxOrder: number;
@@ -40,7 +40,6 @@ export type World = {
   settledEvents: EventView[];
   futures: { id: FutureId; name: string; blurb: string; weight: number; earned: number; tilt: number; capMult: number; adoptMult: number; drift: number }[];
   weights: Weights3;
-  usingOverride: boolean;
   scores: Record<FutureId, number>;
   forecasters: ForecasterRow[];
   kindSummary: { kind: string; count: number; influence: number }[];
@@ -85,8 +84,8 @@ export function computeWorld(state: SessionState, nowMs: number = Date.now()): W
     return { eventId: e.q.id, title: eventTitle(e.q), forecast: ex.length ? ex[ex.length - 1].priceAfter : null, outcome: released ? e.strikes[1].outcome ?? null : null };
   });
   // Rank and influence use the same score: every headline question counts, and one you did not trade counts as 50%.
-  // You are scored on a release only if you guessed on it. Sessions start after the 2026 Q2 release, so nobody can
-  // guess on it now; your record starts with the questions still open.
+  // You are scored on a release only if you made a prediction on it. Sessions start after the 2026 Q2 release, so nobody can
+  // predict on it now; your record starts with the questions still open.
   const traded = yourForecasts.filter((f) => f.forecast !== null).length;
   const scoredYou = released && traded > 0;
   const yourLoss = scoredYou ? yourForecasts.reduce((a, f) => a + brier(f.forecast ?? 0.5, f.outcome!), 0) : 0;
@@ -108,14 +107,13 @@ export function computeWorld(state: SessionState, nowMs: number = Date.now()): W
   });
   const tilt = crowdTilt(openBase);
   const stored = futureWeights(S, { slow: 0, medium: 0, fast: 0 });
-  const shown = futureWeights(S, tilt);
-  const weights = state.override ? normaliseOverride(state.override) : shown;
+  const weights = futureWeights(S, tilt);
   // "What if?": settle one open question's main answer as Yes or No, keep the crowd's tilt from the others.
   const whatIf: Record<string, EventView["whatIf"]> = {};
   openBase.forEach((r, i) => {
     const rest = crowdTilt(openBase.filter((_, j) => j !== i));
     const settle = (o: boolean) => futureWeights(updateScores(S, [{ ...r, q: { ...r.q, outcome: o } }]), rest);
-    whatIf[open.events[i].q.id] = { now: shown, yes: settle(true), no: settle(false) };
+    whatIf[open.events[i].q.id] = { now: weights, yes: settle(true), no: settle(false) };
   });
 
   const t20 = top20(W);
@@ -193,10 +191,10 @@ export function computeWorld(state: SessionState, nowMs: number = Date.now()): W
     asOfLabel: released ? `DOSM 2026 Q2 (published 18 Aug 2026)` : `DOSM 2026 Q1; 2026 Q2 release held back`,
     events, settledEvents: settledOut,
     futures: FUTURES.map((f) => ({
-      id: f.id, name: f.name, blurb: f.blurb, weight: weights[f.id], earned: stored[f.id], tilt: shown[f.id] - stored[f.id],
+      id: f.id, name: f.name, blurb: f.blurb, weight: weights[f.id], earned: stored[f.id], tilt: weights[f.id] - stored[f.id],
       capMult: f.capMult, adoptMult: f.adoptMult, drift: f.clericalDriftPp,
     })),
-    weights, usingOverride: !!state.override, scores: S, forecasters, kindSummary,
+    weights, scores: S, forecasters, kindSummary,
     user: { balance: START_BALANCE + netCash + won, netCash, won, rank, of: Object.keys(roi).length + 1, roi: userRoi, orders, positionValue },
     clericalHistory: series.dosm.quarters.filter((d) => d.q >= "2023Q1" && d.q <= asOfQuarter).map((d) => ({ q: d.q, share: d.clerical_share })),
     replay: { questions: base.stats.questions, brierLmsr: base.stats.brierLmsr, brierWeighted: base.stats.brierWeightedMean, brierUnweighted: base.stats.brierUnweighted, brierCoin: base.stats.brierCoin, brierBaseRate: base.stats.brierBaseRate,

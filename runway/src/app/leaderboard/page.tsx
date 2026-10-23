@@ -5,9 +5,13 @@ import { useApp } from "@/components/AppProvider";
 import { Btn, Card, DemoLabel, H, More, PageTitle, Skeleton } from "@/components/ui";
 import type { Leaderboard, LeaderRow } from "@/lib/engine/world";
 import { MarketTabs } from "@/components/MarketTabs";
+import { ChevronRight, Trophy, UserRound } from "lucide-react";
 
-const KIND_TONE: Record<string, string> = { expert: "var(--accent)", sceptic: "var(--ink)", chaser: "var(--muted)", optimist: "var(--control)", noisy: "var(--control)" };
-const KIND_DASH: Record<string, string | undefined> = { optimist: "4 3", chaser: "1 3" };
+// One colour per kind of player, shared by the chart, the table and the filter chips.
+const KIND_TONE: Record<string, string> = { expert: "#3f7fc4", sceptic: "#6a5fc1", chaser: "#d08a1e", optimist: "#c4614a", noisy: "#8a94a3" };
+const KIND_DASH: Record<string, string | undefined> = {};
+const MEDAL = ["#e0a92e", "#9aa6b2", "#c07a45"];
+const kindKey = (lb: Leaderboard, label: string) => lb.kinds.find((k) => k.label === label)?.kind ?? "";
 const ord = (n: number) => `${n}${n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] ?? "th"}`;
 
 // One question: whose forecasts count most, and why?
@@ -38,80 +42,64 @@ export default function LeaderboardPage() {
   const shown = all ? rows : top;
   const pinYou = kind === "all" && !shown.includes(you);
 
+  const podium = lb.rows.filter((r) => r.rank !== null && !r.you).slice(0, 3);
+
   return (
-    <div>
+    <div className="leaderboard-page">
       <MarketTabs rank={you.rank ? `#${you.rank}` : null} />
-      <PageTitle title={you.rank ? `You are ${ord(you.rank)} out of ${ranked} players.` : "Who forecasts best?"}
-        aside={<DemoLabel />}>
-        Players who were right more often get a bigger vote in Jobbery&apos;s forecast. Every computer-made player earned its record on {lb.track.questions} real past releases, {quarter(lb.track.from)} to {quarterEnd(lb.track.to)}, scored in order before you arrived.
+      <PageTitle title={you.rank ? `You are ${ord(you.rank)} of ${ranked} players` : "Who predicts best?"} aside={<DemoLabel />}>
+        Players who are right more often get a bigger vote in Jobbery&apos;s forecast.
       </PageTitle>
 
-      <Card>
-        <H sub={`Everyone started with a normal vote (1×). After ${lb.track.quarters} quarters of real releases: ${best.label}s count ${best.influence.toFixed(1)}×, ${worst.label}s ${worst.influence.toFixed(2)}×.`}>Which kind of player earned the vote</H>
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_17rem]">
-          <div className="h-64 min-w-0" role="img" aria-label="Line chart: how much each type of player's vote counted, quarter by quarter">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={history} margin={{ left: -16, right: 8, top: 8 }}>
-                <CartesianGrid stroke="var(--line)" vertical={false} />
-                <XAxis dataKey="q" tick={{ fontSize: 11, fill: "var(--muted)" }} interval="preserveStartEnd" minTickGap={24} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: "var(--muted)" }} axisLine={false} tickLine={false} />
-                <Tooltip formatter={(v, n) => [`${Number(v).toFixed(2)}×`, lb.kinds.find((k) => k.kind === n)?.label ?? String(n)]} contentStyle={{ background: "var(--raised)", border: "1px solid var(--line)", borderRadius: 12 }} />
-                {lb.kinds.map((k) => <Line key={k.kind} dataKey={k.kind} type="monotone" stroke={KIND_TONE[k.kind]} strokeDasharray={KIND_DASH[k.kind]} strokeWidth={k.kind === best.kind ? 2.5 : 1.5} dot={false} isAnimationActive={false} />)}
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-          <table className="num self-center text-sm">
-            <caption className="sr-only">Average Brier score and influence by type</caption>
-            <thead><tr className="text-left text-xs text-muted"><th className="pb-1 font-normal">Type</th><th className="pb-1 text-right font-normal">Error score</th><th className="pb-1 text-right font-normal">Vote</th></tr></thead>
-            <tbody>
-              {[...lb.kinds].sort((a, b) => a.brier - b.brier).map((k) => (
-                <tr key={k.kind}>
-                  <td className="py-1 pr-3"><span className="inline-flex items-center gap-2"><svg width="18" height="6" aria-hidden><line x1="0" y1="3" x2="18" y2="3" stroke={KIND_TONE[k.kind]} strokeWidth={k.kind === best.kind ? 2.5 : 1.5} strokeDasharray={KIND_DASH[k.kind]} /></svg>{k.label}s ({k.count})</span></td>
-                  <td className="py-1 pr-3 text-right">{k.brier.toFixed(3)}</td>
-                  <td className="py-1 text-right">{k.influence.toFixed(2)}×</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <More summary="Why do careful experts win?">
-          <p>Each type reads the same public data in its own way. Careful experts were built to know one extra thing: AI test scores close to 100% cannot keep rising at the old pace. Nobody told the scoring rule which type that was. It found them from their results alone, which is the check that the rule works.</p>
-          <p>The other players are computer-made for this demo. In real use, advisors, HR teams and job seekers would take their place and earn their vote the same way.</p>
-        </More>
-      </Card>
-
-      <div className="my-4 grid gap-4 lg:grid-cols-2">
-        <Card tone={you.rank ? "accent" : undefined}>
-          <H>You</H>
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
+        <Card tone="raised" className="ring-2 ring-cue">
+          <p className="mb-3 flex items-center gap-2 text-sm font-semibold text-cueink"><span className="grid size-7 place-items-center rounded-full bg-cue text-white"><UserRound size={15} aria-hidden /></span>Your score</p>
           {you.brier === null ? (
-            <p className="text-sm">You start with a normal vote (1×). Your guesses are scored when the real numbers come out: DOSM on 17 Nov 2026 for the job question, Epoch AI in Jan 2027 for the AI questions. An open question you skip counts as a 50/50 guess.</p>
+            <>
+              <p className="text-2xl font-semibold leading-tight">Not scored yet</p>
+              <p className="mt-2 text-sm text-muted">You start with a normal vote (1×). Your predictions are scored when the real numbers come out: DOSM on 17 Nov 2026, Epoch AI in Jan 2027. A question you skip counts as a 50/50 prediction.</p>
+            </>
           ) : (
-            <dl className="num space-y-1.5 text-sm">
-              <div className="flex justify-between"><dt className="text-muted">Rank</dt><dd>{you.rank} of {ranked}</dd></div>
-              <div className="flex justify-between"><dt className="text-muted">Error score (0 is perfect)</dt><dd>{you.brier.toFixed(3)}</dd></div>
-              <div className="flex justify-between"><dt className="text-muted">Questions you guessed on</dt><dd>{view.world.you.traded} of {you.questions}</dd></div>
-              <div className="flex justify-between"><dt className="text-muted">Your vote counts</dt><dd>{you.influence.toFixed(2)}×</dd></div>
-              <div className="flex justify-between"><dt className="text-muted">Most points per guess</dt><dd>{view.world.you.maxOrder} points</dd></div>
-            </dl>
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="rounded-2xl bg-cuesoft p-3"><p className="num text-2xl font-bold text-cueink">#{you.rank}</p><p className="text-xs text-muted">of {ranked}</p></div>
+              <div className="rounded-2xl bg-lanelearnsoft p-3"><p className="num text-2xl font-bold text-lanelearnink">{you.brier.toFixed(3)}</p><p className="text-xs text-muted">error score</p></div>
+              <div className="rounded-2xl bg-risesoft p-3"><p className="num text-2xl font-bold text-rise">{you.influence.toFixed(2)}×</p><p className="text-xs text-muted">your vote</p></div>
+            </div>
           )}
-          <div className="mt-3"><Btn href="/market" variant="ghost">Make a guess</Btn></div>
+          {you.brier !== null && <p className="num mt-3 text-sm text-muted">You made predictions on {view.world.you.traded} of {you.questions} questions · up to {view.world.you.maxOrder} points per prediction.</p>}
+          <div className="mt-4"><Btn href="/market#open-questions">Make a prediction <ChevronRight size={16} aria-hidden /></Btn></div>
         </Card>
+
         <Card>
-          <H>How the vote works</H>
-          <p className="text-sm">Each time real numbers come out, players who were sure and right keep their vote, and players who were sure and wrong lose most of it. A bigger vote means more points to guess with, so good players move the Yes % more. No one can count more than {lb.influenceMax}× a normal vote.</p>
-          <More summary="For experts: the formula">
-            <p>Each forecaster&apos;s influence is multiplied by e<sup>−{lb.eta}×Brier</sup> when a question settles. One common scale is then chosen so the crowd averages 1 with every forecaster between 0.05× and {lb.influenceMax}×. This is the Hedge rule, an online-learning method for combining forecasters.</p>
-            <p>Brier score: the average squared gap between the chance given and what happened. 0 is perfect; always saying 50% scores 0.25.</p>
-          </More>
+          <p className="mb-3 flex items-center gap-2 text-sm font-semibold"><Trophy size={18} aria-hidden className="text-gold" />Top 3</p>
+          <ol className="grid grid-cols-3 items-end gap-2">
+            {[1, 0, 2].map((i) => {
+              const r = podium[i];
+              if (!r) return <li key={i} />;
+              return (
+                <li key={r.id} className="flex flex-col items-center text-center">
+                  <span className="grid size-12 place-items-center rounded-full text-lg font-bold text-white shadow-[0_3px_10px_rgb(0_0_0/0.18)]" style={{ background: MEDAL[i] }}>{i + 1}</span>
+                  <p className="mt-2 text-sm font-medium">Player {r.id.slice(1)}</p>
+                  <p className="text-xs font-medium" style={{ color: KIND_TONE[kindKey(lb, r.kind)] }}>{r.kind}</p>
+                  <div className="mt-2 w-full rounded-t-xl px-2 pt-2 text-white" style={{ background: MEDAL[i], height: [96, 72, 56][i] }}>
+                    <p className="num text-sm font-bold">{r.influence.toFixed(2)}×</p>
+                    <p className="text-[10px] opacity-90">vote</p>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
         </Card>
       </div>
 
-      <Card className="min-w-0">
+      <Card className="mt-4 min-w-0">
         <h2 className="mb-3 text-base font-semibold">{all ? "Every player, best first" : "Top 10"}</h2>
         <div className="scroll-x -mx-1 mb-3 flex gap-1.5 px-1 pb-1" role="group" aria-label="Filter by type">
-          {[{ id: "all", label: "Everyone" }, { id: "you", label: "You" }, ...lb.kinds.map((k) => ({ id: k.kind, label: `${k.label}s` }))].map((f) => (
+          {[{ id: "all", label: "Everyone", tone: "" }, { id: "you", label: "You", tone: "var(--cue)" }, ...lb.kinds.map((k) => ({ id: k.kind, label: `${k.label}s`, tone: KIND_TONE[k.kind] }))].map((f) => (
             <button key={f.id} onClick={() => { setKind(f.id); setAll(false); }} aria-pressed={kind === f.id}
-              className={`press min-h-9 shrink-0 whitespace-nowrap rounded-full px-3 text-sm ${kind === f.id ? "bg-primary text-primaryink" : "bg-surface2 hover:bg-control/60"}`}>{f.label}</button>
+              className={`press inline-flex min-h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 text-sm ${kind === f.id ? "bg-ink text-white" : "bg-surface2 hover:bg-control/60"}`}>
+              {f.tone && <span className="size-2.5 rounded-full" style={{ background: f.tone }} aria-hidden />}{f.label}
+            </button>
           ))}
         </div>
         <div className="scroll-x">
@@ -128,32 +116,75 @@ export default function LeaderboardPage() {
               </tr>
             </thead>
             <tbody>
-              {shown.map((r) => <RowView key={r.id} r={r} released={lb.released} max={lb.influenceMax} />)}
-              {pinYou && <RowView r={you} released={lb.released} max={lb.influenceMax} />}
+              {shown.map((r) => <RowView key={r.id} r={r} released={lb.released} max={lb.influenceMax} tone={KIND_TONE[kindKey(lb, r.kind)]} />)}
+              {pinYou && <RowView r={you} released={lb.released} max={lb.influenceMax} tone="var(--cue)" />}
             </tbody>
           </table>
         </div>
         {rows.length > 10 && <div className="mt-3"><Btn variant="quiet" onClick={() => setAll(!all)}>{all ? "Show the top 10" : `Show all ${rows.length}`}</Btn></div>}
-        <p className="mt-3 text-sm text-muted">Error score: how far a player&apos;s guesses were from what really happened. 0 is perfect; always guessing 50/50 scores 0.25. Computer-made players are scored on {lb.track.questions} past questions with real answers{lb.released ? ", plus the Apr to Jun 2026 numbers" : ""}.</p>
+        <p className="mt-3 text-sm text-muted">Error score: how far predictions were from what really happened. 0 is perfect; always predicting 50/50 scores 0.25. Computer-made players earned their record on {lb.track.questions} real past releases, {quarter(lb.track.from)} to {quarterEnd(lb.track.to)}{lb.released ? ", plus the Apr to Jun 2026 numbers" : ""}.</p>
+      </Card>
+
+      <Card className="mt-4">
+        <H sub={`Everyone started at 1×. After ${lb.track.quarters} quarters of real releases: ${best.label}s count ${best.influence.toFixed(1)}×, ${worst.label}s ${worst.influence.toFixed(2)}×.`}>Which kind of player wins</H>
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_17rem]">
+          <div className="h-64 min-w-0" role="img" aria-label="Line chart: how much each type of player's vote counted, quarter by quarter">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={history} margin={{ left: -16, right: 8, top: 8 }}>
+                <CartesianGrid stroke="var(--line)" vertical={false} />
+                <XAxis dataKey="q" tick={{ fontSize: 11, fill: "var(--muted)" }} interval="preserveStartEnd" minTickGap={24} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: "var(--muted)" }} axisLine={false} tickLine={false} />
+                <Tooltip formatter={(v, n) => [`${Number(v).toFixed(2)}×`, lb.kinds.find((k) => k.kind === n)?.label ?? String(n)]} contentStyle={{ background: "var(--raised)", border: "1px solid var(--line)", borderRadius: 12 }} />
+                {lb.kinds.map((k) => <Line key={k.kind} dataKey={k.kind} type="monotone" stroke={KIND_TONE[k.kind]} strokeDasharray={KIND_DASH[k.kind]} strokeWidth={k.kind === best.kind ? 3 : 1.8} dot={false} isAnimationActive={false} />)}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+          <ul className="space-y-1.5 self-center text-sm">
+            {[...lb.kinds].sort((a, b) => b.influence - a.influence).map((k) => (
+              <li key={k.kind} className="flex items-center justify-between gap-3 rounded-xl px-3 py-2" style={{ background: `${KIND_TONE[k.kind]}18` }}>
+                <span className="inline-flex items-center gap-2 font-medium" style={{ color: KIND_TONE[k.kind] }}><span className="size-2.5 rounded-full" style={{ background: KIND_TONE[k.kind] }} aria-hidden />{k.label}s <span className="font-normal text-muted">({k.count})</span></span>
+                <span className="num font-semibold">{k.influence.toFixed(2)}×</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <More summary="Why do careful experts win?">
+          <p>Each type reads the same public data in its own way. Careful experts were built to know one extra thing: AI test scores close to 100% cannot keep rising at the old pace. Nobody told the scoring rule which type that was. It found them from their results alone, which is the check that the rule works.</p>
+          <p>The other players are computer-made for this demo. In real use, advisors, HR teams and job seekers would take their place and earn their vote the same way.</p>
+        </More>
+      </Card>
+
+      <Card className="mt-4" tone="accent">
+        <H>How the vote works</H>
+        <ol className="grid gap-2 text-sm sm:grid-cols-3">
+          <li className="rounded-2xl bg-white/70 p-3"><b className="text-lanelearnink">1. Predict.</b> Put points on Yes or No before the real numbers come out.</li>
+          <li className="rounded-2xl bg-white/70 p-3"><b className="text-laneaiink">2. Get scored.</b> Sure and right keeps your vote; sure and wrong loses most of it.</li>
+          <li className="rounded-2xl bg-white/70 p-3"><b className="text-rise">3. Count more.</b> A bigger vote means more points per prediction, up to {lb.influenceMax}× a normal vote.</li>
+        </ol>
+        <More summary="For experts: the formula">
+          <p>Each forecaster&apos;s influence is multiplied by e<sup>−{lb.eta}×Brier</sup> when a question settles. One common scale is then chosen so the crowd averages 1 with every forecaster between 0.05× and {lb.influenceMax}×. This is the Hedge rule, an online-learning method for combining forecasters.</p>
+          <p>Brier score: the average squared gap between the chance given and what happened. 0 is perfect; always saying 50% scores 0.25.</p>
+        </More>
       </Card>
     </div>
   );
 }
 
-function RowView({ r, released, max }: { r: LeaderRow; released: boolean; max: number }) {
+function RowView({ r, released, max, tone }: { r: LeaderRow; released: boolean; max: number; tone?: string }) {
   const d = r.influence - r.influenceBefore;
+  const medal = r.rank !== null && r.rank <= 3 && !r.you ? MEDAL[r.rank - 1] : null;
   return (
-    <tr className={`border-t border-line ${r.you ? "bg-accentsoft" : ""}`}>
-      <td className="num py-2.5 pr-2">{r.rank ?? "–"}</td>
+    <tr className={`border-t border-line ${r.you ? "bg-cuesoft font-medium" : ""}`}>
+      <td className="num py-2.5 pr-2">{medal ? <span className="grid size-7 place-items-center rounded-full text-xs font-bold text-white" style={{ background: medal }}>{r.rank}</span> : r.rank ?? "–"}</td>
       <td className="py-2.5 pr-2">
-        <p className={r.you ? "font-medium" : ""}>{r.you ? "You" : `Player ${r.id.slice(1)}`}</p>
-        <p className="text-xs text-muted">{r.you ? "Skipped questions count as 50/50" : r.kind}</p>
+        <p className="flex items-center gap-2">{tone && <span className="size-2.5 shrink-0 rounded-full" style={{ background: tone }} aria-hidden />}{r.you ? "You" : `Player ${r.id.slice(1)}`}</p>
+        <p className="text-xs" style={{ color: r.you ? undefined : tone }}>{r.you ? "Skipped questions count as 50/50" : r.kind}</p>
       </td>
       <td className="num py-2.5 pr-2 text-right">{r.brier === null ? "–" : r.brier.toFixed(3)}</td>
       <td className="num hidden py-2.5 pr-2 text-right sm:table-cell">{r.questions}</td>
       <td className="py-2.5 pr-2">
         <div className="flex items-center gap-2">
-          <div className="hidden h-1.5 w-20 rounded-full bg-surface2 sm:block" aria-hidden><div className="h-full rounded-full bg-accent" style={{ width: `${Math.min(1, r.influence / max) * 100}%` }} /></div>
+          <div className="hidden h-1.5 w-20 rounded-full bg-surface2 sm:block" aria-hidden><div className="h-full rounded-full" style={{ width: `${Math.min(1, r.influence / max) * 100}%`, background: tone ?? "var(--accent)" }} /></div>
           <span className="num">{r.influence.toFixed(2)}×</span>
         </div>
       </td>

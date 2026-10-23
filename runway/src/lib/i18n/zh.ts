@@ -27,7 +27,7 @@ export const zh: Record<string, string> = {
 
   "About you": "关于你", "You": "你",
   "Your skills": "你的技能", "Skills": "技能",
-  "Jobs for you": "适合你的工作", "Jobs": "工作",
+  "Suggested jobs": "适合你的工作", "Jobs": "工作",
   "Job map": "职位地图", "Map": "地图",
   "Your plan": "你的计划", "Plan": "计划",
   "Your steps": "你的步骤",
@@ -39,7 +39,7 @@ export const zh: Record<string, string> = {
 
   "Job figures up to June 2026 (DOSM, published 18 Aug 2026). Next: 17 Nov 2026.": "就业数据截至 2026 年 6 月（DOSM，2026 年 8 月 18 日发布）。下次更新：2026 年 11 月 17 日。",
   "What the latest figures changed": "最新数据带来了哪些变化",
-  "Estimates, not certainties. You decide; an advisor is there if you want one. The guessing game uses points, never money, and the other players are computer-made.": "这些是估计，不是定论。决定权在你；如有需要，可以找顾问协助。猜测游戏只用积分，绝不涉及金钱，其他玩家均由电脑生成。",
+  "Estimates, not certainties. You decide; an advisor is there if you want one. The prediction game uses points, never money, and the other players are computer-made.": "这些是估计，不是定论。决定权在你；如有需要，可以找顾问协助。预测游戏只用积分，绝不涉及金钱，其他玩家均由电脑生成。",
   "SDC Hackathon 2026, Domain 1. Apache-2.0.": "SDC 黑客松 2026，领域 1。Apache-2.0。",
 
   "Skip intro": "跳过开场",

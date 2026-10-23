@@ -11,8 +11,9 @@ import { moveAllowance, moveLimit } from "../market-math";
 // Everything is a deterministic function of (question, influence weights, your orders, now): no hidden randomness.
 
 export const HISTORY_SECONDS = 6 * 3600;
-const LIVE_EVENTS = 700;
+const LIVE_EVENTS = 700; // generated up front; more are added on demand as the session clock runs (see extendLive)
 const MEAN_GAP = 6; // seconds between simulated live trades
+const LIVE_LIMIT_S = 7 * 24 * 3600; // simulated players keep trading for a week of session time
 export const TAPE_LIQUIDITY = 200; // depth of the live market: a 25-point order moves a mid-priced contract by about 6 cents
 const HIST_PULL = 0.06; // opening trades move the price 6% of the way to each forecaster's view
 const LIVE_PULL = 0.09; // each live trade moves the price 5% of the way to that forecaster's view, so your order's impact fades slowly
@@ -32,7 +33,7 @@ export type TapeResult = {
 
 type LiveEvent = { t: number; agent: string; target: number; budget: number };
 type HistEvent = { agent: string; side: "yes" | "no"; shares: number; spent: number; price: number };
-type Prepared = { run: MarketRun; histState: Lmsr; hist: TapePoint[]; histEvents: HistEvent[]; live: LiveEvent[] };
+type Prepared = { run: MarketRun; histState: Lmsr; hist: TapePoint[]; histEvents: HistEvent[]; live: LiveEvent[]; next: () => LiveEvent };
 const cache = new Map<string, Prepared>();
 
 function prepare(q: Question, w: Weights, wkey: string): Prepared {
@@ -57,13 +58,15 @@ function prepare(q: Question, w: Weights, wkey: string): Prepared {
   const rng = mulberry32(hashString(`live|${q.id}`));
   const live: LiveEvent[] = [];
   let t = 0;
-  for (let i = 0; i < LIVE_EVENTS; i++) {
+  // The same seeded stream continues past the first batch, so the tape stays deterministic however long it runs.
+  const next = (): LiveEvent => {
     t += -Math.log(Math.max(rng(), 1e-9)) * MEAN_GAP;
     const f = FORECASTERS[Math.floor(rng() * FORECASTERS.length)];
     const target = clamp(sigmoid(logit(run.beliefs[f.id]) + 0.8 * gaussian(rng)), 0.03, 0.97);
-    live.push({ t, agent: f.id, target, budget: 8 * (w[f.id] ?? 1) });
-  }
-  const p: Prepared = { run, histState: { ...hm }, hist, histEvents, live };
+    return { t, agent: f.id, target, budget: 8 * (w[f.id] ?? 1) };
+  };
+  for (let i = 0; i < LIVE_EVENTS; i++) live.push(next());
+  const p: Prepared = { run, histState: { ...hm }, hist, histEvents, live, next };
   cache.set(key, p);
   if (cache.size > 400) cache.delete(cache.keys().next().value as string);
   return p;
@@ -81,8 +84,15 @@ function sharesForPoints(m: Lmsr, side: "yes" | "no", points: number): number {
   return lo;
 }
 
+// Without this the simulated players stopped after their first ~70 minutes and every chart went flat.
+function extendLive(prep: Prepared, nowT: number) {
+  const until = Math.min(nowT, LIVE_LIMIT_S);
+  while (prep.live[prep.live.length - 1].t < until) prep.live.push(prep.next());
+}
+
 export function runTape(q: Question, w: Weights, wkey: string, orders: Order[], nowT: number, collectAgents = false): TapeResult {
   const prep = prepare(q, w, wkey);
+  extendLive(prep, nowT);
   const m: Lmsr = { ...prep.histState };
   const series = [...prep.hist];
   const executions: Execution[] = [];
@@ -102,7 +112,7 @@ export function runTape(q: Question, w: Weights, wkey: string, orders: Order[], 
     const before = lprice(m);
     let shares = 0, points = 0;
     if (o.action === "buy") {
-      // One guess may move the price by at most MAX_MOVE; points beyond that stay with the player.
+      // One prediction may move the price by at most MAX_MOVE; points beyond that stay with the player.
       const cap = Math.max(0, Math.abs(m.b * logit(moveLimit(before, o.side, moveAllowance(executions, o.t))) - (m.qy - m.qn)));
       shares = Math.min(sharesForPoints(m, o.side, Math.max(0, o.amount)), cap);
       points = cost(withShares(m, o.side, shares)) - cost(m);

@@ -15,7 +15,7 @@ const KIND_SPEC: { kind: Kind; n: number; mix: [number, number, number]; noise: 
   { kind: "noisy", n: 50, mix: [0.34, 0.33, 0.33], noise: 1.1 },
 ];
 export const KIND_LABEL: Record<Kind, string> = {
-  optimist: "AI optimist", sceptic: "AI sceptic", expert: "careful expert", chaser: "trend chaser", noisy: "noisy guesser",
+  optimist: "AI optimist", sceptic: "AI sceptic", expert: "careful expert", chaser: "trend chaser", noisy: "noisy predictor",
 };
 
 export const FORECASTERS: Forecaster[] = (() => {

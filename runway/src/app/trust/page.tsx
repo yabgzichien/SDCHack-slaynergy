@@ -26,7 +26,7 @@ export default function TrustPage() {
       </Card>
 
       <Card>
-        <H sub="Every guess, data update, piece of advice and badge is saved in a chain. Each record is locked to the one before it, so nobody can secretly change one.">A record nobody can secretly change</H>
+        <H sub="Every prediction, data update, piece of advice and badge is saved in a chain. Each record is locked to the one before it, so nobody can secretly change one.">A record nobody can secretly change</H>
         {log ? (
           <>
             <p className="text-sm"><Chip tone={log.ok ? "rise" : "fall"}>{log.ok ? "Chain verified" : `Broken at record ${log.brokenAt}`}</Chip> <span className="num">{log.checked} records checked.</span></p>
@@ -47,7 +47,7 @@ export default function TrustPage() {
             <li key={d.name}><p className="font-medium">{d.name}</p><p className="text-sm text-muted">Latest used: {d.detail}. Licence: {d.licence}.</p><SourceChip name="open source page" date={`retrieved ${d.date}`} url={d.url} /></li>
           ))}
         </ul>
-        <p className="mt-3 text-sm text-muted">Made-up (synthetic) data: the demo profiles and the ~200 computer-made players in the guessing game. They are always labelled.</p>
+        <p className="mt-3 text-sm text-muted">Made-up (synthetic) data: the demo profiles and the ~200 computer-made players in the prediction game. They are always labelled.</p>
       </Card>
 
       <Card>

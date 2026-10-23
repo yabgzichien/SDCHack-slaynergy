@@ -27,7 +27,7 @@ export const ta: Record<string, string> = {
 
   "About you": "உங்களைப் பற்றி", "You": "நீங்கள்",
   "Your skills": "உங்கள் திறன்கள்", "Skills": "திறன்கள்",
-  "Jobs for you": "உங்களுக்கான வேலைகள்", "Jobs": "வேலைகள்",
+  "Suggested jobs": "உங்களுக்கான வேலைகள்", "Jobs": "வேலைகள்",
   "Job map": "வேலை வரைபடம்", "Map": "வரைபடம்",
   "Your plan": "உங்கள் திட்டம்", "Plan": "திட்டம்",
   "Your steps": "உங்கள் படிகள்",
@@ -39,7 +39,7 @@ export const ta: Record<string, string> = {
 
   "Job figures up to June 2026 (DOSM, published 18 Aug 2026). Next: 17 Nov 2026.": "வேலை புள்ளிவிவரங்கள் ஜூன் 2026 வரை (DOSM, 18 ஆகஸ்ட் 2026 அன்று வெளியிடப்பட்டது). அடுத்தது: 17 நவம்பர் 2026.",
   "What the latest figures changed": "சமீபத்திய புள்ளிவிவரங்கள் எதை மாற்றின",
-  "Estimates, not certainties. You decide; an advisor is there if you want one. The guessing game uses points, never money, and the other players are computer-made.": "இவை மதிப்பீடுகள், உறுதியானவை அல்ல. முடிவு உங்களுடையது; தேவைப்பட்டால் ஆலோசகர் உதவுவார். யூகிக்கும் விளையாட்டு புள்ளிகளையே பயன்படுத்துகிறது, பணத்தை அல்ல; மற்ற வீரர்கள் கணினியால் உருவாக்கப்பட்டவர்கள்.",
+  "Estimates, not certainties. You decide; an advisor is there if you want one. The prediction game uses points, never money, and the other players are computer-made.": "இவை மதிப்பீடுகள், உறுதியானவை அல்ல. முடிவு உங்களுடையது; தேவைப்பட்டால் ஆலோசகர் உதவுவார். கணிக்கும் விளையாட்டு புள்ளிகளையே பயன்படுத்துகிறது, பணத்தை அல்ல; மற்ற வீரர்கள் கணினியால் உருவாக்கப்பட்டவர்கள்.",
   "SDC Hackathon 2026, Domain 1. Apache-2.0.": "SDC ஹேக்கத்தான் 2026, களம் 1. Apache-2.0.",
 
   "Skip intro": "அறிமுகத்தைத் தவிர்",

@@ -1,4 +1,3 @@
-import type { Weights3 } from "./futures";
 import type { ResumeSummary } from "./resume";
 import type { Order } from "./tape";
 import type { Education, StudyField } from "./data";
@@ -63,7 +62,6 @@ export type SessionState = {
   orders: Order[];
   clock: Clock | null;
   goals: string[];
-  override: Weights3 | null;
   // A role id, or STAY_ID for staying in (or bridging from) the current job.
   chosenRoleId: string | null;
   progress: Record<string, boolean>;
@@ -76,7 +74,7 @@ export type SessionState = {
 
 export const STAY_ID = "stay";
 export const initialState = (): SessionState => ({
-  v: 1, profile: null, release: 1, orders: [], clock: null, goals: [], override: null, chosenRoleId: null,
+  v: 1, profile: null, release: 1, orders: [], clock: null, goals: [], chosenRoleId: null,
   progress: {}, resume: null,
   pathway: {}, completion: { status: "none" },
 });

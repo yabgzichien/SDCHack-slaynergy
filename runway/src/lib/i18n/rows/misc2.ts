@@ -2,6 +2,8 @@ import type { Row } from "../index";
 
 // Goal labels, leaderboard summary, odds and ends found by checking every string in the source.
 export const MISC2: Row[] = [
+  ["View sources", "Lihat sumber", "查看来源", "ஆதாரங்களைக் காண்க"],
+  ["Hide sources", "Sembunyikan sumber", "隐藏来源", "ஆதாரங்களை மறைக்கவும்"],
   ["Social protection for all", "Perlindungan sosial untuk semua", "人人享有社会保护", "அனைவருக்கும் சமூகப் பாதுகாப்பு"],
   ["Health care and protection from health costs", "Penjagaan kesihatan dan perlindungan daripada kos kesihatan", "医疗保健及免受医疗费用冲击的保护", "சுகாதாரப் பராமரிப்பும் சுகாதாரச் செலவுகளிலிருந்து பாதுகாப்பும்"],
   ["Skills for decent jobs", "Kemahiran untuk pekerjaan yang bermaruah", "体面工作所需的技能", "கண்ணியமான வேலைகளுக்கான திறன்கள்"],
@@ -37,10 +39,10 @@ export const MISC2: Row[] = [
   ["With {#n} hours a week, every other job here needs more time. Try more months or weekly hours.", "Dengan {n} jam seminggu, setiap pekerjaan lain di sini memerlukan lebih masa. Cuba lebih banyak bulan atau jam seminggu.", "每周 {n} 小时的话，这里其他工作都需要更多时间。请尝试更多的月数或每周小时数。", "வாரத்திற்கு {n} மணி நேரத்தில், இங்குள்ள மற்ற எல்லா வேலைகளுக்கும் அதிக நேரம் தேவை. அதிக மாதங்கள் அல்லது வாராந்திர மணி நேரங்களை முயலுங்கள்."],
   // Leaderboard
   ["Error score (0 is perfect)", "Skor ralat (0 sempurna)", "误差分数（0 为完美）", "பிழை மதிப்பெண் (0 சிறந்தது)"],
-  ["Questions you guessed on", "Soalan yang anda teka", "你猜过的问题", "நீங்கள் யூகித்த கேள்விகள்"],
+  ["Questions you predicted on", "Soalan yang anda ramal", "你预测过的问题", "நீங்கள் கணித்த கேள்விகள்"],
   ["{#a} of {#b}", "{a} daripada {b}", "{b} 个中的 {a} 个", "{b}-இல் {a}"],
   ["Your vote counts", "Undi anda dikira", "你的投票权重", "உங்கள் வாக்கு மதிப்பு"],
-  ["Most points per guess", "Mata terbanyak setiap tekaan", "每次猜测最多积分", "ஒரு யூகத்திற்கு அதிகபட்சப் புள்ளிகள்"],
+  ["Most points per prediction", "Mata terbanyak setiap ramalan", "每次预测最多积分", "ஒரு கணிப்புக்கு அதிகபட்சப் புள்ளிகள்"],
   ["Every player, best first", "Setiap pemain, terbaik dahulu", "所有玩家，最佳在前", "ஒவ்வொரு வீரரும், சிறந்தவர் முதலில்"],
   ["Show the top 10", "Tunjukkan 10 teratas", "显示前 10 名", "முதல் 10-ஐக் காட்டு"],
   ["You are {o} out of {#n} players.", "Anda ialah {o} daripada {n} pemain.", "在 {n} 位玩家中，你排{o}。", "{n} வீரர்களில் நீங்கள் {o}."],

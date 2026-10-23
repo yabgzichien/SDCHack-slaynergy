@@ -75,7 +75,7 @@ export default function SkillsPage() {
         </div>
         <More summary="Where do these numbers come from?">
           <p>The speeds come from a test by the research group METR (data from Epoch AI). Over the last year, the length of task AI can finish on its own doubled about every {months(pace.futures.find((f) => f.id === "medium")!.doublingMonths)} months. &quot;Slow&quot; assumes 60% of that pace, &quot;Fast&quot; 160%. Faster AI also means companies start using it sooner and office admin job ads shrink faster ({pace.futures.map((f) => `${SPEED[f.id].name.toLowerCase()}: ${Math.abs(f.clericalPerYear).toFixed(1)} fewer in every 100 ads each year`).join(", ")}).</p>
-          <p>How likely each speed is comes from real published numbers and from a guessing game where players predict the next numbers; players who guess well count more. <Link href="/market" className="underline decoration-control underline-offset-2 hover:text-ink">Try the guessing game</Link>.</p>
+          <p>How likely each speed is comes from real published numbers and from a prediction game where players predict the next numbers; players who predict well count more. <Link href="/market" className="underline decoration-control underline-offset-2 hover:text-ink">Try the prediction game</Link>.</p>
         </More>
       </Card>
 

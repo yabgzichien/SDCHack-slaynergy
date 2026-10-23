@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { ArrowRight, Binoculars, BookOpen, Compass, RotateCcw } from "lucide-react";
+import { ArrowDown, ArrowRight, Binoculars, BookOpen, Briefcase, Compass, Gauge, ListChecks, MapPin, RotateCcw, UserRound } from "lucide-react";
 import { useApp } from "./AppProvider";
 import { useT } from "./I18nProvider";
 import { LandingSdgAnimation } from "./LandingSdgAnimation";
@@ -17,6 +17,15 @@ const INTRO_SEEN = "jobbery-intro-seen";
 const noSubscribe = () => () => {};
 const readSeen = () => { try { return sessionStorage.getItem(INTRO_SEEN) === "1"; } catch { return false; } };
 const markSeen = () => { try { sessionStorage.setItem(INTRO_SEEN, "1"); } catch { /* private mode: it may play again */ } };
+
+// The guide follows the step bar inside the app, so a first-time visitor recognises each step later.
+const GUIDE = [
+  { icon: UserRound, color: "#4f86c6", title: "Tell us about you", does: "Scan your resume or answer a few short questions.", gets: "Your skills, ready to check" },
+  { icon: Gauge, color: "#6a5fc1", title: "See your skills", does: "Each skill gets a date when AI may do most of it.", gets: "Which skills last" },
+  { icon: Briefcase, color: "#d08a1e", title: "Pick a job", does: "Jobs you can reach in time, with why each one fits.", gets: "Your best job" },
+  { icon: MapPin, color: "#c4614a", title: "See where the jobs are", does: "A map of jobs, pay and unemployment by state.", gets: "Where to look" },
+  { icon: ListChecks, color: "#3f8a52", title: "Follow your plan", does: "Free courses, an AI quiz and an advisor, week by week.", gets: "A badge for LinkedIn" },
+];
 
 export function LandingIntro() {
   const { busy, catalog, view } = useApp();
@@ -90,53 +99,67 @@ export function LandingIntro() {
 
   return (
     <div ref={rootRef} className={`landing-page landing-content${sceneActive ? "" : " is-scene-active"}`}>
-      {sceneActive && <div key={replayKey} className="intro-overlay"><div className="intro-overlay-inner" aria-hidden="true"><span className="intro-word">Jobbery<span className="intro-word-dot">.</span></span><Image src="/cockatiel-running.png" alt="" width={1254} height={1254} className="intro-mascot" priority /><span className="intro-speed intro-speed-one" /><span className="intro-speed intro-speed-two" /></div><button className="intro-skip" onClick={() => { markSeen(); setSceneActive(false); }}>{t("Skip intro")} <ArrowRight size={16} /></button></div>}
+      {sceneActive && <div key={replayKey} className="intro-overlay"><div className="intro-overlay-inner" aria-hidden="true"><span className="intro-word">Jobbery</span><Image src="/cockatiel-running.png" alt="" width={1254} height={1254} className="intro-mascot" priority /><span className="intro-speed intro-speed-one" /><span className="intro-speed intro-speed-two" /></div><button className="intro-skip" onClick={() => { markSeen(); setSceneActive(false); }}>{t("Skip intro")} <ArrowRight size={16} /></button></div>}
       <div ref={birdRef} className="landing-travel-bird" aria-hidden="true"><Image key={replayKey} src="/landing-cockatiel-flight.png" alt="" width={1353} height={1163} priority /></div>
       <div>
         <section className="landing-intro" aria-labelledby="landing-title">
           <div className="landing-hero-landscape" aria-hidden="true" />
           <div ref={sceneRef} className="landing-bird-flight"><LandingSdgAnimation replayKey={replayKey} /></div>
           <div className="landing-intro-heading">
-            <h1 id="landing-title" className="landing-reveal">{t("Work is changing.")}<br />{t("Keep growing with it.")}</h1>
-            <p className="landing-intro-subtitle landing-reveal">{t("See which jobs AI is changing, find one that fits you, and get a week-by-week plan to get there.")}</p>
-            <div className="landing-hero-actions landing-reveal"><Link href="/start" className="landing-primary">{t("Get started")} <ArrowRight size={18} aria-hidden /></Link><button onClick={demo} disabled={busy || !catalog} className="landing-secondary">{t("Try a sample")}</button></div>
+            <h1 id="landing-title" className="landing-reveal">{t("Find a job that AI won't replace.")}</h1>
+            <p className="landing-intro-subtitle landing-reveal">{t("See which of your skills AI may take over, which jobs you can reach in time, and get a weekly plan to get there. Free.")}</p>
+            <div className="landing-hero-actions landing-reveal"><a href="#journey" className="landing-secondary">{t("See how it works")} <ArrowDown size={18} aria-hidden /></a></div>
           </div>
           <div className="landing-wave" aria-hidden="true" />
         </section>
 
         <section id="about" className="landing-about" aria-labelledby="about-title">
-          <div className="landing-about-heading landing-reveal"><h2 id="about-title">{t("What is Jobbery?")}</h2><p>{t("Jobbery helps you explore career paths, understand how work is changing, and find learning opportunities to build a brighter, more inclusive future.")}</p></div>
+          <div className="landing-about-heading landing-reveal"><h2 id="about-title">{t("What is Jobbery?")}</h2><p>{t("A free tool for people who lost their job, or worry that AI will change it. It uses public data from Malaysia and AI research, and shows where every number comes from.")}</p></div>
           <div className="landing-about-cards">
-            <Link href="/start" className="landing-about-card landing-reveal"><span className="landing-about-icon"><Compass size={66} strokeWidth={1.4} aria-hidden="true" /></span><span className="landing-about-copy"><strong>{t("Career help")}</strong><span>{t("Discover careers that match your interests, strengths and values, with guidance for different education pathways.")}</span></span><span className="landing-about-arrow"><ArrowRight size={20} aria-hidden="true" /></span></Link>
-            <Link href="/forecast" className="landing-about-card landing-reveal"><span className="landing-about-icon"><Binoculars size={66} strokeWidth={1.4} aria-hidden="true" /></span><span className="landing-about-copy"><strong>{t("Future forecasts")}</strong><span>{t("See how AI and other trends may shape jobs and skills, so you can make informed decisions about your next step.")}</span></span><span className="landing-about-arrow"><ArrowRight size={20} aria-hidden="true" /></span></Link>
-            <Link href="/courses" className="landing-about-card landing-reveal"><span className="landing-about-icon"><BookOpen size={66} strokeWidth={1.4} aria-hidden="true" /></span><span className="landing-about-copy"><strong>{t("Courses to grow")}</strong><span>{t("Find curated courses and learning resources to build skills in demand and open new opportunities.")}</span></span><span className="landing-about-arrow"><ArrowRight size={20} aria-hidden="true" /></span></Link>
+            <Link href="/start" className="landing-about-card landing-reveal"><span className="landing-about-icon"><Compass size={66} strokeWidth={1.4} aria-hidden="true" /></span><span className="landing-about-copy"><strong>{t("Find jobs that fit you")}</strong><span>{t("Jobs that match your skills and interests, that you can reach before your deadline.")}</span></span><span className="landing-about-arrow"><ArrowRight size={20} aria-hidden="true" /></span></Link>
+            <Link href="/forecast" className="landing-about-card landing-reveal"><span className="landing-about-icon"><Binoculars size={66} strokeWidth={1.4} aria-hidden="true" /></span><span className="landing-about-copy"><strong>{t("See how AI is changing jobs")}</strong><span>{t("Which skills AI may take over, and when, from dated public data.")}</span></span><span className="landing-about-arrow"><ArrowRight size={20} aria-hidden="true" /></span></Link>
+            <Link href="/courses" className="landing-about-card landing-reveal"><span className="landing-about-icon"><BookOpen size={66} strokeWidth={1.4} aria-hidden="true" /></span><span className="landing-about-copy"><strong>{t("Learn with free courses")}</strong><span>{t("Hand-checked courses for the skills you are missing, laid out week by week.")}</span></span><span className="landing-about-arrow"><ArrowRight size={20} aria-hidden="true" /></span></Link>
           </div>
         </section>
 
-        <section id="journey" className="landing-journey" aria-labelledby="journey-title">
-          <div className="landing-section-heading landing-reveal"><span className="landing-section-label">{t("YOUR PATH FORWARD")}</span><h2 id="journey-title">{t("Three steps")}<span className="landing-period">.</span></h2><p>{t("Start where you are. Move at your own pace.")}</p></div>
-          <div className="landing-steps">
-            <article className="landing-step landing-reveal"><span className="landing-step-number">01</span><h3>{t("Show us where you are")}</h3><p>{t("Use your CV to save time or answer a few short questions. You can check everything before continuing.")}</p></article>
-            <span className="landing-step-arrow landing-reveal" aria-hidden="true">→</span>
-            <article className="landing-step landing-reveal"><span className="landing-step-number">02</span><h3>{t("See what fits")}</h3><p>{t("Explore roles your skills could lead to, with job data and different AI forecasts in view.")}</p></article>
-            <span className="landing-step-arrow landing-reveal" aria-hidden="true">→</span>
-            <article className="landing-step landing-reveal"><span className="landing-step-number">03</span><h3>{t("Make a plan")}</h3><p>{t("Turn a role you choose into a week by week path you can review with a counsellor.")}</p></article>
+        <section id="journey" className="landing-journey scroll-mt-24" aria-labelledby="journey-title">
+          <div className="landing-section-heading landing-reveal"><span className="landing-section-label">{t("5 STEPS")}</span><h2 id="journey-title">{t("How it works")}<span className="landing-period">.</span></h2><p>{t("Five steps. The same five steps you see at the top of every page.")}</p></div>
+          <ol className="relative mt-8 grid gap-3 md:grid-cols-5">
+            <span aria-hidden className="absolute left-[10%] right-[10%] top-7 hidden h-1 rounded-full bg-gradient-to-r from-[#4f86c6] via-[#d08a1e] to-[#3f8a52] md:block" />
+            {GUIDE.map((g, i) => (
+              <li key={g.title} className="landing-reveal relative flex flex-col rounded-[20px] border bg-white p-5" style={{ borderColor: `${g.color}55` }}>
+                <span className="relative z-10 grid size-14 place-items-center rounded-2xl text-white shadow-[0_4px_12px_rgb(0_0_0/0.15)]" style={{ background: g.color }}><g.icon size={26} aria-hidden /></span>
+                <span className="mt-4 text-xs font-bold uppercase tracking-wide" style={{ color: g.color }}>{t("Step {n}", { n: String(i + 1) })}</span>
+                <h3 className="mt-1 text-lg leading-snug">{t(g.title)}</h3>
+                <p className="mt-2 text-sm text-[var(--muted)]">{t(g.does)}</p>
+                <p className="mt-auto pt-3 text-sm font-semibold" style={{ color: g.color }}>→ {t(g.gets)}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section className="landing-reveal mx-auto my-6 w-[min(1180px,calc(100%-42px))] rounded-[28px] bg-gradient-to-br from-[#305d40] to-[#22442f] px-6 py-10 text-center text-white sm:px-10" aria-labelledby="cta-title">
+          <h2 id="cta-title" className="text-[clamp(28px,3.4vw,42px)] leading-tight">{t("Ready to find your next job?")}</h2>
+          <p className="mx-auto mt-3 max-w-xl text-base text-white/80">{t("Start with your resume or a few questions. You can check and change everything.")}</p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Link href="/start" className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[#f8c982] px-7 text-base font-semibold text-[#203b2b] transition-transform hover:-translate-y-0.5">{t("Start now")} <ArrowRight size={18} aria-hidden /></Link>
+            <button onClick={demo} disabled={busy || !catalog} className="inline-flex min-h-12 items-center rounded-full border border-white/50 px-7 text-base font-semibold text-white hover:bg-white/10 disabled:opacity-50">{t("Try a sample")}</button>
           </div>
         </section>
 
         <section id="statistics" className="landing-statistics" aria-labelledby="statistics-title">
-          <div className="landing-stats-top landing-reveal"><div><span className="landing-section-label">{t("INFORMATION & INSIGHT")}</span><h2 id="statistics-title">{t("A changing world of work")}<span className="landing-period">.</span></h2><p>{t("A few real numbers from public government and research data. Each one says where it came from.")}</p></div><Link href="/trends" className="landing-text-link landing-stats-all">{t("See all statistics")} <ArrowRight size={16} aria-hidden /></Link></div>
+          <div className="landing-stats-top landing-reveal"><div><span className="landing-section-label">{t("THE DATA")}</span><h2 id="statistics-title">{t("How AI is changing work")}<span className="landing-period">.</span></h2><p>{t("A few real numbers from public government and research data. Each one says where it came from.")}</p></div><Link href="/trends" className="landing-text-link landing-stats-all">{t("See all statistics")} <ArrowRight size={16} aria-hidden /></Link></div>
           {view && ai && (
             <div className="landing-data-grid">
               <article className="landing-chart-card landing-reveal">
-                <div className="landing-data-heading"><div><span className="landing-card-index">{t("AI TEST SCORES")}</span><h3>{t("How quickly is AI getting better?")}</h3></div><span className="landing-sample-badge landing-real-badge">{t("Real data")}</span></div>
+                <div className="landing-data-heading"><div><span className="landing-card-index">{t("AI TEST SCORES")}</span><h3>{t("How fast is AI improving?")}</h3></div><span className="landing-sample-badge landing-real-badge">{t("Real data")}</span></div>
                 {ai.headline && <div className="landing-stat-hero"><strong className="num">{ai.headline.hoursNow}<span>{t("hours")}</span></strong><p>{t("AI can now finish on its own a task that takes a person about {hours} hours. In 2024 it was about {minutes} minutes.", { hours: String(ai.headline.hoursNow), minutes: String(ai.headline.minutesThen) })}</p></div>}
                 <AiCapabilityChart data={ai.data} className="landing-ai-chart" />
                 <p className="landing-data-note">{t("Best score any AI got on each test, out of 100.")} <a href={sourceById.epoch.url} target="_blank" rel="noreferrer">{t("Source: Epoch AI, to {quarter}", { quarter: view.world.asOfQuarter.replace("Q", " Q") })}</a></p>
               </article>
               <article className="landing-insight-card landing-reveal">
                 <span className="landing-card-index">{t("JOBS AT A GLANCE")}</span>
-                <h3>{t("Where hiring is heading")}</h3>
+                <h3>{t("Which jobs are growing")}</h3>
                 <p className="landing-insight-sub">{t("Growing, and hard for AI to replace")}</p>
                 {view.radar.risingJobs.slice(0, 3).map((j) => <div key={j.roleId} className="landing-insight-row"><span>{j.title}</span><strong className="landing-tag-rise">{t("Growing")}</strong></div>)}
                 <p className="landing-insight-sub">{t("AI can already do a lot of this work")}</p>

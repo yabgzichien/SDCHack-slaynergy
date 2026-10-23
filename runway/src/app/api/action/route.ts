@@ -4,7 +4,6 @@ import { computeView } from "@/lib/engine/view";
 import { computeWorld } from "@/lib/engine/world";
 import { skillById, personas, occupationById, roleById, INTERESTS, isEducation, isStudyField, EDUCATION_RANK } from "@/lib/engine/data";
 import { initialState, STAY_ID, type Profile, type SessionState } from "@/lib/engine/state";
-import { normaliseOverride } from "@/lib/engine/futures";
 import { stateById, isReach } from "@/lib/engine/geo";
 import { respond } from "@/lib/server/respond";
 import { getSessionId } from "@/lib/server/session";
@@ -114,7 +113,7 @@ export async function POST(req: Request) {
       const amount = Number(body.amount);
       if (!Number.isFinite(amount) || amount <= 0) return bad("Enter an amount greater than zero.");
       const w = computeWorld(state);
-      if (action === "buy" && amount > w.you.maxOrder) return bad(`You can put up to ${w.you.maxOrder} points on one guess.`);
+      if (action === "buy" && amount > w.you.maxOrder) return bad(`You can put up to ${w.you.maxOrder} points on one prediction.`);
       if (w.events.some((e) => e.settled)) return bad("That market has already settled.");
       const strike = w.events.flatMap((e) => e.strikes).find((s) => s.marketId === market);
       if (!strike) return bad("That market is not open.");
@@ -124,7 +123,7 @@ export async function POST(req: Request) {
       if (action === "sell" && amount > (side === "yes" ? strike.position.yes : strike.position.no) + 1e-6) return bad(`You hold fewer ${side === "yes" ? "Yes" : "No"} contracts than that.`);
       const ev = w.events.find((e) => e.strikes.some((s) => s.marketId === market))!;
       const t = Math.max(0, (Date.now() - ev.clockStart) / 1000);
-      if (action === "buy" && moveAllowance(strike.executions, t) < 0.001) return bad("You have moved this answer as far as one player can for now. Try again in a few minutes, or guess on another answer.");
+      if (action === "buy" && moveAllowance(strike.executions, t) < 0.001) return bad("You have moved this answer as far as one player can for now. Try again in a few minutes, or predict another answer.");
       if (state.orders.length >= 300) return bad("Order limit reached for this session. Press Start over to reset.");
       state = { ...state, orders: [...state.orders, { id: `o${state.orders.length + 1}`, market, t, side, action, amount }] };
       await logEvent("order", sid, { market, side, action, amount: +amount.toFixed(2) });
@@ -152,11 +151,6 @@ export async function POST(req: Request) {
     case "goals": {
       const goals = (Array.isArray(body.goals) ? body.goals.map(String) : []).filter((g) => /^\d+\.\d+$/.test(g)).slice(0, 8);
       state = { ...state, goals };
-      break;
-    }
-    case "override": {
-      const w = body.weights as Record<string, unknown> | null;
-      state = { ...state, override: w ? normaliseOverride({ slow: Number(w.slow), medium: Number(w.medium), fast: Number(w.fast) }) : null };
       break;
     }
     case "chooseRole": {

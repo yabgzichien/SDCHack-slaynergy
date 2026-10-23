@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Briefcase, Bug, ChevronLeft, ChevronRight, GraduationCap, Terminal, Timer, type LucideIcon } from "lucide-react";
+import { Briefcase, Bug, Check, ChevronLeft, ChevronRight, GraduationCap, Lock, Terminal, Timer, X, type LucideIcon } from "lucide-react";
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { EventView, StrikeView } from "@/lib/engine/world";
 import { Chip } from "./ui";
@@ -48,22 +48,66 @@ function OptionRow({ s, i, compact }: { s: StrikeView; i: number; compact?: bool
   );
 }
 
-// One small card per question, for the grid.
+// A pulsing green dot: this question is still open for predictions.
+export function LiveBadge() {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-risesoft px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-rise">
+      <span className="relative flex size-2" aria-hidden><span className="absolute inline-flex size-full rounded-full bg-rise opacity-60 motion-safe:animate-ping" /><span className="relative inline-flex size-2 rounded-full bg-rise" /></span>Live
+    </span>
+  );
+}
+// Grey "answered" label for questions the official numbers have already settled.
+export function AnsweredBadge() {
+  return <span className="inline-flex items-center gap-1 rounded-full bg-[#5b6575] px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-white"><Lock size={11} aria-hidden />Answered</span>;
+}
+// The result of a settled question, as a stamp instead of a 0% or 100%.
+export function AnswerStamp({ yes, big }: { yes: boolean; big?: boolean }) {
+  return (
+    <p className={`inline-flex items-center gap-2 rounded-xl border-2 font-bold uppercase tracking-wide ${big ? "px-4 py-2 text-lg" : "px-3 py-1 text-sm"} ${yes ? "border-rise text-rise" : "border-fall text-fall"}`}>
+      {yes ? <Check size={big ? 20 : 16} strokeWidth={3} aria-hidden /> : <X size={big ? 20 : 16} strokeWidth={3} aria-hidden />}The answer was {yes ? "Yes" : "No"}
+    </p>
+  );
+}
+
+// One card per question. Open ones are bright with a LIVE badge (amber ring if you have not predicted yet);
+// answered ones are grey with the result stamped on, so nobody reads a settled 0% as a live market.
 export function MarketCard({ e }: { e: EventView }) {
   const held = e.strikes.some((s) => s.position.yes > 1e-6 || s.position.no > 1e-6);
-  return (
-    <Link href={`/market/${encodeURIComponent(e.id)}`} className="press flex h-full flex-col rounded-[22px] bg-surface p-5 hover:bg-surface2">
-      <div className="flex items-start gap-3">
-        <EventIcon eventId={e.id} />
-        <div className="min-w-0">
-          <p className="font-medium leading-snug">{e.title}</p>
-          <p className="text-xs text-muted">{topicOf(e.id).tag}{held ? " · you guessed here" : ""}</p>
+  const main = e.strikes[1] ?? e.strikes[0];
+  const href = `/market/${encodeURIComponent(e.id)}`;
+  if (e.settled) {
+    const pnl = e.strikes.reduce((a, s) => a + (s.settled?.pnl ?? 0), 0);
+    return (
+      <Link href={href} className="press flex h-full flex-col rounded-[22px] border border-[#cfd6df] bg-[#eef1f5] p-5 text-[#3c4655] hover:bg-[#e6eaf0]">
+        <div className="flex items-center justify-between gap-2"><AnsweredBadge /><span className="text-xs text-[#6b7686]">{topicOf(e.id).tag}</span></div>
+        <div className="mt-3 flex items-start gap-3">
+          <span className="grayscale"><EventIcon eventId={e.id} size={36} /></span>
+          <p className="min-w-0 font-medium leading-snug">{e.title}</p>
         </div>
+        <p className="mt-2 text-sm">{main.label}</p>
+        <div className="mt-3"><AnswerStamp yes={!!main.settled?.outcome} /></div>
+        {e.fact && <p className="num mt-3 text-xs">{e.fact}</p>}
+        <p className="mt-auto pt-4 text-xs text-[#6b7686]">{held ? `Your result: ${pnl >= 0 ? "+" : ""}${pnl.toFixed(0)} points` : "Closed. No more predictions."}</p>
+      </Link>
+    );
+  }
+  return (
+    <Link href={href} className={`press flex h-full flex-col rounded-[22px] bg-raised p-5 shadow-[0_1px_3px_rgb(0_0_0/0.06)] hover:bg-surface ${held ? "border border-line" : "ring-2 ring-cue"}`}>
+      <div className="flex items-center justify-between gap-2">
+        <LiveBadge />
+        {held ? <span className="text-xs font-medium text-rise">You predicted here</span> : <span className="rounded-full bg-cuesoft px-2 py-0.5 text-xs font-semibold text-cueink">Not predicted yet</span>}
       </div>
-      <div className="mt-4 space-y-3"><OptionRow s={e.strikes[1]} i={1} compact /></div>
-      <p className="mt-2 text-xs text-muted">+{e.strikes.length - 1} harder and easier versions inside</p>
-      {e.fact && <p className="num mt-3 text-xs text-muted">{e.fact}</p>}
-      <p className="num mt-auto pt-4 text-xs text-muted">{e.strikes.reduce((a, s) => a + s.trades, 0).toLocaleString()} guesses, mostly computer-made</p>
+      <div className="mt-3 flex items-start gap-3">
+        <EventIcon eventId={e.id} size={36} />
+        <div className="min-w-0"><p className="font-medium leading-snug">{e.title}</p><p className="text-xs text-muted">{topicOf(e.id).tag}</p></div>
+      </div>
+      <p className="mt-3 text-sm">{main.label}?</p>
+      <div className="mt-2 flex items-end justify-between gap-3">
+        <p><span className="num text-3xl font-semibold leading-none">{Math.round(main.price * 100)}%</span> <span className="text-sm text-muted">think Yes</span></p>
+        <span className="inline-flex min-h-10 shrink-0 items-center gap-1 rounded-full bg-primary px-4 text-sm font-medium text-primaryink">Make a prediction <ChevronRight size={16} aria-hidden /></span>
+      </div>
+      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface2" aria-hidden><div className="h-full rounded-full bg-rise" style={{ width: `${Math.round(main.price * 100)}%` }} /></div>
+      <p className="mt-auto pt-4 text-xs text-muted">Answer comes from: {e.settles.replace(/ \(.*\)$/, "")}</p>
     </Link>
   );
 }
@@ -108,8 +152,8 @@ export function FeaturedMarkets({ events }: { events: EventView[] }) {
           <div className="mb-2 flex justify-between text-xs text-muted"><span>Answer</span><span className="w-[4.5rem] text-center">Think Yes</span></div>
           <div className="space-y-4">{e.strikes.map((s, i) => <OptionRow key={s.marketId} s={s} i={i} />)}</div>
           <div className="mt-5 flex items-center justify-between">
-            <p className="num text-xs text-muted">{e.strikes.reduce((a, s) => a + s.trades, 0).toLocaleString()} guesses, mostly computer-made</p>
-            <Link href={`/market/${encodeURIComponent(e.id)}`} className="press inline-flex min-h-10 items-center gap-1 rounded-full bg-primary px-4 text-sm font-medium text-primaryink">Make a guess <ChevronRight size={16} aria-hidden /></Link>
+            <p className="num text-xs text-muted">{e.strikes.reduce((a, s) => a + s.trades, 0).toLocaleString()} predictions, mostly computer-made</p>
+            <Link href={`/market/${encodeURIComponent(e.id)}`} className="press inline-flex min-h-10 items-center gap-1 rounded-full bg-primary px-4 text-sm font-medium text-primaryink">Make a prediction <ChevronRight size={16} aria-hidden /></Link>
           </div>
         </div>
         <div className="min-w-0">

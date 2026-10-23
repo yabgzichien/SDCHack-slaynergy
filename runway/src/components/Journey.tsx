@@ -13,7 +13,7 @@ export type Step = { href: string; label: string; short: string; icon: LucideIco
 export const STEPS: Step[] = [
   { href: "/start", label: "About you", short: "You", icon: UserRound, match: ["/start", "/resume", "/profile"], needsProfile: false },
   { href: "/skills", label: "Your skills", short: "Skills", icon: Sparkles, match: ["/skills", "/radar"], needsProfile: true },
-  { href: "/jobs", label: "Jobs for you", short: "Jobs", icon: BriefcaseBusiness, match: ["/jobs", "/goals"], needsProfile: true },
+  { href: "/jobs", label: "Suggested jobs", short: "Jobs", icon: BriefcaseBusiness, match: ["/jobs", "/goals"], needsProfile: true },
   { href: "/map", label: "Job map", short: "Map", icon: MapPin, match: ["/map"], needsProfile: true },
   { href: "/plan", label: "Your plan", short: "Plan", icon: ListChecks, match: ["/plan"], needsProfile: true },
 ];

@@ -27,7 +27,7 @@ export const ms: Record<string, string> = {
 
   "About you": "Tentang anda", "You": "Anda",
   "Your skills": "Kemahiran anda", "Skills": "Kemahiran",
-  "Jobs for you": "Kerja untuk anda", "Jobs": "Kerja",
+  "Suggested jobs": "Kerja untuk anda", "Jobs": "Kerja",
   "Job map": "Peta kerja", "Map": "Peta",
   "Your plan": "Pelan anda", "Plan": "Pelan",
   "Your steps": "Langkah anda",
@@ -39,7 +39,7 @@ export const ms: Record<string, string> = {
 
   "Job figures up to June 2026 (DOSM, published 18 Aug 2026). Next: 17 Nov 2026.": "Angka pekerjaan sehingga Jun 2026 (DOSM, diterbitkan 18 Ogos 2026). Seterusnya: 17 Nov 2026.",
   "What the latest figures changed": "Apa yang berubah dengan angka terkini",
-  "Estimates, not certainties. You decide; an advisor is there if you want one. The guessing game uses points, never money, and the other players are computer-made.": "Anggaran, bukan kepastian. Anda yang menentukan; penasihat sedia membantu jika anda mahu. Permainan meneka menggunakan mata, bukan wang, dan pemain lain dijana komputer.",
+  "Estimates, not certainties. You decide; an advisor is there if you want one. The prediction game uses points, never money, and the other players are computer-made.": "Anggaran, bukan kepastian. Anda yang menentukan; penasihat sedia membantu jika anda mahu. Permainan meramal menggunakan mata, bukan wang, dan pemain lain dijana komputer.",
   "SDC Hackathon 2026, Domain 1. Apache-2.0.": "SDC Hackathon 2026, Domain 1. Apache-2.0.",
 
   "Skip intro": "Langkau pengenalan",

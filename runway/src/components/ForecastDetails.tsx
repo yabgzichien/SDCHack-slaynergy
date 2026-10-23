@@ -1,26 +1,23 @@
 "use client";
-import { useState } from "react";
 import { useApp } from "@/components/AppProvider";
-import { Btn, Card, Chip, Estimate, FUTURE_COLOR, FUTURE_NAME, FUTURE_PLAIN, FutureBar, More, pct } from "@/components/ui";
+import { Card, Estimate, FUTURE_COLOR, FUTURE_PLAIN, FutureBar, More, pct } from "@/components/ui";
 
-// How the three AI speeds get their chances, and a way to set your own. Shown on the market page.
+// How the three AI speeds get their chances. Shown on the market page.
 export function ForecastDetails() {
-  const { view, state, act, busy } = useApp();
-  const [custom, setCustom] = useState<{ slow: number; medium: number; fast: number } | null>(null);
-  if (!view || !state) return null;
+  const { view } = useApp();
+  if (!view) return null;
   const w = view.world;
-  const sl = custom ?? { slow: w.weights.slow, medium: w.weights.medium, fast: w.weights.fast };
   const r = w.replay;
 
   return (
-    <div>
-      <h2 id="how" className="mb-3 mt-10 text-xl font-medium">What all these guesses are for</h2>
-      <p className="mb-3 text-sm text-muted">Nobody knows how fast AI will change jobs. Jobbery keeps three possible speeds in mind and uses the guesses and the real numbers to decide which is most likely. That decides the dates you see for your skills and jobs.</p>
+    <section id="how" className="forecast-section forecast-results" aria-labelledby="forecast-purpose-title">
+      <div className="forecast-section-heading"><h2 id="forecast-purpose-title">Why forecasts matter</h2></div>
+      <p className="mb-3 text-sm text-muted">Nobody knows how fast AI will change jobs. Jobbery keeps three possible speeds in mind and uses the predictions and the real numbers to decide which is most likely. That decides the dates you see for your skills and jobs.</p>
 
       <Card tone="raised">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-base font-semibold">How fast is AI changing jobs? Our best guess</h2>
-          {w.usingOverride ? <Chip tone="fall">You set these yourself</Chip> : <span className="text-sm text-muted">{w.release ? "Updated with the Apr to Jun 2026 numbers" : "Using numbers up to Mar 2026"}</span>}
+          <h3 className="text-base font-semibold">The AI outlook</h3>
+          <span className="text-sm text-muted">{w.release ? "Updated with the Apr to Jun 2026 numbers" : "Using numbers up to Mar 2026"}</span>
         </div>
         <div className="mt-4"><FutureBar futures={w.futures} height={16} /></div>
         <div className="mt-5 grid gap-4 md:grid-cols-3">
@@ -35,18 +32,18 @@ export function ForecastDetails() {
           ))}
         </div>
         <div className="mt-4"><Estimate /></div>
-        <More summary="Where do these numbers come from?">
+        <More summary="How we calculate this">
           <ol className="list-decimal space-y-2 pl-5">
           <li>Each speed (slow, medium, fast) predicts what the next official numbers will be: Malaysian job ads and AI test scores.</li>
           <li>When the real numbers come out, the speed that predicted best becomes more likely.</li>
-          <li>Before then, players guess on the questions above. Players who were right before count more.</li>
+          <li>Before then, players make predictions on the questions above. Players who were right before count more.</li>
         </ol>
-        <More summary="For experts: exact settings and accuracy">
+        <More summary="Methods and accuracy">
           <ul className="list-disc space-y-1 pl-5">
             {w.futures.map((f) => <li key={f.id}><span className="text-ink">{f.name}:</span> {f.blurb}</li>)}
           </ul>
           <p>The sources are DOSM Job Market Insights (job ads) and Epoch AI benchmark results (AI test scores). Replaying {r.questions} past releases set today&apos;s starting chances. Until the next release, the market&apos;s prices tilt them a little.</p>
-          <p>In this demo the other players are made by the computer, and most of them read the three futures themselves, so their prices mostly echo them. The new information comes from the real releases. Your guesses are scored the same way, but one player can only move the Yes % a little.</p>
+          <p>In this demo the other players are made by the computer, and most of them read the three futures themselves, so their prices mostly echo them. The new information comes from the real releases. Your predictions are scored the same way, but one player can only move the Yes % a little.</p>
           <p className="text-ink">How accurate was it on the {r.questions} replayed questions? (error score: 0 is perfect, lower is better)</p>
           <dl className="num max-w-md space-y-1.5">
             {[
@@ -55,33 +52,22 @@ export function ForecastDetails() {
               ["All players counting the same", r.brierUnweighted],
               [`${r.bestFuture} on its own`, r.brierBestFuture],
               ["Always saying 50%", r.brierCoin],
-              ["Always guessing what usually happened before", r.brierBaseRate],
+              ["Always predicting what usually happened before", r.brierBaseRate],
             ].map(([k, v]) => (
               <div key={k as string} className="flex justify-between gap-3"><dt>{k as string}</dt><dd>{(v as number).toFixed(3)}</dd></div>
             ))}
           </dl>
-          <p>Honestly: nothing here beats a coin flip by much, because one quarter&apos;s change is hard to call, and the gaps between the top rows are too small to matter. We also tried other public signals (seasonal patterns, the overall hiring cycle, other AI tests moving together); none did better. So the guessing does not make the app smarter than its own model. Its job is to keep score in public: every question settles on an official release, so the three AI speeds are judged on real numbers, not on opinion.</p>
+          <p>Honestly: nothing here beats a coin flip by much, because one quarter&apos;s change is hard to call, and the gaps between the top rows are too small to matter. We also tried other public signals (seasonal patterns, the overall hiring cycle, other AI tests moving together); none did better. So the predictions do not make the app smarter than its own model. Its job is to keep score in public: every question settles on an official release, so the three AI speeds are judged on real numbers, not on opinion.</p>
         </More>
         </More>
       </Card>
 
-      <details className="mt-4 rounded-[22px] bg-surface p-5 sm:p-6">
-        <summary className="min-h-11 cursor-pointer py-2 font-medium">Disagree? Set the speeds yourself</summary>
-        <p className="text-sm text-muted">Your choice changes every skill date, job score and your plan, and is marked as yours. The three always add up to 100%.</p>
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
-          {(["slow", "medium", "fast"] as const).map((k) => (
-            <label key={k} className="block text-sm">
-              <span className="font-medium">{FUTURE_NAME[k]}: <span className="num">{Math.round(sl[k] * 100)}%</span></span>
-              <input type="range" min={0} max={1} step={0.01} value={sl[k]} onChange={(e) => setCustom({ ...sl, [k]: +e.target.value })} className="mt-2" />
-            </label>
-          ))}
-        </div>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Btn onClick={() => act("override", { weights: sl })} disabled={busy}>Use my numbers</Btn>
-          {w.usingOverride && <Btn variant="ghost" onClick={() => { setCustom(null); act("override", { weights: null }); }} disabled={busy}>Go back to Jobbery&apos;s numbers</Btn>}
-        </div>
-      </details>
+      <div className="mt-4 rounded-[22px] bg-surface p-5 text-sm sm:p-6">
+        <p className="font-medium">Think we&apos;re wrong?</p>
+        <p className="mt-1 text-muted">Make your own prediction on an open question. It is scored when the official numbers come out, and good predictors move these numbers more.</p>
+        <a href="#open-questions" className="mt-2 inline-block underline decoration-control underline-offset-2 hover:text-ink">Go to the open questions</a>
+      </div>
 
-    </div>
+    </section>
   );
 }

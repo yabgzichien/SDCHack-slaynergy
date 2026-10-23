@@ -2,10 +2,10 @@
 // The server is the source of truth: it recomputes every order from the tape. A test checks that both agree.
 export const LIQUIDITY = 200; // must equal TAPE_LIQUIDITY in engine/tape.ts (a test checks the quote against the server)
 // Limits on one person's say, so the crowd of ~200 sets the price and no single player can swing it.
-export const MAX_MOVE = 0.03; // one guess moves the Yes % by at most 3 points; points beyond that are not spent
-export const MAX_PER_ANSWER = 100; // points one person can put into one answer (Yes and No together), across all guesses
-export const MAX_MOVE_WINDOW = 0.05; // all of one person's guesses on one answer move it by at most 5 points...
-export const MOVE_WINDOW_S = 600; // ...in any 10 minutes, so many small guesses cannot add up to one big push
+export const MAX_MOVE = 0.03; // one prediction moves the Yes % by at most 3 points; points beyond that are not spent
+export const MAX_PER_ANSWER = 100; // points one person can put into one answer (Yes and No together), across all predictions
+export const MAX_MOVE_WINDOW = 0.05; // all of one person's predictions on one answer move it by at most 5 points...
+export const MOVE_WINDOW_S = 600; // ...in any 10 minutes, so many small predictions cannot add up to one big push
 // How far one person's next buy on an answer may move it, given their earlier executions there.
 export function moveAllowance(executions: { t: number; action: "buy" | "sell"; priceBefore: number; priceAfter: number }[], t: number): number {
   const recent = executions.filter((e) => e.action === "buy" && e.t > t - MOVE_WINDOW_S && e.t <= t).reduce((a, e) => a + Math.abs(e.priceAfter - e.priceBefore), 0);

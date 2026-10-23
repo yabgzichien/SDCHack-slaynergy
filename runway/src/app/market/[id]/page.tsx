@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useApp } from "@/components/AppProvider";
 import { MarketBoard } from "@/components/MarketBoard";
-import { EventIcon, topicOf } from "@/components/MarketCards";
+import { AnsweredBadge, EventIcon, LiveBadge, topicOf } from "@/components/MarketCards";
 import { Btn, PageTitle, Skeleton } from "@/components/ui";
 
 // One question: should I buy Yes or No on this release?
@@ -26,6 +26,17 @@ export default function MarketEventPage() {
       <Link href="/market" className="mb-4 inline-block text-sm text-muted underline decoration-control underline-offset-2 hover:text-ink">All questions</Link>
       <div className="mb-2 flex items-center gap-3"><EventIcon eventId={ev.id} size={44} /><p className="text-sm text-muted"><span className="font-medium uppercase tracking-wide">{topicOf(ev.id).tag}</span><br />{ev.title}</p></div>
       <PageTitle title={ev.text} />
+      {ev.settled ? (
+        <div className="-mt-4 mb-5 flex flex-wrap items-center gap-3 rounded-2xl border border-[#cfd6df] bg-[#eef1f5] px-4 py-3 text-sm text-[#3c4655]">
+          <AnsweredBadge />
+          <span>This is a <b>past question</b>. The {ev.settles} answered it{ev.fact ? `: ${ev.fact}` : "."}</span>
+        </div>
+      ) : (
+        <div className="-mt-4 mb-5 flex flex-wrap items-center gap-3 rounded-2xl bg-risesoft px-4 py-3 text-sm">
+          <LiveBadge />
+          <span>Open for predictions. The answer comes from the {ev.settles}.</span>
+        </div>
+      )}
       <MarketBoard key={`${ev.id}-${ev.settled}`} event={ev} />
     </div>
   );

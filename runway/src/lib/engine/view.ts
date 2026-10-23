@@ -241,7 +241,7 @@ function viewCore(state: SessionState, release: 0 | 1): View {
   };
   const whatIfYou: View["whatIfYou"] = {};
   const soonest = profileSkills.find((x) => !expiryFor(x.skillId, wt).durable);
-  if (soonest && !world.usingOverride) {
+  if (soonest) {
     for (const e of world.events) if (e.whatIf) {
       const at = (w: Weights3) => fmtYear(expiryFor(soonest.skillId, w).expected);
       whatIfYou[e.id] = { skill: soonest.name, now: at(wt), yes: at(e.whatIf.yes), no: at(e.whatIf.no) };
@@ -345,7 +345,7 @@ function diffViews(a: View, b: View, state: SessionState): Change[] {
   const moved = kb.map((k) => ({ k: k.kind, d: k.influence - ka.find((z) => z.kind === k.kind)!.influence })).sort((x, y) => Math.abs(y.d) - Math.abs(x.d))[0];
   out.push({
     kind: "forecasters", text: `The computer-made ${KIND_LABEL[moved.k as keyof typeof KIND_LABEL]}s' vote changed the most (${moved.d > 0 ? "up" : "down"} ${Math.abs(moved.d).toFixed(2)}× on average).`,
-    why: "Players whose guesses were closer to the real answers got a bigger vote.", source: epochSrc,
+    why: "Players whose predictions were closer to the real answers got a bigger vote.", source: epochSrc,
   });
   if (state.profile) {
     const shifts = b.profileSkills.map((s) => {
@@ -355,14 +355,14 @@ function diffViews(a: View, b: View, state: SessionState): Change[] {
     for (const s of shifts) {
       out.push({
         kind: "skills", text: `${s.name}: AI could take it over by ${s.to} (was ${s.from}, ${Math.abs(s.m)} months ${s.m > 0 ? "later" : "sooner"}).`,
-        why: "Our guess of how fast AI is moving changed, so the date moved.", source: { name: "ILO 2025 exposure + Anthropic Economic Index + futures", url: sourceById.ilo.url, date: "weights as of 2026 Q2" },
+        why: "Our prediction of how fast AI is moving changed, so the date moved.", source: { name: "ILO 2025 exposure + Anthropic Economic Index + futures", url: sourceById.ilo.url, date: "weights as of 2026 Q2" },
       });
     }
-    if (!shifts.length) out.push({ kind: "skills", text: "None of your skill dates moved by a month or more.", why: "Our guess of how fast AI is moving changed too little to move any date.", source: epochSrc });
+    if (!shifts.length) out.push({ kind: "skills", text: "None of your skill dates moved by a month or more.", why: "Our prediction of how fast AI is moving changed too little to move any date.", source: epochSrc });
     const ra = new Map(a.matches.map((m) => [m.roleId, m.rank]));
     const moves = b.matches.map((m) => ({ t: m.title, from: ra.get(m.roleId), to: m.rank })).filter((m) => m.from !== m.to).slice(0, 5);
     for (const m of moves) {
-      out.push({ kind: "jobs", text: `${m.t}: now number ${m.to} on your list (was ${m.from ?? "not listed"}).`, why: "We rechecked each job with the new job-ad numbers and our new guess of how fast AI is moving.", source: dosmSrc });
+      out.push({ kind: "jobs", text: `${m.t}: now number ${m.to} on your list (was ${m.from ?? "not listed"}).`, why: "We rechecked each job with the new job-ad numbers and our new prediction of how fast AI is moving.", source: dosmSrc });
     }
     if (!moves.length) out.push({ kind: "jobs", text: "The job ranking did not change.", why: "The new numbers changed the scores a little, but not enough to change the order.", source: dosmSrc });
     if (a.plan && b.plan && (a.plan.roleId !== b.plan.roleId || a.plan.totalWeeks !== b.plan.totalWeeks)) {

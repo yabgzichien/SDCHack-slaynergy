@@ -1,5 +1,5 @@
 "use client";
-import { ViewTransition } from "react";
+import { ViewTransition, useSyncExternalStore } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Check, ChevronRight } from "lucide-react";
@@ -11,11 +11,16 @@ import { Btn, Card, PageTitle, Skeleton } from "@/components/ui";
 import { stateJobs } from "@/lib/engine/geo";
 import { roleById, type SectorId } from "@/lib/engine/data";
 
+// "/?intro=1" shows the landing page even with a profile, for demos and for checking the page.
+const wantsIntro = () => { try { return new URLSearchParams(window.location.search).get("intro") === "1"; } catch { return false; } };
+
 export default function Home() {
   const { view, state } = useApp();
+  const intro = useSyncExternalStore(noSubscribe, wantsIntro, () => false);
   if (!view || !state) return <Skeleton lines={4} />;
-  return state.profile ? <Dashboard /> : <LandingIntro />;
+  return state.profile && !intro ? <Dashboard /> : <LandingIntro />;
 }
+const noSubscribe = () => () => {};
 
 function Dashboard() {
   const { view, state } = useApp();
@@ -42,8 +47,8 @@ function Dashboard() {
   const nextStep = STEPS.findIndex((_, i) => status(i) !== "done");
   return (
     <div>
-      <PageTitle title={`${p.name === "You" ? "You" : p.name}, you have ${weeks} weeks to learn.`} aside={<Image src="/cockatiel-mascot.png" alt="" width={112} height={112} className="hidden h-28 w-28 object-contain sm:block" />}>
-        {plan ? `Your plan for ${plan.title} takes ${plan.totalWeeks} of them.` : "Pick a job to plan for."}
+      <PageTitle title={`${weeks} weeks to learn`} aside={<Image src="/cockatiel-mascot.png" alt="" width={112} height={112} className="hidden h-28 w-28 object-contain sm:block" />}>
+        {plan ? null : "Pick a job to plan for."}
       </PageTitle>
 
       {/* The dashboard's only step display: five cards on a track, done steps ticked, the next one raised. */}

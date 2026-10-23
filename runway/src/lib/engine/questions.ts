@@ -25,6 +25,8 @@ export const NEXT_QUARTER = "2026Q3"; // DOSM: Jul to Sep 2026, published 17 Nov
 export const NEXT_QUARTER_EPOCH = "2026Q4";
 export const LAST_BEFORE = "2026Q1"; // newest data visible in the "before" state
 
+// "2026-11-17" -> "17 Nov 2026", the form every other date on the page uses (and the one the translator localises).
+const isoDay = (iso: string) => { const [y, m, d] = iso.split("-").map(Number); return `${d} ${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][m - 1]} ${y}`; };
 const dosmShares = new Map(series.dosm.quarters.map((d) => [d.q, d.clerical_share]));
 const floorOf = (id: string) => {
   const v = series.epoch[id].frontier.map((x) => x.v);
@@ -86,7 +88,7 @@ export function makeQuestions(): Question[] {
       text: `Will a smaller part of Malaysia's job ads be for office admin jobs in ${quarterPlain(q)}?`,
       threshold: 0,
       source: { name: "DOSM Job Market Insights", url: sourceById.dosm.url },
-      settles: phase === "next" ? `DOSM release of ${sourceById.dosm.next ?? "next quarter"}` : `DOSM numbers for ${quarterPlain(q)}${published[q] ? ` (published ${published[q]})` : ""}`,
+      settles: phase === "next" ? `DOSM release of ${sourceById.dosm.next ? isoDay(sourceById.dosm.next) : "next quarter"}` : `DOSM numbers for ${quarterPlain(q)}${published[q] ? ` (published ${isoDay(published[q])})` : ""}`,
       reason: `Office admin jobs made up a smaller part of job ads in ${fell} of the last ${last4.length} quarters. In ${quarterPlain(prevQuarter(q))} they were ${lastShare?.toFixed(1)} in every 100 job ads (DOSM).`,
       phase,
       outcome: known && phase !== "next" ? dosmShares.get(q)! - dosmShares.get(prevQuarter(q))! < 0 : undefined,

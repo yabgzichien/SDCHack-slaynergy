@@ -13,5 +13,6 @@ import { TRUST } from "./trust";
 import { TASKCARD } from "./taskcard";
 import { MISC2 } from "./misc2";
 import { HUMAN_EDGE } from "./humanedge";
+import { SOURCES } from "./sources";
 
-export const ROWS: Row[] = [...ROLES, ...SKILLS, ...SDG, ...MISC, ...SKILLS_PAGE, ...JOBS, ...MAP, ...PLAN, ...FORECAST, ...START, ...TRUST, ...TASKCARD, ...MISC2, ...HUMAN_EDGE];
+export const ROWS: Row[] = [...ROLES, ...SKILLS, ...SDG, ...MISC, ...SKILLS_PAGE, ...JOBS, ...MAP, ...PLAN, ...FORECAST, ...START, ...TRUST, ...TASKCARD, ...MISC2, ...HUMAN_EDGE, ...SOURCES];
