@@ -86,10 +86,14 @@
   --color-cuesoft: var(--cue-soft);
   --color-cueink: var(--cue-ink);
   --font-sans: var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-instrument-serif), Georgia, serif;
+  --font-serif: var(--font-sans);
+  --font-mono: var(--font-sans);
 }
 
 html { -webkit-text-size-adjust: 100%; }
+/* One typeface for every piece of text: Instrument Sans. Forced so no component, form control, placeholder, SVG label or
+   browser default can fall back to a serif or monospace face. */
+html, html *, html *::before, html *::after, ::placeholder { font-family: var(--font-sans) !important; }
 .site-cursor { position: fixed; z-index: 2147483647; top: 0; left: 0; width: 56px; height: 56px; pointer-events: none; visibility: hidden; will-change: transform; }
 body.has-site-cursor, body.has-site-cursor * { cursor: none !important; }
 body {
@@ -102,7 +106,7 @@ body {
 }
 h1, h2, h3 { letter-spacing: -0.01em; }
 /* The greeting: a restrained editorial headline that keeps information approachable. */
-.greeting { font-family: var(--font-serif); font-weight: 400; line-height: 0.98; letter-spacing: -0.035em; }
+.greeting { font-family: var(--font-sans); font-weight: 700; line-height: 0.98; letter-spacing: -0.035em; }
 .hero-illustration { position: relative; min-height: 310px; overflow: hidden; border-radius: 0 0 96px 0; background: #c7e9c0; }
 .hero-illustration::before { content: ""; position: absolute; width: 430px; height: 430px; right: -95px; bottom: -175px; border-radius: 50%; background: #9bcb95; }
 .hero-illustration::after { content: ""; position: absolute; width: 250px; height: 250px; right: 30px; top: 38px; border-radius: 50% 50% 0 50%; background: #f1faee; }

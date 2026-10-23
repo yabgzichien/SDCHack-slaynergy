@@ -459,4 +459,13 @@ export const HUMAN_EDGE: Row[] = [
   ["The AI outlook", "Tinjauan AI", "AI 展望", "AI கண்ணோட்டம்"],
   ["How we calculate this", "Cara kami mengiranya", "我们如何计算", "இதை எப்படிக் கணக்கிடுகிறோம்"],
   ["Methods and accuracy", "Kaedah dan ketepatan", "方法与准确度", "முறைகளும் துல்லியமும்"],
+
+  // Courses page.
+  ["Courses for your next step", "Kursus untuk langkah seterusnya", "为你的下一步准备的课程", "உங்கள் அடுத்த அடிக்கான பாடநெறிகள்"],
+  ["{#n} real, free or low-cost online courses from providers such as Microsoft Learn, Khan Academy, Google and Harvard CS50, plus Malaysia's own programmes. Your plan is built from this same list. Every link was checked on the date shown, and hours are estimates.", "{n} kursus dalam talian sebenar, percuma atau kos rendah daripada penyedia seperti Microsoft Learn, Khan Academy, Google dan Harvard CS50, serta program Malaysia sendiri. Pelan anda dibina daripada senarai yang sama. Setiap pautan disemak pada tarikh yang ditunjukkan, dan jam adalah anggaran.", "{n} 门真实的免费或低价在线课程，来自 Microsoft Learn、Khan Academy、Google 和 Harvard CS50 等机构，另有马来西亚本地项目。你的计划就是从这份清单生成的。每个链接都在标注的日期核对过，课时为估算。", "Microsoft Learn, Khan Academy, Google, Harvard CS50 போன்றவர்களின் {n} உண்மையான, இலவச அல்லது குறைந்த செலவு இணையப் பாடநெறிகள், மலேசியாவின் சொந்தத் திட்டங்களுடன். உங்கள் திட்டம் இதே பட்டியலிலிருந்து உருவாகிறது. ஒவ்வொரு இணைப்பும் காட்டப்பட்ட தேதியில் சரிபார்க்கப்பட்டது; மணிநேரங்கள் மதிப்பீடுகள்."],
+  ["For a skill you need", "Untuk kemahiran yang anda perlukan", "你需要的技能", "உங்களுக்குத் தேவையான திறனுக்கு"],
+  ["Link checked {x}", "Pautan disemak {x}", "链接核对于 {x}", "இணைப்பு சரிபார்த்தது {x}"],
+  ["This site blocks automatic checks; open it to confirm.", "Laman ini menyekat semakan automatik; buka untuk mengesahkan.", "该网站阻止自动检查；请打开确认。", "இந்தத் தளம் தானியங்கி சோதனையைத் தடுக்கிறது; உறுதிப்படுத்தத் திறக்கவும்."],
+  ["Courses are run by their providers, not by Jobbery. Free means free to learn; some providers charge for a certificate. We do not track these courses; you tick one off when you finish it.", "Kursus dikendalikan oleh penyedia masing-masing, bukan Jobbery. Percuma bermaksud percuma untuk belajar; sesetengah penyedia mengenakan bayaran untuk sijil. Kami tidak menjejak kursus ini; anda tandakan apabila selesai.", "课程由各自的机构开设，不是 Jobbery。免费指学习免费，部分机构颁发证书要收费。我们不跟踪这些课程，你完成后自己打勾。", "பாடநெறிகளை அவற்றின் வழங்குநர்களே நடத்துகின்றனர், Jobbery அல்ல. இலவசம் என்பது கற்க இலவசம்; சில வழங்குநர்கள் சான்றிதழுக்குக் கட்டணம் வசூலிக்கின்றனர். நாங்கள் இவற்றைக் கண்காணிப்பதில்லை; முடித்ததும் நீங்களே குறியிடுங்கள்."],
+  ["with the AI practice, resume and advisor steps.", "dengan langkah latihan AI, resume dan penasihat.", "包括 AI 练习、简历和顾问步骤。", "AI பயிற்சி, சுயவிவரம், ஆலோசகர் படிகளுடன்."],
 ];

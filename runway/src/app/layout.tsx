@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Instrument_Sans, Instrument_Serif } from "next/font/google";
+import { Instrument_Sans } from "next/font/google";
 import "./globals.css";
 import { I18nProvider } from "@/components/I18nProvider";
 import { AppProvider } from "@/components/AppProvider";
@@ -10,7 +10,6 @@ import { SkipLink } from "@/components/SkipLink";
 import { CustomCursor } from "@/components/CustomCursor";
 
 const sans = Instrument_Sans({ subsets: ["latin"], variable: "--font-instrument-sans", display: "swap" });
-const serif = Instrument_Serif({ subsets: ["latin"], weight: "400", variable: "--font-instrument-serif", display: "swap" });
 
 export const metadata: Metadata = {
   title: "Jobbery: find a future-proof job before your time runs out",
@@ -21,10 +20,7 @@ export const viewport: Viewport = { width: "device-width", initialScale: 1, colo
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${sans.variable} ${serif.variable}`}>
-      {/* Libre Baskerville is requested at runtime because this workspace cannot fetch a new font during builds. */}
-      {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-      <head><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400;1,700&display=swap" /></head>
+    <html lang="en" className={`${sans.variable}`}>
       <body className="min-h-screen">
         <I18nProvider><AppProvider>
           <SkipLink />

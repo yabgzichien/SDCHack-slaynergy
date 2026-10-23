@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { ArrowDown, ArrowRight, Binoculars, BookOpen, Briefcase, Compass, Gauge, ListChecks, MapPin, RotateCcw, UserRound } from "lucide-react";
 import { useApp } from "./AppProvider";
@@ -28,9 +27,8 @@ const GUIDE = [
 ];
 
 export function LandingIntro() {
-  const { busy, catalog, view } = useApp();
+  const { view } = useApp();
   const { t } = useT();
-  const router = useRouter();
   const rootRef = useRef<HTMLDivElement>(null);
   const [playing, setSceneActive] = useState(true);
   const [replayKey, setReplayKey] = useState(0);
@@ -41,7 +39,6 @@ export function LandingIntro() {
   const ai = view ? aiCapability(view.world.asOfQuarter) : null;
   // Data-driven cards mount after the first render; re-observe them once the view arrives.
   const ready = !!view;
-  const demo = () => router.push("/start?sample=1");
 
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -143,7 +140,6 @@ export function LandingIntro() {
           <p className="mx-auto mt-3 max-w-xl text-base text-white/80">{t("Start with your resume or a few questions. You can check and change everything.")}</p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link href="/start" className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[#f8c982] px-7 text-base font-semibold text-[#203b2b] transition-transform hover:-translate-y-0.5">{t("Start now")} <ArrowRight size={18} aria-hidden /></Link>
-            <button onClick={demo} disabled={busy || !catalog} className="inline-flex min-h-12 items-center rounded-full border border-white/50 px-7 text-base font-semibold text-white hover:bg-white/10 disabled:opacity-50">{t("Try a sample")}</button>
           </div>
         </section>
 

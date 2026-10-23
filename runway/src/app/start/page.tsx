@@ -44,7 +44,7 @@ const blank = (cat: Catalog): Draft => ({
   name: "", status: "", age: "", state: "", move: "", moveTo: [], occupationId: "", education: cat.education.find((e) => e.id === "diploma")?.id ?? cat.education[0]?.id ?? "", study: "", years: 0, skills: [], months: 6, hours: 10, interests: [], resume: null, touched: {},
 });
 
-// "Try a sample" arrives here with every answer filled in from the made-up worker Hafiz, to check and change.
+// The demo resume (and the ?sample=1 link) arrives here with every answer filled in from the made-up worker Hafiz, to check and change.
 const wantsSample = () => { try { return new URLSearchParams(window.location.search).get("sample") === "1"; } catch { return false; } };
 const sampleDraft = (cat: Catalog): Draft | null => {
   const p = personas.find((x) => x.id === "hafiz");
@@ -65,23 +65,31 @@ function Wizard({ cat }: { cat: Catalog }) {
   // The wizard mounts only in the browser (after the catalog loads), so the saved draft can be read synchronously.
   // A half-finished draft only matters before the first save; once there is a profile, the profile wins.
   const [sample] = useState(() => wantsSample());
+  // A real saved profile. The made-up sample worker (synthetic) does not count: "Start now" begins blank, and the sample
+  // always opens on its first question with every answer filled in.
+  const own = !!state?.profile && !state.profile.personaId && !state.profile.synthetic;
+  // A draft saved while trying the sample belongs to the sample: "Start now" must begin blank, not on Hafiz's answers.
   const [saved] = useState<{ d: Draft; i: number } | null>(() => {
     if (sample) return null;
-    if (state?.profile && !state.profile.personaId) return null;
-    try { const raw = sessionStorage.getItem(KEY); return raw ? (JSON.parse(raw) as { d: Draft; i: number }) : null; } catch { return null; }
+    if (own) return null;
+    try {
+      const raw = sessionStorage.getItem(KEY);
+      const r = raw ? (JSON.parse(raw) as { d: Draft; i: number; sample?: boolean }) : null;
+      return r && !r.sample ? r : null;
+    } catch { return null; }
   });
   // Someone who already answered comes back to change an answer: open on the last screen with every question reachable.
-  const answered = !!state?.profile && !state.profile.personaId;
+  const answered = own && !sample;
   const [i, setI] = useState(() => answered ? STEPS.length - 1 : Math.min(saved?.i ?? 0, STEPS.length - 1));
   const [seen, setSeen] = useState(() => answered ? STEPS.length - 1 : Math.min(saved?.i ?? 0, STEPS.length - 1));
   const [d, setD] = useState<Draft>(() => {
     if (sample) { const s = sampleDraft(cat); if (s) return s; }
     if (saved) return { ...blank(cat), ...saved.d };
     const p = state?.profile;
-    if (p && !p.personaId) return { ...blank(cat), name: p.name === "You" ? "" : p.name, status: p.status ?? "working", moveTo: p.moveTo ?? [], age: p.age ? String(p.age) : "", state: p.state ?? "", move: p.move ?? "", occupationId: p.occupationId, education: p.education, study: p.study ?? "", years: p.years, skills: p.skills, months: p.months, hours: p.hoursPerWeek, interests: p.interests, touched: { education: true, study: !!p.study, skills: true } };
+    if (own && p) return { ...blank(cat), name: p.name === "You" ? "" : p.name, status: p.status ?? "working", moveTo: p.moveTo ?? [], age: p.age ? String(p.age) : "", state: p.state ?? "", move: p.move ?? "", occupationId: p.occupationId, education: p.education, study: p.study ?? "", years: p.years, skills: p.skills, months: p.months, hours: p.hoursPerWeek, interests: p.interests, touched: { education: true, study: !!p.study, skills: true } };
     return blank(cat);
   });
-  useEffect(() => { try { sessionStorage.setItem(KEY, JSON.stringify({ d, i })); } catch { /* ignore */ } }, [d, i]);
+  useEffect(() => { try { sessionStorage.setItem(KEY, JSON.stringify({ d, i, sample })); } catch { /* ignore */ } }, [d, i, sample]);
 
   const step: Step = STEPS[i];
   const occ = cat.occupations.find((o) => o.id === d.occupationId);
@@ -456,7 +464,7 @@ function ResumeStep({ d, setD, cat, onDone, autoSample }: { d: Draft; setD: (f: 
   const upload = (f: File) => { const fd = new FormData(); fd.append("file", f); scan({ method: "POST", body: fd }); };
   const pasteScan = (t: string, sample = false) => scan({ method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text: t }) }, sample);
 
-  // Arriving from "Try a sample": scan the made-up resume once, without asking.
+  // Arriving from a demo link: scan the made-up resume once, without asking.
   const autoTried = useRef(false);
   useEffect(() => {
     if (autoSample && !d.resume && !autoTried.current) { autoTried.current = true; pasteScan(SAMPLE_RESUME, true); }
@@ -472,10 +480,10 @@ function ResumeStep({ d, setD, cat, onDone, autoSample }: { d: Draft; setD: (f: 
           {d.resume.fixes.length > 0 && <div className="py-3"><dt className="text-sm text-muted">Fix first</dt><dd className="mt-1 text-sm"><ul className="list-disc pl-5">{d.resume.fixes.map((f) => <li key={f}>{f}</li>)}</ul></dd></div>}
         </dl>
         {d.resume.sample && (
-          <details className="mt-3 rounded-[22px] bg-surface px-5 py-3">
-            <summary className="cursor-pointer text-sm font-medium">Preview the sample resume</summary>
+          <section className="mt-3 rounded-[22px] bg-surface px-5 py-4" aria-labelledby="demo-resume-title">
+            <h2 id="demo-resume-title" className="text-sm font-medium">The demo resume we scanned</h2>
             <div className="mt-3 max-h-[34rem] overflow-y-auto rounded-2xl bg-surface2 p-3 sm:p-5"><ResumePaper text={SAMPLE_RESUME} /></div>
-          </details>
+          </section>
         )}
         <p className="mt-3 text-sm text-muted">The full report, with before-and-after examples, is on <Link href="/resume" className="underline decoration-control underline-offset-2">Resume report</Link>. Your resume text was not saved.</p>
         <div className="mt-8 flex flex-wrap gap-2">
@@ -497,7 +505,11 @@ function ResumeStep({ d, setD, cat, onDone, autoSample }: { d: Draft; setD: (f: 
           </button>
           <input ref={fileRef} type="file" accept=".pdf,.docx,.txt,.md,application/pdf,text/plain" className="sr-only" onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); }} />
           <button type="button" onClick={() => setPaste(true)} className="press flex min-h-14 items-center rounded-2xl bg-surface px-5 text-left hover:bg-surface2">Paste the text instead</button>
-          <button type="button" onClick={() => pasteScan(SAMPLE_RESUME, true)} disabled={busy} className="press flex min-h-14 items-center rounded-2xl bg-surface px-5 text-left hover:bg-surface2">Use a made-up sample resume</button>
+          <button type="button" onClick={() => pasteScan(SAMPLE_RESUME, true)} disabled={busy}
+            className="press flex min-h-16 items-center gap-3 rounded-2xl bg-[#f8c982] px-5 text-left text-[#203b2b] shadow-[0_2px_8px_rgb(201_116_26/0.25)] ring-2 ring-cue hover:bg-[#f5bb62] disabled:opacity-50">
+            <Sparkles size={20} aria-hidden className="shrink-0" />
+            <span><span className="block text-base font-semibold">Use a demo resume</span><span className="block text-sm">New here? One click fills in every answer for you.</span></span>
+          </button>
           <button type="button" onClick={onDone} className="press flex min-h-14 items-center rounded-2xl px-5 text-left underline decoration-control underline-offset-2">No resume, I will answer questions</button>
         </div>
       ) : (
