@@ -7,7 +7,7 @@ import { useApp } from "@/components/AppProvider";
 import { LandingIntro } from "@/components/LandingIntro";
 import { STEPS, useJourney } from "@/components/Journey";
 import { RunwayStrip } from "@/components/RunwayStrip";
-import { Btn, Card, PageTitle, Skeleton } from "@/components/ui";
+import { Btn, Card, PageTitle } from "@/components/ui";
 import { stateJobs } from "@/lib/engine/geo";
 import { roleById, type SectorId } from "@/lib/engine/data";
 
@@ -17,8 +17,9 @@ const wantsIntro = () => { try { return new URLSearchParams(window.location.sear
 export default function Home() {
   const { view, state } = useApp();
   const intro = useSyncExternalStore(noSubscribe, wantsIntro, () => false);
-  if (!view || !state) return <Skeleton lines={4} />;
-  return state.profile && !intro ? <Dashboard /> : <LandingIntro />;
+  // Render the public landing and intro immediately while personal data loads.
+  // Only the returning user's dashboard needs the session response.
+  return view && state?.profile && !intro ? <Dashboard /> : <LandingIntro />;
 }
 const noSubscribe = () => () => {};
 

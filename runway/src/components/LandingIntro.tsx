@@ -135,11 +135,11 @@ export function LandingIntro() {
           </ol>
         </section>
 
-        <section className="landing-reveal mx-auto my-6 w-[min(1180px,calc(100%-42px))] rounded-[28px] bg-gradient-to-br from-[#305d40] to-[#22442f] px-6 py-10 text-center text-white sm:px-10" aria-labelledby="cta-title">
-          <h2 id="cta-title" className="text-[clamp(28px,3.4vw,42px)] leading-tight">{t("Ready to find your next job?")}</h2>
-          <p className="mx-auto mt-3 max-w-xl text-base text-white/80">{t("Start with your resume or a few questions. You can check and change anything.")}</p>
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Link href="/start" className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[#f8c982] px-7 text-base font-semibold text-[#203b2b] transition-transform hover:-translate-y-0.5">{t("Start now")} <ArrowRight size={18} aria-hidden /></Link>
+        <section className="landing-start-cta landing-reveal text-center text-white" aria-labelledby="cta-title">
+          <h2 id="cta-title" className="text-[clamp(26px,3vw,36px)] leading-tight">{t("Ready to find your next job?")}</h2>
+          <p className="mx-auto mt-3 max-w-xl text-base text-white/90">{t("Start with your resume or a few questions. You can check and change anything.")}</p>
+          <div className="mt-4 flex flex-wrap justify-center gap-3">
+            <Link href="/start" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#f8c982] px-6 text-base font-semibold text-[#203b2b] transition-transform hover:-translate-y-0.5">{t("Start now")} <ArrowRight size={18} aria-hidden /></Link>
           </div>
         </section>
 

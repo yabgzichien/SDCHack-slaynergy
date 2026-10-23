@@ -106,7 +106,7 @@
   max-width: none;
   padding: 20px 330px 20px 24px;
   border-radius: 22px;
-  background: linear-gradient(110deg, var(--surface), #edf7eb);
+  background: linear-gradient(110deg, rgb(245 221 163 / .3), rgb(239 229 190 / .38));
 }
 
 .statistics-hero-icon {
@@ -115,7 +115,7 @@
   height: 56px;
   place-items: center;
   border-radius: 50%;
-  background: var(--accent-soft);
+  background: rgb(221 193 119 / .22);
   color: var(--accent-ink);
 }
 

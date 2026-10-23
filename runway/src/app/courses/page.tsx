@@ -5,7 +5,7 @@ import { Suspense, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ArrowRight, BookOpen, Check, ChevronDown, ChevronUp, Clock3, ExternalLink, Landmark, RotateCcw, Search, Sprout } from "lucide-react";
+import { ArrowRight, BookOpen, Check, ChevronDown, ChevronUp, Clock3, ExternalLink, GraduationCap, Landmark, RotateCcw, Search, Sprout } from "lucide-react";
 import coursesJson from "../../../data/courses.json";
 import skillsJson from "../../../data/skills.json";
 import logosJson from "../../../data/logos.json";
@@ -105,6 +105,7 @@ function Courses() {
       <header className="statistics-hero statistics-reveal">
         <h1 className="statistics-hero-title"><span className="statistics-headline-highlight">Courses</span>{" "}<span className="courses-hero-subtitle">for your next step!</span></h1>
         <div className="statistics-hero-banner">
+          <span className="statistics-hero-icon" aria-hidden="true"><GraduationCap size={30} strokeWidth={2.4} /></span>
           <p>{`Explore ${COURSES.length} free and low-cost courses from trusted providers, plus Malaysian learning programmes.`}</p>
         </div>
         <div className="statistics-hero-art" aria-hidden="true">

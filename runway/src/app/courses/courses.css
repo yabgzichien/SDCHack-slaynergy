@@ -51,17 +51,23 @@
 @media (hover:hover) { .courses-results .courses-card:hover { transform:translateY(-2px); border-color:#c7cfc3; box-shadow:0 8px 22px rgb(49 43 31 / .06); } }
 @media (prefers-reduced-motion:reduce) { .courses-card, .courses-card:hover { transform:none; transition:none; } }
 .app-page-main:has(> .courses-page) { padding-top:20px; }
-.courses-page.statistics-page > .statistics-hero { gap:12px; padding-top:0; margin-bottom:28px; min-height:140px; justify-content:start; align-content:start; }
-.courses-page.statistics-page .statistics-hero-banner { display:block; background:transparent; border-radius:0; padding:0 240px 0 0; }
-.courses-page.statistics-page .statistics-hero-banner p { margin:0; max-width:58ch; font-size:1rem; line-height:1.6; color:#66716b; }
-.courses-page .statistics-hero-art { top:0; height:140px; }
-.courses-page .statistics-hero-mascot { width:160px; right:36px; }
+.courses-page.statistics-page > .statistics-hero { gap:10px; padding-top:0; margin-bottom:18px; justify-content:stretch; align-content:start; grid-template-columns:minmax(0, 1fr); }
+.courses-page.statistics-page h1.statistics-hero-title { padding-inline:165px; text-align:center; }
+.courses-page.statistics-page .statistics-hero-banner { display:flex; align-items:center; justify-content:center; gap:12px; min-height:72px; border-radius:18px; padding:12px 165px 12px 20px; }
+.courses-page .statistics-hero-icon { flex-basis:52px; height:52px; }
+.courses-page .statistics-hero-icon svg { width:32px; height:32px; }
+.courses-page.statistics-page .statistics-hero-banner p { margin:0; max-width:58ch; font-size:1rem; line-height:1.65; color:var(--muted); text-align:center; }
+.courses-page .statistics-hero-art { top:auto; bottom:2px; height:132px; }
+.courses-page .statistics-hero-mascot { width:132px; right:16px; }
+@media (min-width:1100px) {
+  .courses-page.statistics-page .statistics-hero-banner p { max-width:none; white-space:nowrap; font-size:clamp(.875rem, 1.15vw, 1rem); }
+}
 @media (max-width:700px) { .courses-page .statistics-hero-mascot { width:104px; right:28px; } }
 @media (max-width:700px) {
-  .courses-page.statistics-page > .statistics-hero { gap:10px; min-height:0; margin-bottom:24px; }
-  .courses-page.statistics-page h1.statistics-hero-title { min-height:104px; }
-  .courses-page .statistics-hero-art { height:104px; }
-  .courses-page.statistics-page .statistics-hero-banner { padding:0; }
+  .courses-page.statistics-page > .statistics-hero { gap:10px; margin-bottom:18px; }
+  .courses-page.statistics-page h1.statistics-hero-title { min-height:104px; padding-left:0; padding-right:140px; }
+  .courses-page .statistics-hero-art { top:0; bottom:auto; height:104px; }
+  .courses-page.statistics-page .statistics-hero-banner { gap:10px; min-height:0; padding:12px; }
   .courses-page .statistics-hero-banner p { padding-right:0; }
 }
 @media (prefers-reduced-transparency:reduce) {
