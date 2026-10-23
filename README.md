@@ -43,6 +43,7 @@ SDC Hackathon 2026 · Domain 1: Aiversecity Future-Ready Workforce · Licence: A
 15. [Run it](#15-run-it)
 16. [Project structure](#16-project-structure)
 17. [How we used Replit and RunPod](#17-how-we-used-replit-and-runpod)
+18. [How we use AI](#18-how-we-use-ai)
 
 ---
 
@@ -486,6 +487,48 @@ For the advisor passcode and a judge's walkthrough, see [`runway/README.md`](run
 **Replit.** We wrote part of the code on Replit and host the live app there, using its built-in PostgreSQL for sessions and plans (see [Run it](#15-run-it) for the `DATABASE_URL` and `SESSION_SECRET` settings).
 
 **RunPod.** We did not use RunPod. Nothing needs a GPU on our side: the AI resume reader calls Qwen3.8 27B on Groq's hosted API, resume scoring is rule-based, and the forecasting engine is plain TypeScript.
+
+## 18. How we use AI
+
+Jobbery uses AI in two ways: one GenAI model that reads resumes, and a forecasting engine that learns from data. Neither one makes decisions for the worker.
+
+### 18.1 GenAI resume reader
+
+| | |
+|---|---|
+| **Model** | Qwen3.8 27B (`qwen/qwen3.8-27b`), an open-weight model, through the Groq API |
+| **Code** | `runway/src/lib/server/ai-resume.ts`, called from `runway/src/app/api/resume/route.ts` |
+| **Must-have it serves** | Skills profile intake |
+| **Switch** | "Also let AI read it" checkbox on the resume page (on by default) |
+
+**What it does.** After the rule-based scan, the model reads the resume and returns JSON with two things:
+1. **Extra skills** the keyword rules missed. They can only come from Jobbery's own list of 80 skills, and each one must quote the resume line it is based on.
+2. **Better wording** for up to 5 weak lines (for example "Responsible for processing loan applications" becomes "Processed [how many] loan applications and verified supporting documents").
+
+**The worker stays in control.** AI skills appear as chips marked "· AI", unticked, with their quoted evidence. Each rewrite has Accept and Reject buttons. An accepted line can be edited, then copied into the worker's own resume. Nothing changes unless the worker chooses it. The resume score always comes from the rules, never from the AI.
+
+**Checks so it cannot make things up.** The server drops anything the resume does not support (`checkAiRead`, tested in `runway/tests/ai-resume.test.ts`):
+- a skill ID that is not on Jobbery's list, or whose quote is not in the resume
+- a rewrite of a line that is not in the resume
+- a rewrite that adds a number the original line does not have (missing figures must be placeholders like `[how many]`)
+
+The prompt also tells the model not to add purposes or overstate the role ("helped with" becomes "Supported", never "Led"), and to ignore instructions written inside the resume. We tested this with a resume that tried to inject a fake skill and fake numbers; both were ignored.
+
+**Privacy.** The text is read in memory for that request and never stored or logged. If AI is on, it is sent once to Groq to be read. Only counts (how many AI skills and rewrites) go in the event log.
+
+**Fallback.** With no `GROQ_API_KEY`, a Groq error, or a timeout (30 s), the rule scan runs alone and the page says so. Groq's free tier allows about 1,000 output tokens a minute (about two scans). After a rate-limit reply, the server waits once if the wait is short, and otherwise falls back to the rules.
+
+### 18.2 A forecast that learns
+
+The forecasting engine (`runway/src/lib/engine/`) is statistical learning, not a language model. It keeps three possible speeds of AI change (slow, medium, fast) and weights them by how well each one predicted past official releases (DOSM job ads, Epoch AI benchmarks): log-likelihood scoring with fading memory, a form of Bayesian model averaging. A prediction market (LMSR, points only) adds the crowd's view of the next release. When a release settles the questions, the weights update, and so do every worker's skill dates, job ranking and plan. See [section 8](#8-handling-uncertainty-how-the-forecasting-works).
+
+### 18.3 What is not AI
+
+Matching, the resume score, plans and every explanation are computed by readable rules and templates, so the same inputs always give the same answer and nothing invents jobs, courses or statistics. There is no chatbot.
+
+### 18.4 AI used to build Jobbery
+
+We used Claude Code (Anthropic) as a coding assistant while writing this repository. All code was reviewed and tested by the team.
 
 ---
 

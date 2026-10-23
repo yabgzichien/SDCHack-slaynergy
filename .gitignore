@@ -70,3 +70,7 @@ secrets/
 *.avi
 *.mkv
 *.m4v
+
+# Build caches and editor lock files
+pitch-deck/build/*.whl
+.~lock.*#
