@@ -180,7 +180,7 @@ function Courses() {
         ) : (
           <div className="courses-empty"><BookOpen size={26} aria-hidden /><h3>No courses match</h3><p>Try another skill or clear the search.</p><button onClick={() => { setSkill(ALL); setQ(""); setCost("any"); }}>Show all courses</button></div>
         )}
-        <p className="courses-footnote">Courses are run by their providers, not by Jobbery. Free means free to learn; some providers charge for a certificate.</p>
+        <p className="courses-footnote">Courses are run by their providers, not by Jobbery — free means free to learn; some providers charge for a certificate.</p>
       </section>
     </div>
   );

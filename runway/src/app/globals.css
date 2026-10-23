@@ -2,6 +2,9 @@
 
 /* Jobbery · professional career guidance, with a quiet editorial finish. */
 :root {
+  --font-body: "Lora", Georgia, serif;
+  --font-heading: "Ranade-Variable", "Ranade", Arial, sans-serif;
+  --font-brand: "Playfair Display", Georgia, serif;
   color-scheme: only light; /* one designed theme: browser dark mode or force-dark must not recolour half the page */
   --bg: #fffdf8;
   --surface: #f1faee;
@@ -52,8 +55,8 @@
   --color-negative: var(--negative);
   --color-demo: var(--demo);
   --color-demosoft: var(--demo-soft);
-  --font-sans: var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-instrument-serif), Georgia, serif;
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-heading);
 }
 
 html { -webkit-text-size-adjust: 100%; }
@@ -67,9 +70,9 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
-h1, h2, h3 { letter-spacing: -0.01em; }
+h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); letter-spacing: -0.01em; }
 /* The greeting: a restrained editorial headline that keeps information approachable. */
-.greeting { font-family: var(--font-serif); font-weight: 400; line-height: 0.98; letter-spacing: -0.035em; }
+.greeting { font-family: var(--font-heading); font-weight: 600; line-height: 0.98; letter-spacing: -0.035em; }
 .hero-illustration { position: relative; min-height: 310px; overflow: hidden; border-radius: 0 0 96px 0; background: #c7e9c0; }
 .hero-illustration::before { content: ""; position: absolute; width: 430px; height: 430px; right: -95px; bottom: -175px; border-radius: 50%; background: #9bcb95; }
 .hero-illustration::after { content: ""; position: absolute; width: 250px; height: 250px; right: 30px; top: 38px; border-radius: 50% 50% 0 50%; background: #f1faee; }
@@ -105,3 +108,4 @@ input[type="range"] { accent-color: var(--accent); width: 100%; }
 }
 
 /* Job map: state names drawn by the app over the shapes */
+

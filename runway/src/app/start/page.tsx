@@ -149,7 +149,7 @@ function Wizard({ cat }: { cat: Catalog }) {
         </ol>
       </div>
 
-      <form onSubmit={(e) => { e.preventDefault(); if (step === "where") finish(); else next(); }}>
+      <form key={step} className="question-panel" onSubmit={(e) => { e.preventDefault(); if (step === "where") finish(); else next(); }}>
         {step === "name" && (
           <Q title="First, a little about you" help="Your name is optional. We use it to greet you and on your plan, never to choose or rank jobs.">
             <label className="block">
@@ -315,7 +315,7 @@ function Wizard({ cat }: { cat: Catalog }) {
 function Group({ icon: Icon, label, note, children }: { icon: LucideIcon; label: string; note: string; children: ReactNode }) {
   return (
     <fieldset className="mb-8 last:mb-0">
-      <legend className="mb-3 flex items-center gap-2 text-base font-medium"><Icon size={18} strokeWidth={1.8} aria-hidden />{label}</legend>
+      <legend className="onboarding-subheadline"><span className="onboarding-subheadline-icon"><Icon size={18} strokeWidth={2} aria-hidden /></span>{label}</legend>
       {children}
       <p className="mt-2 text-sm text-muted">{note}</p>
     </fieldset>
@@ -330,7 +330,7 @@ function Q({ title, help, children }: { title: string; help?: string; children: 
   return (
     <section ref={box}>
       <div className="flex items-center justify-between gap-4">
-        <h1 ref={ref} tabIndex={-1} className="greeting text-[1.75rem] outline-none sm:text-[2.6rem]">{title}</h1>
+        <h1 ref={ref} tabIndex={-1} className="greeting onboarding-question-title text-[1.75rem] outline-none sm:text-[2.6rem]">{title}</h1>
         <Image src="/cockatiel-thinking.png" alt="" width={88} height={88} className="h-12 w-12 shrink-0 object-contain sm:h-14 sm:w-14" />
       </div>
       {help && <p className="mt-1 text-base text-muted">{help}</p>}

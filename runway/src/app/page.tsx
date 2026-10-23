@@ -6,17 +6,19 @@ import { useApp } from "@/components/AppProvider";
 import { LandingIntro } from "@/components/LandingIntro";
 import { STEPS, useJourney } from "@/components/Journey";
 import { RunwayStrip } from "@/components/RunwayStrip";
-import { Btn, Card, PageTitle, Skeleton } from "@/components/ui";
+import { Btn, Card, PageTitle } from "@/components/ui";
 import { stateJobs } from "@/lib/engine/geo";
 import { roleById, type SectorId } from "@/lib/engine/data";
 
 export default function Home() {
-  const { view, state } = useApp();
-  if (!view || !state) return <Skeleton lines={4} />;
-  return state.profile ? <Dashboard /> : <LandingIntro />;
+  // The root URL is always the public welcome page. A saved profile is kept by
+  // AppProvider, and users continue exactly where they were by refreshing that
+  // page or using the dashboard in the profile menu. Otherwise reopening the
+  // local URL after a previous session bypasses the landing transition.
+  return <LandingIntro />;
 }
 
-function Dashboard() {
+export function Dashboard() {
   const { view, state } = useApp();
   const { status } = useJourney();
   const v = view!, st = state!, p = st.profile!;

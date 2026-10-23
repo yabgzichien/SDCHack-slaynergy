@@ -26,8 +26,9 @@ function ReleaseNotice() {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const path = usePathname();
-  const { state } = useApp();
-  const home = (path === "/" && !state?.profile) || path === "/about";
+  // The root URL is always the public landing page, including for someone who
+  // already has saved results. Their progress remains available at /dashboard.
+  const home = path === "/" || path === "/about";
   const start = path === "/start";
   const courses = path === "/courses";
   const isPublicLayout = home || start || courses;

@@ -38,12 +38,12 @@ export function H({ children, sub, level = 2 }: { children: ReactNode; sub?: Rea
 }
 
 // The screen's title: one serif sentence that answers the screen's question, with one plain line under it.
-export function PageTitle({ title, children, aside }: { step?: string; title: ReactNode; children?: ReactNode; aside?: ReactNode }) {
+export function PageTitle({ title, children, aside, wide = false }: { step?: string; title: ReactNode; children?: ReactNode; aside?: ReactNode; wide?: boolean }) {
   return (
     <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
-      <div className="max-w-3xl">
+      <div className={wide ? "max-w-5xl" : "max-w-3xl"}>
         <h1 className="greeting text-[1.75rem] sm:text-[2.75rem]">{title}</h1>
-        {children && <p className="mt-3 text-base text-muted">{children}</p>}
+        {children && <div className="mt-3 text-base text-muted">{children}</div>}
       </div>
       {aside}
     </header>

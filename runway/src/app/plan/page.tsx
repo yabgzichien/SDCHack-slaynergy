@@ -59,7 +59,7 @@ export default function PlanPage() {
             )}
           </div>
           {next.activity === "resume" && !view.resume && <p className="mt-3 text-xs text-muted">Scan your resume first. Add the courses you finish and your portfolio piece as you go.</p>}
-          {next.activity && next.activity !== "resume" && <p className="mt-3 text-xs text-muted">This step is done when you save the work in Jobbery.</p>}
+          {next.activity && next.activity !== "resume" && <p className="mt-3 text-xs text-muted">This step is done when you save the work in Jobbery</p>}
           {next.checked && <p className="mt-3 text-xs text-muted">Link checked {next.checked}. Hours are estimates.</p>}
         </Card>
       )}

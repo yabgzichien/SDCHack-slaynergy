@@ -40,8 +40,8 @@ export default function SkillsPage() {
 
   return (
     <div>
-      <PageTitle title={fading.length ? `AI could do most of ${fading.length} of your ${mine.length} skills before 2031.` : `AI is unlikely to take over any of your ${mine.length} skills before 2031.`}>
-        Each date below is roughly when AI could do most of the work for that skill{speed === likely ? "" : `, if AI improves ${SPEED[speed].name.toLowerCase()}`}. After that date, the skill alone is less likely to get you hired. {lasting.length ? `Your safest skills: ${lasting.slice(0, 2).map((s) => s.name.toLowerCase()).join(" and ")}.` : ""}
+      <PageTitle wide title={fading.length ? <>AI could do most of <span className="skills-count-highlight">{fading.length} of your {mine.length} skills</span> before 2031.</> : `AI is unlikely to take over any of your ${mine.length} skills before 2031.`}>
+        <p>Each date below is roughly when AI could do most of the work for that skill{speed === likely ? "" : `, if AI improves ${SPEED[speed].name.toLowerCase()}`}. After that date, the skill alone is less likely to get you hired. {lasting.length ? `Your safest skills: ${lasting.slice(0, 2).map((s) => s.name.toLowerCase()).join(" and ")}.` : ""}</p>
       </PageTitle>
 
       <Card tone="raised">
