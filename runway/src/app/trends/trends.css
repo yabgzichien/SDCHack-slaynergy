@@ -3,6 +3,42 @@
   font-weight: 700;
 }
 
+.app-page-main:has(> .statistics-page) {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .statistics-page.statistics-motion-ready .statistics-reveal {
+    transition: opacity 420ms ease-out, transform 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition-delay: var(--statistics-reveal-delay, 0ms);
+  }
+
+  .statistics-page.statistics-motion-ready .statistics-reveal:not(.is-visible):not(:focus-within) {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .statistics-page.statistics-motion-ready .statistics-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+.statistics-page :is(h2, h3) {
+  font-size: clamp(1.5rem, 1.25rem + 0.75vw, 1.75rem);
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.statistics-page :is(h2, h3) + p {
+  margin-top: 0.5rem;
+}
+
 .app-page-main:has(> .forecast-page, > .leaderboard-page) {
   padding-top: 24px;
 }
@@ -40,4 +76,184 @@
   background: linear-gradient(transparent 58%, #f8c982 58%, #f8c982 94%, transparent 94%);
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
+}
+
+.statistics-page > .statistics-hero {
+  position: relative;
+  display: grid;
+  gap: 24px;
+  margin-bottom: 40px;
+  padding-top: 12px;
+  text-align: left;
+}
+
+.statistics-page h1.statistics-hero-title {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  padding-right: 300px;
+  font-size: clamp(2rem, 3.6vw, 3.25rem);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+
+.statistics-page .statistics-hero-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  max-width: none;
+  padding: 20px 330px 20px 24px;
+  border-radius: 22px;
+  background: linear-gradient(110deg, var(--surface), #edf7eb);
+}
+
+.statistics-hero-icon {
+  display: grid;
+  flex: 0 0 56px;
+  height: 56px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.statistics-page .statistics-hero-banner p {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+.statistics-hero-art {
+  position: absolute;
+  right: 0;
+  top: 12px;
+  bottom: auto;
+  width: 310px;
+  height: 203px;
+  pointer-events: none;
+}
+
+.statistics-hero-mascot {
+  position: absolute;
+  right: 60px;
+  bottom: 0;
+  width: 270px;
+  height: auto;
+  object-fit: contain;
+}
+
+.statistics-page .source-disclosure-toggle {
+  position: relative;
+  padding-right: 80px;
+}
+
+.statistics-page .source-disclosure-toggle::after {
+  content: "";
+  position: absolute;
+  right: 8px;
+  bottom: 3px;
+  width: 62px;
+  height: 62px;
+  background: url("/cockatiel-peeking.png") center / contain no-repeat;
+  pointer-events: none;
+}
+
+.statistics-opportunities-heading {
+  position: relative;
+  padding-right: 102px;
+  isolation: isolate;
+}
+.statistics-opportunities-heading::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -8px -8px 0;
+  border-radius: 14px;
+  background: linear-gradient(110deg, rgb(248 201 130 / 10%), rgb(248 201 130 / 18%));
+}
+
+.statistics-risk-heading::before {
+  background: linear-gradient(110deg, #e5ebe2, #d7e1d3);
+}
+
+.statistics-page .statistics-chart-heading {
+  position: relative;
+  display: flow-root;
+  isolation: isolate;
+}
+
+.statistics-page .statistics-chart-heading::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -8px -8px 4px;
+  border-radius: 14px;
+}
+
+.statistics-page :is(.statistics-hiring-heading, .statistics-speed-heading, .statistics-fading-heading, .statistics-learning-heading)::before {
+  background: linear-gradient(110deg, rgb(111 166 106 / 10%), rgb(111 166 106 / 18%));
+}
+
+.statistics-page .statistics-chart-heading-bird {
+  float: right;
+  width: 96px;
+  height: auto;
+  margin-top: -8px;
+  margin-left: 16px;
+  pointer-events: none;
+}
+
+.statistics-opportunities-bird {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 96px;
+  height: auto;
+  pointer-events: none;
+}
+
+.statistics-page .job-group-card {
+  padding: 16px 14px 10px;
+  border: 1px solid color-mix(in srgb, var(--exposure-color) 30%, var(--raised));
+  background: var(--raised);
+}
+
+.statistics-page .job-group-title {
+  margin-bottom: 8px;
+  font-size: 0.9375rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.statistics-page .job-group-exposure {
+  display: inline-block;
+  margin-bottom: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--exposure-color) 14%, var(--raised));
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+@media (max-width: 900px) {
+  .statistics-page h1.statistics-hero-title { padding-right: 290px; }
+  .statistics-page .statistics-hero-banner { padding-right: 320px; }
+  .statistics-hero-art { width: 310px; height: 210px; }
+  .statistics-hero-mascot { width: 280px; right: 38px; }
+}
+
+@media (max-width: 700px) {
+  .statistics-page > .statistics-hero { gap: 20px; padding-top: 0; margin-bottom: 28px; }
+  .statistics-page h1.statistics-hero-title { padding-right: 140px; }
+  .statistics-page .statistics-hero-banner { gap: 12px; padding: 20px 16px; }
+  .statistics-hero-icon { flex-basis: 40px; height: 40px; }
+  .statistics-hero-icon svg { width: 23px; height: 23px; }
+  .statistics-hero-art { top: 0; bottom: auto; width: 140px; height: 84px; }
+  .statistics-hero-mascot { right: 30px; width: 112px; }
 }

@@ -5,6 +5,7 @@ handoff.md
 # Local tooling
 .claude/
 .taste-skill/
+runway/design-references/
 
 # Documents: only README.md is committed unless the owner says otherwise
 *.md
@@ -27,10 +28,17 @@ secrets/
 *.pdf
 *.png
 !runway/public/cockatiel-mascot.png
+!runway/public/cockatiel-peeking.png
+!runway/public/cockatiel-statistics-header.png
 !runway/public/cockatiel-cursor.png
 !runway/public/cockatiel-cursor-art.png
 !runway/public/cockatiel-ai-icon.png
 !runway/public/cockatiel-welcome.png
+!runway/public/cockatiel-worried.png
+!runway/public/cockatiel-dejected.png
+!runway/public/cockatiel-spectacles.png
+!runway/public/cockatiel-sunglasses.png
+!runway/public/cockatiel-reading.png
 !runway/public/cockatiel-sdg-blocks.png
 !runway/public/sdg-block-stack.png
 !runway/public/cockatiel-landing.png

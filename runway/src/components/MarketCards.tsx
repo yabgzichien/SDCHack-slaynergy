@@ -144,7 +144,8 @@ export function FeaturedMarkets({ events }: { events: EventView[] }) {
           </div>
         )}
       </div>
-      <Link href={`/market/${encodeURIComponent(e.id)}`} className="mt-3 block text-2xl font-semibold leading-tight hover:underline sm:text-[1.75rem]">{e.title}</Link>
+      <h3><Link href={`/market/${encodeURIComponent(e.id)}`} className="mt-3 block text-2xl font-semibold leading-tight hover:underline sm:text-[1.75rem]">{e.short}</Link></h3>
+      <p className="mt-2 font-medium">{e.title}</p>
       <p className="mt-1 text-sm text-muted">{e.text}</p>
 
       <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">

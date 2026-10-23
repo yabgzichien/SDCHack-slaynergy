@@ -1,4 +1,6 @@
 "use client";
+import type { CSSProperties } from "react";
+import Image from "next/image";
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { series, sourceById, type DosmQuarter } from "@/lib/engine/data";
 import { Card, H, SourceChip } from "@/components/ui";
@@ -33,18 +35,21 @@ export function JobGroupShares({ asOfQuarter }: { asOfQuarter: string }) {
   })).sort((a, b) => b.exposure - a.exposure);
   return (
     <Card>
+      <div className="statistics-chart-heading statistics-hiring-heading">
+      <Image src="/cockatiel-spectacles.png" alt="" width={96} height={96} className="statistics-chart-heading-bird" />
       <H sub="Out of every 100 job ads in Malaysia, how many are for each type of job. Line going up = more hiring for that job type. Red means AI can do a lot of this work, amber some, green little.">
         Which types of jobs are being hired more, and which less?
       </H>
+      </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {groups.map((g) => {
           const b = band(g.exposure);
           const first = g.data[0].share, last = g.data[g.data.length - 1].share;
           return (
-            <div key={g.key} className="rounded-2xl bg-raised px-3 pb-2 pt-3">
-              <p className="text-sm font-medium leading-tight">{g.label}</p>
+            <div key={g.key} className="job-group-card rounded-2xl bg-raised px-3 pb-2 pt-3" style={{ "--exposure-color": b.color } as CSSProperties}>
+              <p className="job-group-title text-sm font-medium leading-tight">{g.label}</p>
               <p className="num text-xs text-muted">
-                <span style={{ color: b.color }}>{b.label}</span><br />Now {last.toFixed(1)} in every 100 ads · {Math.abs(last - first) < 0.3 ? "about the same as 2023" : `${last > first ? "up" : "down"} ${Math.abs(last - first).toFixed(1)} since 2023`}
+                <span className="job-group-exposure" style={{ color: b.color }}>{b.label}</span><br />Now {last.toFixed(1)} in every 100 ads · {Math.abs(last - first) < 0.3 ? "about the same as 2023" : `${last > first ? "up" : "down"} ${Math.abs(last - first).toFixed(1)} since 2023`}
               </p>
               <div className="h-24" role="img" aria-label={`${g.label}: went from ${first.toFixed(1)} to ${last.toFixed(1)} in every 100 job ads`}>
                 <ResponsiveContainer width="100%" height="100%">
@@ -118,9 +123,12 @@ export function AiCapability({ asOfQuarter }: { asOfQuarter: string }) {
   const { data, summary } = aiCapability(asOfQuarter);
   return (
     <Card>
+      <div className="statistics-chart-heading statistics-speed-heading">
+      <Image src="/cockatiel-running.png" alt="" width={96} height={96} className="statistics-chart-heading-bird" />
       <H sub="AI is tested on hard tasks every few months. This shows the best score any AI got on each test. Higher = AI can do more. This is AI in general, not one type of job.">
         How quickly is AI getting better?
       </H>
+      </div>
       <AiCapabilityChart data={data} />
       <p className="mt-2 text-sm text-muted">
         {summary} Scores are out of 100.
