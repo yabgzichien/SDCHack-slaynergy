@@ -4,8 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
-  Award, BookOpen, BriefcaseBusiness, Calculator, CalendarClock, Check, Clock, FileText, FlaskConical, GraduationCap, Hammer, HeartPulse,
-  Laptop, Leaf, Library, MapPin, Microscope, Presentation, Scale, ScrollText, Sparkles, Users, UserRound, Wrench, type LucideIcon,
+  Award, BookOpen, BriefcaseBusiness, Calculator, CalendarClock, Clock, Eye, FileText, FlaskConical, GraduationCap, Hammer, HeartPulse,
+  Laptop, Leaf, Library, MapPin, Microscope, Presentation, Scale, ScrollText, Sparkles, Users, UserRound, Wrench, X, type LucideIcon,
 } from "lucide-react";
 import { useApp, type Catalog } from "@/components/AppProvider";
 import { StepBar } from "@/components/Journey";
@@ -382,7 +382,7 @@ function JobPicker({ cat, value, onPick }: { cat: Catalog; value: string; onPick
   useEffect(() => {
     const el = box.current?.querySelector<HTMLElement>('[aria-checked="true"]');
     if (box.current && el) box.current.scrollTop = el.offsetTop - 8;
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
   return (
     <div>
       <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search, for example clerk or engineer" aria-label="Search jobs" autoFocus={!value}
@@ -432,20 +432,65 @@ function SkillPicker({ cat, value, suggested, onChange }: { cat: Catalog; value:
 }
 
 type Analysis = { score: number; band: string; occupation: { id: string; title: string } | null; years: number | null; education: string | null; skills: { id: string }[]; findings: { severity: string; title: string }[] };
+type ResumePreviewData = { label: string; name: string; text: string; fileUrl?: string; isPdf?: boolean };
+
+function ResumePreview({ resume, onClose }: { resume: ResumePreviewData; onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#14291f]/60 p-3 sm:p-6" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <section role="dialog" aria-modal="true" aria-labelledby="resume-preview-title" className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-[24px] bg-raised shadow-2xl">
+        <header className="flex items-center justify-between gap-4 border-b border-line px-5 py-4">
+          <div className="min-w-0">
+            <h2 id="resume-preview-title" className="font-semibold">Resume preview</h2>
+            <p className="truncate text-sm text-muted">{resume.name}</p>
+          </div>
+          <button type="button" onClick={onClose} autoFocus aria-label="Close resume preview" className="press grid h-11 w-11 shrink-0 place-items-center rounded-full bg-surface hover:bg-surface2">
+            <X size={20} aria-hidden />
+          </button>
+        </header>
+        <div className="min-h-0 flex-1 overflow-auto bg-[#e7eee7] p-3 sm:p-6">
+          {resume.isPdf && resume.fileUrl ? (
+            <iframe title={`${resume.name} preview`} src={resume.fileUrl} className="mx-auto h-[72vh] w-full rounded-xl bg-white shadow-lg" />
+          ) : (
+            <article className="mx-auto min-h-[70vh] max-w-[760px] bg-white px-6 py-8 text-sm leading-relaxed text-[#2b3a31] shadow-lg sm:px-12 sm:py-10">
+              <pre className="whitespace-pre-wrap break-words font-sans">{resume.text}</pre>
+            </article>
+          )}
+        </div>
+      </section>
+    </div>
+  );
+}
 
 function ResumeStep({ d, setD, cat, onDone, autoSample }: { d: Draft; setD: (f: (x: Draft) => Draft) => void; cat: Catalog; onDone: () => void; autoSample?: boolean }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [paste, setPaste] = useState(false);
   const [text, setText] = useState("");
+  const [preview, setPreview] = useState<ResumePreviewData | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
-  const scan = async (init: RequestInit, sample = false) => {
+  useEffect(() => {
+    const fileUrl = preview?.fileUrl;
+    return () => { if (fileUrl) URL.revokeObjectURL(fileUrl); };
+  }, [preview?.fileUrl]);
+  const scan = async (init: RequestInit, sample = false, source?: Omit<ResumePreviewData, "text">) => {
     setBusy(true); setErr(null);
     try {
       const r = await fetch("/api/resume", init);
       const j = await r.json();
-      if (!r.ok) { setErr(j.error ?? "We could not read that. Try pasting the text."); return; }
+      if (!r.ok) {
+        if (source?.fileUrl) URL.revokeObjectURL(source.fileUrl);
+        setErr(j.error ?? "We could not read that. Try pasting the text.");
+        return;
+      }
       const a = j.analysis as Analysis;
+      setPreview({ label: source?.label ?? (sample ? "Demo resume" : "Pasted resume"), name: source?.name ?? (sample ? "Demo resume" : "Pasted resume"), text: String(j.previewText ?? ""), fileUrl: source?.fileUrl, isPdf: source?.isPdf });
       setD((x) => {
         const occ = a.occupation && cat.occupations.find((o) => o.id === a.occupation!.id);
         return {
@@ -458,10 +503,18 @@ function ResumeStep({ d, setD, cat, onDone, autoSample }: { d: Draft; setD: (f: 
           touched: { ...x.touched, education: a.education ? true : x.touched.education },
         };
       });
-    } catch { setErr("Network problem. Please try again."); }
+    } catch {
+      if (source?.fileUrl) URL.revokeObjectURL(source.fileUrl);
+      setErr("Network problem. Please try again.");
+    }
     finally { setBusy(false); }
   };
-  const upload = (f: File) => { const fd = new FormData(); fd.append("file", f); scan({ method: "POST", body: fd }); };
+  const upload = (f: File) => {
+    const fd = new FormData();
+    fd.append("file", f);
+    const fileUrl = URL.createObjectURL(f);
+    scan({ method: "POST", body: fd }, false, { label: "Uploaded resume", name: f.name, fileUrl, isPdf: f.type === "application/pdf" || f.name.toLowerCase().endsWith(".pdf") });
+  };
   const pasteScan = (t: string, sample = false) => scan({ method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text: t }) }, sample);
 
   // Arriving from a demo link: scan the made-up resume once, without asking.
@@ -474,12 +527,32 @@ function ResumeStep({ d, setD, cat, onDone, autoSample }: { d: Draft; setD: (f: 
   if (d.resume) {
     return (
       <Q title={`Your resume scored ${d.resume.score} out of 100.`} help="We filled in your last job, experience and skills from it. You will check each one next.">
+        {preview && (
+          <section className="mb-4 flex items-center gap-4 rounded-[22px] border border-line bg-raised p-3 shadow-[0_5px_18px_rgb(32_59_43/0.08)]" aria-label={`${preview.label} preview`}>
+            <div className="relative h-20 w-16 shrink-0 overflow-hidden rounded-md border border-line bg-white px-2 py-2 shadow-sm" aria-hidden>
+              <div className="mb-2 h-1.5 w-7 rounded-full bg-ink/75" />
+              <div className="space-y-1">
+                <div className="h-1 w-full rounded-full bg-line" /><div className="h-1 w-10/12 rounded-full bg-line" /><div className="h-1 w-full rounded-full bg-line" />
+                <div className="mt-2 h-1 w-7 rounded-full bg-accent" /><div className="h-1 w-full rounded-full bg-line" /><div className="h-1 w-9/12 rounded-full bg-line" />
+              </div>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-medium uppercase tracking-[.08em] text-muted">{preview.label}</p>
+              <p className="mt-1 truncate font-medium">{preview.name}</p>
+              <p className="text-sm text-muted">Ready to preview</p>
+            </div>
+            <button type="button" onClick={() => setPreviewOpen(true)} aria-label={`View ${preview.name}`} className="press flex min-h-11 shrink-0 items-center gap-2 rounded-full bg-primary px-4 font-medium text-primaryink shadow-sm hover:bg-[#f5bb62]">
+              <Eye size={19} aria-hidden />
+              <span className="hidden sm:inline">View</span>
+            </button>
+          </section>
+        )}
         <dl className="divide-y divide-line rounded-[22px] bg-surface px-5">
           <div className="flex min-h-14 items-center justify-between gap-3"><dt className="text-sm text-muted">Last job found</dt><dd className="text-sm">{d.resume.occupation ?? "Not sure; you will pick it"}</dd></div>
           <div className="flex min-h-14 items-center justify-between gap-3"><dt className="text-sm text-muted">Skills found</dt><dd className="num text-sm">{d.resume.found}</dd></div>
           {d.resume.fixes.length > 0 && <div className="py-3"><dt className="text-sm text-muted">Fix first</dt><dd className="mt-1 text-sm"><ul className="list-disc pl-5">{d.resume.fixes.map((f) => <li key={f}>{f}</li>)}</ul></dd></div>}
         </dl>
-        {d.resume.sample && (
+        {d.resume.sample && !preview && (
           <section className="mt-3 rounded-[22px] bg-surface px-5 py-4" aria-labelledby="demo-resume-title">
             <h2 id="demo-resume-title" className="text-sm font-medium">The demo resume we scanned</h2>
             <div className="mt-3 max-h-[34rem] overflow-y-auto rounded-2xl bg-surface2 p-3 sm:p-5"><ResumePaper text={SAMPLE_RESUME} /></div>
@@ -488,8 +561,9 @@ function ResumeStep({ d, setD, cat, onDone, autoSample }: { d: Draft; setD: (f: 
         <p className="mt-3 text-sm text-muted">The full report, with before-and-after examples, is on <Link href="/resume" className="underline decoration-control underline-offset-2">Resume report</Link>. Your resume text was not saved.</p>
         <div className="mt-8 flex flex-wrap gap-2">
           <Btn onClick={onDone} autoFocus className="min-h-12 px-6 text-base">Continue</Btn>
-          <Btn variant="ghost" onClick={() => setD((x) => ({ ...x, resume: null }))}>Scan a different one</Btn>
+          <Btn variant="ghost" onClick={() => { setPreview(null); setPreviewOpen(false); setD((x) => ({ ...x, resume: null })); }}>Scan a different one</Btn>
         </div>
+        {previewOpen && preview && <ResumePreview resume={preview} onClose={() => setPreviewOpen(false)} />}
       </Q>
     );
   }

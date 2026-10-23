@@ -64,5 +64,7 @@ export async function POST(req: Request) {
   const summary = summarise(analysis);
   await saveState(sid, { ...state, resume: summary });
   await logEvent("resume_scan", sid, { score: summary.score, skills: summary.skillIds.length, ai: aiStatus, aiSkills: ai?.skills.length ?? 0, aiRewrites: ai?.rewrites.length ?? 0 });
-  return NextResponse.json({ analysis, summary, ai, aiStatus });
+  // Return the extracted text to this tab so the worker can preview what we read.
+  // It is not written to the session, database or logs.
+  return NextResponse.json({ analysis, summary, ai, aiStatus, previewText: text });
 }

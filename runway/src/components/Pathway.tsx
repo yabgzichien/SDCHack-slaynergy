@@ -98,7 +98,7 @@ export function BadgePanel() {
   const w = state.pathway;
   return (
     <div className="mt-5 border-t border-ink/10 pt-4">
-      <p className="text-sm font-medium">Your pathway badge</p>
+      <p className="section-heading text-sm font-medium">Your pathway badge</p>
       {c.status === "confirmed" && c.badgeId ? (
         <>
           <p className="mt-1 text-sm">{c.by ? `You finished the pathway, including a session with ${c.by.name}. Your badge is ready to share.` : "You finished the pathway. Your badge is ready to share."}</p>

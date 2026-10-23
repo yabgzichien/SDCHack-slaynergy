@@ -2,10 +2,12 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useApp } from "@/components/AppProvider";
+import { useT } from "@/components/I18nProvider";
 import { useSpeed } from "@/components/useSpeed";
 import { useSelectJob } from "@/components/useSelectJob";
 import { BriefWhy } from "@/components/JobBits";
 import { JobBadge } from "@/components/JobIcon";
+import { JobsNav } from "@/components/JobsNav";
 import { ArrowDown, ChevronRight, HandHeart, MapPin, TrendingDown, TrendingUp } from "lucide-react";
 const MalaysiaMap = dynamic(() => import("@/components/MalaysiaMap").then((m) => m.MalaysiaMap), { ssr: false, loading: () => <div className="h-40 animate-pulse rounded-2xl bg-surface2" aria-hidden /> });
 import { mapFigures, times } from "@/lib/map-figures";
@@ -15,10 +17,22 @@ import type { StayView, RoleMatchView } from "@/lib/engine/view";
 import { STAY_ID } from "@/lib/engine/state";
 import { suggestedJobs } from "@/lib/suggested";
 import { Btn, Card, Chip, LinkRow, More, NextRow, PageTitle, SdgTag, Skeleton, Stop, sdgName } from "@/components/ui";
+import "./jobs.css";
+
+const LOWERCASE_TITLE_WORDS = new Set(["a", "an", "and", "as", "at", "but", "by", "for", "in", "nor", "of", "on", "or", "per", "the", "to", "via"]);
+
+function titleCaseJob(title: string) {
+  return title.split(" ").map((word, index) => {
+    if (index > 0 && LOWERCASE_TITLE_WORDS.has(word.toLowerCase())) return word.toLowerCase();
+    if (word.length > 1 && word === word.toUpperCase()) return word;
+    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+  }).join(" ");
+}
 
 // One question: which job should I aim for?
 export default function JobsPage() {
   const { view, state, catalog, busy } = useApp();
+  const { lang, t } = useT();
   const selectJob = useSelectJob();
   const { speed } = useSpeed(view);
   if (!view || !state || !catalog) return <Skeleton lines={6} />;
@@ -31,6 +45,7 @@ export default function JobsPage() {
   const selectedId = state.chosenRoleId && state.chosenRoleId !== STAY_ID ? state.chosenRoleId : null;
   const mapJob = (selectedId && view.matches.find((m) => m.roleId === selectedId)) || best;
   const goals = [...new Set(state.goals.map(sdgName))].join(", ");
+  const jobTitle = (title: string) => lang === "en" ? titleCaseJob(title) : t(title);
 
   const stayCard = view.stay && <StayCard stay={view.stay} speed={speed} bridge={bridge} chosen={state.chosenRoleId === STAY_ID} busy={busy} onChoose={() => select(STAY_ID)} />;
   if (!best) {
@@ -43,30 +58,43 @@ export default function JobsPage() {
     );
   }
   return (
-    <div>
-      <PageTitle title={`Aim for ${best.title.toLowerCase()}.`}>
+    <div className="jobs-page">
+      <PageTitle
+        title={
+          <span className="inline-flex items-baseline gap-4 whitespace-nowrap">
+            <span className="shrink-0 text-lg tracking-normal sm:text-xl">Aim for:</span>
+            <span data-no-translate className="inline-block rounded-lg bg-cuesoft px-3 py-1 font-extrabold leading-none text-cueink">{jobTitle(best.title)}</span>
+          </span>
+        }
+      >
         Of the {view.matches.length} jobs you can reach in {p.months} months, this one fits you best. Start here, then compare the others.
       </PageTitle>
 
-      <div className="space-y-10">
-        <Stop n={1} title="Your best job" current>
+      <div className="jobs-layout">
+        <JobsNav showOthers={others.length > 0} />
+        <div className="jobs-content space-y-10">
+        <Stop n={1} id="best-job" title="Your best job" current>
           <Card tone="raised" className="ring-2 ring-cue">
-            <div className="flex items-start gap-4">
-              <JobBadge name={best.why.icon} size="lg" tone="cue" />
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
               <div className="min-w-0">
-                <h3 className="text-xl font-medium">{best.title}</h3>
-                <div className="mt-1.5 flex flex-wrap gap-1.5">
-                  {selectedId === best.roleId && <Chip tone="cue">Selected</Chip>}
-                  <SdgTag target={best.sdgTarget} why={best.sdgWhy} />
-                  {best.sdgMatch && <Chip tone="rise">Matches your goals</Chip>}
+                <div className="flex items-start gap-4">
+                  <JobBadge name={best.why.icon} size="lg" tone="cue" />
+                  <div className="min-w-0">
+                    <h3 data-no-translate className="text-xl font-extrabold">{jobTitle(best.title)}</h3>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                      {selectedId === best.roleId && <Chip tone="cue">Selected</Chip>}
+                      <SdgTag target={best.sdgTarget} why={best.sdgWhy} />
+                      {best.sdgMatch && <Chip tone="rise">Matches your goals</Chip>}
+                      <BriefWhy m={best} />
+                    </div>
+                  </div>
                 </div>
+                <p className="mt-3 text-sm text-muted">About {best.weeks} weeks to get ready.</p>
               </div>
-            </div>
-            <div className="mt-4"><BriefWhy m={best} /></div>
-            <p className="mt-3 text-sm text-muted">About {best.weeks} weeks to get ready.</p>
-            <div className="mt-5 flex flex-wrap items-center gap-2">
-              <Btn onClick={() => select(best.roleId)} disabled={busy} className="min-h-12 px-6 text-base">Select job <ChevronRight size={18} aria-hidden /></Btn>
-              <Btn href={`/jobs/${best.roleId}`} variant="ghost" className="min-h-12">See why <ChevronRight size={16} aria-hidden /></Btn>
+              <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
+                <Btn onClick={() => select(best.roleId)} disabled={busy} className="min-h-12 px-6 text-base">Select job <ChevronRight size={18} aria-hidden /></Btn>
+                <Btn href={`/jobs/${best.roleId}`} variant="ghost" className="min-h-12">See why <ChevronRight size={16} aria-hidden /></Btn>
+              </div>
             </div>
           </Card>
           {others.length > 0 && (
@@ -85,7 +113,7 @@ export default function JobsPage() {
                     <JobBadge name={m.why.icon} size="sm" />
                     {selectedId === m.roleId && <Chip tone="cue">Selected</Chip>}
                   </div>
-                  <Link href={`/jobs/${m.roleId}`} className="mt-3 font-medium leading-snug underline-offset-2 hover:underline">{m.title}</Link>
+                  <Link data-no-translate href={`/jobs/${m.roleId}`} className="job-card-title mt-3 underline-offset-2 hover:underline"><strong>{jobTitle(m.title)}</strong></Link>
                   <div className="mt-2"><BriefWhy m={m} stack /></div>
                   <p className="mt-3 text-sm text-muted">About {m.weeks} weeks{m.fewNearby ? " · few near you" : ""}</p>
                   <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-3">
@@ -99,12 +127,12 @@ export default function JobsPage() {
           </Stop>
         )}
 
-        <Stop n={others.length > 0 ? 3 : 2} title="Where in Malaysia" sub={`Select a job to see where it is. Showing: ${mapJob.title}.`}>
+        <Stop n={others.length > 0 ? 3 : 2} id="where" title="Where in Malaysia" sub={`Select a job to see where it is. Showing: ${mapJob.title}.`}>
           <MapTeaser roleTitle={mapJob.title} sector={mapJob.sector as SectorId} group={roleById[mapJob.roleId]?.group} home={p.state ?? null} />
         </Stop>
 
-        <section>
-          <h2 className="mb-3 text-lg font-semibold">Or keep your job for now</h2>
+        <section id="keep-job">
+          <h2 className="mb-4 text-xl font-bold sm:text-2xl">Or keep your job for now</h2>
           <div className="grid gap-4 lg:grid-cols-12">
             <div className="lg:col-span-8">{stayCard}</div>
             <div className="space-y-4 lg:col-span-4">
@@ -122,6 +150,7 @@ export default function JobsPage() {
             </div>
           </div>
         </section>
+        </div>
       </div>
       <NextRow back="/skills" next="/map" nextLabel="Next: where in Malaysia" />
     </div>

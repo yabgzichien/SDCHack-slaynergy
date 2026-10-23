@@ -76,7 +76,7 @@ export function AdvisorCard() {
       <div className="mb-4 flex items-center gap-3">
         <span aria-hidden className="grid size-11 shrink-0 place-items-center rounded-2xl bg-laneresume text-white shadow-[0_2px_8px_rgb(0_0_0/0.15)]"><MessagesSquare size={22} /></span>
         <div>
-          <h2 className="text-base font-semibold">Talk it over with an advisor</h2>
+          <h2 className="section-heading text-base font-semibold">Talk it over with an advisor</h2>
           <p className="text-sm text-muted">30 minutes with an employment officer. Optional; your plan never waits on it.</p>
         </div>
       </div>

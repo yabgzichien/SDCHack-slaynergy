@@ -31,7 +31,7 @@ export function H({ children, sub, level = 2 }: { children: ReactNode; sub?: Rea
   const Tag = level === 2 ? "h2" : "h3";
   return (
     <div className="mb-3">
-      <Tag className="text-base font-semibold">{children}</Tag>
+      <Tag className="section-heading text-base font-semibold">{children}</Tag>
       {sub && <p className="mt-0.5 text-sm text-muted">{sub}</p>}
     </div>
   );
@@ -174,11 +174,11 @@ export function Stat({ label, value, caption, href }: { label: string; value: Re
 export function Stop({ n, title, sub, current = false, id, children }: { n: number; title: string; sub?: ReactNode; current?: boolean; id?: string; children: ReactNode }) {
   return (
     <section id={id} className="scroll-mt-24">
-      <div className="mb-3 flex items-center gap-3">
-        <span aria-hidden className={`num grid size-8 shrink-0 place-items-center rounded-full text-sm font-semibold ${current ? "bg-cue text-white" : "border-2 border-control text-muted"}`}>{n}</span>
+      <div className="mb-4 flex items-center gap-3.5">
+        <span aria-hidden className={`num grid size-10 shrink-0 place-items-center rounded-full text-base font-bold ${current ? "bg-cue text-white" : "border-2 border-control text-ink"}`}>{n}</span>
         <div>
-          <h2 className="text-lg font-semibold leading-tight"><span className="sr-only">Step {n}: </span>{title}</h2>
-          {sub && <p className="text-sm text-muted">{sub}</p>}
+          <h2 className="text-xl font-bold leading-tight sm:text-2xl"><span className="sr-only">Step {n}: </span>{title}</h2>
+          {sub && <p className="mt-0.5 text-sm text-muted">{sub}</p>}
         </div>
       </div>
       {children}

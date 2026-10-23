@@ -107,6 +107,24 @@ body {
 h1, h2, h3 { letter-spacing: -0.01em; }
 /* The greeting: a restrained editorial headline that keeps information approachable. */
 .greeting { font-family: var(--font-sans); font-weight: 700; line-height: 0.98; letter-spacing: -0.035em; }
+/* Plan section hierarchy comes from type alone. */
+.plan-page .section-heading {
+  display: block;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--ink);
+  font-size: clamp(1.5rem, 1.15rem + 1.1vw, 2rem) !important;
+  font-weight: 800 !important;
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+  font-optical-sizing: auto;
+}
+.plan-page .section-heading::before,
+.plan-page .section-heading::after { content: none; }
 .hero-illustration { position: relative; min-height: 310px; overflow: hidden; border-radius: 0 0 96px 0; background: #c7e9c0; }
 .hero-illustration::before { content: ""; position: absolute; width: 430px; height: 430px; right: -95px; bottom: -175px; border-radius: 50%; background: #9bcb95; }
 .hero-illustration::after { content: ""; position: absolute; width: 250px; height: 250px; right: 30px; top: 38px; border-radius: 50% 50% 0 50%; background: #f1faee; }
