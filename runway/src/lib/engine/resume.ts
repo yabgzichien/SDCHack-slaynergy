@@ -4,6 +4,7 @@ import { expiryFor, NOW } from "./expiry";
 import type { Weights3 } from "./futures";
 
 // Rule-based resume scanner. No AI model, no network, nothing stored: the text lives only in memory for the request.
+// The optional AI reader (src/lib/server/ai-resume.ts) adds suggestions on top; the score always comes from here.
 // Everything it says points at a line you wrote or a rule you can read below.
 
 export type Severity = "fix" | "improve" | "good";

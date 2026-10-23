@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { analyseResume, summarise } from "@/lib/engine/resume";
+import { aiReadResume } from "@/lib/server/ai-resume";
 import { computeWorld } from "@/lib/engine/world";
 import { getSessionId } from "@/lib/server/session";
 import { loadState, logEvent, saveState } from "@/lib/server/store";
@@ -27,22 +28,26 @@ async function extract(file: File): Promise<string> {
   throw new Error("Please upload a PDF, Word (.docx) or text file, or paste the text.");
 }
 
-// The resume text is processed in memory for this request only. It is never stored or logged;
+// The resume text is processed in memory for this request only (and, if the worker allows it, sent to the
+// Groq API once to read it). It is never stored or logged;
 // only the score, the skills you confirm and your findings summary are kept in your session.
 export async function POST(req: Request) {
   const sid = (await getSessionId())!;
   let text = "";
+  let useAi = true;
   try {
     const type = req.headers.get("content-type") ?? "";
     if (type.includes("multipart/form-data")) {
       const form = await req.formData();
       const file = form.get("file");
       if (!(file instanceof File)) return bad("No file received.");
+      useAi = form.get("ai") !== "0";
       if (file.size > MAX_BYTES) return bad("That file is larger than 3 MB. Please upload a smaller one.", 413);
       text = await extract(file);
     } else {
-      const body = (await req.json()) as { text?: string };
+      const body = (await req.json()) as { text?: string; ai?: boolean };
       text = String(body.text ?? "");
+      useAi = body.ai !== false;
     }
   } catch (e) {
     return bad(e instanceof Error ? e.message : "We could not read that file. Try pasting the text instead.");
@@ -52,9 +57,12 @@ export async function POST(req: Request) {
 
   const state = await loadState(sid);
   const world = computeWorld(state);
-  const analysis = analyseResume(text, world.weights);
+  // The rule scan always runs; the AI read is optional and only adds suggestions on top of it.
+  const [analysis, read] = [analyseResume(text, world.weights), useAi ? await aiReadResume(text) : null];
+  const ai = read && { ...read, skills: read.skills.filter((s) => !analysis.skills.some((d) => d.id === s.id)) };
+  const aiStatus = !useAi ? "off" : !process.env.GROQ_API_KEY ? "unavailable" : ai ? "used" : "failed";
   const summary = summarise(analysis);
   await saveState(sid, { ...state, resume: summary });
-  await logEvent("resume_scan", sid, { score: summary.score, skills: summary.skillIds.length });
-  return NextResponse.json({ analysis, summary });
+  await logEvent("resume_scan", sid, { score: summary.score, skills: summary.skillIds.length, ai: aiStatus, aiSkills: ai?.skills.length ?? 0, aiRewrites: ai?.rewrites.length ?? 0 });
+  return NextResponse.json({ analysis, summary, ai, aiStatus });
 }

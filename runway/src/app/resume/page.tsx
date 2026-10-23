@@ -2,12 +2,14 @@
 import { useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Finding, ResumeAnalysis } from "@/lib/engine/resume";
+import type { AiRead } from "@/lib/server/ai-resume";
 import { useApp } from "@/components/AppProvider";
 import { ScoreRing } from "@/components/ScoreRing";
 import { Segmented } from "@/components/Segmented";
 import { Btn, Card, Chip, H, PageTitle, Skeleton } from "@/components/ui";
 
 type Tab = "fixes" | "resume" | "skills";
+type AiStatus = "off" | "unavailable" | "used" | "failed";
 
 export default function ResumePage() {
   const { catalog, state } = useApp();
@@ -15,6 +17,7 @@ export default function ResumePage() {
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [ai, setAi] = useState<{ read: AiRead | null; status: AiStatus }>({ read: null, status: "off" });
 
   const scan = useCallback(async (init: RequestInit, name: string) => {
     setScanning(true); setError(null); setFileName(name);
@@ -22,7 +25,7 @@ export default function ResumePage() {
       const r = await fetch("/api/resume", init);
       const d = await r.json();
       if (!r.ok) { setError(d.error ?? "Something went wrong."); setAnalysis(null); }
-      else setAnalysis(d.analysis);
+      else { setAnalysis(d.analysis); setAi({ read: d.ai ?? null, status: d.aiStatus ?? "off" }); }
     } catch { setError("Network problem. Please try again."); }
     finally { setScanning(false); }
   }, []);
@@ -33,7 +36,7 @@ export default function ResumePage() {
       <PageTitle title={analysis ? "Here is what we found" : "Scan your resume"}>
         {analysis ? "Your score, what to fix first, and the skills we found. Check the details, then build your plan." : "We read it, show you what to improve, and fill in your skills so you do not have to type them."}
       </PageTitle>
-      {!analysis ? <Intake scanning={scanning} error={error} onScan={scan} /> : <Result analysis={analysis} fileName={fileName} onAgain={() => { setAnalysis(null); setError(null); }} />}
+      {!analysis ? <Intake scanning={scanning} error={error} onScan={scan} /> : <Result analysis={analysis} ai={ai.read} aiStatus={ai.status} fileName={fileName} onAgain={() => { setAnalysis(null); setError(null); }} />}
     </div>
   );
 }
@@ -43,8 +46,9 @@ function Intake({ scanning, error, onScan }: { scanning: boolean; error: string 
   const [text, setText] = useState("");
   const input = useRef<HTMLInputElement>(null);
   const [sample, setSample] = useState(false);
-  const sendFile = (f: File) => { const fd = new FormData(); fd.append("file", f); onScan({ method: "POST", body: fd }, f.name); };
-  const sendText = (t: string, name: string) => onScan({ method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text: t }) }, name);
+  const [useAi, setUseAi] = useState(true);
+  const sendFile = (f: File) => { const fd = new FormData(); fd.append("file", f); fd.append("ai", useAi ? "1" : "0"); onScan({ method: "POST", body: fd }, f.name); };
+  const sendText = (t: string, name: string) => onScan({ method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text: t, ai: useAi }) }, name);
   const loadSample = async () => { const m = await import("@/lib/sample-resume"); setSample(true); setText(m.SAMPLE_RESUME); };
 
   return (
@@ -60,6 +64,10 @@ function Intake({ scanning, error, onScan }: { scanning: boolean; error: string 
             <Btn onClick={() => input.current?.click()} disabled={scanning}>Choose a file</Btn>
             <Btn variant="ghost" onClick={loadSample} disabled={scanning}>Use a sample resume</Btn>
           </div>
+          <label className="mx-auto mt-4 flex max-w-md cursor-pointer items-start gap-2 text-left text-sm">
+            <input type="checkbox" checked={useAi} onChange={(e) => setUseAi(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0" />
+            <span><b>Also let AI read it.</b> An AI model suggests extra skills and better wording. You accept or reject each suggestion.</span>
+          </label>
           <input ref={input} type="file" accept=".pdf,.docx,.txt,.md,application/pdf" className="sr-only" aria-label="Choose a resume file"
             onChange={(e) => { const f = e.target.files?.[0]; if (f) sendFile(f); e.target.value = ""; }} />
         </div>
@@ -84,7 +92,8 @@ function Intake({ scanning, error, onScan }: { scanning: boolean; error: string 
           <ul className="list-disc space-y-1.5 pl-5 text-sm">
             <li>It is read in memory for this scan only. It is <b>never saved</b>.</li>
             <li>We keep only your score and the skills you confirm.</li>
-            <li>No AI model reads it. The scan uses plain rules you can inspect.</li>
+            <li>The score comes from plain rules you can inspect.</li>
+            <li>If you allow AI, the text is sent once to an AI model (Qwen3.8 27B, run by Groq) to read it. The AI only suggests; nothing changes until you accept it.</li>
             <li>Age, gender and background are never used.</li>
           </ul>
         </Card>
@@ -103,13 +112,14 @@ function Intake({ scanning, error, onScan }: { scanning: boolean; error: string 
   );
 }
 
-function Result({ analysis: a, fileName, onAgain }: { analysis: ResumeAnalysis; fileName: string | null; onAgain: () => void }) {
+function Result({ analysis: a, ai, aiStatus, fileName, onAgain }: { analysis: ResumeAnalysis; ai: AiRead | null; aiStatus: AiStatus; fileName: string | null; onAgain: () => void }) {
   const { catalog, act, busy, state } = useApp();
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("fixes");
   const cat = catalog!;
   const [chosen, setChosen] = useState<string[]>(a.skills.map((s) => s.id));
-  const inferredOnly = a.inferred.filter((i) => !a.skills.some((s) => s.id === i.id));
+  const aiSkills = ai?.skills ?? [];
+  const inferredOnly = a.inferred.filter((i) => !a.skills.some((s) => s.id === i.id) && !aiSkills.some((s) => s.id === i.id));
   const toggle = (id: string) => setChosen((c) => (c.includes(id) ? c.filter((x) => x !== id) : [...c, id]));
   const fixes = a.findings.filter((f) => f.severity === "fix");
   const potential = Math.min(100 - a.score, Math.round(fixes.slice(0, 3).reduce((x, f) => x + (f.points.of - f.points.got), 0)));
@@ -153,19 +163,25 @@ function Result({ analysis: a, fileName, onAgain }: { analysis: ResumeAnalysis; 
       <Card tone="accent">
         <H sub={state?.profile ? "Tick the skills that are true. We add them to your profile and keep everything else you told us." : "Tick the skills that are true. Then answer a few short questions, already filled in from your resume."}>Use this to plan your next job</H>
         <div className="flex flex-wrap gap-2">
+          {aiSkills.map((s) => (
+            <button type="button" key={s.id} aria-pressed={chosen.includes(s.id)} onClick={() => toggle(s.id)} title={`Found by AI: “${s.evidence}”`}
+              className={`press min-h-10 rounded-full px-4 text-sm ${chosen.includes(s.id) ? "bg-primary text-primaryink" : "border border-dashed border-control bg-raised"}`}>{s.name} <span className="text-xs opacity-70">· AI</span></button>
+          ))}
           {[...a.skills, ...inferredOnly].map((s) => (
             <button type="button" key={s.id} aria-pressed={chosen.includes(s.id)} onClick={() => toggle(s.id)}
               className={`press min-h-10 rounded-full px-4 text-sm ${chosen.includes(s.id) ? "bg-primary text-primaryink" : "bg-raised"}`}>{s.name}</button>
           ))}
         </div>
+        {aiSkills.length > 0 && <p className="mt-2 text-sm text-muted">Skills marked “AI” were found by the AI reader. Each one points to a line in your resume (see Skills found). Tick them only if they are true.</p>}
         {inferredOnly.length > 0 && <p className="mt-2 text-sm text-muted">The last {inferredOnly.length} are common for your job but not on your resume. Tick them only if you have them.</p>}
         <div className="mt-5"><Btn onClick={build} disabled={busy || chosen.length === 0} className="min-h-12 px-6 text-base">{state?.profile ? "Add these to my profile" : "Continue with these"}</Btn></div>
       </Card>
 
       <div className="flex justify-center"><Segmented label="Result details" value={tab} onChange={setTab} options={[{ id: "fixes", label: `Fixes (${a.findings.filter((f) => f.severity !== "good").length})` }, { id: "resume", label: "Your resume" }, { id: "skills", label: "Skills found" }]} /></div>
-      {tab === "fixes" && <Fixes analysis={a} onJump={() => setTab("resume")} />}
+      {aiStatus === "failed" && <p className="rounded-2xl bg-surface2 p-3 text-sm text-muted">The AI reader is busy right now, so these results use the rule scan only. Try scanning again in a minute.</p>}
+      {tab === "fixes" && <>{ai && ai.rewrites.length > 0 && <AiRewrites rewrites={ai.rewrites} />}<Fixes analysis={a} onJump={() => setTab("resume")} /></>}
       {tab === "resume" && <Annotated analysis={a} />}
-      {tab === "skills" && <SkillsFound analysis={a} />}
+      {tab === "skills" && <SkillsFound analysis={a} aiSkills={aiSkills} />}
     </div>
   );
 }
@@ -254,7 +270,40 @@ function Annotated({ analysis: a }: { analysis: ResumeAnalysis }) {
   );
 }
 
-function SkillsFound({ analysis: a }: { analysis: ResumeAnalysis }) {
+// AI-suggested rewrites of real lines. Nothing is applied for the worker: they accept, edit or reject each one,
+// and copy the lines they kept into their own resume.
+function AiRewrites({ rewrites }: { rewrites: AiRead["rewrites"] }) {
+  const [choice, setChoice] = useState<Record<number, "yes" | "no">>({});
+  const [edits, setEdits] = useState<Record<number, string>>({});
+  const [copied, setCopied] = useState(false);
+  const kept = rewrites.map((w, i) => (choice[i] === "yes" ? edits[i] ?? w.after : null)).filter((x): x is string => !!x);
+  const copy = async () => { try { await navigator.clipboard.writeText(kept.map((k) => `• ${k}`).join("\n")); setCopied(true); } catch { /* the lines stay on screen to copy by hand */ } };
+  return (
+    <Card className="mb-6">
+      <H sub="Suggested by AI (Qwen3.8 27B). Fill in the [brackets] with real figures only. Accept the ones you like; nothing is changed for you.">Better wording for {rewrites.length} of your lines</H>
+      <ul className="space-y-3">
+        {rewrites.map((w, i) => (
+          <li key={i} className={`rounded-2xl border border-line p-3 ${choice[i] === "no" ? "opacity-50" : ""}`}>
+            <p className="text-sm text-muted">Your line</p>
+            <p className="text-sm">{w.before}</p>
+            <p className="mt-2 text-sm text-rise">Suggested</p>
+            {choice[i] === "yes"
+              ? <label className="block"><span className="sr-only">Edit the accepted line</span><textarea value={edits[i] ?? w.after} onChange={(e) => setEdits((x) => ({ ...x, [i]: e.target.value }))} rows={2} className="mt-1 w-full rounded-xl border border-line bg-bg p-2 text-sm" /></label>
+              : <p className="text-sm font-medium">{w.after}</p>}
+            {w.why && <p className="mt-1 text-xs text-muted">{w.why}</p>}
+            <div className="mt-2 flex gap-2">
+              <Btn variant={choice[i] === "yes" ? undefined : "ghost"} onClick={() => setChoice((x) => ({ ...x, [i]: "yes" }))}>{choice[i] === "yes" ? "Accepted" : "Accept"}</Btn>
+              <Btn variant="ghost" onClick={() => setChoice((x) => ({ ...x, [i]: "no" }))}>{choice[i] === "no" ? "Rejected" : "Reject"}</Btn>
+            </div>
+          </li>
+        ))}
+      </ul>
+      {kept.length > 0 && <div className="mt-4"><Btn onClick={copy}>{copied ? "Copied" : `Copy ${kept.length} accepted line${kept.length > 1 ? "s" : ""}`}</Btn></div>}
+    </Card>
+  );
+}
+
+function SkillsFound({ analysis: a, aiSkills }: { analysis: ResumeAnalysis; aiSkills: AiRead["skills"] }) {
   const group = (shelf: "fading" | "mid" | "lasting", title: string, hint: string, tone: "fall" | "neutral" | "rise") => {
     const list = a.skills.filter((s) => s.shelf === shelf);
     if (!list.length) return null;
@@ -280,7 +329,16 @@ function SkillsFound({ analysis: a }: { analysis: ResumeAnalysis }) {
       {group("fading", "Fading soonest", "Keep them, but put your judgment and customer skills first.", "fall")}
       {group("mid", "Medium", "Useful for years, worth pairing with a lasting skill.", "neutral")}
       {group("lasting", "Likely to last", "Lead with these.", "rise")}
-      {a.skills.length === 0 && <p>We could not find any skills. Try the text paste option, or answer the questions instead.</p>}
+      {aiSkills.length > 0 && (
+        <section>
+          <h3 className="text-base font-bold">Found by AI <span className="num font-normal text-muted">({aiSkills.length})</span></h3>
+          <p className="mb-2 text-sm text-muted">The rules missed these; the AI reader found them. Each one quotes the line it is based on.</p>
+          <ul className="grid gap-2 sm:grid-cols-2">
+            {aiSkills.map((s) => <li key={s.id} className="rounded-2xl border border-dashed border-control bg-surface p-3"><p className="font-semibold">{s.name}</p><p className="text-sm text-muted">Based on: “{s.evidence}”</p></li>)}
+          </ul>
+        </section>
+      )}
+      {a.skills.length === 0 && aiSkills.length === 0 && <p>We could not find any skills. Try the text paste option, or answer the questions instead.</p>}
     </Card>
   );
 }

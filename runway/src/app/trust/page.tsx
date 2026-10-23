@@ -54,7 +54,7 @@ export default function TrustPage() {
         <H>What Jobbery does not do</H>
         <ul className="list-disc space-y-1 pl-5 text-sm">
           <li>It never invents jobs, courses or statistics. Roles and courses come from fixed, checked lists; scores are computed; explanations are filled from templates with a source and date.</li>
-          <li>It uses no real CVs or personal data, and no paid or hosted AI model at run time.</li>
+          <li>Its demo uses no real CVs or personal data. The only AI model is the optional resume reader, and it only suggests.</li>
           <li>It never uses real money. Players only win points and a bigger vote.</li>
           <li>It uses no AI chatbot. Matching and forecasting are plain maths you can read in the code.</li>
           <li>It never decides for you. You choose, and can book an advisor for a second opinion. Every plan includes one meeting with an advisor, and the badge is issued only after it. Estimates are not predictions of certainty.</li>

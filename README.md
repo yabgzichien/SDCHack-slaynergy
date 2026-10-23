@@ -69,8 +69,8 @@ SDC Hackathon 2026 · Domain 1: Aiversecity Future-Ready Workforce · Licence: A
 - **A person to ask, on the worker's terms.** The worker can book a meeting with an advisor whenever they want one. Nothing waits on an advisor's approval (see [section 10](#10-advisor-meetings)).
 - **Every number shows its source.** Each forecast, demand figure and course has a source and date chip. Explanations are filled in from templates, so the app can't invent jobs, courses or statistics.
 - **Plain language.** Pages are written for someone who has never read a chart like these: "about 14 in every 100 job ads", not "14.2% share".
-- **Private by default.** A scanned resume is read in memory and never stored. Only the score, the fixes and the skill IDs are kept.
-- **No AI model at run time.** Scores and plans are computed by tested, readable code (`runway/src/lib/engine/`), so the same inputs always give the same answer.
+- **Private by default.** A scanned resume is read in memory and never stored. If the worker leaves AI on, the text is also sent once to the Groq API to read it. Only the score, the fixes and the skill IDs are kept.
+- **AI suggests, the worker decides.** The one GenAI feature is an optional resume reader (Qwen3.8 27B on the Groq API). It proposes extra skills, each quoting the resume line it is based on, and better wording for weak lines. The worker accepts or rejects every suggestion. Server checks drop any skill that is not on Jobbery's list or not backed by a real line, and any rewrite that adds a number the original line does not have. Scores, forecasts, matching and plans are computed by tested, readable code (`runway/src/lib/engine/`), so the same inputs always give the same answer.
 
 ---
 
@@ -414,10 +414,10 @@ The worker always confirms a new plan before it replaces the old one.
 | **Engine** | Pure TypeScript in `src/lib/engine/`: LMSR market, simulated forecasters, history replay, futures weights, expiry dates, matching, planning |
 | **Storage** | PostgreSQL on Replit (`pg`); SQLite (`better-sqlite3`) when running locally |
 | **Sessions and trust** | Signed session cookie; SHA-256 hash-chained log, with its fingerprint committed to Git |
-| **Resume scan** | `unpdf` (PDF) and `mammoth` (Word), with rule-based scoring. No AI model. |
+| **Resume scan** | `unpdf` (PDF) and `mammoth` (Word), with rule-based scoring. Optional AI reader: Qwen3.8 27B through the Groq API (`src/lib/server/ai-resume.ts`), with server-side checks and a rule-only fallback. |
 | **Data pipeline** | Node scripts (`build-series.mjs`, `build-geo.mjs`) turn raw downloads into committed JSON snapshots |
 | **Tests** | Vitest: fairness, LMSR, futures weights, replay, matching, planning, log |
-| **Hosting** | Replit. No GPU needed. |
+| **Hosting** | Replit. No GPU needed: the AI model runs on Groq's hosted API. |
 
 ---
 
@@ -438,7 +438,7 @@ The app runs at http://localhost:3000. Other commands:
 | `npm run data:build` | Rebuilds data snapshots from `data/raw/` |
 | `npm run anchor` | Writes the hash log's fingerprint to `anchors/` |
 
-Without `DATABASE_URL`, sessions are kept in `.data/runway.db` (SQLite). On Replit, set `DATABASE_URL` to the built-in Postgres and `SESSION_SECRET` to a random string.
+Without `DATABASE_URL`, sessions are kept in `.data/runway.db` (SQLite). On Replit, set `DATABASE_URL` to the built-in Postgres and `SESSION_SECRET` to a random string. For the AI resume reader, add `GROQ_API_KEY` in Replit Secrets (locally, in `runway/.env.local`, which is gitignored). Without it, the rule scan runs alone.
 
 ### Demo shortcuts
 
@@ -485,7 +485,7 @@ For the advisor passcode and a judge's walkthrough, see [`runway/README.md`](run
 
 **Replit.** We wrote part of the code on Replit and host the live app there, using its built-in PostgreSQL for sessions and plans (see [Run it](#15-run-it) for the `DATABASE_URL` and `SESSION_SECRET` settings).
 
-**RunPod.** We did not use RunPod. The app runs no AI model and needs no GPU: resume scoring is rule-based and the forecasting engine is plain TypeScript.
+**RunPod.** We did not use RunPod. Nothing needs a GPU on our side: the AI resume reader calls Qwen3.8 27B on Groq's hosted API, resume scoring is rule-based, and the forecasting engine is plain TypeScript.
 
 ---
 
