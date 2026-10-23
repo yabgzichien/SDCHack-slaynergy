@@ -4,6 +4,22 @@
 
 SDC Hackathon 2026 · Domain 1: Aiversecity Future-Ready Workforce · Licence: Apache-2.0
 
+| | |
+|---|---|
+| **Team name** | #slaynergy |
+| **Team domain** | Domain 1: Aiversecity Future-Ready Workforce |
+
+### Links
+
+| | |
+|---|---|
+| **Live demo** | _TODO: add Replit app URL_ |
+| **Pitch video** | _TODO: add video URL_ |
+| **Source code** | https://github.com/yabgzichien/SDCHack-slaynergy |
+| **How to run** | [Section 15](#15-run-it) |
+| **Project structure** | [Section 16](#16-project-structure) |
+| **Replit usage** | [Section 17](#17-how-we-used-replit-and-runpod) |
+
 > The app's code lives in [`runway/`](runway/) (Runway was the working name). For setup, the advisor passcode and a judge's walkthrough, see [`runway/README.md`](runway/README.md).
 
 ---
@@ -25,6 +41,8 @@ SDC Hackathon 2026 · Domain 1: Aiversecity Future-Ready Workforce · Licence: A
 13. [Coming next: inclusive design and automatic re-planning](#13-coming-next)
 14. [Tech stack](#14-tech-stack)
 15. [Run it](#15-run-it)
+16. [Project structure](#16-project-structure)
+17. [How we used Replit and RunPod](#17-how-we-used-replit-and-runpod)
 
 ---
 
@@ -436,3 +454,35 @@ Steps that normally need the worker to stop and think have a dashed amber **"Dem
 The sample worker Hafiz and a finance job (e.g. tax preparer) show every step; quizzes for other fields come later.
 
 For the advisor passcode and a judge's walkthrough, see [`runway/README.md`](runway/README.md).
+
+---
+
+## 16. Project structure
+
+```
+.
+├── README.md              This file
+├── Domain 1.pdf           Domain brief
+├── docs/                  PRD and data-feasibility notes
+├── submission/            Hackathon submission and tools-declaration templates
+└── runway/                The Next.js app (Runway was the working name)
+    ├── src/app/           Pages and API routes: start, jobs, map, plan, badge,
+    │                      market, trends, sources, advisor, counsellor, trust
+    ├── src/components/    Shared UI: header, charts, market board, journey
+    ├── src/lib/engine/    Pure TypeScript engine: LMSR market, forecasters, futures,
+    │                      expiry dates, matching, planning, hash-chained log
+    ├── src/lib/i18n/      English, Malay, Chinese and Tamil strings
+    ├── src/lib/server/    Sessions and storage
+    ├── data/              Raw downloads and committed JSON snapshots
+    ├── scripts/           Data-build and anchoring scripts
+    ├── anchors/           Committed fingerprints of the hash log
+    └── tests/             Vitest engine tests
+```
+
+---
+
+## 17. How we used Replit and RunPod
+
+**Replit.** We wrote part of the code on Replit and host the live app there, using its built-in PostgreSQL for sessions and plans (see [Run it](#15-run-it) for the `DATABASE_URL` and `SESSION_SECRET` settings).
+
+**RunPod.** We did not use RunPod. The app runs no AI model and needs no GPU: resume scoring is rule-based and the forecasting engine is plain TypeScript.
