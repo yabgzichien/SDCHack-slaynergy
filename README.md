@@ -486,3 +486,9 @@ For the advisor passcode and a judge's walkthrough, see [`runway/README.md`](run
 **Replit.** We wrote part of the code on Replit and host the live app there, using its built-in PostgreSQL for sessions and plans (see [Run it](#15-run-it) for the `DATABASE_URL` and `SESSION_SECRET` settings).
 
 **RunPod.** We did not use RunPod. The app runs no AI model and needs no GPU: resume scoring is rule-based and the forecasting engine is plain TypeScript.
+
+---
+
+## Licence
+
+Apache License 2.0. See [LICENSE](LICENSE). Copyright 2026 #slaynergy.
