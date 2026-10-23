@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useApp } from "@/components/AppProvider";
+import { useSpeed } from "@/components/useSpeed";
 import { Score, whyFits } from "@/components/JobBits";
 import { areaName } from "@/lib/engine/geo";
 import { Bar, Btn, Card, Chip, Estimate, H, More, PageTitle, SdgTag, Skeleton, SourceChip } from "@/components/ui";
@@ -11,6 +12,7 @@ export default function JobDetailPage() {
   const { view, state, act, busy } = useApp();
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
+  const { speed } = useSpeed(view);
   if (!view || !state) return <Skeleton lines={6} />;
   const m = view.matches.find((x) => x.roleId === id);
   const blocked = view.unreachable.find((x) => x.roleId === id);
@@ -64,7 +66,7 @@ export default function JobDetailPage() {
             {m.gaps.map((g) => (
               <li key={g.skillId} className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-raised px-4 py-3 text-sm">
                 <span>{g.name}</span>
-                <span className="flex items-center gap-2"><SdgTag target={g.sdgTarget} /><span className={`num ${g.expiry.durable ? "text-rise" : "text-fall"}`}>{g.expiry.durable ? "safe past 2040" : `AI could do it by ${g.expiry.expected}`}</span></span>
+                <span className="flex items-center gap-2"><SdgTag target={g.sdgTarget} /><span className={`num ${g.expiry.byFutureYear[speed] === null ? "text-rise" : "text-fall"}`}>{g.expiry.byFutureYear[speed] === null ? "safe past 2040" : `AI could do it by ${g.expiry.byFuture[speed]}`}</span></span>
               </li>
             ))}
           </ul>

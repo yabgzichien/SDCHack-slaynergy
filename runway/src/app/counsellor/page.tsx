@@ -1,13 +1,13 @@
 "use client";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { ArrowRight, BookOpen, Briefcase, CalendarClock, Check, CircleCheck, Clock3, FileText, Landmark, ListChecks, Mic, Users, Wrench, type LucideIcon } from "lucide-react";
 import { useApp, type Catalog } from "@/components/AppProvider";
-import { Portfolio } from "@/components/Pathway";
-import { STATUS_CHIP } from "@/components/Meetings";
+import { useSpeed } from "@/components/useSpeed";
 import { Bar, Btn, Card, Chip, DemoLabel, Estimate, FutureBar, H, PageTitle, SdgTag, Skeleton, pct, sdgName } from "@/components/ui";
 import { dayLabel, MAX_NOTES, myDay, myTime, slotStart, topicLabel, upcoming, whenLabel, type Meeting } from "@/lib/engine/meetings";
-import type { CaseStatus, CaseSummary } from "@/lib/engine/review";
 import type { SessionState, Signer } from "@/lib/engine/state";
 import type { View } from "@/lib/engine/view";
+import type { PlanStep } from "@/lib/engine/plan";
 
 type Worker = { state: SessionState; view: View; catalog: Catalog };
 type Payload =
@@ -15,32 +15,24 @@ type Payload =
   | {
     signedIn: true; counsellor: Signer; now: string; days: string[]; times: string[];
     meetings: { next: Meeting[]; past: Meeting[] }; myOpen: string[]; myBooked: string[];
-    cases: CaseSummary[];
     selectedMeeting: (Worker & { meeting: Meeting }) | null;
-    selectedCase: (Worker & { id: string }) | null;
   };
 type SignedIn = Extract<Payload, { signedIn: true }>;
 type Act = (type: string, body?: Record<string, unknown>) => Promise<void>;
-type Tab = "meetings" | "confirm" | "times";
+type Tab = "meetings" | "times";
 
-const CASE: Record<CaseStatus, { label: string; tone: "accent" | "rise" }> = {
-  finished: { label: "Finished, confirm it", tone: "accent" },
-  badge: { label: "Badge issued", tone: "rise" },
-};
-
-// The advisor signs in, then meets workers who booked a time, sets their own free times, and confirms finished pathways.
+// The advisor signs in, meets workers who booked a time, gives advice, and sets their own free times.
 export default function AdvisorDesk() {
   const { refresh } = useApp();
   const [data, setData] = useState<Payload | null>(null);
   const [tab, setTab] = useState<Tab>("meetings");
   const [meetingId, setMeetingId] = useState<string | null>(null);
-  const [caseId, setCaseId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // New bookings arrive from other browsers, so the desk reloads every 15 seconds once signed in.
   const signedIn = !!data?.signedIn;
-  const query = tab === "meetings" && meetingId ? `?meeting=${encodeURIComponent(meetingId)}` : tab === "confirm" && caseId ? `?case=${encodeURIComponent(caseId)}` : "";
+  const query = tab === "meetings" && meetingId ? `?meeting=${encodeURIComponent(meetingId)}` : "";
   useEffect(() => {
     let live = true;
     const load = () => fetch(`/api/counsellor${query}`).then((r) => r.json())
@@ -53,28 +45,28 @@ export default function AdvisorDesk() {
   const act: Act = useCallback(async (type, body = {}) => {
     setBusy(true); setError(null);
     try {
-      const r = await fetch("/api/counsellor", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ type, meetingId, caseId, ...body }) });
+      const r = await fetch("/api/counsellor", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ type, meetingId, ...body }) });
       const d = await r.json();
       if (!r.ok) { setError(d.error ?? "Something went wrong."); return; }
       setData(d);
       if (d.selectedMeeting?.meeting.id) { setMeetingId(d.selectedMeeting.meeting.id); setTab("meetings"); }
-      if (d.selectedCase?.id) { setCaseId(d.selectedCase.id); setTab("confirm"); }
-      if (type === "signOut") { setMeetingId(null); setCaseId(null); }
+      if (type === "signOut") setMeetingId(null);
       // The advisor may be handling their own browser's worker in a demo; keep the worker pages in step.
       refresh();
     } catch { setError("Network problem. Please try again."); } finally { setBusy(false); }
-  }, [meetingId, caseId, refresh]);
+  }, [meetingId, refresh]);
 
   if (!data) return <Skeleton lines={5} />;
   if (!data.signedIn) return <SignIn demoPasscode={data.demoPasscode} act={act} busy={busy} error={error} />;
 
-  const booked = data.meetings.next.filter((m) => m.status === "booked").length;
-  const toConfirm = data.cases.filter((c) => c.waiting).length;
-  const tabs: { id: Tab; label: string; count?: number }[] = [
-    { id: "meetings", label: "Meetings", count: booked },
-    { id: "confirm", label: "Pathways to confirm", count: toConfirm },
-    { id: "times", label: "My free times" },
+  // A booked meeting with no advice yet waits on the advisor, whether its time is still ahead or has passed.
+  const needAdvice = [...data.meetings.next, ...data.meetings.past].filter((m) => m.status === "booked");
+  const booked = needAdvice.length;
+  const tabs: { id: Tab; label: string; icon: LucideIcon; count?: number }[] = [
+    { id: "meetings", label: "Meetings", icon: CalendarClock, count: booked },
+    { id: "times", label: "My free times", icon: Clock3 },
   ];
+  const openMeeting = (id: string) => { setTab("meetings"); setMeetingId(id); };
 
   return (
     <div>
@@ -82,18 +74,23 @@ export default function AdvisorDesk() {
         <p className="text-sm">Signed in as <b>{data.counsellor.name}</b> <span className="num text-muted">· advisor {data.counsellor.id}</span></p>
         <div className="flex flex-wrap gap-2">
           {tab === "meetings" && <Btn variant="ghost" onClick={() => act("demoMeeting")} disabled={busy}>Add a made-up meeting</Btn>}
-          {tab === "confirm" && <Btn variant="ghost" onClick={() => act("demoCase")} disabled={busy}>Add a made-up finished pathway</Btn>}
           <Btn variant="quiet" onClick={() => act("signOut")} disabled={busy}>Sign out</Btn>
         </div>
       </div>
 
-      <div role="tablist" aria-label="Advisor desk" className="mb-5 flex flex-wrap gap-1.5">
-        {tabs.map((t) => (
-          <button key={t.id} role="tab" type="button" aria-selected={tab === t.id} onClick={() => setTab(t.id)}
-            className={`press min-h-10 rounded-full px-4 text-sm font-medium ${tab === t.id ? "bg-primary text-primaryink" : "bg-surface hover:bg-surface2"}`}>
-            {t.label}{t.count ? <span className="num ml-1.5 rounded-full bg-accentsoft px-1.5 text-xs text-accent">{t.count}</span> : null}
-          </button>
-        ))}
+      <NeedsYou meetings={needAdvice} hasTimes={data.myOpen.length > 0} openMeeting={openMeeting} openTimes={() => setTab("times")} />
+
+      <div role="tablist" aria-label="Advisor desk" className="mb-6 flex flex-wrap gap-1.5 rounded-full bg-surface p-1.5 sm:w-fit">
+        {tabs.map((t) => {
+          const Icon = t.icon;
+          return (
+            <button key={t.id} role="tab" type="button" aria-selected={tab === t.id} onClick={() => setTab(t.id)}
+              className={`press inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-medium ${tab === t.id ? "bg-raised text-ink shadow-sm" : "text-muted hover:text-ink"}`}>
+              <Icon size={17} strokeWidth={1.9} aria-hidden />{t.label}
+              {t.count ? <span className="num inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-fall px-1.5 text-xs font-semibold text-white" aria-label={`${t.count} need you`}>{t.count}</span> : null}
+            </button>
+          );
+        })}
       </div>
 
       {error && <p role="alert" className="mb-4 rounded-2xl bg-fallsoft p-3 text-sm text-negative">{error}</p>}
@@ -106,19 +103,11 @@ export default function AdvisorDesk() {
           </>}
           main={data.selectedMeeting && data.selectedMeeting.meeting.id === meetingId
             ? <MeetingView key={meetingId} data={data.selectedMeeting} now={data.now} act={act} busy={busy} />
-            : <Card><H>Pick a meeting</H><p className="text-sm">Workers book a half hour from your free times, or the demo advisor&apos;s. Open one to see what they asked, what Jobbery suggested to them and why, and to write your advice.</p></Card>}
-        />
-      )}
-
-      {tab === "confirm" && (
-        <Split
-          list={<>
-            <CaseList title={`Waiting for you (${toConfirm})`} cases={data.cases.filter((c) => c.waiting)} selected={caseId} pick={setCaseId} empty="No finished pathways are waiting." />
-            <CaseList title="Confirmed" cases={data.cases.filter((c) => !c.waiting)} selected={caseId} pick={setCaseId} empty="None yet." />
-          </>}
-          main={data.selectedCase && data.selectedCase.id === caseId
-            ? <CaseView key={caseId} data={data.selectedCase} act={act} busy={busy} />
-            : <Card><H>Pick a pathway</H><p className="text-sm">When a worker finishes every step and passes the AI check, they ask an advisor to confirm. Only then is their LinkedIn badge issued.</p></Card>}
+            : <PickHint title="Pick a meeting on the left" steps={[
+              { icon: CalendarClock, text: "Workers book a half hour from your free times, or the demo advisor's." },
+              { icon: ListChecks, text: "Open one to read their question and what Jobbery suggested to them, and why." },
+              { icon: FileText, text: "Write your advice. It shows on their Plan page as a suggestion." },
+            ]} />}
         />
       )}
 
@@ -136,12 +125,23 @@ function Split({ list, main }: { list: ReactNode; main: ReactNode }) {
   );
 }
 
+const DEMO_ADVISORS = ["Puan Aisyah, JobsMalaysia Shah Alam", "Encik Ravi, PERKESO Penang"];
+
 function SignIn({ demoPasscode, act, busy, error }: { demoPasscode: string | null; act: Act; busy: boolean; error: string | null }) {
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   return (
     <div className="max-w-xl">
-      <PageTitle title="Advisor sign-in">Advisors meet workers who book a time, give advice, and confirm finished pathways. Your name is shown to the worker, and recorded in the tamper-evident log with every piece of advice and every badge you confirm.</PageTitle>
+      <PageTitle title="Advisor sign-in">Every worker meets an advisor once as part of their plan: a mock interview, advice, or anything else they ask. Your name is shown to the worker, and recorded in the tamper-evident log with every piece of advice you give.</PageTitle>
+      {demoPasscode && (
+        <Card className="mb-4">
+          <h2 className="text-base font-semibold">Try it as a demo advisor</h2>
+          <p className="mt-1 text-sm text-muted">One click signs you in. No name or passcode needed.</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {DEMO_ADVISORS.map((n) => <Btn key={n} onClick={() => act("signIn", { name: n, passcode: demoPasscode })} disabled={busy}>{n}</Btn>)}
+          </div>
+        </Card>
+      )}
       <Card tone="raised">
         <form onSubmit={(e) => { e.preventDefault(); act("signIn", { name, passcode: code }); }} className="space-y-3">
           <label className="block text-sm font-medium">Your name
@@ -159,24 +159,77 @@ function SignIn({ demoPasscode, act, busy, error }: { demoPasscode: string | nul
   );
 }
 
+// The first thing on the desk: what is waiting on this advisor, each with a button that opens it.
+function NeedsYou({ meetings, hasTimes, openMeeting, openTimes }: { meetings: Meeting[]; hasTimes: boolean; openMeeting: (id: string) => void; openTimes: () => void }) {
+  const items = [
+    ...meetings.map((m) => ({ key: m.id, text: <><b>{m.worker.name}</b> <span className="text-fall"><span aria-hidden>· </span><span>Needs your advice</span></span></>, sub: `${topicLabel(m.topic)} · ${whenLabel(m.start)}`, go: () => openMeeting(m.id) })),
+  ];
+  if (!items.length) {
+    return (
+      <section aria-label="What needs you" className="mb-5 flex flex-wrap items-center gap-3 rounded-[22px] bg-risesoft px-5 py-4">
+        <CircleCheck size={22} className="text-rise" aria-hidden />
+        <p className="flex-1 font-medium">You&apos;re all caught up.{!hasTimes && <span className="font-normal text-muted"> Open some free times so workers can book you.</span>}</p>
+        {!hasTimes && <Btn variant="ghost" onClick={openTimes}>Open free times</Btn>}
+      </section>
+    );
+  }
+  return (
+    <section aria-label="What needs you" className="mb-5 rounded-[22px] bg-fallsoft p-5">
+      <p className="flex items-center gap-2 text-lg font-semibold"><span className="h-2.5 w-2.5 rounded-full bg-fall" aria-hidden />{items.length === 1 ? "1 thing needs you" : `${items.length} things need you`}</p>
+      <ul className="mt-3 grid gap-2 md:grid-cols-2">
+        {items.slice(0, 4).map((it) => (
+          <li key={it.key}>
+            <button type="button" onClick={it.go} className="press group flex w-full items-center gap-3 rounded-2xl bg-raised px-4 py-3 text-left hover:ring-1 hover:ring-fall/40">
+              <span className="min-w-0 flex-1"><span className="block">{it.text}</span><span className="block truncate text-xs text-muted">{it.sub}</span></span>
+              <ArrowRight size={18} className="shrink-0 text-fall transition-transform group-hover:translate-x-0.5" aria-hidden />
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function PickHint({ title, steps }: { title: string; steps: { icon: LucideIcon; text: string }[] }) {
+  return (
+    <Card>
+      <p className="text-lg font-semibold">{title}</p>
+      <ul className="mt-4 space-y-3">
+        {steps.map((st) => { const Icon = st.icon; return (
+          <li key={st.text} className="flex items-start gap-3 text-sm"><span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-raised text-ink"><Icon size={17} aria-hidden /></span><span className="pt-2">{st.text}</span></li>
+        ); })}
+      </ul>
+    </Card>
+  );
+}
+
+// A list row: the person leads; the state is a coloured edge (orange waits on you, green is done); the time is small.
+function Row({ name, sub, meta, state, selected, onClick, tags }: { name: string; sub: string; meta: string; state: "you" | "done" | "quiet"; selected: boolean; onClick: () => void; tags?: string }) {
+  const edge = { you: "bg-fall", done: "bg-rise", quiet: "bg-control" }[state];
+  return (
+    <button type="button" onClick={onClick} aria-current={selected ? "true" : undefined}
+      className={`press relative flex w-full items-start gap-3 overflow-hidden rounded-2xl py-3 pl-5 pr-3 text-left ${selected ? "bg-raised ring-1 ring-ink/15" : "bg-surface hover:bg-surface2"}`}>
+      <span className={`absolute inset-y-0 left-0 w-1.5 ${edge}`} aria-hidden />
+      <span className="min-w-0 flex-1">
+        <span className="flex items-center gap-2"><span className="truncate font-semibold">{name}</span>{state === "you" && <span className="shrink-0 rounded-full bg-fallsoft px-2 py-0.5 text-[11px] font-semibold text-fall">Needs you</span>}{state === "done" && <Check size={15} className="shrink-0 text-rise" aria-label="Done" />}</span>
+        <span className="block truncate text-sm text-ink/80">{sub}</span>
+        <span className="num mt-0.5 block text-xs text-muted">{meta}{tags ? ` · ${tags}` : ""}</span>
+      </span>
+    </button>
+  );
+}
+
 function MeetingList({ title, items, selected, pick, empty }: { title: string; items: Meeting[]; selected: string | null; pick: (id: string) => void; empty: string }) {
   return (
-    <div className="mb-5">
-      <p className="mb-2 text-sm font-semibold">{title}</p>
+    <div className="mb-6">
+      <p className="mb-2 text-xs font-semibold text-muted">{title}</p>
       {!items.length ? <p className="text-sm text-muted">{empty}</p> : (
         <ul className="space-y-1.5">
           {items.map((m) => (
             <li key={m.id}>
-              <button type="button" onClick={() => pick(m.id)} aria-current={selected === m.id ? "true" : undefined}
-                className={`w-full rounded-2xl px-4 py-2.5 text-left ${selected === m.id ? "bg-accentsoft" : "bg-surface hover:bg-surface2"}`}>
-                <span className="num block text-sm font-medium">{whenLabel(m.start)}</span>
-                <span className="block text-sm">{m.worker.name} <span className="text-xs text-muted">· {topicLabel(m.topic)}</span></span>
-                <span className="mt-1 flex flex-wrap gap-1">
-                  <Chip tone={STATUS_CHIP[m.status].tone}>{STATUS_CHIP[m.status].label}</Chip>
-                  {m.advisor.id === "c-demo" && <Chip tone="demo">Demo advisor</Chip>}
-                  {m.worker.synthetic && <Chip tone="demo">Made-up</Chip>}
-                </span>
-              </button>
+              <Row name={m.worker.name} sub={topicLabel(m.topic)} meta={m.status === "cancelled" ? `Cancelled · ${whenLabel(m.start)}` : whenLabel(m.start)}
+                state={m.status === "booked" ? "you" : m.status === "advised" ? "done" : "quiet"} selected={selected === m.id} onClick={() => pick(m.id)}
+                tags={[m.advisor.id === "c-demo" && "demo advisor", m.worker.synthetic && "made-up"].filter(Boolean).join(", ")} />
             </li>
           ))}
         </ul>
@@ -185,26 +238,25 @@ function MeetingList({ title, items, selected, pick, empty }: { title: string; i
   );
 }
 
-function CaseList({ title, cases, selected, pick, empty }: { title: string; cases: CaseSummary[]; selected: string | null; pick: (id: string) => void; empty: string }) {
+// The top of a meeting: who, what they are aiming for, and (small) when.
+function Person({ name, goal, meta, badge }: { name: string; goal?: string; meta: string; badge: ReactNode }) {
   return (
-    <div className="mb-5">
-      <p className="mb-2 text-sm font-semibold">{title}</p>
-      {!cases.length ? <p className="text-sm text-muted">{empty}</p> : (
-        <ul className="space-y-1.5">
-          {cases.map((c) => (
-            <li key={c.id}>
-              <button type="button" onClick={() => pick(c.id)} aria-current={selected === c.id ? "true" : undefined}
-                className={`w-full rounded-2xl px-4 py-2.5 text-left ${selected === c.id ? "bg-accentsoft" : "bg-surface hover:bg-surface2"}`}>
-                <span className="block font-medium">{c.name}{c.own && <span className="text-xs font-normal text-muted"> · this browser</span>}</span>
-                <span className="block text-xs text-muted">{c.role}</span>
-                <span className="mt-1 flex flex-wrap gap-1"><Chip tone={CASE[c.status].tone}>{CASE[c.status].label}</Chip>{c.synthetic && <Chip tone="demo">Made-up</Chip>}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    <header className="mb-5 flex flex-wrap items-start gap-x-4 gap-y-3">
+      <span className="inline-flex h-12 w-12 shrink-0 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-accentsoft font-serif text-2xl text-accentink" aria-hidden>{name.charAt(0).toUpperCase()}</span>
+      <div className="min-w-0 flex-1">
+        <h1 className="font-serif text-3xl leading-tight tracking-tight sm:text-4xl">{name}</h1>
+        {goal && <p className="mt-1 text-base">Aiming for <b>{goal}</b></p>}
+        <p className="num mt-1 text-sm text-muted">{meta}</p>
+      </div>
+      <div className="w-full sm:w-auto">{badge}</div>
+    </header>
   );
+}
+
+function YourTurn({ done, children }: { done: boolean; children: ReactNode }) {
+  return done
+    ? <span className="inline-flex items-center gap-1.5 rounded-full bg-risesoft px-3 py-1 text-sm font-semibold text-rise"><Check size={15} aria-hidden />{children}</span>
+    : <span className="inline-flex items-center gap-1.5 rounded-full bg-fall px-3 py-1 text-sm font-semibold text-white"><span className="h-2 w-2 rounded-full bg-white" aria-hidden />{children}</span>;
 }
 
 // One meeting: what the worker asked, the advisor's advice, and everything Jobbery showed the worker.
@@ -216,27 +268,21 @@ function MeetingView({ data, now, act, busy }: { data: Worker & { meeting: Meeti
   const live = upcoming(m, now);
   return (
     <div>
-      <PageTitle title={`${m.worker.name} · ${whenLabel(m.start)}`}>
-        You give advice; the worker decides. You see what Jobbery suggested and why, so you can question it. No hiring decision is automated.
-      </PageTitle>
-      <div className="mb-4 flex flex-wrap gap-2">
-        <Chip tone={STATUS_CHIP[m.status].tone}>{STATUS_CHIP[m.status].label}</Chip>
-        <Chip>{topicLabel(m.topic)}</Chip>
-        <Chip>30 minutes · with {m.advisor.name}</Chip>
-        {m.worker.synthetic && <Chip tone="demo">Made-up worker</Chip>}
-      </div>
+      <Person name={m.worker.name} goal={data.view.plan?.title ?? data.view.chosen?.title}
+        meta={`${whenLabel(m.start)} · 30 min · ${topicLabel(m.topic)} · with ${m.advisor.name}${m.worker.synthetic ? " · made-up worker" : ""}`}
+        badge={m.status === "cancelled" ? <Chip>Cancelled</Chip> : <YourTurn done={!!m.notes}>{m.notes ? "Advice sent" : "Your turn: write advice"}</YourTurn>} />
 
       <Card className="mb-4" tone="raised">
-        <H>What they asked</H>
-        <p className="text-sm">{m.question ? <>&ldquo;{m.question}&rdquo;</> : <span className="text-muted">No question written. Topic: {topicLabel(m.topic)}.</span>}</p>
+        <p className="text-xs font-semibold text-muted">They asked</p>
+        <p className="mt-2 font-serif text-xl leading-snug sm:text-2xl">{m.question ? <>&ldquo;{m.question}&rdquo;</> : <span className="text-muted">{`No question written. They want help with: ${topicLabel(m.topic).toLowerCase()}.`}</span>}</p>
         {m.status === "cancelled" ? (
           <p className="mt-3 text-sm text-fall">Cancelled {m.cancelledBy === "advisor" ? `by the advisor: “${m.reason}”` : "by the worker"}.</p>
         ) : (
           <>
-            <label className="mt-4 block text-sm font-medium">Your advice for {m.worker.name}
-              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={MAX_NOTES} rows={4} className="mt-1 w-full rounded-2xl border border-control bg-raised p-3" placeholder="For example: do the free Google course first, then the paid SQL one once HRD Corp funding is confirmed. I can introduce you to two local employers." />
+            <label className={`mt-5 block rounded-2xl p-4 text-sm font-medium ${m.notes ? "bg-surface" : "bg-fallsoft"}`}>{m.notes ? "Your advice" : <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-fall" aria-hidden />{`Your advice for ${m.worker.name}`}</span>}
+              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={MAX_NOTES} rows={4} className="mt-2 w-full rounded-2xl border border-control bg-raised p-3 font-normal" placeholder="For example: do the free Google course first, then the paid SQL one once HRD Corp funding is confirmed. I can introduce you to two local employers." />
+              <span className="mt-1 block text-xs font-normal text-muted">Shown on the worker&apos;s Plan page as a suggestion. The log records that you gave advice, not what you wrote. You give advice; the worker decides.</span>
             </label>
-            <p className="mt-1 text-xs text-muted">Shown on the worker&apos;s Plan page as a suggestion. The log records that you gave advice, not what you wrote.</p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Btn onClick={() => act("advise", { notes })} disabled={busy || notes.trim().length < 10}>{m.notes ? "Update advice" : "Send advice"}</Btn>
               {live && !cancelling && <Btn variant="quiet" onClick={() => setCancelling(true)}>Cancel the meeting</Btn>}
@@ -253,36 +299,8 @@ function MeetingView({ data, now, act, busy }: { data: Worker & { meeting: Meeti
           </>
         )}
       </Card>
+      <p className="mb-3 mt-8 text-lg font-semibold">Before you advise: what Jobbery showed them</p>
       <WorkerDetails data={data} />
-    </div>
-  );
-}
-
-// The finished-pathway sign-off: the advisor reads the work before a badge is issued.
-function CaseView({ data, act, busy }: { data: Worker & { id: string }; act: Act; busy: boolean }) {
-  const [note, setNote] = useState("");
-  const c = data.state.completion, p = data.state.profile;
-  if (!p) return <Card><p className="text-sm">This worker started over.</p></Card>;
-  return (
-    <div>
-      <PageTitle title={c.status === "confirmed" ? `You confirmed ${p.name}'s pathway.` : `${p.name} finished their pathway.`}>
-        The worker says every step is done and has passed the AI check. Read their work, then confirm. Only then is the badge issued.
-      </PageTitle>
-      <Card className="mb-4" tone={c.status === "confirmed" ? "rise" : "raised"}>
-        <H>Your sign-off</H>
-        {c.status === "confirmed" ? (
-          <p className="text-sm"><b>Confirmed</b> {c.by ? `by ${c.by.name}` : ""} {c.confirmedAt ? `on ${new Date(c.confirmedAt).toLocaleString()}` : ""}. The badge is recorded in the tamper-evident log. {c.badgeId && <a className="underline decoration-control underline-offset-2" href={`/badge/${c.badgeId}`}>See the badge</a>}</p>
-        ) : (
-          <>
-            <label className="block text-sm font-medium">Note to the worker (optional)
-              <textarea value={note} onChange={(e) => setNote(e.target.value)} maxLength={500} rows={2} className="mt-1 w-full rounded-2xl border border-control bg-raised p-3" placeholder="For example: we did the mock interview on Tuesday; strong answers." />
-            </label>
-            <div className="mt-3"><Btn onClick={() => act("confirm", { note })} disabled={busy}>Confirm completion and issue the badge</Btn></div>
-          </>
-        )}
-      </Card>
-      <Portfolio counsellor data={data} />
-      <div className="mt-4"><WorkerDetails data={data} /></div>
     </div>
   );
 }
@@ -290,11 +308,14 @@ function CaseView({ data, act, busy }: { data: Worker & { id: string }; act: Act
 // What Jobbery showed the worker: profile, the futures behind the advice, the top jobs and the plan.
 function WorkerDetails({ data }: { data: Worker }) {
   const { state, view, catalog } = data;
+  const { speed } = useSpeed(view);
   const p = state.profile, plan = view.plan;
   if (!p) return <Card><p className="text-sm">This worker has not told Jobbery about themselves yet.</p></Card>;
   const top3 = view.matches.slice(0, 3);
   return (
     <div className="grid gap-4 lg:grid-cols-2">
+      {plan ? <PlanCard plan={plan} done={view.pathway.done} /> : <Card className="lg:col-span-2"><p className="text-sm text-muted">They have not chosen a job to plan for yet.</p></Card>}
+
       <Card>
         <H>The worker</H>
         <dl className="grid grid-cols-2 gap-y-1 text-sm">
@@ -307,7 +328,7 @@ function WorkerDetails({ data }: { data: Worker }) {
           <dt className="text-muted">Goals picked</dt><dd>{state.goals.length ? state.goals.map((g) => `${sdgName(g)} (${g})`).join(", ") : "none"}</dd>
         </dl>
         <p className="mt-3 text-sm font-semibold">Skills (confirmed by the worker)</p>
-        <ul className="mt-1 space-y-1 text-sm">{view.profileSkills.map((s) => <li key={s.skillId} className="flex justify-between gap-2"><span>{s.name}</span><span className={s.expiry.durable ? "text-rise" : "text-fall"}>{s.expiry.durable ? "lasts" : `≈ ${s.expiry.expected}`}</span></li>)}</ul>
+        <ul className="mt-1 space-y-1 text-sm">{view.profileSkills.map((s) => <li key={s.skillId} className="flex justify-between gap-2"><span>{s.name}</span><span className={s.expiry.durable ? "text-rise" : "text-fall"}>{s.expiry.durable ? "lasts" : `≈ ${s.expiry.byFuture[speed]}`}</span></li>)}</ul>
       </Card>
 
       <Card>
@@ -334,21 +355,62 @@ function WorkerDetails({ data }: { data: Worker }) {
         </ol>
       </Card>
 
-      {plan ? (
-        <Card className="lg:col-span-2">
-          <H sub={`${plan.totalWeeks} weeks inside ${plan.deadlineWeeks} available`}>Their plan for {plan.title}</H>
-          <ol className="space-y-1.5 text-sm">
-            {plan.steps.map((s) => (
-              <li key={s.id} className="flex flex-wrap items-baseline justify-between gap-2 rounded-2xl bg-raised px-4 py-2">
-                <span><span className="num text-xs text-muted">Weeks {s.weekStart}{s.weekEnd > s.weekStart ? `–${s.weekEnd}` : ""}</span> {s.title}</span>
-                <span className="text-xs text-muted">{view.pathway.done[s.id] ? "Done · " : ""}{s.strand === "ai" ? "AI at work" : s.strand === "people" ? "People skills" : s.funding}</span>
-              </li>
-            ))}
-          </ol>
-          {plan.steps.some((s) => s.kind === "programme") && <p className="mt-2 text-sm text-fall">Some skills have no vetted free course yet. A PERKESO-supported or other programme may cover them.</p>}
-        </Card>
-      ) : <Card className="lg:col-span-2"><p className="text-sm text-muted">They have not chosen a job to plan for yet.</p></Card>}
     </div>
+  );
+}
+
+// What each step is, at a glance: its kind sets the icon, its strand the colour.
+function stepIcon(st: PlanStep): LucideIcon {
+  if (st.activity === "resume") return FileText;
+  if (st.activity === "task") return ListChecks;
+  if (st.activity === "meeting") return Users;
+  if (st.kind === "apply") return Briefcase;
+  if (/interview/i.test(st.title)) return Mic;
+  return { course: BookOpen, programme: Landmark, practice: Mic, apply: Briefcase, adapt: Wrench }[st.kind];
+}
+const STRAND: Record<PlanStep["strand"], { label: string; dot: string; tag: string }> = {
+  job: { label: "Job skills", dot: "bg-[#e7f1e3] text-[#2f5d33]", tag: "bg-[#e7f1e3] text-[#2f5d33]" },
+  ai: { label: "AI at work", dot: "bg-[#e3eef7] text-[#2b5878]", tag: "bg-[#e3eef7] text-[#2b5878]" },
+  people: { label: "People skills", dot: "bg-[#f6e6ee] text-[#7a3d5e]", tag: "bg-[#f6e6ee] text-[#7a3d5e]" },
+};
+
+function PlanCard({ plan, done }: { plan: NonNullable<View["plan"]>; done: Record<string, boolean | undefined> }) {
+  const finished = plan.steps.filter((st) => done[st.id]).length;
+  return (
+    <Card className="lg:col-span-2">
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold text-muted">Their plan</p>
+          <p className="mt-1 font-serif text-2xl leading-tight">{plan.title}</p>
+          <p className="mt-1 text-sm text-muted">{`${plan.totalWeeks} weeks of the ${plan.deadlineWeeks} they have · ${finished} of ${plan.steps.length} steps done`}</p>
+        </div>
+        <ul className="flex flex-wrap gap-1.5" aria-label="Colour key">{(["job", "ai", "people"] as const).map((k) => <li key={k} className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STRAND[k].tag}`}>{STRAND[k].label}</li>)}</ul>
+      </div>
+      <ol className="relative">
+        {plan.steps.map((st, n) => {
+          const Icon = stepIcon(st), isDone = !!done[st.id], last = n === plan.steps.length - 1;
+          return (
+            <li key={st.id} className="relative grid grid-cols-[2.6rem_2.5rem_1fr] items-start gap-x-2 pb-3 sm:grid-cols-[3.5rem_2.5rem_1fr] sm:gap-x-3">
+              <span className="num pt-2.5 text-right text-xs text-muted">{st.weekEnd > st.weekStart ? `Wk ${st.weekStart}–${st.weekEnd}` : `Wk ${st.weekStart}`}</span>
+              <span className="relative flex justify-center">
+                {!last && <span className="absolute top-10 h-[calc(100%+0.25rem)] w-0.5 bg-line" aria-hidden />}
+                <span className={`relative inline-flex h-10 w-10 items-center justify-center rounded-full ${isDone ? "bg-rise text-white" : STRAND[st.strand].dot}`}>
+                  {isDone ? <Check size={18} aria-label="Done" /> : <Icon size={18} strokeWidth={1.8} aria-hidden />}
+                </span>
+              </span>
+              <span className="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-2xl bg-raised px-4 py-2.5">
+                <span className={`min-w-0 text-sm font-medium ${isDone ? "text-muted line-through decoration-control" : ""}`}>{st.title}</span>
+                <span className="flex shrink-0 items-center gap-1.5">
+                  <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${STRAND[st.strand].tag}`}>{STRAND[st.strand].label}</span>
+                  <span className={`text-xs ${/free/i.test(st.funding) ? "font-semibold text-rise" : "text-muted"}`}>{st.funding}</span>
+                </span>
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+      {plan.steps.some((st) => st.kind === "programme") && <p className="mt-1 text-sm text-fall">Some skills have no vetted free course yet. A PERKESO-supported or other programme may cover them.</p>}
+    </Card>
   );
 }
 

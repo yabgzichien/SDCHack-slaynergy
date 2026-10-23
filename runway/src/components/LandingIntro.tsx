@@ -3,51 +3,43 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { ArrowRight, Binoculars, BookOpen, Check, Compass, RotateCcw } from "lucide-react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { ArrowRight, Binoculars, BookOpen, Compass, RotateCcw } from "lucide-react";
 import { useApp } from "./AppProvider";
+import { useT } from "./I18nProvider";
 import { LandingSdgAnimation } from "./LandingSdgAnimation";
+import { LandingForecast } from "./LandingForecast";
+import { AiCapabilityChart, aiCapability } from "./AiTrendCharts";
+import { sourceById } from "@/lib/engine/data";
 
-const samplePeriods = [
-  { label: "2024", roles: 18, skills: 42, paths: 9, growing: 36, overlap: 48, trend: [34, 42, 39, 51, 47, 54] },
-  { label: "2025", roles: 24, skills: 57, paths: 13, growing: 48, overlap: 59, trend: [42, 45, 54, 51, 62, 67] },
-  { label: "2026", roles: 32, skills: 68, paths: 16, growing: 61, overlap: 72, trend: [45, 53, 49, 65, 70, 78] },
-];
-
-function AnimatedNumber({ value, suffix }: { value: number; suffix: string }) {
-  const [display, setDisplay] = useState(value);
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    let frame = 0;
-    const start = performance.now();
-    const tick = (now: number) => {
-      const progress = Math.min((now - start) / 900, 1);
-      setDisplay(Math.round(value * (1 - Math.pow(1 - progress, 3))));
-      if (progress < 1) frame = requestAnimationFrame(tick);
-    };
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [value]);
-  return <strong>{display}{suffix}</strong>;
-}
+// The intro plays once per visit: coming back to the home page or reloading it does not replay it ("Replay intro" does).
+const INTRO_SEEN = "jobbery-intro-seen";
+const noSubscribe = () => () => {};
+const readSeen = () => { try { return sessionStorage.getItem(INTRO_SEEN) === "1"; } catch { return false; } };
+const markSeen = () => { try { sessionStorage.setItem(INTRO_SEEN, "1"); } catch { /* private mode: it may play again */ } };
 
 export function LandingIntro() {
-  const { act, busy, catalog } = useApp();
+  const { busy, catalog, view } = useApp();
+  const { t } = useT();
   const router = useRouter();
   const rootRef = useRef<HTMLDivElement>(null);
-  const [sceneActive, setSceneActive] = useState(true);
+  const [playing, setSceneActive] = useState(true);
   const [replayKey, setReplayKey] = useState(0);
+  const seen = useSyncExternalStore(noSubscribe, readSeen, () => false);
+  const sceneActive = playing && (!seen || replayKey > 0);
   const birdRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<HTMLDivElement>(null);
-  const [period, setPeriod] = useState(2);
-  const sample = samplePeriods[period];
-  const demo = async () => { if (await act("startPersona", { personaId: "hafiz" })) router.push("/skills"); };
+  const ai = view ? aiCapability(view.world.asOfQuarter) : null;
+  // Data-driven cards mount after the first render; re-observe them once the view arrives.
+  const ready = !!view;
+  const demo = () => router.push("/start?sample=1");
 
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const timer = window.setTimeout(() => setSceneActive(false), reduced ? 0 : 2700);
+    if (!sceneActive) return;
+    const timer = window.setTimeout(() => { markSeen(); setSceneActive(false); }, reduced ? 0 : 2700);
     return () => window.clearTimeout(timer);
-  }, [replayKey]);
+  }, [replayKey, sceneActive]);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -69,7 +61,7 @@ export function LandingIntro() {
     }, { threshold: 0.12, rootMargin: "0px 0px -24px 0px" });
     items.forEach((item) => observer.observe(item));
     return () => observer.disconnect();
-  }, [sceneActive]);
+  }, [sceneActive, ready]);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -98,47 +90,65 @@ export function LandingIntro() {
 
   return (
     <div ref={rootRef} className={`landing-page landing-content${sceneActive ? "" : " is-scene-active"}`}>
-      {sceneActive && <div key={replayKey} className="intro-overlay"><div className="intro-overlay-inner" aria-hidden="true"><span className="intro-word">Jobbery<span className="intro-word-dot">.</span></span><Image src="/cockatiel-running.png" alt="" width={1254} height={1254} className="intro-mascot" priority /><span className="intro-speed intro-speed-one" /><span className="intro-speed intro-speed-two" /></div><button className="intro-skip" onClick={() => setSceneActive(false)}>Skip intro <ArrowRight size={16} /></button></div>}
+      {sceneActive && <div key={replayKey} className="intro-overlay"><div className="intro-overlay-inner" aria-hidden="true"><span className="intro-word">Jobbery<span className="intro-word-dot">.</span></span><Image src="/cockatiel-running.png" alt="" width={1254} height={1254} className="intro-mascot" priority /><span className="intro-speed intro-speed-one" /><span className="intro-speed intro-speed-two" /></div><button className="intro-skip" onClick={() => { markSeen(); setSceneActive(false); }}>{t("Skip intro")} <ArrowRight size={16} /></button></div>}
       <div ref={birdRef} className="landing-travel-bird" aria-hidden="true"><Image key={replayKey} src="/landing-cockatiel-flight.png" alt="" width={1353} height={1163} priority /></div>
       <div>
         <section className="landing-intro" aria-labelledby="landing-title">
           <div className="landing-hero-landscape" aria-hidden="true" />
           <div ref={sceneRef} className="landing-bird-flight"><LandingSdgAnimation replayKey={replayKey} /></div>
           <div className="landing-intro-heading">
-            <h1 id="landing-title" className="landing-reveal">Work is changing.<br />Keep growing with it.</h1>
-            <p className="landing-intro-subtitle landing-reveal">AI is changing the way work gets done. Some tasks will be automated, new skills will be in demand, and new opportunities will emerge. With the right guidance and continuous learning, you can find new paths, build skills for the future and create a meaningful career in Malaysia and beyond.</p>
-            <div className="landing-hero-benefits landing-reveal" aria-label="What Jobbery offers"><span><Check size={15} aria-hidden="true" />Career guidance</span><span><Check size={15} aria-hidden="true" />Insights for the future</span><span><Check size={15} aria-hidden="true" />Curated learning</span></div>
+            <h1 id="landing-title" className="landing-reveal">{t("Work is changing.")}<br />{t("Keep growing with it.")}</h1>
+            <p className="landing-intro-subtitle landing-reveal">{t("See which jobs AI is changing, find one that fits you, and get a week-by-week plan to get there.")}</p>
+            <div className="landing-hero-actions landing-reveal"><Link href="/start" className="landing-primary">{t("Get started")} <ArrowRight size={18} aria-hidden /></Link><button onClick={demo} disabled={busy || !catalog} className="landing-secondary">{t("Try a sample")}</button></div>
           </div>
           <div className="landing-wave" aria-hidden="true" />
         </section>
 
         <section id="about" className="landing-about" aria-labelledby="about-title">
-          <div className="landing-about-heading landing-reveal"><h2 id="about-title">What is Jobbery?</h2><p>Jobbery helps you explore career paths, understand how work is changing, and find learning opportunities to build a brighter, more inclusive future.</p></div>
+          <div className="landing-about-heading landing-reveal"><h2 id="about-title">{t("What is Jobbery?")}</h2><p>{t("Jobbery helps you explore career paths, understand how work is changing, and find learning opportunities to build a brighter, more inclusive future.")}</p></div>
           <div className="landing-about-cards">
-            <Link href="/start" className="landing-about-card landing-reveal"><span className="landing-about-icon"><Compass size={66} strokeWidth={1.4} aria-hidden="true" /></span><span className="landing-about-copy"><strong>Career help</strong><span>Discover careers that match your interests, strengths and values, with guidance for different education pathways.</span></span><span className="landing-about-arrow"><ArrowRight size={20} aria-hidden="true" /></span></Link>
-            <Link href="/forecast" className="landing-about-card landing-reveal"><span className="landing-about-icon"><Binoculars size={66} strokeWidth={1.4} aria-hidden="true" /></span><span className="landing-about-copy"><strong>Future forecasts</strong><span>See how AI and other trends may shape jobs and skills, so you can make informed decisions about your next step.</span></span><span className="landing-about-arrow"><ArrowRight size={20} aria-hidden="true" /></span></Link>
-            <Link href="/courses" className="landing-about-card landing-reveal"><span className="landing-about-icon"><BookOpen size={66} strokeWidth={1.4} aria-hidden="true" /></span><span className="landing-about-copy"><strong>Courses to grow</strong><span>Find curated courses and learning resources to build skills in demand and open new opportunities.</span></span><span className="landing-about-arrow"><ArrowRight size={20} aria-hidden="true" /></span></Link>
+            <Link href="/start" className="landing-about-card landing-reveal"><span className="landing-about-icon"><Compass size={66} strokeWidth={1.4} aria-hidden="true" /></span><span className="landing-about-copy"><strong>{t("Career help")}</strong><span>{t("Discover careers that match your interests, strengths and values, with guidance for different education pathways.")}</span></span><span className="landing-about-arrow"><ArrowRight size={20} aria-hidden="true" /></span></Link>
+            <Link href="/forecast" className="landing-about-card landing-reveal"><span className="landing-about-icon"><Binoculars size={66} strokeWidth={1.4} aria-hidden="true" /></span><span className="landing-about-copy"><strong>{t("Future forecasts")}</strong><span>{t("See how AI and other trends may shape jobs and skills, so you can make informed decisions about your next step.")}</span></span><span className="landing-about-arrow"><ArrowRight size={20} aria-hidden="true" /></span></Link>
+            <Link href="/courses" className="landing-about-card landing-reveal"><span className="landing-about-icon"><BookOpen size={66} strokeWidth={1.4} aria-hidden="true" /></span><span className="landing-about-copy"><strong>{t("Courses to grow")}</strong><span>{t("Find curated courses and learning resources to build skills in demand and open new opportunities.")}</span></span><span className="landing-about-arrow"><ArrowRight size={20} aria-hidden="true" /></span></Link>
           </div>
         </section>
 
         <section id="journey" className="landing-journey" aria-labelledby="journey-title">
-          <div className="landing-section-heading landing-reveal"><span className="landing-section-label">YOUR PATH FORWARD</span><h2 id="journey-title">Three steps<span className="landing-period">.</span></h2><p>Start where you are. Move at your own pace.</p></div>
+          <div className="landing-section-heading landing-reveal"><span className="landing-section-label">{t("YOUR PATH FORWARD")}</span><h2 id="journey-title">{t("Three steps")}<span className="landing-period">.</span></h2><p>{t("Start where you are. Move at your own pace.")}</p></div>
           <div className="landing-steps">
-            <article className="landing-step landing-reveal"><span className="landing-step-number">01</span><h3>Show us where you are</h3><p>Use your CV to save time or answer a few short questions. You can check everything before continuing.</p><div className="landing-step-actions"><Link href="/start" className="landing-primary">Get started <ArrowRight size={17} aria-hidden /></Link><button onClick={demo} disabled={busy || !catalog} className="landing-secondary">Try a sample</button></div></article>
+            <article className="landing-step landing-reveal"><span className="landing-step-number">01</span><h3>{t("Show us where you are")}</h3><p>{t("Use your CV to save time or answer a few short questions. You can check everything before continuing.")}</p></article>
             <span className="landing-step-arrow landing-reveal" aria-hidden="true">→</span>
-            <article className="landing-step landing-reveal"><span className="landing-step-number">02</span><h3>See what fits</h3><p>Explore roles your skills could lead to, with job data and different AI forecasts in view.</p></article>
+            <article className="landing-step landing-reveal"><span className="landing-step-number">02</span><h3>{t("See what fits")}</h3><p>{t("Explore roles your skills could lead to, with job data and different AI forecasts in view.")}</p></article>
             <span className="landing-step-arrow landing-reveal" aria-hidden="true">→</span>
-            <article className="landing-step landing-reveal"><span className="landing-step-number">03</span><h3>Make a plan</h3><p>Turn a role you choose into a week by week path you can review with a counsellor.</p></article>
+            <article className="landing-step landing-reveal"><span className="landing-step-number">03</span><h3>{t("Make a plan")}</h3><p>{t("Turn a role you choose into a week by week path you can review with a counsellor.")}</p></article>
           </div>
         </section>
 
         <section id="statistics" className="landing-statistics" aria-labelledby="statistics-title">
-          <div className="landing-stats-top landing-reveal"><div><span className="landing-section-label">INFORMATION & INSIGHT</span><h2 id="statistics-title">A changing world of work<span className="landing-period">.</span></h2><p>Explore the kind of signals Jobbery can help you make sense of.</p></div><div className="landing-sample-control"><label htmlFor="sample-period">Illustrative sample data · period</label><select id="sample-period" value={period} onChange={(e) => setPeriod(Number(e.target.value))}>{samplePeriods.map((item, index) => <option key={item.label} value={index}>{item.label}</option>)}</select></div></div>
-          <div className="landing-metrics"><div className="landing-reveal"><AnimatedNumber key={`roles-${period}`} value={sample.roles} suffix="+" /><span>potential roles explored</span></div><div className="landing-reveal"><AnimatedNumber key={`skills-${period}`} value={sample.skills} suffix="%" /><span>skills with transfer potential</span></div><div className="landing-reveal"><AnimatedNumber key={`paths-${period}`} value={sample.paths} suffix="+" /><span>learning paths mapped</span></div></div>
-          <div className="landing-data-grid"><article className="landing-chart-card landing-reveal"><div className="landing-data-heading"><div><span className="landing-card-index">SAMPLE TREND</span><h3>Opportunity signals over time</h3></div><span className="landing-sample-badge">Illustrative data</span></div><div className="landing-chart" role="img" aria-label={`Illustrative opportunity signal values for ${sample.label}: ${sample.trend.join(", ")}`}><div className="landing-chart-grid" />{sample.trend.map((value, index) => <div className="landing-chart-column" key={index}><span className="landing-chart-bar" style={{ height: `${value}%` }} /><span>{["Jan", "Mar", "May", "Jul", "Sep", "Nov"][index]}</span></div>)}</div><p className="landing-data-note">Example values show how a live trend could change when new data is available.</p></article><article className="landing-insight-card landing-reveal"><span className="landing-card-index">AT A GLANCE</span><h3>From data to a decision</h3><p>Market signals are only one part of the picture. Jobbery also considers your experience, time, and preferred direction.</p><div className="landing-insight-row"><span>Growing opportunity</span><strong>{sample.growing}%</strong></div><div className="landing-insight-row"><span>Skills overlap</span><strong>{sample.overlap}%</strong></div><Link href="/trends" className="landing-text-link">View real job market trends <ArrowRight size={16} aria-hidden /></Link></article></div>
+          <div className="landing-stats-top landing-reveal"><div><span className="landing-section-label">{t("INFORMATION & INSIGHT")}</span><h2 id="statistics-title">{t("A changing world of work")}<span className="landing-period">.</span></h2><p>{t("A few real numbers from public government and research data. Each one says where it came from.")}</p></div><Link href="/trends" className="landing-text-link landing-stats-all">{t("See all statistics")} <ArrowRight size={16} aria-hidden /></Link></div>
+          {view && ai && (
+            <div className="landing-data-grid">
+              <article className="landing-chart-card landing-reveal">
+                <div className="landing-data-heading"><div><span className="landing-card-index">{t("AI TEST SCORES")}</span><h3>{t("How quickly is AI getting better?")}</h3></div><span className="landing-sample-badge landing-real-badge">{t("Real data")}</span></div>
+                {ai.headline && <div className="landing-stat-hero"><strong className="num">{ai.headline.hoursNow}<span>{t("hours")}</span></strong><p>{t("AI can now finish on its own a task that takes a person about {hours} hours. In 2024 it was about {minutes} minutes.", { hours: String(ai.headline.hoursNow), minutes: String(ai.headline.minutesThen) })}</p></div>}
+                <AiCapabilityChart data={ai.data} className="landing-ai-chart" />
+                <p className="landing-data-note">{t("Best score any AI got on each test, out of 100.")} <a href={sourceById.epoch.url} target="_blank" rel="noreferrer">{t("Source: Epoch AI, to {quarter}", { quarter: view.world.asOfQuarter.replace("Q", " Q") })}</a></p>
+              </article>
+              <article className="landing-insight-card landing-reveal">
+                <span className="landing-card-index">{t("JOBS AT A GLANCE")}</span>
+                <h3>{t("Where hiring is heading")}</h3>
+                <p className="landing-insight-sub">{t("Growing, and hard for AI to replace")}</p>
+                {view.radar.risingJobs.slice(0, 3).map((j) => <div key={j.roleId} className="landing-insight-row"><span>{j.title}</span><strong className="landing-tag-rise">{t("Growing")}</strong></div>)}
+                <p className="landing-insight-sub">{t("AI can already do a lot of this work")}</p>
+                {view.radar.decliningJobs.slice(0, 3).map((j) => <div key={j.occupationId} className="landing-insight-row"><span>{j.title}</span><strong className="landing-tag-fall">{t("AI-exposed by {year}", { year: j.earliest.slice(-4) })}</strong></div>)}
+                <Link href="/trends" className="landing-text-link">{t("See all statistics")} <ArrowRight size={16} aria-hidden /></Link>
+              </article>
+            </div>
+          )}
         </section>
+        <LandingForecast />
       </div>
-      <footer className="landing-footer landing-reveal"><span>Jobbery © 2026</span><span>Find a next step that fits.</span><div className="landing-footer-actions"><Link href="/trust">Our approach <ArrowRight size={14} aria-hidden /></Link><button onClick={() => { window.scrollTo({ top: 0, behavior: "auto" }); setSceneActive(true); setReplayKey((key) => key + 1); }}><RotateCcw size={14} aria-hidden /> Replay intro</button></div></footer>
+      <footer className="landing-footer landing-reveal"><span>{t("Jobbery © 2026")}</span><span>{t("Find a next step that fits.")}</span><div className="landing-footer-actions"><Link href="/trust">{t("Our approach")} <ArrowRight size={14} aria-hidden /></Link><button onClick={() => { window.scrollTo({ top: 0, behavior: "auto" }); setSceneActive(true); setReplayKey((key) => key + 1); }}><RotateCcw size={14} aria-hidden /> {t("Replay intro")}</button></div></footer>
     </div>
   );
 }

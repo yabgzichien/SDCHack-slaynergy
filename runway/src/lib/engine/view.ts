@@ -81,8 +81,8 @@ function pathwayView(plan: Plan | null, state: SessionState): PathwayView {
 export type StayView = {
   occupationId: string; title: string; status: "steady" | "changing" | "fast"; fast: boolean; outlook: number;
   ilo: { score: number; gradient: string | null; title: string } | null;
-  fadeYear: string | null; // the year by which most of this job's skills are expected to fade
-  fading: { skillId: string; name: string; expected: string }[];
+  fadeYear: Record<string, string | null>; // per AI speed: the date by which most of this job's skills are expected to fade
+  fading: { skillId: string; name: string; expected: string; byFuture: Record<string, string> }[];
   growing: { skillId: string; name: string; expected: string }[];
   toward: RoleMatchView | null;
 };
@@ -178,13 +178,15 @@ function viewCore(state: SessionState, release: 0 | 1): View {
     const input = pickInputs({ skills: p.skills, months: p.months, hoursPerWeek: p.hoursPerWeek, interests: p.interests, goals: state.goals, education: p.education, field: occ?.sector, study, area: areaFor(p.state, p.move, p.moveTo) });
     const all = matchRoles(input, wt, world.asOfQuarter);
     const reachable = all.filter((m) => m.reachable);
+    // Show the length of the plan the person would actually follow, so the Jobs page and the Plan page agree.
+    const planWeeks = (m: RoleMatch) => buildPlan(m, p.hoursPerWeek, undefined, state.courseSwaps).totalWeeks;
     const toView = (m: RoleMatch): RoleMatchView => ({
-      ...m, tradeoff: tradeoff(m, reachable), sdgText: sdg[m.sdgTarget]?.text ?? "",
+      ...m, weeks: planWeeks(m), tradeoff: tradeoff(m, reachable), sdgText: sdg[m.sdgTarget]?.text ?? "",
       resumeFit: state.resume ? tailorTips(state.resume.skillIds, roleById[m.roleId].skills).match : null,
       gaps: m.gaps.map((g) => ({ skillId: g.skillId, name: g.name, importance: g.importance, expiry: eview(g.expiry), sdgTarget: skillById[g.skillId].sdg.target })),
     });
     matches = reachable.map(toView);
-    unreachable = all.filter((m) => !m.reachable).map((m) => ({ roleId: m.roleId, title: m.title, weeks: m.weeks, sector: m.sector, reason: m.blocked ? "qualification" as const : "time" as const, need: m.blockedBy === "field" ? `Needs a degree in ${SECTOR_NOUN[m.sector]}` : m.blocked ? `Needs a ${EDUCATION_LABEL[m.requires].toLowerCase()}` : `≈ ${m.weeks} weeks` }));
+    unreachable = all.filter((m) => !m.reachable).map((m) => ({ roleId: m.roleId, title: m.title, weeks: planWeeks(m), sector: m.sector, reason: m.blocked ? "qualification" as const : "time" as const, need: m.blockedBy === "field" ? `Needs a degree in ${SECTOR_NOUN[m.sector]}` : m.blocked ? `Needs a ${EDUCATION_LABEL[m.requires].toLowerCase()}` : `≈ ${m.weeks} weeks` }));
     sectors = SECTORS.map((sec) => {
       const inSec = all.filter((m) => m.sector === sec.id), ok = inSec.filter((m) => m.reachable);
       return { ...sec, reachable: ok.length, total: inSec.length, bestScore: ok[0]?.score ?? null, bestTitle: ok[0]?.title ?? null, avgOutlook: ok.length ? mean(ok.map((m) => m.outlook)) : null };
@@ -251,8 +253,11 @@ function stayFor(occId: string, have: string[], wt: World["weights"]) {
   const status = ilo?.gradient?.includes("Gradient 4") ? "fast" as const : ilo?.gradient?.startsWith("Exposed") || outlook < AT_RISK_BELOW ? "changing" as const : "steady" as const;
   const fast = status === "fast";
   const byYear = [...own].sort((a, b) => a.expiry.expected - b.expiry.expected);
-  const half = byYear[Math.ceil(byYear.length / 2) - 1];
-  const fadeYear = half && !half.expiry.durable ? fmtYear(half.expiry.expected) : null;
+  const fadeYear = Object.fromEntries(FUTURE_IDS.map((f) => {
+    const ys = own.map((x) => x.expiry.byFuture[f]).sort((a, b) => a - b);
+    const half = ys[Math.ceil(ys.length / 2) - 1];
+    return [f, half !== undefined && Number.isFinite(half) ? fmtYear(half) : null];
+  }));
   const held = new Set(have);
   const mine = byYear.filter((x) => held.has(x.skillId) && !x.expiry.durable).slice(0, 3);
   // Growing: what the evolved version of this job adds; otherwise the longest-lasting skills in its sector. AI tools always.
@@ -270,7 +275,8 @@ function stayFor(occId: string, have: string[], wt: World["weights"]) {
   const fill = fresh(sectorPool).filter((x) => durability(x.expiry) >= LASTING_OUTLOOK && !first.some((f) => f.skillId === x.skillId))
     .sort((a, b) => count(b.skillId) - count(a.skillId) || durability(b.expiry) - durability(a.expiry));
   const grow = [...first, ...fill].slice(0, STAY_SKILLS - 1);
-  const show = (x: { skillId: string; expiry: SkillExpiry }) => ({ skillId: x.skillId, name: skillById[x.skillId].name, expected: x.expiry.durable ? "after 2040" : fmtYear(x.expiry.expected) });
+  const show = (x: { skillId: string; expiry: SkillExpiry }) => ({ skillId: x.skillId, name: skillById[x.skillId].name, expected: x.expiry.durable ? "after 2040" : fmtYear(x.expiry.expected),
+    byFuture: Object.fromEntries(FUTURE_IDS.map((f) => [f, Number.isFinite(x.expiry.byFuture[f]) ? fmtYear(x.expiry.byFuture[f]) : "after 2040"])) });
   return { growing: grow, fast, view: { occupationId: occ.id, title: occ.title, status, fast, outlook, ilo, fadeYear, fading: mine.map(show), growing: grow.map(show) } };
 }
 

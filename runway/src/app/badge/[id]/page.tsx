@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { findBadge } from "@/lib/server/store";
 import { linkedinAddUrl, linkedinShareUrl, type BadgeRecord } from "@/lib/engine/pathway";
+import { topicLabel } from "@/lib/engine/meetings";
 import { Btn, Card, Chip, H, PageTitle } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +24,7 @@ export default async function BadgePage({ params }: { params: Promise<{ id: stri
   const url = `${proto}://${host}/badge/${b.id}`;
   return (
     <div>
-      <PageTitle title={b.title}>{b.holder} completed this pathway on Jobbery, confirmed by {b.counsellor.confirmedBy ? `counsellor ${b.counsellor.confirmedBy.name}` : "an employment counsellor"} on {day(b.counsellor.confirmedAt)}.</PageTitle>
+      <PageTitle title={b.title}>{b.met ? `${b.holder} completed this pathway on Jobbery on ${day(b.issued)}, including a session with advisor ${b.met.advisor.name}.` : `${b.holder} completed this pathway on Jobbery, confirmed by ${b.counsellor?.confirmedBy ? `counsellor ${b.counsellor.confirmedBy.name}` : "an employment counsellor"} on ${day(b.counsellor?.confirmedAt ?? b.issued)}.`}</PageTitle>
       <div className="-mt-2 mb-4 flex flex-wrap gap-2">
         {b.strands.map((s) => <Chip key={s} tone="accent">{s}</Chip>)}
         {b.synthetic && <Chip tone="demo">Made-up demo profile</Chip>}
@@ -66,7 +67,7 @@ export default async function BadgePage({ params }: { params: Promise<{ id: stri
       <Card className="mt-4">
         <H sub="Each log record includes the hash of the one before, so changing this badge would break every later record.">Check it is genuine</H>
         <p className="num break-all text-sm">Log record {entry.seq} · {day(entry.ts)} · hash {entry.hash}</p>
-        <p className="mt-2 text-sm">{b.counsellor.approvedPlanAt && <>Plan approved {signer(b.counsellor.approvedBy)}{day(b.counsellor.approvedPlanAt)}; </>}Completion confirmed {signer(b.counsellor.confirmedBy)}{day(b.counsellor.confirmedAt)}. <Link href="/trust" className="underline decoration-control underline-offset-2">Verify the whole log</Link></p>
+        <p className="mt-2 text-sm">{b.met ? <>{`Advisor session (${topicLabel(b.met.topic).toLowerCase()}) with ${b.met.advisor.name} (${b.met.advisor.id}) on ${day(b.met.at)}. Badge issued ${day(b.issued)}, when every step was done.`} </> : b.counsellor && <>{b.counsellor.approvedPlanAt && <>Plan approved {signer(b.counsellor.approvedBy)}{day(b.counsellor.approvedPlanAt)}; </>}Completion confirmed {signer(b.counsellor.confirmedBy)}{day(b.counsellor.confirmedAt)}. </>}<Link href="/trust" className="underline decoration-control underline-offset-2">Verify the whole log</Link></p>
       </Card>
     </div>
   );
@@ -81,7 +82,7 @@ function BadgeArt({ title, date }: { title: string; date: string }) {
       <text x="24" y="44" fill="var(--surface)" fontSize="14" fontWeight="600" letterSpacing="2">RUNWAY · PATHWAY COMPLETED</text>
       <text x="24" y="88" fill="var(--surface)" fontSize={title.length > 22 ? 20 : 26} fontWeight="600">{title}</text>
       <text x="24" y="114" fill="var(--surface)" fontSize="13" opacity="0.9">AI at work · Interview-ready</text>
-      <text x="24" y="172" fill="var(--surface)" fontSize="12" opacity="0.9">Confirmed by an advisor · {date}</text>
+      <text x="24" y="172" fill="var(--surface)" fontSize="12" opacity="0.9">Includes an advisor session · {date}</text>
     </svg>
   );
 }

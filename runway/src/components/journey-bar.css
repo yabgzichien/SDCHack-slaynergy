@@ -1,0 +1,77 @@
+/* Journey bar: five segmented pills on one rounded track, the bird walking above. */
+.jbar { position:relative; z-index:1; border-bottom:1px solid var(--line); background:rgba(255,255,255,.72); font-family:var(--font-instrument-sans),sans-serif; }
+.jbar.is-inline { margin-bottom:36px; border-bottom:0; background:transparent; }
+.jbar-inner { width:min(calc(100% - 48px),1120px); margin:0 auto; padding:4px 0 14px; }
+.jbar.is-inline .jbar-inner { width:100%; }
+.jbar-row { position:relative; padding-top:50px; }
+
+.jbar-pills { display:flex; gap:4px; padding:4px; border-radius:999px; background:#e3eee1; box-shadow:inset 0 1px 2px #203b2b14; }
+.jbar-slot { flex:1 1 0; min-width:0; transition:flex-grow .5s cubic-bezier(.2,.8,.2,1); }
+.jbar-slot[data-state="current"] { flex-grow:1.35; }
+.jbar-slot.is-open { flex-grow:3.6; }
+
+.jbar-pill { display:flex; height:42px; align-items:center; justify-content:center; gap:7px; padding:0 14px; border-radius:999px; color:#5c775f; font-size:13px; font-weight:650; white-space:nowrap; transition:background-color .3s ease,color .3s ease,box-shadow .3s ease; }
+.jbar-label { min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.jbar-icon { flex:none; }
+a.jbar-pill:not([data-state="current"]):hover { background:#ffffffb3; color:var(--ink); }
+.jbar-pill:focus-visible { outline:2px solid #c97652; outline-offset:2px; }
+.jbar-pill[data-state="done"] { background:#cbe4c6; color:#24502f; }
+.jbar-pill[data-state="done"]:hover { background:#bcdcb6; }
+.jbar-pill[data-state="current"] { background:#305d40; color:#fff; box-shadow:0 1px 2px #203b2b33,0 4px 12px -4px #305d4080; }
+.jbar-pill[data-state="locked"] { opacity:.45; cursor:default; }
+
+/* Step 1 opened up on /start: the label, then one tick per question. */
+.is-open .jbar-pill { justify-content:space-between; gap:12px; padding:0 7px 0 16px; }
+.jbar-pill-head { display:flex; min-width:0; align-items:center; gap:7px; }
+.jbar-ticks { display:flex; gap:4px; }
+.jbar-tick { display:grid; width:28px; height:28px; place-items:center; border-radius:50%; background:#ffffff1f; color:#ffffffa6; transition:background-color .3s ease,color .3s ease,transform .2s ease,box-shadow .3s ease; }
+.jbar-tick[data-state="done"] { background:#cbe4c6; color:#24502f; }
+.jbar-tick[data-state="current"] { background:#f8c982; color:#203b2b; box-shadow:0 0 0 3px #f8c98259; }
+.jbar-tick:hover:not(:disabled) { transform:translateY(-1px); }
+.jbar-tick:disabled { cursor:default; opacity:.6; }
+.jbar-tick:focus-visible { outline:2px solid #f8c982; outline-offset:2px; }
+
+.jbar-caption { margin-top:8px; color:var(--muted); font-size:12px; text-align:center; }
+.jbar-caption.is-mobile { display:none; }
+
+/* The walking bird: two frames swapped while it moves, flipped when it walks back. */
+.jbar-bird { position:absolute; z-index:2; top:-6px; left:0; width:60px; height:60px; pointer-events:none; will-change:transform; }
+.jbar-bird-frame { position:absolute; inset:0; display:block; width:60px; height:60px; object-fit:contain; filter:drop-shadow(0 2px 1px #2c4c3426); }
+.jbar-bird-b { opacity:0; }
+.jbar-bird.is-returning .jbar-bird-frame { transform:scaleX(-1); }
+.jbar-bird-shadow { position:absolute; left:53%; top:56px; width:24px; height:3px; border-radius:50%; background:#436f4966; filter:blur(1.5px); transform:translateX(-50%); }
+.jbar-bird.is-walking .jbar-bird-a { animation:jbar-step-a .44s steps(1,end) infinite; }
+.jbar-bird.is-walking .jbar-bird-b { animation:jbar-step-b .44s steps(1,end) infinite; }
+@keyframes jbar-step-a { 0%,49.9% { opacity:1; } 50%,100% { opacity:0; } }
+@keyframes jbar-step-b { 0%,49.9% { opacity:0; } 50%,100% { opacity:1; } }
+
+@media (max-width:900px) { .jbar-pill { padding:0 10px; font-size:12px; }.is-open .jbar-label { display:none; } }
+/* Phones: only the current pill keeps its label; the rest shrink to an icon or a tick. */
+@media (max-width:640px) {
+  .jbar-inner { width:calc(100% - 20px); padding-bottom:10px; }
+  .jbar-row { padding-top:40px; }
+  .jbar-bird,.jbar-bird-frame { width:44px; height:44px; }
+  .jbar-bird-shadow { top:41px; width:18px; }
+  .jbar-slot { flex:0 0 42px; }
+  .jbar-slot[data-state="current"],.jbar-slot.is-open { flex:1 1 0; }
+  .jbar-pill { height:40px; padding:0; }
+  .jbar-slot:not([data-state="current"]):not(.is-open) .jbar-label { display:none; }
+  .is-open .jbar-pill { padding:0 5px; justify-content:center; }
+  .is-open .jbar-pill-head { display:none; }
+  .jbar-ticks { gap:2px; }
+  .jbar-tick { width:22px; height:22px; }
+  .jbar-tick svg { width:9px; height:9px; }
+  .jbar-caption.is-mobile { display:block; }
+}
+
+/* Page changes: the dashboard cards and the bar's pills are the same five steps, so they morph into each other. */
+::view-transition-group(.morph) { animation-duration:.42s; animation-timing-function:cubic-bezier(.2,.8,.2,1); }
+::view-transition-image-pair(.morph) { animation-name:jbar-via-blur; animation-duration:.42s; }
+@keyframes jbar-via-blur { 35% { filter:blur(2px); } }
+::view-transition-old(root),::view-transition-new(root) { animation-duration:.24s; }
+
+@media (prefers-reduced-motion:reduce) {
+  .jbar-slot,.jbar-pill,.jbar-tick { transition:none; }
+  .jbar-bird.is-walking .jbar-bird-frame { animation:none; }
+  ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*),::view-transition-image-pair(*) { animation:none !important; }
+}

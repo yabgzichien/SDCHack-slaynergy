@@ -1,8 +1,8 @@
 "use client";
-import { useState } from "react";
 import Link from "next/link";
 import { Gauge, Rabbit, Snail } from "lucide-react";
 import { useApp } from "@/components/AppProvider";
+import { useSpeed } from "@/components/useSpeed";
 import { ExpiryAxis, ExpiryTrack } from "@/components/ExpiryTrack";
 import { Btn, Card, Chip, Estimate, FUTURE_COLOR, More, NextRow, PageTitle, Skeleton, SourceChip, pct } from "@/components/ui";
 
@@ -16,7 +16,7 @@ const months = (m: number) => (m >= 10 ? Math.round(m) : Math.round(m * 2) / 2).
 // One question: which of my skills will last, and how does that change with the speed of AI?
 export default function SkillsPage() {
   const { view, state } = useApp();
-  const [chosen, setChosen] = useState<string | null>(null);
+  const { speed, likely, setSpeed: setChosen } = useSpeed(view);
   if (!view || !state) return <Skeleton lines={6} />;
   if (!state.profile) {
     return (
@@ -27,8 +27,6 @@ export default function SkillsPage() {
     );
   }
   const pace = view.pace;
-  const likely = [...pace.futures].sort((a, b) => b.weight - a.weight)[0].id;
-  const speed = chosen ?? likely;
   const sp = pace.futures.find((f) => f.id === speed)!;
 
   // dates under the chosen speed; a skill with no date before 2040 lasts

@@ -18,7 +18,7 @@ const iloGroupMean = (isco: string) => {
   const v = Object.entries(series.ilo).filter(([k]) => k.startsWith(isco)).map(([, x]) => x.score);
   return v.reduce((a, b) => a + b, 0) / v.length;
 };
-const band = (e: number) => (e >= 0.45 ? { color: "var(--fall)", label: "AI can do a lot of this work" } : e >= 0.3 ? { color: "var(--medium)", label: "AI can do some of this work" } : { color: "var(--rise)", label: "AI can do little of this work" });
+const band = (e: number) => (e >= 0.45 ? { color: "var(--negative)", label: "AI can do a lot of this work" } : e >= 0.3 ? { color: "var(--fall)", label: "AI can do some of this work" } : { color: "var(--accent)", label: "AI can do little of this work" });
 const tick = { fontSize: 11, fill: "var(--muted)" };
 const tooltipStyle = { background: "var(--raised)", border: "1px solid var(--line)", borderRadius: 12 };
 const qLabel = (q: string) => q.replace("Q", " Q");
@@ -47,9 +47,9 @@ export function JobGroupShares({ asOfQuarter }: { asOfQuarter: string }) {
               </p>
               <div className="h-24" role="img" aria-label={`${g.label}: went from ${first.toFixed(1)} to ${last.toFixed(1)} in every 100 job ads`}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={g.data} margin={{ left: -28, right: 4, top: 6, bottom: 0 }}>
+                  <LineChart data={g.data} margin={{ left: 0, right: 4, top: 6, bottom: 0 }}>
                     <XAxis dataKey="q" hide />
-                    <YAxis tick={tick} domain={["auto", "auto"]} axisLine={false} tickLine={false} width={44} tickFormatter={(v) => `${Number(v).toFixed(0)}`} />
+                    <YAxis tick={tick} domain={["auto", "auto"]} axisLine={false} tickLine={false} width={24} tickFormatter={(v) => `${Number(v).toFixed(0)}`} />
                     <Tooltip formatter={(v) => [`${Number(v).toFixed(1)} in every 100 ads`, "Job ads"]} contentStyle={tooltipStyle} />
                     <Line type="monotone" dataKey="share" stroke={b.color} strokeWidth={2} dot={false} isAnimationActive={false} />
                   </LineChart>
@@ -69,12 +69,13 @@ export function JobGroupShares({ asOfQuarter }: { asOfQuarter: string }) {
 }
 
 // Chart 2: the best AI result on three public benchmarks each quarter (Epoch AI). Not split by sector.
+// Three hues that all read on the cream theme: green, amber, deep ink.
 const BENCH = [
   { id: "swe", color: "var(--accent)", name: "Fixing real software bugs" },
-  { id: "tbench", color: "var(--fast)", name: "Doing tasks on a computer" },
-  { id: "hle", color: "var(--slow)", name: "Very hard expert exam questions" },
+  { id: "tbench", color: "var(--fall)", name: "Doing tasks on a computer" },
+  { id: "hle", color: "var(--ink)", name: "Very hard expert exam questions" },
 ];
-export function AiCapability({ asOfQuarter }: { asOfQuarter: string }) {
+export function aiCapability(asOfQuarter: string) {
   const qs = [...new Set(BENCH.flatMap((b) => series.epoch[b.id].frontier.map((x) => x.q)))].filter((q) => q >= "2024Q3" && q <= asOfQuarter).sort();
   const data = qs.map((q) => {
     const row: Record<string, number | string> = { q: qLabel(q) };
@@ -87,28 +88,41 @@ export function AiCapability({ asOfQuarter }: { asOfQuarter: string }) {
   const metr = series.epoch.metr.frontier.filter((x) => x.q <= asOfQuarter);
   const hours = (v: number) => 2 ** v / 60;
   const mNow = metr[metr.length - 1], mThen = metr.find((x) => x.q === "2024Q3");
+  const summary = mThen ? `In 2024, AI could finish a task that takes a person about ${Math.round(hours(mThen.v) * 60)} minutes. By ${qLabel(mNow.q)}, it could finish tasks that take a person about ${hours(mNow.v).toFixed(0)} hours.` : "";
+  const headline = mThen ? { hoursNow: Math.round(hours(mNow.v)), minutesThen: Math.round(hours(mThen.v) * 60), asOf: qLabel(mNow.q) } : null;
+  return { data, summary, headline };
+}
+
+// The bare chart, shared by the trends page and the landing preview.
+export function AiCapabilityChart({ data, className = "h-56" }: { data: Record<string, number | string>[]; className?: string }) {
+  return (
+    <div className={className} role="img" aria-label="Line chart: best AI test scores out of 100, each quarter">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={data} margin={{ left: -16, right: 28, top: 8 }}>
+          <CartesianGrid stroke="var(--line)" vertical={false} />
+          <XAxis dataKey="q" tick={tick} axisLine={false} tickLine={false} interval={1} />
+          <YAxis tick={tick} domain={[0, 100]} axisLine={false} tickLine={false} />
+          <Tooltip formatter={(v, name) => [`${Number(v).toFixed(0)} out of 100`, name]} contentStyle={tooltipStyle} />
+          <Legend wrapperStyle={{ fontSize: 12, color: "var(--muted)" }} />
+          {BENCH.map((b) => (
+            <Line key={b.id} type="monotone" dataKey={b.id} name={b.name} stroke={b.color} strokeWidth={2} dot={false} connectNulls isAnimationActive={false} />
+          ))}
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+export function AiCapability({ asOfQuarter }: { asOfQuarter: string }) {
+  const { data, summary } = aiCapability(asOfQuarter);
   return (
     <Card>
       <H sub="AI is tested on hard tasks every few months. This shows the best score any AI got on each test. Higher = AI can do more. This is AI in general, not one type of job.">
         How quickly is AI getting better?
       </H>
-      <div className="h-56" role="img" aria-label="Line chart: best AI test scores out of 100, each quarter">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ left: -16, right: 16, top: 8 }}>
-            <CartesianGrid stroke="var(--line)" vertical={false} />
-            <XAxis dataKey="q" tick={tick} axisLine={false} tickLine={false} interval={1} />
-            <YAxis tick={tick} domain={[0, 100]} axisLine={false} tickLine={false} />
-            <Tooltip formatter={(v, name) => [`${Number(v).toFixed(0)} out of 100`, name]} contentStyle={tooltipStyle} />
-            <Legend wrapperStyle={{ fontSize: 12 }} />
-            {BENCH.map((b) => (
-              <Line key={b.id} type="monotone" dataKey={b.id} name={b.name} stroke={b.color} strokeWidth={2} dot={false} connectNulls isAnimationActive={false} />
-            ))}
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+      <AiCapabilityChart data={data} />
       <p className="mt-2 text-sm text-muted">
-        {mThen && <>In 2024, AI could finish a task that takes a person about {Math.round(hours(mThen.v) * 60)} minutes. By {qLabel(mNow.q)}, it could finish tasks that take a person about {hours(mNow.v).toFixed(0)} hours. </>}
-        Scores are out of 100.
+        {summary} Scores are out of 100.
       </p>
       <div className="mt-1"><SourceChip name="Epoch AI (AI test results)" date={`to ${qLabel(asOfQuarter)}`} url={sourceById.epoch.url} /></div>
     </Card>

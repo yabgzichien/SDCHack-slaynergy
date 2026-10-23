@@ -137,7 +137,7 @@ function db(): Driver {
 export async function loadState(id: string): Promise<SessionState> {
   const raw = await db().getState(id);
   if (!raw) return initialState();
-  try { return { ...initialState(), ...(JSON.parse(raw) as SessionState) }; } catch { return initialState(); }
+  try { return { ...initialState(), ...(JSON.parse(raw) as SessionState), release: 1 }; } catch { return initialState(); }
 }
 // A session becomes an advisor case once the worker asks for their finished pathway to be confirmed.
 // Cases are listed by their anonymised id, the same id the hash log uses, so the raw session id never leaves the server.
@@ -148,7 +148,7 @@ export async function saveState(id: string, s: SessionState) {
 }
 export async function resetState(id: string) { await db().dropCase(id); await db().deleteState(id); }
 export type Case = { id: string; sid: string; state: SessionState };
-const parse = (raw: string): SessionState => { try { return { ...initialState(), ...(JSON.parse(raw) as SessionState) }; } catch { return initialState(); } };
+const parse = (raw: string): SessionState => { try { return { ...initialState(), ...(JSON.parse(raw) as SessionState), release: 1 }; } catch { return initialState(); } };
 export const listCases = async (): Promise<Case[]> => (await db().cases()).map((c) => ({ id: c.id, sid: c.sid, state: parse(c.state) })).filter((c) => isCase(c.state));
 export const findCase = async (id: string) => (await listCases()).find((c) => c.id === id) ?? null;
 // Advisor slots and meetings. Meetings keep the raw session id server-side only; callers strip it before responding.

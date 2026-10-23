@@ -27,6 +27,11 @@
   --demo: #547451;
   --demo-soft: #f1faee;
   --focus: #6fa66a;
+  /* Learning bar lanes: one hue per kind of step, so green only ever means done. */
+  --lane-learn: #4f86c6;
+  --lane-ai: #d08a1e;
+  --lane-apply: #b5573a;
+  --lane-resume: #8a78c8;
 }
 @theme inline {
   --color-bg: var(--bg);
@@ -52,6 +57,10 @@
   --color-negative: var(--negative);
   --color-demo: var(--demo);
   --color-demosoft: var(--demo-soft);
+  --color-lanelearn: var(--lane-learn);
+  --color-laneai: var(--lane-ai);
+  --color-laneapply: var(--lane-apply);
+  --color-laneresume: var(--lane-resume);
   --font-sans: var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-instrument-serif), Georgia, serif;
 }

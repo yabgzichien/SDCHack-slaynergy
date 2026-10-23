@@ -16,8 +16,8 @@ export type PlanStep = {
   // Course steps: the gap skills this step covers, as one key ("a+b"). The worker can swap in another course that
   // covers all of them (see SessionState.courseSwaps); swapped marks a course they chose themselves.
   skillKey?: string; swapped?: boolean; alternatives?: number;
-  // Steps with an activity are done when the work is saved in Runway, not by ticking (see pathway.stepDone).
-  activity?: "task" | "resume";
+  // Steps with an activity are done when the work is saved in Jobbery, not by ticking (see pathway.stepDone).
+  activity?: "task" | "resume" | "meeting";
   cardId?: string;
 };
 export type Strand = "job" | "ai" | "people";
@@ -84,6 +84,12 @@ function relayout(steps: PlanStep[], hoursPerWeek: number): PlanStep[] {
 const people = (id: string) => ({ id, name: skillById[id].name, sdgTarget: skillById[id].sdg.target, sdgWhy: skillById[id].sdg.why });
 // Small people-strand steps share weeks with the learning or applying steps around them.
 const RESUME_HOURS = 2;
+// Every plan includes one meeting with an advisor: a mock interview, advice, or anything else the worker wants.
+// It is done when the advisor sends their advice after the meeting.
+function meetStep(week: number): PlanStep {
+  return { id: "meet", kind: "practice", strand: "people", activity: "meeting", weekStart: week, weekEnd: week, hours: 1,
+    title: "Meet an advisor: a mock interview, advice, or anything else you want to ask", skills: [people("communication")], shortLived: false, funding: "Free", cost: "Free" };
+}
 function resumeStep(): PlanStep {
   return { id: "resume", kind: "practice", strand: "people", activity: "resume", weekStart: 1, weekEnd: 1, hours: RESUME_HOURS,
     title: "Rewrite your resume with the fixes from the scan", skills: [people("communication")], shortLived: false, funding: "Free", cost: "Free" };
@@ -147,9 +153,10 @@ export function buildPlan(m: RoleMatch, hoursPerWeek: number, stayIn?: string, s
   const ppl = peopleSteps(week, hoursPerWeek, new Set(jobSteps.map((x) => x.course?.id ?? "")));
   steps.push(...ppl.steps);
   week = ppl.week;
+  steps.push(meetStep(week));
   steps.push({
     id: "apply", kind: "apply", strand: "job", weekStart: week, weekEnd: week + apply - 1,
-    title: `Apply for ${m.title} roles, with a mock interview with your counsellor first`,
+    title: `Apply for ${m.title} roles`,
     hours: apply * hoursPerWeek, skills: [people("communication")], shortLived: false, funding: "Free", cost: "Free",
   });
   week += apply;
@@ -177,6 +184,7 @@ export function buildReshapePlan(job: string, growing: { skillId: string; expiry
   const ai = aiSteps(jobSteps.length ? jobSteps[jobSteps.length - 1].weekEnd + 1 : 1, ADAPT_WEEKS, hoursPerWeek, sector, "Use AI tools on a real task from your job, then check and correct their output");
   steps.push(...ai.steps);
   let week = ai.week;
+  steps.push(meetStep(week));
   const names = growing.filter((g) => g.skillId !== "ai_tools").map((g) => skillById[g.skillId].name.toLowerCase());
   steps.push({ id: "adapt", kind: "adapt", strand: "job", weekStart: week, weekEnd: week + ADAPT_WEEKS - 1, hours: ADAPT_WEEKS * hoursPerWeek, skills: [], shortLived: false, funding: "Free", cost: "Free",
     title: `Take on more work that uses ${names[0] ?? "AI review and checking"} in your job, and show your manager what you learned` });

@@ -122,7 +122,7 @@ export default function AiQuizPage() {
               {savedPrompt && <span className="text-sm text-muted">Saved. Your prompt covers {covers.size} of {card.promptGuide.length} tips (checked by keywords, not by AI).</span>}
             </div>
             <More summary="Going further (optional)">
-              <p>Your &ldquo;how I do this task&rdquo; sheet is, in plain words, what AI agents call a skill: instructions an agent can follow again and again. A later version of Runway points you to courses on turning it into a real agent skill, and on checking who made a skill and what it can access before you install one.</p>
+              <p>Your &ldquo;how I do this task&rdquo; sheet is, in plain words, what AI agents call a skill: instructions an agent can follow again and again. A later version of Jobbery points you to courses on turning it into a real agent skill, and on checking who made a skill and what it can access before you install one.</p>
             </More>
           </>
         )}

@@ -75,7 +75,7 @@ export const sdgName = (target: string) => SDG_SHORT[target.split(".")[0]] ?? `G
 export function SdgTag({ target, why }: { target: string; why?: string }) {
   const goal = target.split(".")[0];
   const tip = `UN Sustainable Development Goal ${goal}, target ${target}${why ? `. ${why}` : ""}`;
-  return <span title={tip} aria-label={tip} className="inline-flex items-center rounded-full bg-accentsoft px-2.5 py-0.5 text-xs font-medium text-accent">UN goal {goal} · {sdgName(target)}</span>;
+  return <span title={tip} aria-label={tip} className="inline-flex items-center rounded-full bg-accentsoft px-2.5 py-0.5 text-xs font-medium text-accentink">UN goal {goal} · {sdgName(target)}</span>;
 }
 
 // Detail most people can skip: the method, the formula, the source codes. Closed by default.
@@ -124,9 +124,10 @@ export function FutureBar({ futures, height = 12 }: { futures: { id: string; wei
 
 export function Skeleton({ lines = 3 }: { lines?: number }) {
   return (
-    <div className="space-y-3" aria-busy="true" aria-label="Loading">
-      <div className="h-10 w-2/3 rounded-full bg-surface" />
-      {Array.from({ length: lines }).map((_, i) => <div key={i} className="h-5 rounded-full bg-surface" style={{ width: `${90 - i * 12}%` }} />)}
+    <div className="animate-pulse space-y-3" role="status" aria-busy="true" aria-label="Loading">
+      <p className="text-sm text-muted">Loading…</p>
+      <div className="h-10 w-2/3 rounded-full bg-surface2" />
+      {Array.from({ length: lines }).map((_, i) => <div key={i} className="h-5 rounded-full bg-surface2" style={{ width: `${90 - i * 12}%` }} />)}
     </div>
   );
 }

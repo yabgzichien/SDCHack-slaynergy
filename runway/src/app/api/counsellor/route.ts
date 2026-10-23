@@ -2,29 +2,26 @@ import crypto from "node:crypto";
 import { NextResponse } from "next/server";
 import { computeView } from "@/lib/engine/view";
 import { advisorMeetings, DEMO_ADVISOR, GRID_TIMES, isOpenable, MAX_NOTES, slotId, slotStart, upcoming, windowDays, type Meeting } from "@/lib/engine/meetings";
-import { caseSummary, confirmCompletion, finishedPersonaState, personaState } from "@/lib/engine/review";
+import { personaState, recordMeeting } from "@/lib/engine/review";
 import { getCounsellor, signIn, signOut, usingDemoPasscode, DEMO_PASSCODE } from "@/lib/server/counsellor";
 import { publicMeeting } from "@/lib/server/meetings";
 import { catalog } from "@/lib/server/respond";
-import { getSessionId } from "@/lib/server/session";
-import { addSlot, anonymise, findCase, insertMeeting, listCases, listMeetings, loadState, logEvent, openSlots, removeSlot, saveState, updateMeeting } from "@/lib/server/store";
+import { addSlot, anonymise, insertMeeting, listMeetings, loadState, logEvent, openSlots, removeSlot, saveState, updateMeeting } from "@/lib/server/store";
 
 export const dynamic = "force-dynamic";
 
 const bad = (message: string, status = 400) => NextResponse.json({ error: message }, { status });
 const sha = (s: string) => crypto.createHash("sha256").update(s).digest("hex");
 
-// The advisor's desk: their meetings (and the demo advisor's), their open times, and finished pathways to confirm.
-// Only a signed-in advisor sees any of it. ?meeting= or ?case= opens one in full.
-async function payload(q: { meeting?: string | null; caseId?: string | null }) {
+// The advisor's desk: their meetings (and the demo advisor's) and their open times.
+// Only a signed-in advisor sees any of it. ?meeting= opens one in full.
+async function payload(q: { meeting?: string | null }) {
   const me = await getCounsellor();
   if (!me) return { signedIn: false as const, demoPasscode: usingDemoPasscode() ? DEMO_PASSCODE : null };
   const now = new Date().toISOString();
-  const own = await getSessionId(false);
-  const [cases, all, open] = await Promise.all([listCases(), listMeetings(), openSlots(now)]);
+  const [all, open] = await Promise.all([listMeetings(), openSlots(now)]);
   const { next, past } = advisorMeetings(all, me.id, now);
   const m = q.meeting ? all.find((x) => x.id === q.meeting && (x.advisor.id === me.id || x.advisor.id === DEMO_ADVISOR.id)) : null;
-  const c = q.caseId ? cases.find((x) => x.id === q.caseId) : null;
   const open1 = async (sid: string) => { const state = await loadState(sid); return { state, view: computeView(state), catalog: catalog() }; };
   return {
     signedIn: true as const,
@@ -35,22 +32,19 @@ async function payload(q: { meeting?: string | null; caseId?: string | null }) {
     meetings: { next: next.map(publicMeeting), past: past.slice(0, 30).map(publicMeeting) },
     myOpen: open.filter((s) => s.advisor.id === me.id).map((s) => s.start),
     myBooked: all.filter((x) => x.advisor.id === me.id && upcoming(x, now)).map((x) => x.start),
-    cases: cases.map((x) => caseSummary(x.id, x.state, x.sid === own)),
     selectedMeeting: m ? { meeting: publicMeeting(m), ...(await open1(m.sid)) } : null,
-    selectedCase: c ? { id: c.id, state: c.state, view: computeView(c.state), catalog: catalog() } : null,
   };
 }
 
 export async function GET(req: Request) {
   const u = new URL(req.url).searchParams;
-  return NextResponse.json(await payload({ meeting: u.get("meeting"), caseId: u.get("case") }));
+  return NextResponse.json(await payload({ meeting: u.get("meeting") }));
 }
 
 export async function POST(req: Request) {
   let body: Record<string, unknown>;
   try { body = await req.json(); } catch { return bad("Invalid request."); }
   const type = String(body.type ?? "");
-  const caseId = typeof body.caseId === "string" ? body.caseId : null;
   const meetingId = typeof body.meetingId === "string" ? body.meetingId : null;
 
   if (type === "signIn") {
@@ -95,6 +89,10 @@ export async function POST(req: Request) {
       const next: Meeting = { ...publicMeeting(m), status: "advised", notes, notesAt: now };
       await updateMeeting(next);
       await logEvent("advice_given", m.sid, { meeting: m.id, advisor: me, topic: m.topic, noteHash: sha(notes) });
+      // Advice after a meeting completes the worker's "meet an advisor" plan step.
+      const ws = await loadState(m.sid);
+      const met = recordMeeting(ws, { at: now, by: m.advisor, meetingId: m.id, topic: m.topic });
+      if (met !== ws) await saveState(m.sid, met);
       return NextResponse.json(await payload({ meeting: m.id }));
     }
     case "cancelMeeting": {
@@ -124,24 +122,6 @@ export async function POST(req: Request) {
       };
       if (!(await insertMeeting(m, sid))) return bad("Could not book the demo meeting. Please try again.");
       return NextResponse.json(await payload({ meeting: m.id }));
-    }
-    case "demoCase": {
-      // A made-up worker who has finished every step and asked for the badge.
-      const state = finishedPersonaState("hafiz", now);
-      if (!state) return bad("Could not build the demo pathway.");
-      const sid = crypto.randomBytes(12).toString("hex");
-      await saveState(sid, state);
-      await logEvent("completion_requested", sid, { role: state.chosenRoleId, synthetic: true });
-      return NextResponse.json(await payload({ caseId: anonymise(sid) }));
-    }
-    case "confirm": {
-      const c = caseId ? await findCase(caseId) : null;
-      if (!c) return bad("That case was not found.", 404);
-      const r = confirmCompletion(c.state, computeView(c.state).plan, me, String(body.note ?? ""), now, crypto.randomBytes(9).toString("base64url"));
-      if (typeof r === "string") return bad(r);
-      await logEvent("badge_issued", c.sid, r.record);
-      await saveState(c.sid, r.state);
-      return NextResponse.json(await payload({ caseId: c.id }));
     }
     default:
       return bad("Unknown action.");

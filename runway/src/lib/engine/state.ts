@@ -37,6 +37,8 @@ export type PathwayWork = {
   template?: string;
   sheet?: Record<string, string>;
   resumeApplied?: boolean;
+  // Set when an advisor sends advice after a meeting with this worker; it completes the plan's meeting step.
+  advisorMet?: { at: string; by: Signer; meetingId: string; topic: string };
   // Shown on the public badge page only if the worker opts in.
   showName?: boolean;
   publishPortfolio?: boolean;
@@ -53,6 +55,8 @@ export type Clock = { t0: string; t1?: string };
 export type SessionState = {
   v: 1;
   profile: Profile | null;
+  // 1: the latest real figures (DOSM 2026 Q2, Epoch AI to Jun 2026) are loaded and every open question is about the
+  // future. 0 is the view one release earlier; the app only builds it to list what the latest release changed.
   release: 0 | 1;
   orders: Order[];
   clock: Clock | null;
@@ -70,7 +74,7 @@ export type SessionState = {
 
 export const STAY_ID = "stay";
 export const initialState = (): SessionState => ({
-  v: 1, profile: null, release: 0, orders: [], clock: null, goals: [], override: null, chosenRoleId: null,
+  v: 1, profile: null, release: 1, orders: [], clock: null, goals: [], override: null, chosenRoleId: null,
   progress: {}, resume: null,
   pathway: {}, completion: { status: "none" },
 });

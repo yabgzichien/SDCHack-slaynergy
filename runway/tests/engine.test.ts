@@ -13,9 +13,8 @@ import { newMarket, price, tradeToward, cost } from "@/lib/engine/lmsr";
 import { verifyChain, entryHash, type LogEntry } from "@/lib/server/store";
 import { taskCards, gradeQuiz, completionGate, badgeRecord, linkedinAddUrl, achievements } from "@/lib/engine/pathway";
 import { buildPlan } from "@/lib/engine/plan";
-import { caseSummary, confirmCompletion, finishedPersonaState, personaState } from "@/lib/engine/review";
+import { issueBadge, personaState, recordMeeting } from "@/lib/engine/review";
 import { advisorMeetings, checkBooking, DEMO_ADVISOR, demoSlots, freeSlots, isOpenable, myDay, myTime, slotId, slotStart, windowDays, type Meeting } from "@/lib/engine/meetings";
-import { isCase } from "@/lib/server/store";
 
 const hafiz = (): SessionState => {
   const p = personas[0];
@@ -477,9 +476,9 @@ describe("pathway: three strands, task card, badge", () => {
     expect(new Set(plan.steps.map((x) => x.strand))).toEqual(new Set(["job", "ai", "people"]));
     for (const st of plan.steps) expect(st.skills.length).toBeGreaterThan(0);
     expect(plan.steps.find((x) => x.activity === "task")?.cardId).toBe("finance_variance");
-    expect(plan.steps.map((x) => x.activity).filter(Boolean)).toEqual(["resume", "task"]);
+    expect(plan.steps.map((x) => x.activity).filter(Boolean)).toEqual(["resume", "task", "meeting"]);
   });
-  it("teaches people skills with existing online courses, not Runway's own", () => {
+  it("teaches people skills with existing online courses, not Jobbery's own", () => {
     const plan = computeView(finance().s).plan!;
     const ppl = plan.steps.filter((x) => x.strand === "people" && x.kind === "course");
     expect(ppl.map((x) => x.course?.id)).toEqual(["alison_interview", "google_interview_ai", "coursera_comm"]);
@@ -531,55 +530,65 @@ describe("pathway: three strands, task card, badge", () => {
       sheet: Object.fromEntries(card.sheetHeadings.map((h) => [h.id, "Something long enough here"])),
       resumeApplied: true,
     };
+    expect(completionGate(plan, { ...ticked, pathway: work, resume: { skillIds: [], found: [], words: 0 } as unknown as SessionState["resume"] }).missing).toContain("Meet an advisor and get their advice.");
+    Object.assign(work, { advisorMet: { at: "2026-10-20T00:00:00.000Z", by: { id: "c-1", name: "Puan Aisyah" }, meetingId: "m1", topic: "mock" } });
     const resume = { skillIds: [], found: [], words: 0 } as unknown as SessionState["resume"];
     const full = { ...ticked, pathway: work, resume };
     expect(completionGate(plan, full)).toEqual({ ok: true, missing: [] });
     const rec = badgeRecord(plan, full, "abc123def", "2026-10-21T00:00:00.000Z");
-    expect(rec.holder).toBe("A Runway learner");
+    expect(rec.holder).toBe("A Jobbery learner");
     expect(rec.portfolio).toBeNull();
-    expect(rec.title).toBe("Runway pathway completed · Budget analyst");
+    expect(rec.title).toBe("Jobbery pathway completed · Budget analyst");
     expect(rec.title.toLowerCase()).not.toContain("certified");
     const shown = badgeRecord(plan, { ...full, pathway: { ...work, showName: true, publishPortfolio: true } }, "abc123def", "2026-10-21T00:00:00.000Z");
     expect(shown.holder).toBe("Hafiz");
     expect(shown.portfolio?.template).toContain("budget analyst");
   });
   it("prefills the LinkedIn add-certification link", () => {
-    const u = new URL(linkedinAddUrl({ title: "Runway pathway completed · Budget analyst", id: "abc", issued: "2026-10-21T00:00:00.000Z" }, "https://x.test/badge/abc"));
+    const u = new URL(linkedinAddUrl({ title: "Jobbery pathway completed · Budget analyst", id: "abc", issued: "2026-10-21T00:00:00.000Z" }, "https://x.test/badge/abc"));
     expect(u.searchParams.get("startTask")).toBe("CERTIFICATION_NAME");
     expect(u.searchParams.get("issueMonth")).toBe("10");
     expect(u.searchParams.get("certUrl")).toBe("https://x.test/badge/abc");
   });
 });
 
-describe("advisor sign-off", () => {
+describe("advisor meeting step and badge", () => {
   const by = { id: "c-12345678", name: "Puan Aisyah" };
   const now = "2026-10-21T00:00:00.000Z";
-  it("needs no plan approval: a finished pathway is confirmed once, with the advisor on the badge", () => {
-    const s = { ...personaState("hafiz")!, chosenRoleId: "budget_analyst" };
+  const base = () => ({ ...personaState("hafiz")!, chosenRoleId: "budget_analyst" });
+  it("puts one advisor meeting in every plan, before applying, done only by an advisor's advice", () => {
+    const s = base();
     const plan = computeView(s).plan!;
-    expect(isCase(s)).toBe(false);
-    expect(confirmCompletion(s, plan, by, "", now, "abc123def")).toBe("There is no finished pathway waiting for confirmation.");
-    const notDone = { ...s, completion: { status: "requested" as const, requestedAt: now } };
-    expect(isCase(notDone)).toBe(true);
-    expect(confirmCompletion(notDone, plan, by, "", now, "abc123def")).toBe("The pathway is not finished yet.");
-    const card = taskCards.find((c) => plan.steps.some((x) => x.cardId === c.id))!;
-    const done = {
-      ...notDone,
-      progress: Object.fromEntries(plan.steps.map((x) => [x.id, true])),
-      pathway: { prompt: "p", template: "t", resumeApplied: true, quiz: { attempts: 1, passed: true, found: [], wrong: [] }, sheet: Object.fromEntries(card.sheetHeadings.map((h) => [h.id, "Something long enough here"])) },
-      resume: { skillIds: [], found: [], words: 0 } as unknown as SessionState["resume"],
-    };
-    expect(caseSummary("x", done, false)).toMatchObject({ status: "finished", waiting: true, name: "Hafiz", synthetic: true });
-    const r = confirmCompletion(done, plan, by, "Well done", now, "abc123def");
-    if (typeof r === "string") throw new Error(r);
-    expect(r.record.counsellor).toEqual({ confirmedAt: now, confirmedBy: by });
-    expect(r.state.completion).toMatchObject({ status: "confirmed", badgeId: "abc123def", by });
-    expect(caseSummary("x", r.state, true)).toMatchObject({ status: "badge", own: true, waiting: false });
+    const meet = plan.steps.filter((x) => x.activity === "meeting");
+    expect(meet).toHaveLength(1);
+    const at = plan.steps.findIndex((x) => x.id === "meet");
+    expect(plan.steps[at + 1].kind).toBe("apply");
+    expect(plan.steps.find((x) => x.kind === "apply")!.title).not.toMatch(/counsellor/i);
+    expect(computeView({ ...s, progress: { meet: true } }).pathway.done.meet).toBe(false);
+    const met = recordMeeting(s, { at: now, by, meetingId: "m1", topic: "mock" });
+    expect(computeView(met).pathway.done.meet).toBe(true);
+    expect(recordMeeting(met, { at: "later", by, meetingId: "m2", topic: "job" }).pathway.advisorMet?.meetingId).toBe("m1");
   });
-  it("builds a made-up finished pathway that passes the badge gate", () => {
-    const s = finishedPersonaState("hafiz", now)!;
-    expect(completionGate(computeView(s).plan, s)).toEqual({ ok: true, missing: [] });
-    expect(isCase(s)).toBe(true);
+  it("includes the meeting in a stay-in-your-job plan too", () => {
+    const s = { ...personaState("hafiz")!, chosenRoleId: STAY_ID };
+    expect(computeView(s).plan!.steps.some((x) => x.activity === "meeting")).toBe(true);
+  });
+  it("issues the badge once every step is done, naming the advisor met, without a sign-off", () => {
+    const s = base();
+    const plan = computeView(s).plan!;
+    expect(issueBadge(s, plan, now, "abc123def")).toBe("The pathway is not finished yet.");
+    const done = recordMeeting({
+      ...s,
+      progress: Object.fromEntries(plan.steps.map((x) => [x.id, true])),
+      pathway: { resumeApplied: true, quiz: { attempts: 1, passed: true, found: [], wrong: [] } },
+      resume: { skillIds: [], found: [], words: 0 } as unknown as SessionState["resume"],
+    }, { at: now, by, meetingId: "m1", topic: "mock" });
+    const r = issueBadge(done, plan, now, "abc123def");
+    if (typeof r === "string") throw new Error(r);
+    expect(r.record.met).toEqual({ advisor: by, at: now, topic: "mock" });
+    expect(r.record.counsellor).toBeUndefined();
+    expect(r.state.completion).toMatchObject({ status: "confirmed", badgeId: "abc123def", by });
+    expect(issueBadge(r.state, plan, now, "x")).toBe("This pathway is finished and its badge is issued.");
   });
 });
 
@@ -715,16 +724,20 @@ describe("influence cap", () => {
 
 describe("what the answer would change", () => {
   it("shows, for every open question, how each answer moves the three futures, and the futures still add to 1", () => {
+    // Sessions start with the latest release loaded: every open question is about the future.
     const w = computeWorld({ ...initialState(), clock: { t0: T0 } }, Date.parse(T0) + 60_000);
+    expect(w.events.map((e) => e.id).sort()).toEqual(["dosm-2026Q3", "hle-2026Q4", "metr-2026Q4", "swe-2026Q4", "tbench-2026Q4"]);
     for (const e of w.events) {
       expect(e.whatIf).not.toBeNull();
       for (const x of [e.whatIf!.yes, e.whatIf!.no]) expect(x.slow + x.medium + x.fast).toBeCloseTo(1, 6);
     }
     // An AI-progress question: Yes (fast progress) makes the slow future less likely than No does.
-    const metr = w.events.find((e) => e.id === "metr-2026Q2")!.whatIf!;
+    const metr = w.events.find((e) => e.id === "metr-2026Q4")!.whatIf!;
     expect(metr.yes.slow).toBeLessThan(metr.no.slow);
-    const rel = computeWorld({ ...initialState(), release: 1, clock: { t0: T0, t1: T1 } }, Date.parse(T1) + 1000);
-    expect(rel.settledEvents.every((e) => e.whatIf === null)).toBe(true);
+    expect(w.settledEvents.every((e) => e.whatIf === null)).toBe(true);
+    // Nobody could guess on the release that is already in, so a new player is not scored on it.
+    expect(w.you.brier).toBeNull();
+    expect(w.you.influence).toBe(1);
   });
 });
 

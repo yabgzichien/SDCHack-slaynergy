@@ -1,10 +1,12 @@
 "use client";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/components/AppProvider";
+import { useSpeed } from "@/components/useSpeed";
 import { Score, whyFits } from "@/components/JobBits";
 import { ChevronRight, HandHeart, MapPin, TrendingDown, TrendingUp } from "lucide-react";
-import { MalaysiaMap } from "@/components/MalaysiaMap";
+const MalaysiaMap = dynamic(() => import("@/components/MalaysiaMap").then((m) => m.MalaysiaMap), { ssr: false, loading: () => <div className="h-40 animate-pulse rounded-2xl bg-surface2" aria-hidden /> });
 import { mapFigures, times } from "@/lib/map-figures";
 import { stateById } from "@/lib/engine/geo";
 import { roleById, type GroupKey, type SectorId } from "@/lib/engine/data";
@@ -15,6 +17,7 @@ import { Btn, Card, Chip, LinkRow, NextRow, PageTitle, SdgTag, Skeleton, sdgName
 // One question: which job should I aim for?
 export default function JobsPage() {
   const { view, state, catalog, act, busy } = useApp();
+  const { speed } = useSpeed(view);
   const router = useRouter();
   if (!view || !state || !catalog) return <Skeleton lines={6} />;
   if (!state.profile) return <div><PageTitle title="Which job should you aim for?">Answer a few questions first.</PageTitle><Btn href="/start">Get started</Btn></div>;
@@ -25,7 +28,7 @@ export default function JobsPage() {
   const choose = async (id: string) => { if (await act("chooseRole", { roleId: id })) router.push("/plan"); };
   const goals = [...new Set(state.goals.map(sdgName))].join(", ");
 
-  const stayCard = view.stay && <StayCard stay={view.stay} bridge={bridge} chosen={state.chosenRoleId === STAY_ID} busy={busy} onChoose={() => choose(STAY_ID)} />;
+  const stayCard = view.stay && <StayCard stay={view.stay} speed={speed} bridge={bridge} chosen={state.chosenRoleId === STAY_ID} busy={busy} onChoose={() => choose(STAY_ID)} />;
   if (!best) {
     return (
       <div>
@@ -101,13 +104,13 @@ export default function JobsPage() {
 const an = (t: string) => (/^[aeiou]/i.test(t) ? "an" : "a");
 
 // Staying in the job you have. Labelled by how exposed it is (ILO 2025), with what fades and what grows in it.
-function StayCard({ stay, bridge, chosen, busy, onChoose }: { stay: StayView; bridge: RoleMatchView | null; chosen: boolean; busy: boolean; onChoose: () => void }) {
+function StayCard({ stay, speed, bridge, chosen, busy, onChoose }: { stay: StayView; speed: string; bridge: RoleMatchView | null; chosen: boolean; busy: boolean; onChoose: () => void }) {
   const job = stay.title.toLowerCase();
   const exposed = stay.ilo ? `A UN study (ILO) found AI could do about ${Math.round(stay.ilo.score * 100)}% of this job's tasks` : "AI could do many of this job's tasks";
   const toward = stay.toward;
   const head = stay.status === "fast" ? `Stay ${an(job)} ${job}, for now` : `Stay ${an(job)} ${job}`;
   const text = stay.status === "fast"
-    ? `${exposed}, one of the highest of any job.${stay.fadeYear ? ` AI could do most of its skills by ${stay.fadeYear}.` : ""} ${toward ? `Keep it for income while you train for ${toward.title.toLowerCase()}, a job AI is unlikely to take over.` : "No lasting job is reachable in your time yet, so add the skills below while you keep working."}`
+    ? `${exposed}, one of the highest of any job.${stay.fadeYear[speed] ? ` AI could do most of its skills by ${stay.fadeYear[speed]}.` : ""} ${toward ? `Keep it for income while you train for ${toward.title.toLowerCase()}, a job AI is unlikely to take over.` : "No lasting job is reachable in your time yet, so add the skills below while you keep working."}`
     : stay.status === "changing"
       ? `This job is changing, not disappearing. ${exposed}, so some of your work will move to AI. It should last if you add the skills growing in it.`
       : "A UN study (ILO) found AI can do little of this job. Keeping your skills fresh and learning to use AI tools should be enough.";
@@ -124,7 +127,7 @@ function StayCard({ stay, bridge, chosen, busy, onChoose }: { stay: StayView; br
         {stay.fading.length > 0 && (
           <div className="rounded-2xl bg-raised p-4">
             <p className="flex items-center gap-2 text-sm font-medium"><TrendingDown size={16} aria-hidden className="text-fall" />AI is taking over in this job</p>
-            <ul className="mt-2 space-y-1 text-sm">{stay.fading.map((f) => <li key={f.skillId} className="flex justify-between gap-3"><span>{f.name}</span><span className="num shrink-0 whitespace-nowrap text-muted">by {f.expected}</span></li>)}</ul>
+            <ul className="mt-2 space-y-1 text-sm">{stay.fading.map((f) => <li key={f.skillId} className="flex justify-between gap-3"><span>{f.name}</span><span className="num shrink-0 whitespace-nowrap text-muted">by {f.byFuture[speed]}</span></li>)}</ul>
           </div>
         )}
         {stay.growing.length > 0 && (

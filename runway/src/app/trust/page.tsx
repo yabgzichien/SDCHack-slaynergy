@@ -26,7 +26,7 @@ export default function TrustPage() {
       </Card>
 
       <Card>
-        <H sub="Every guess, data update, piece of advice and badge sign-off is saved in a chain. Each record is locked to the one before it, so nobody can secretly change one.">A record nobody can secretly change</H>
+        <H sub="Every guess, data update, piece of advice and badge is saved in a chain. Each record is locked to the one before it, so nobody can secretly change one.">A record nobody can secretly change</H>
         {log ? (
           <>
             <p className="text-sm"><Chip tone={log.ok ? "rise" : "fall"}>{log.ok ? "Chain verified" : `Broken at record ${log.brokenAt}`}</Chip> <span className="num">{log.checked} records checked.</span></p>
@@ -57,7 +57,7 @@ export default function TrustPage() {
           <li>It uses no real CVs or personal data, and no paid or hosted AI model at run time.</li>
           <li>It never uses real money. Players only win points and a bigger vote.</li>
           <li>It uses no AI chatbot. Matching and forecasting are plain maths you can read in the code.</li>
-          <li>It never decides for you. You choose, and can book an advisor for a second opinion. An advisor confirms a finished pathway before its badge is issued. Estimates are not predictions of certainty.</li>
+          <li>It never decides for you. You choose, and can book an advisor for a second opinion. Every plan includes one meeting with an advisor, and the badge is issued only after it. Estimates are not predictions of certainty.</li>
         </ul>
       </Card>
     </div>

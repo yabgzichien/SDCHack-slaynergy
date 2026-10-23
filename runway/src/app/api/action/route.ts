@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { NextResponse } from "next/server";
 import { computeView } from "@/lib/engine/view";
 import { computeWorld } from "@/lib/engine/world";
@@ -8,9 +9,9 @@ import { stateById, isReach } from "@/lib/engine/geo";
 import { respond } from "@/lib/server/respond";
 import { getSessionId } from "@/lib/server/session";
 import { loadState, logEvent, resetState, saveState } from "@/lib/server/store";
-import { cardById, completionGate, gradeQuiz, MAX_TEXT } from "@/lib/engine/pathway";
+import { cardById, gradeQuiz, MAX_TEXT } from "@/lib/engine/pathway";
 import { canSwap } from "@/lib/engine/plan";
-import { personaState } from "@/lib/engine/review";
+import { issueBadge, personaState } from "@/lib/engine/review";
 import { courseById } from "@/lib/engine/data";
 import type { PathwayWork } from "@/lib/engine/state";
 import { MAX_PER_ANSWER, moveAllowance } from "@/lib/market-math";
@@ -62,6 +63,9 @@ const fields = (x: unknown, keys: string[]) => {
 };
 
 // Only known fields are kept, each trimmed to a fixed length.
+// A meeting that really happened still counts after the worker changes job or edits their profile.
+const keepMeeting = (s: SessionState): PathwayWork => (s.pathway?.advisorMet ? { advisorMet: s.pathway.advisorMet } : {});
+
 function cleanPathway(raw: Record<string, unknown>, cardId: string | undefined): Partial<PathwayWork> {
   const out: Partial<PathwayWork> = {};
   const card = cardId ? cardById(cardId) : null;
@@ -99,7 +103,7 @@ export async function POST(req: Request) {
     case "setProfile": {
       const prof = cleanProfile((body.profile ?? {}) as Record<string, unknown>);
       if (typeof prof === "string") return bad(prof);
-      state = { ...state, profile: prof, chosenRoleId: null, progress: {}, pathway: {}, completion: { status: "none" }, courseSwaps: {} };
+      state = { ...state, profile: prof, chosenRoleId: null, progress: {}, pathway: keepMeeting(state), completion: { status: "none" }, courseSwaps: {} };
       await logEvent("profile", sid, { synthetic: prof.synthetic, occupation: prof.occupationId, months: prof.months });
       break;
     }
@@ -158,7 +162,7 @@ export async function POST(req: Request) {
     case "chooseRole": {
       const id = String(body.roleId ?? "");
       if (id !== STAY_ID && !roleById[id]) return bad("Unknown role.");
-      state = { ...state, chosenRoleId: id, progress: {}, pathway: {}, completion: { status: "none" }, courseSwaps: {} };
+      state = { ...state, chosenRoleId: id, progress: {}, pathway: keepMeeting(state), completion: { status: "none" }, courseSwaps: {} };
       break;
     }
     case "swapCourse": {
@@ -172,8 +176,8 @@ export async function POST(req: Request) {
       if (courseId !== null && !canSwap(courseById[courseId], key)) return bad("That course does not cover every skill this step teaches.");
       const swaps = { ...(state.courseSwaps ?? {}) };
       if (courseId === null) delete swaps[key]; else swaps[key] = courseId;
-      // A new course starts unticked, so a pending request to confirm the finished pathway is withdrawn.
-      state = { ...state, courseSwaps: swaps, progress: { ...state.progress, [step.id]: false }, completion: state.completion.status === "requested" ? { status: "none" } : state.completion };
+      // A new course starts unticked.
+      state = { ...state, courseSwaps: swaps, progress: { ...state.progress, [step.id]: false } };
       await logEvent("course_swapped", sid, { step: step.id, course: courseId ?? "suggested" });
       break;
     }
@@ -197,17 +201,14 @@ export async function POST(req: Request) {
       state = { ...state, pathway: { ...state.pathway, quiz: { attempts: (prev?.attempts ?? 0) + 1, passed: !!prev?.passed || g.passed, found: g.found, wrong: g.wrong } } };
       break;
     }
-    case "requestCompletion": {
-      const plan = computeView(state).plan;
-      const gate = completionGate(plan, state);
-      if (!gate.ok) return bad(gate.missing.join(" "));
-      state = { ...state, completion: { status: "requested", requestedAt: new Date().toISOString() } };
-      await logEvent("completion_requested", sid, { role: plan?.roleId });
+    case "claimBadge": {
+      // Every step done, the advisor meeting included: the badge is logged and issued straight away.
+      const r = issueBadge(state, computeView(state).plan, new Date().toISOString(), crypto.randomBytes(9).toString("base64url"));
+      if (typeof r === "string") return bad(r);
+      await logEvent("badge_issued", sid, r.record);
+      state = r.state;
       break;
     }
-    case "confirmCompletion":
-      // The sign-off belongs to the advisor, who acts on the worker's case through /api/counsellor.
-      return NextResponse.json({ error: "Only a signed-in advisor can do this. Open the advisor view." }, { status: 403 });
     default:
       return bad("Unknown action.");
   }

@@ -16,6 +16,7 @@ const DEMO_TIMES = ["10:00", "11:30", "14:30", "16:00"];
 export const DEMO_ADVISOR: Signer = { id: "c-demo", name: "Demo advisor (made-up)" };
 
 export const TOPICS = [
+  { id: "mock", label: "A mock interview" },
   { id: "job", label: "Which job to aim for" },
   { id: "courses", label: "Courses and what they cost" },
   { id: "time", label: "Fitting it into my time" },

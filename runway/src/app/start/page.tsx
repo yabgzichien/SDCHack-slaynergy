@@ -1,5 +1,4 @@
 "use client";
-import "./start-journey.css";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -9,9 +8,11 @@ import {
   Laptop, Leaf, Library, MapPin, Microscope, Presentation, Scale, ScrollText, Sparkles, Users, UserRound, Wrench, type LucideIcon,
 } from "lucide-react";
 import { useApp, type Catalog } from "@/components/AppProvider";
+import { StepBar } from "@/components/Journey";
 import { Btn, Skeleton } from "@/components/ui";
 import { SAMPLE_RESUME } from "@/lib/sample-resume";
 import { STATES, regionOf, type Reach } from "@/lib/engine/geo";
+import { occupationById, personas } from "@/lib/engine/data";
 
 // Onboarding: eight short screens. After the name, the resume comes first because it fills in most of the rest.
 // Nothing is saved until the last screen; the draft lives in this tab only.
@@ -42,6 +43,15 @@ const blank = (cat: Catalog): Draft => ({
   name: "", status: "", age: "", state: "", move: "", moveTo: [], occupationId: "", education: cat.education.find((e) => e.id === "diploma")?.id ?? cat.education[0]?.id ?? "", study: "", years: 0, skills: [], months: 6, hours: 10, interests: [], resume: null, touched: {},
 });
 
+// "Try a sample" arrives here with every answer filled in from the made-up worker Hafiz, to check and change.
+const wantsSample = () => { try { return new URLSearchParams(window.location.search).get("sample") === "1"; } catch { return false; } };
+const sampleDraft = (cat: Catalog): Draft | null => {
+  const p = personas.find((x) => x.id === "hafiz");
+  const o = p && occupationById[p.occupation];
+  if (!p || !o) return null;
+  return { ...blank(cat), name: p.name, status: "working", age: String(p.age), state: p.state ?? "", move: p.state ? "region" : "", occupationId: o.id, education: p.education, study: o.sector, years: p.years, skills: o.skills, months: p.months, hours: p.hoursPerWeek, interests: p.interests, touched: { education: true, study: true, skills: true } };
+};
+
 export default function StartPage() {
   const { catalog, state } = useApp();
   if (!catalog || !state) return <Skeleton lines={3} />;
@@ -53,18 +63,18 @@ function Wizard({ cat }: { cat: Catalog }) {
   const router = useRouter();
   // The wizard mounts only in the browser (after the catalog loads), so the saved draft can be read synchronously.
   // A half-finished draft only matters before the first save; once there is a profile, the profile wins.
+  const [sample] = useState(() => wantsSample());
   const [saved] = useState<{ d: Draft; i: number } | null>(() => {
+    if (sample) return null;
     if (state?.profile && !state.profile.personaId) return null;
     try { const raw = sessionStorage.getItem(KEY); return raw ? (JSON.parse(raw) as { d: Draft; i: number }) : null; } catch { return null; }
   });
   // Someone who already answered comes back to change an answer: open on the last screen with every question reachable.
   const answered = !!state?.profile && !state.profile.personaId;
   const [i, setI] = useState(() => answered ? STEPS.length - 1 : Math.min(saved?.i ?? 0, STEPS.length - 1));
-  const [walking, setWalking] = useState(false);
-  const [walkingBack, setWalkingBack] = useState(false);
-  const walkTimer = useRef<number | null>(null);
   const [seen, setSeen] = useState(() => answered ? STEPS.length - 1 : Math.min(saved?.i ?? 0, STEPS.length - 1));
   const [d, setD] = useState<Draft>(() => {
+    if (sample) { const s = sampleDraft(cat); if (s) return s; }
     if (saved) return { ...blank(cat), ...saved.d };
     const p = state?.profile;
     if (p && !p.personaId) return { ...blank(cat), name: p.name === "You" ? "" : p.name, status: p.status ?? "working", moveTo: p.moveTo ?? [], age: p.age ? String(p.age) : "", state: p.state ?? "", move: p.move ?? "", occupationId: p.occupationId, education: p.education, study: p.study ?? "", years: p.years, skills: p.skills, months: p.months, hours: p.hoursPerWeek, interests: p.interests, touched: { education: true, study: !!p.study, skills: true } };
@@ -92,20 +102,13 @@ function Wizard({ cat }: { cat: Catalog }) {
   const canGo: Record<Step, boolean> = { name: !!d.status, resume: true, job: studying || !!occ, education: !!d.education && (!hasField || !!study), skills: d.skills.length > 0, time: true, interests: true, where: ready && (!d.state || (!!d.move && (d.move !== "pick" || d.moveTo.length > 0))) };
   const go = (n: number) => {
     const k = Math.max(0, Math.min(STEPS.length - 1, n));
-    if (k !== i) {
-      if (walkTimer.current !== null) window.clearTimeout(walkTimer.current);
-      setWalkingBack(k < i);
-      setWalking(true);
-      walkTimer.current = window.setTimeout(() => { setWalking(false); walkTimer.current = null; }, 1050);
-    }
     setI(k);
     setSeen((x) => Math.max(x, k));
     window.scrollTo({ top: 0 });
   };
-  useEffect(() => () => { if (walkTimer.current !== null) window.clearTimeout(walkTimer.current); }, []);
   const next = () => { if (canGo[step]) go(i + 1); };
   const finish = async () => {
-    const r = await act("setProfile", { profile: { name: d.name.trim() || "You", age: d.age ? Number(d.age) : null, status: d.status || "working", state: d.state || null, move: d.state && d.move ? d.move : null, moveTo: d.move === "pick" ? d.moveTo : [], occupationId: occ ? d.occupationId : "", education: d.education, study, years: occ ? d.years : 0, skills: d.skills, interests: d.interests, months: d.months, hoursPerWeek: d.hours, budget: "free", synthetic: !!d.resume?.sample || (answered && !!state?.profile?.synthetic) } });
+    const r = await act("setProfile", { profile: { name: d.name.trim() || "You", age: d.age ? Number(d.age) : null, status: d.status || "working", state: d.state || null, move: d.state && d.move ? d.move : null, moveTo: d.move === "pick" ? d.moveTo : [], occupationId: occ ? d.occupationId : "", education: d.education, study, years: occ ? d.years : 0, skills: d.skills, interests: d.interests, months: d.months, hoursPerWeek: d.hours, budget: "free", synthetic: sample || !!d.resume?.sample || (answered && !!state?.profile?.synthetic) } });
     if (r) { try { sessionStorage.removeItem(KEY); sessionStorage.setItem("jobbery-results-arrival", "1"); } catch { /* ignore */ } router.push("/skills"); }
   };
 
@@ -122,33 +125,16 @@ function Wizard({ cat }: { cat: Catalog }) {
   }, []);
 
   return (
+    <>
+    <StepBar inline sub={{
+      labels: STEPS.map((x) => STEP_LABEL[x]),
+      icons: STEPS.map((x) => STEP_ICON[x]),
+      index: i,
+      state: (k) => (k === i ? "current" : k < i || k <= seen ? "done" : "upcoming"),
+      reachable: (k) => k <= seen && STEPS.slice(0, k).every((x) => canGo[x]),
+      onPick: go,
+    }} />
     <div className="mx-auto max-w-2xl">
-      <div className="onboarding-journey mb-10">
-        <div className="journey-track" aria-hidden="true"><span className="journey-track-fill" style={{ width: `${(i / (STEPS.length - 1)) * 100}%` }} /></div>
-        <div className={`journey-bird${walking ? " is-walking" : ""}${walkingBack ? " is-returning" : ""}`} style={{ left: `${((i + 0.5) / STEPS.length) * 100}%` }} aria-hidden="true">
-          <Image className="journey-bird-frame journey-bird-frame-a" src="/cockatiel-walk-step-a.png" alt="" width={1254} height={1254} priority />
-          <Image className="journey-bird-frame journey-bird-frame-b" src="/cockatiel-walk-step-b.png" alt="" width={1254} height={1254} priority />
-          <span className="journey-bird-shadow" />
-        </div>
-        <ol className="journey-points" aria-label="Questions">
-          {STEPS.map((s, k) => {
-            const Icon = STEP_ICON[s];
-            const on = k === i, done = k < i || (k <= seen && k !== i);
-            const reachable = k <= seen && STEPS.slice(0, k).every((x) => canGo[x]);
-            return (
-              <li key={s}>
-                <button type="button" onClick={() => reachable && go(k)} disabled={!reachable} aria-current={on ? "step" : undefined} aria-label={`${STEP_LABEL[s]}${on ? ", current question" : done ? ", answered" : ""}`}
-                  className="journey-checkpoint group" data-state={on ? "current" : done ? "done" : "upcoming"}>
-                  <span className="journey-marker">{done ? <Check size={10} strokeWidth={2.3} aria-hidden /> : null}</span>
-                  <Icon size={16} strokeWidth={1.8} aria-hidden className={on ? "text-ink" : done ? "text-accent" : "text-muted/60"} />
-                  <span className={`hidden text-[11px] sm:block ${on ? "font-medium text-ink" : "text-muted"}`}>{STEP_LABEL[s]}</span>
-                </button>
-              </li>
-            );
-          })}
-        </ol>
-      </div>
-
       <form onSubmit={(e) => { e.preventDefault(); if (step === "where") finish(); else next(); }}>
         {step === "name" && (
           <Q title="First, a little about you" help="Your name is optional. We use it to greet you and on your plan, never to choose or rank jobs.">
@@ -172,7 +158,7 @@ function Wizard({ cat }: { cat: Catalog }) {
             </div>
           </Q>
         )}
-        {step === "resume" && <ResumeStep d={d} setD={setD} cat={cat} onDone={() => go(i + 1)} />}
+        {step === "resume" && <ResumeStep d={d} setD={setD} cat={cat} onDone={() => go(i + 1)} autoSample={sample} />}
         {step === "job" && (
           <Q title={studying ? "Any part-time job or internship?" : "What was your last job?"}
             help={d.resume?.occupation ? "We read this from your resume. Change it if it is wrong." : studying ? "Pick the closest one, or choose none. It tells us which skills you probably have." : "Pick the closest one. It tells us which skills you probably have."}>
@@ -309,6 +295,7 @@ function Wizard({ cat }: { cat: Catalog }) {
         </div>
       </form>
     </div>
+    </>
   );
 }
 
@@ -437,7 +424,7 @@ function SkillPicker({ cat, value, suggested, onChange }: { cat: Catalog; value:
 
 type Analysis = { score: number; band: string; occupation: { id: string; title: string } | null; years: number | null; education: string | null; skills: { id: string }[]; findings: { severity: string; title: string }[] };
 
-function ResumeStep({ d, setD, cat, onDone }: { d: Draft; setD: (f: (x: Draft) => Draft) => void; cat: Catalog; onDone: () => void }) {
+function ResumeStep({ d, setD, cat, onDone, autoSample }: { d: Draft; setD: (f: (x: Draft) => Draft) => void; cat: Catalog; onDone: () => void; autoSample?: boolean }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [paste, setPaste] = useState(false);
@@ -468,6 +455,13 @@ function ResumeStep({ d, setD, cat, onDone }: { d: Draft; setD: (f: (x: Draft) =
   const upload = (f: File) => { const fd = new FormData(); fd.append("file", f); scan({ method: "POST", body: fd }); };
   const pasteScan = (t: string, sample = false) => scan({ method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text: t }) }, sample);
 
+  // Arriving from "Try a sample": scan the made-up resume once, without asking.
+  const autoTried = useRef(false);
+  useEffect(() => {
+    if (autoSample && !d.resume && !autoTried.current) { autoTried.current = true; pasteScan(SAMPLE_RESUME, true); }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoSample]);
+
   if (d.resume) {
     return (
       <Q title={`Your resume scored ${d.resume.score} out of 100.`} help="We filled in your last job, experience and skills from it. You will check each one next.">
@@ -476,6 +470,12 @@ function ResumeStep({ d, setD, cat, onDone }: { d: Draft; setD: (f: (x: Draft) =
           <div className="flex min-h-14 items-center justify-between gap-3"><dt className="text-sm text-muted">Skills found</dt><dd className="num text-sm">{d.resume.found}</dd></div>
           {d.resume.fixes.length > 0 && <div className="py-3"><dt className="text-sm text-muted">Fix first</dt><dd className="mt-1 text-sm"><ul className="list-disc pl-5">{d.resume.fixes.map((f) => <li key={f}>{f}</li>)}</ul></dd></div>}
         </dl>
+        {d.resume.sample && (
+          <details className="mt-3 rounded-[22px] bg-surface px-5 py-3">
+            <summary className="cursor-pointer text-sm font-medium">Preview the sample resume</summary>
+            <pre className="mt-3 max-h-80 overflow-y-auto whitespace-pre-wrap text-sm text-muted" style={{ fontFamily: "inherit" }}>{SAMPLE_RESUME}</pre>
+          </details>
+        )}
         <p className="mt-3 text-sm text-muted">The full report, with before-and-after examples, is on <Link href="/resume" className="underline decoration-control underline-offset-2">Resume report</Link>. Your resume text was not saved.</p>
         <div className="mt-8 flex flex-wrap gap-2">
           <Btn onClick={onDone} autoFocus className="min-h-12 px-6 text-base">Continue</Btn>

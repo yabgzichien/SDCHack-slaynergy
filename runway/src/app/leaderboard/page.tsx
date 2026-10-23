@@ -84,7 +84,7 @@ export default function LeaderboardPage() {
         <Card tone={you.rank ? "accent" : undefined}>
           <H>You</H>
           {you.brier === null ? (
-            <p className="text-sm">You start with a normal vote (1×). Your guesses are scored when the new numbers come out; a question you skip counts as a 50/50 guess.</p>
+            <p className="text-sm">You start with a normal vote (1×). Your guesses are scored when the real numbers come out: DOSM on 17 Nov 2026 for the job question, Epoch AI in Jan 2027 for the AI questions. An open question you skip counts as a 50/50 guess.</p>
           ) : (
             <dl className="num space-y-1.5 text-sm">
               <div className="flex justify-between"><dt className="text-muted">Rank</dt><dd>{you.rank} of {ranked}</dd></div>

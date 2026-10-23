@@ -46,8 +46,9 @@ export function MalaysiaMap({ values, bins, ramp, selected = null, home = null, 
   const focus = hover ?? selected;
   const fv = focus ? byId[focus] : null;
   const font = preview || width < 720 ? 11 : 12;
-  // the small preview names only the three states with the highest figures
-  const top3 = new Set([...values].sort((a, b) => b.value - a.value).slice(0, 3).map((v) => v.id));
+  // the small preview names the state with the highest figure and the person's own state; with no home state set, the top three
+  const ranked = [...values].sort((a, b) => b.value - a.value);
+  const top3 = new Set(home ? [home, ranked.find((v) => v.id !== home)?.id ?? ""] : ranked.slice(0, 3).map((v) => v.id));
   // on a phone, the small states' sea labels appear once you zoom in; with "stay home" only your state is named
   const phone = width < 480;
   const named = (id: string) => (preview ? top3.has(id) : !(dimOthers && id !== home));

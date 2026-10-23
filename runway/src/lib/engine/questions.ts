@@ -101,12 +101,14 @@ export function makeQuestions(): Question[] {
     const pf = e.frontier.find((x) => x.q === prevQuarter(q));
     const known = phase !== "next" && f && pf;
     const last3 = th.g.slice(-3).map((x) => change(id, x)).join(", ");
+    const before = e.frontier.filter((x) => quarterIndex(x.q) <= quarterIndex(prevQuarter(q))).at(-1);
+    const from = before ? `, from ${level(id, before.v)} at the end of ${quarterPlain(prevQuarter(q)).split(" to ")[1]}` : "";
     const thLabel = th.d > 0 ? `by more than ${change(id, th.d)}` : "at all";
     out.push({
       id: `${id}-${q}`, quarter: q, kind: "epoch", series: id,
       text: isDoubling(id)
-        ? `Will the longest task AI can do on its own grow ${thLabel} in ${quarterPlain(q)}?`
-        : `Will AI's best test score for ${plainTask(id)} go up ${thLabel} in ${quarterPlain(q)}?`,
+        ? `Will the longest task AI can do on its own grow ${thLabel} in ${quarterPlain(q)}${from}?`
+        : `Will the best AI score on ${e.name}, a test of ${plainTask(id)}, rise ${thLabel} in ${quarterPlain(q)}${from}?`,
       threshold: th.d,
       source: { name: "Epoch AI benchmarking data", url: sourceById.epoch.url },
       settles: phase === "next" ? `Epoch AI results for ${quarterPlain(q)}, checked in Jan 2027 (best result by 31 Dec against the best by 30 Sep)` : `Epoch AI results for ${quarterPlain(q)}`,
@@ -217,5 +219,6 @@ export function ladder(q: Question): Strike[] {
 
 export function eventTitle(q: Question): string {
   if (q.kind === "dosm") return `Office admin jobs in Malaysian job ads, ${quarterPlain(q.quarter)}`;
-  return `${plainName(q.series)}, ${quarterPlain(q.quarter)}`;
+  const name = series.epoch[q.series].name;
+  return isDoubling(q.series) ? `${plainName(q.series)} (${name.split(" ")[0]}), ${quarterPlain(q.quarter)}` : `${name}: ${plainName(q.series)}, ${quarterPlain(q.quarter)}`;
 }

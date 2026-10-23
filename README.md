@@ -73,11 +73,10 @@ flowchart TD
     H2 --> H
     H --> M[Map: where jobs like this are<br/>compare states]
     H --> I[Plan: week-by-week pathway<br/>job · AI at work · people skills]
-    I --> J[Do the steps<br/>courses, AI task card + quiz,<br/>60-second story, STAR answers]
-    J --> K{All steps done<br/>and quiz passed?}
+    I --> J[Do the steps<br/>courses, AI task card + quiz,<br/>60-second story, STAR answers,<br/>one advisor meeting]
+    J --> K{All steps done, quiz passed<br/>and advisor met?}
     K -->|Not yet| J
-    K -->|Yes| L[Advisor confirms completion]
-    L --> N([Shareable LinkedIn badge<br/>verifiable from the hash log])
+    K -->|Yes| N([Shareable LinkedIn badge<br/>verifiable from the hash log])
 
     I -.->|any time from the You step| ADV[Book an advisor meeting]
     ADV -.->|advice note| I
@@ -91,7 +90,7 @@ flowchart TD
 | User | Need |
 |---|---|
 | **Primary: laid-off worker**, 22–35, from finance or admin back-office work | To know which skills will last, which reachable jobs are growing, and what to learn each week |
-| **Secondary: advisor**, for example an employment officer | To see the worker's profile and plan, give advice when asked, and confirm a finished pathway |
+| **Secondary: advisor**, for example an employment officer | To meet each worker once (a mock interview, advice, or anything else they ask), seeing their profile and plan |
 | **Forecasters** (simulated now, real people later) | To make checkable guesses about upcoming data and build a track record |
 
 ---
@@ -306,21 +305,20 @@ Malaysia publishes no open data on job ads by state and occupation. So "jobs lik
 
 ## 10. Advisor meetings
 
-A worker can **book a meeting with an advisor**. It is optional, and nothing in the app waits on it.
+Every plan includes **one meeting with an advisor**, placed just before applying. The worker chooses what it is for: a mock interview, advice, or anything else. The step is done when the advisor sends their advice after the meeting, and the worker can then claim their LinkedIn badge themselves. There is no separate sign-off: the human in the loop is the meeting.
 
 **Worker side: "Meet an advisor" (`/advisor`)**
 - A two-week calendar of 30-minute slots in Malaysia time, pooled across all advisors.
-- Pick a slot and a topic (which job to aim for, courses and what they cost, fitting it into my time, interviews and applications, or something else), then write a question.
+- Pick a slot and a topic (a mock interview, which job to aim for, courses and what they cost, fitting it into my time, interviews and applications, or something else), then write a question.
 - Can be booked from the first step. A plan isn't required.
 - One upcoming booking at a time. Either side can cancel, and the advisor gives a reason.
 - A **Demo advisor** always has weekday slots, so the calendar is never empty.
 
-**Advisor side: "Advisor view"**, with three tabs:
+**Advisor side: "Advisor view"** (`/counsellor`). Judges can sign in with one click as a demo advisor. A "needs you" strip at the top lists meetings still waiting for advice, with orange markers on anything waiting and green on what is done. Each meeting leads with the worker, the job they are aiming for and their question; the date is a small line underneath. Their plan is shown as a timeline with an icon per step type. Two tabs:
 
 | Tab | What the advisor does |
 |---|---|
-| **Upcoming meetings** | Sees the worker's question, profile, top jobs, plan and the futures behind the advice. Writes a note, which appears on the worker's Plan page. |
-| **Pathways to confirm** | Confirms a finished pathway. This is the only sign-off, and only then is the LinkedIn badge issued. |
+| **Meetings** | Sees the worker's question, profile, top jobs, plan and the futures behind the advice. Writes advice, which appears on the worker's Plan page and completes their "Meet an advisor" step. |
 | **My free times** | Opens or closes half-hour slots on a 14-day grid. |
 
 The hash log records "advice given", the advisor's ID and a **hash of the note, not the note itself**.
@@ -332,7 +330,7 @@ The hash log records "advice given", the advisor's ID and a **hash of the note, 
 - **A visible runway.** A progress strip shows the weeks of the plan against the worker's deadline, so they always know where they stand.
 - **Badges as they go:** one for each finished step (e.g. "Spreadsheets + Data analysis", "AI checker", "Resume ready"), plus milestones: *First step*, *Halfway*, *Every step done*. These are self-reported and labelled as such.
 - **Real evidence, not just ticks.** The AI task card, quiz, 60-second story and STAR answers complete only when the work is saved, and they build a portfolio.
-- **A verified LinkedIn badge** at the end, confirmed by an advisor and checkable by anyone at `/badge/[id]` against the hash log. The badge says "pathway completed", never "certified".
+- **A verified LinkedIn badge** at the end, issued once every step is done (including one meeting with an advisor) and checkable by anyone at `/badge/[id]` against the hash log. The badge says "pathway completed", never "certified".
 - **The market leaderboard.** Forecasters earn an accuracy score, a rank and influence.
 
 ---

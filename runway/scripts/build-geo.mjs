@@ -103,6 +103,19 @@ const features = geo.features.map((f) => {
   const name = STATES.find((s) => s[0] === id)[1];
   return { type: "Feature", properties: { id, name }, geometry: { type: "MultiPolygon", coordinates: (big.length ? big : kept).map((p) => [p[0]]) } };
 });
+// geoBoundaries files Pulau Tioman and Pulau Seri Buat (off Endau, north of the Johor–Pahang line) under Johor.
+// Both belong to Pahang (Rompin district), so move any island centred in that box across.
+// Tinggi, Pemanggil and Aur further south really are Johor's and stay.
+const MIS_FILED = [{ from: "MY-01", to: "MY-06", box: [103.85, 104.3, 2.62, 2.95] }];
+const centre = (r) => [r.reduce((a, p) => a + p[0], 0) / r.length, r.reduce((a, p) => a + p[1], 0) / r.length];
+for (const { from, to, box: [w, e, s, n] } of MIS_FILED) {
+  const src = features.find((f) => f.properties.id === from), dst = features.find((f) => f.properties.id === to);
+  const inBox = (p) => { const [x, y] = centre(p[0]); return x >= w && x <= e && y >= s && y <= n; };
+  const moved = src.geometry.coordinates.filter(inBox);
+  if (!moved.length) throw new Error(`No ${from} islands left in the ${to} box; check whether the source was fixed`);
+  src.geometry.coordinates = src.geometry.coordinates.filter((p) => !inBox(p));
+  dst.geometry.coordinates.push(...moved);
+}
 fs.mkdirSync(path.resolve("public/geo"), { recursive: true });
 fs.writeFileSync(path.resolve("public/geo/malaysia-states.json"), JSON.stringify({ type: "FeatureCollection", features }));
 console.log(`states.json: ${states.length} states, labour force ${quarterOf(lfsLatest)}, wages ${wagesLatest.slice(0, 4)}, industry and occupation ${LFS_YEAR}`);

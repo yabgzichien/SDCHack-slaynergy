@@ -1,12 +1,14 @@
 "use client";
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useApp } from "@/components/AppProvider";
+import { useSpeed } from "@/components/useSpeed";
 import { AiCapability, JobGroupShares } from "@/components/AiTrendCharts";
 import { Card, H, PageTitle, SdgTag, Skeleton, SourceChip } from "@/components/ui";
 
 // One question: what is changing in the job market? Written for someone who has never read a chart like this.
 export default function TrendsPage() {
   const { view } = useApp();
+  const { speed } = useSpeed(view);
   if (!view) return <Skeleton lines={6} />;
   const r = view.radar, w = view.world;
   const hist = w.clericalHistory.map((d) => ({ q: d.q.replace("Q", " Q"), share: d.share }));
@@ -26,7 +28,7 @@ export default function TrendsPage() {
               <XAxis dataKey="q" tick={{ fontSize: 11, fill: "var(--muted)" }} interval={3} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 11, fill: "var(--muted)" }} domain={["auto", "auto"]} axisLine={false} tickLine={false} />
               <Tooltip formatter={(v) => [`${Number(v).toFixed(1)} in every 100 ads`, "Office admin jobs"] as [string, string]} contentStyle={{ background: "var(--raised)", border: "1px solid var(--line)", borderRadius: 12 }} />
-              <ReferenceLine x="2025 Q3" stroke="var(--control)" label={{ value: "counting method changed", fill: "var(--muted)", fontSize: 11, position: "insideTopLeft" }} />
+              <ReferenceLine x="2025 Q3" stroke="var(--muted)" strokeDasharray="4 4" label={{ value: "counting method changed", fill: "var(--muted)", fontSize: 11, position: "insideTopLeft" }} />
               <Line type="monotone" dataKey="share" stroke="var(--accent)" strokeWidth={2} dot={false} isAnimationActive={false} />
             </LineChart>
           </ResponsiveContainer>
@@ -63,7 +65,7 @@ export default function TrendsPage() {
         </Card>
         <Card>
           <H sub="The date AI is expected to do most of this work.">Skills AI will take over first</H>
-          <ul className="space-y-1 text-sm">{r.declining.map((s) => <li key={s.skillId} className="flex justify-between gap-2"><span>{s.name}</span><span className="num text-fall">{s.expected}</span></li>)}</ul>
+          <ul className="space-y-1 text-sm">{r.declining.map((s) => <li key={s.skillId} className="flex justify-between gap-2"><span>{s.name}</span><span className="num text-fall">{s.byFuture[speed]}</span></li>)}</ul>
         </Card>
         <Card>
           <H sub="Employers want these and AI cannot easily do them.">Skills worth learning</H>

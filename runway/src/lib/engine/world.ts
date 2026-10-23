@@ -68,7 +68,8 @@ export function computeWorld(state: SessionState, nowMs: number = Date.now()): W
   const W0 = base.weights;
   const released = state.release === 1;
   const t0 = state.clock ? Date.parse(state.clock.t0) : nowMs;
-  const t1 = released ? (state.clock?.t1 ? Date.parse(state.clock.t1) : nowMs) : nowMs;
+  // Sessions start with the latest figures loaded, so the open markets' clock starts with the session.
+  const t1 = released ? (state.clock?.t1 ? Date.parse(state.clock.t1) : t0) : nowMs;
   const nowT0 = Math.max(0, ((released ? t1 : nowMs) - t0) / 1000);
   const nowT1 = Math.max(0, (nowMs - t1) / 1000);
 
@@ -83,16 +84,19 @@ export function computeWorld(state: SessionState, nowMs: number = Date.now()): W
     const ex = e.tapes[1].executions;
     return { eventId: e.q.id, title: eventTitle(e.q), forecast: ex.length ? ex[ex.length - 1].priceAfter : null, outcome: released ? e.strikes[1].outcome ?? null : null };
   });
-  const yourLoss = released ? yourForecasts.reduce((a, f) => a + brier(f.forecast ?? 0.5, f.outcome!), 0) : 0;
+  // Rank and influence use the same score: every headline question counts, and one you did not trade counts as 50%.
+  // You are scored on a release only if you guessed on it. Sessions start after the 2026 Q2 release, so nobody can
+  // guess on it now; your record starts with the questions still open.
+  const traded = yourForecasts.filter((f) => f.forecast !== null).length;
+  const scoredYou = released && traded > 0;
+  const yourLoss = scoredYou ? yourForecasts.reduce((a, f) => a + brier(f.forecast ?? 0.5, f.outcome!), 0) : 0;
   if (released) {
-    W = updateWeights(W0, baseRuns0, [{ id: YOU, prev: 1, loss: yourLoss }]);
+    W = updateWeights(W0, baseRuns0, scoredYou ? [{ id: YOU, prev: 1, loss: yourLoss }] : []);
     S = updateScores(base.scores, baseRuns0);
   }
-  // Rank and influence use the same score: every headline question counts, and one you did not trade counts as 50%.
-  const traded = yourForecasts.filter((f) => f.forecast !== null).length;
   const you: YouStats = {
-    forecasts: yourForecasts, scored: released ? yourForecasts.length : 0, traded,
-    brier: released ? yourLoss / yourForecasts.length : null,
+    forecasts: yourForecasts, scored: scoredYou ? yourForecasts.length : 0, traded,
+    brier: scoredYou ? yourLoss / yourForecasts.length : null,
     influenceBefore: 1, influence: W[YOU] ?? 1, maxOrder: Math.round(MAX_ORDER * Math.min(2, W[YOU] ?? 1)),
   };
   const p1: Phase | null = released ? { events: tapesFor(liveQuestions("next"), W, "W1", state, nowT1, false), nowT: nowT1, t0: t1 } : null;
@@ -223,7 +227,7 @@ export function computeLeaderboard(state: SessionState, nowMs: number = Date.now
   const W0 = base.weights;
   const live = liveQuestions("live");
   const runs = live.map((q) => baseRun(ladder(q)[1], W0, "W0"));
-  const W = released ? updateWeights(W0, runs, [{ id: YOU, prev: 1, loss: w.you.forecasts.reduce((a, f) => a + brier(f.forecast ?? 0.5, f.outcome!), 0) }]) : W0;
+  const W = released ? updateWeights(W0, runs, w.you.scored ? [{ id: YOU, prev: 1, loss: w.you.forecasts.reduce((a, f) => a + brier(f.forecast ?? 0.5, f.outcome!), 0) }] : []) : W0;
   const roiById = w.agentRoi;
   const rows: LeaderRow[] = FORECASTERS.map((f) => {
     let { sum, n } = base.agentBrier[f.id];

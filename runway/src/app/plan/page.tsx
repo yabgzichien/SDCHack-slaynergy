@@ -23,7 +23,7 @@ export default function PlanPage() {
   return (
     <div>
       <PageTitle title={next ? `Next: ${next.title}` : "Every step is done. Well done."}>
-        {next ? `${next.weekStart === next.weekEnd ? `Week ${next.weekStart}` : `Weeks ${next.weekStart}–${next.weekEnd}`} of your plan for ${plan.title}, about ${Math.round(next.hours)} hours.` : `You finished the plan for ${plan.title}. Ask an advisor to confirm it.`}
+        {next ? `${next.weekStart === next.weekEnd ? `Week ${next.weekStart}` : `Weeks ${next.weekStart}–${next.weekEnd}`} of your plan for ${plan.title}, about ${Math.round(next.hours)} hours.` : `You finished the plan for ${plan.title}. Get your badge below.`}
       </PageTitle>
 
       {plan.kind === "bridge" && plan.stayIn && <p className="-mt-2 mb-4 text-sm text-muted">You keep working as {plan.stayIn.toLowerCase()} for income while you train. <Link href="/jobs" className="underline decoration-control underline-offset-2 hover:text-ink">Change</Link></p>}
@@ -49,7 +49,7 @@ export default function PlanPage() {
                 <Btn variant="ghost" className="min-h-12" disabled={busy || !view.resume} onClick={() => act("pathwaySave", { work: { resumeApplied: true } })}>I have applied the fixes</Btn>
               </>
             ) : next.activity ? (
-              <Btn href={activityHref(next)!} className="min-h-12 px-6 text-base">{next.activity === "task" ? "Take the quiz" : "Start"}</Btn>
+              <Btn href={activityHref(next)!} className="min-h-12 px-6 text-base">{next.activity === "task" ? "Take the quiz" : next.activity === "meeting" ? "Book a meeting" : "Start"}</Btn>
             ) : (
               <>
                 <Btn onClick={() => act("progress", { stepId: next.id, done: true })} disabled={busy} className="min-h-12 px-6 text-base">Mark as done</Btn>
@@ -59,13 +59,14 @@ export default function PlanPage() {
             )}
           </div>
           {next.activity === "resume" && !view.resume && <p className="mt-3 text-xs text-muted">Scan your resume first. Add the courses you finish and your portfolio piece as you go.</p>}
-          {next.activity && next.activity !== "resume" && <p className="mt-3 text-xs text-muted">This step is done when you save the work in Jobbery.</p>}
+          {next.activity === "task" && <p className="mt-3 text-xs text-muted">This step is done when you save the work in Jobbery.</p>}
+          {next.activity === "meeting" && <p className="mt-3 text-xs text-muted">Pick any topic: a mock interview, which job to aim for, courses, or something else. This step is done when your advisor sends their advice after the meeting.</p>}
           {next.checked && <p className="mt-3 text-xs text-muted">Link checked {next.checked}. Hours are estimates.</p>}
         </Card>
       )}
 
       <Card className="mt-4">
-        <H sub={`${done} of ${plan.steps.length} steps done · ${plan.totalWeeks} weeks at ${state.profile.hoursPerWeek} hours a week · three strands: job skills, AI at work, people skills`}>Your runway</H>
+        <H sub={`${done} of ${plan.steps.length} steps done · ${plan.totalWeeks} weeks at ${state.profile.hoursPerWeek} hours a week · three strands: job skills, AI at work, people skills`}>Your learning</H>
         <RunwayStrip plan={plan} progress={prog} />
         <ol className="mt-5 space-y-1.5">
           {plan.steps.map((s) => (

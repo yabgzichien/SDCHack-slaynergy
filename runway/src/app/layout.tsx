@@ -1,10 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { Instrument_Sans, Instrument_Serif } from "next/font/google";
 import "./globals.css";
+import { I18nProvider } from "@/components/I18nProvider";
 import { AppProvider } from "@/components/AppProvider";
 import { AppShell } from "@/components/AppShell";
 import { ReleaseOverlay } from "@/components/ReleaseOverlay";
 import { PageTransition } from "@/components/PageTransition";
+import { SkipLink } from "@/components/SkipLink";
 import { CustomCursor } from "@/components/CustomCursor";
 
 const sans = Instrument_Sans({ subsets: ["latin"], variable: "--font-instrument-sans", display: "swap" });
@@ -24,12 +26,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       {/* eslint-disable-next-line @next/next/no-page-custom-font */}
       <head><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400;1,700&display=swap" /></head>
       <body className="min-h-screen">
-        <AppProvider>
-          <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-surface focus:p-3">Skip to content</a>
+        <I18nProvider><AppProvider>
+          <SkipLink />
           <AppShell><PageTransition>{children}</PageTransition></AppShell>
           <ReleaseOverlay />
           <CustomCursor />
-        </AppProvider>
+        </AppProvider></I18nProvider>
       </body>
     </html>
   );

@@ -1,7 +1,8 @@
 "use client";
+import { ViewTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronRight } from "lucide-react";
+import { Check, ChevronRight } from "lucide-react";
 import { useApp } from "@/components/AppProvider";
 import { LandingIntro } from "@/components/LandingIntro";
 import { STEPS, useJourney } from "@/components/Journey";
@@ -41,33 +42,47 @@ function Dashboard() {
   const nextStep = STEPS.findIndex((_, i) => status(i) !== "done");
   return (
     <div>
-      <PageTitle title={`${p.name === "You" ? "You" : p.name}, you have ${weeks} weeks of runway.`} aside={<Image src="/cockatiel-mascot.png" alt="" width={112} height={112} className="hidden h-28 w-28 object-contain sm:block" />}>
+      <PageTitle title={`${p.name === "You" ? "You" : p.name}, you have ${weeks} weeks to learn.`} aside={<Image src="/cockatiel-mascot.png" alt="" width={112} height={112} className="hidden h-28 w-28 object-contain sm:block" />}>
         {plan ? `Your plan for ${plan.title} takes ${plan.totalWeeks} of them.` : "Pick a job to plan for."}
       </PageTitle>
 
-      <ol className="grid gap-2 xl:grid-cols-5 xl:gap-3" aria-label="Your steps">
-        {STEPS.map((s, i) => {
-          const Icon = s.icon;
-          const stt = status(i);
-          const isNext = i === nextStep;
-          return (
-            <li key={s.href}>
-              <Link href={s.href} className={`press flex h-full items-center gap-3 rounded-[22px] p-4 xl:flex-col xl:items-start ${isNext ? "bg-raised ring-1 ring-ink/15" : "bg-surface hover:bg-surface2"}`}>
-                <span className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${stt === "done" ? "bg-accentsoft text-accent" : "bg-raised"}`}><Icon size={18} strokeWidth={1.8} aria-hidden /></span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-medium"><span className="num text-muted">{i + 1}. </span>{s.label}</span>
-                  <span className="mt-0.5 block text-sm text-muted">{fact[i]}</span>
-                </span>
-                <ChevronRight size={16} className="shrink-0 text-muted xl:hidden" aria-hidden />
-              </Link>
-            </li>
-          );
-        })}
-      </ol>
+      {/* The dashboard's only step display: five cards on a track, done steps ticked, the next one raised. */}
+      <div className="relative">
+        <div className="pointer-events-none absolute left-[10%] right-[10%] top-9 hidden h-[3px] rounded-full bg-line xl:block" aria-hidden>
+          <span className="block h-full rounded-full bg-accent" style={{ width: `${(Math.max(0, nextStep < 0 ? STEPS.length - 1 : nextStep) / (STEPS.length - 1)) * 100}%` }} />
+        </div>
+        <ol className="relative grid gap-2 xl:grid-cols-5 xl:gap-3" aria-label="Your steps">
+          {STEPS.map((s, i) => {
+            const Icon = s.icon;
+            const stt = status(i);
+            const isNext = i === nextStep;
+            return (
+              <li key={s.href}>
+                <ViewTransition name={`jstep-${i}`} share="morph" default="none">
+                <Link href={s.href} aria-current={isNext ? "step" : undefined}
+                  className={`press flex h-full items-center gap-3 rounded-[22px] p-4 xl:flex-col xl:items-start ${isNext ? "bg-raised ring-1 ring-ink/15" : "bg-surface hover:bg-surface2"}`}>
+                  <span className="flex w-full items-center gap-2 max-xl:w-auto">
+                    <span className={`num inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${stt === "done" ? "bg-accent text-white" : isNext ? "bg-primary text-primaryink" : "bg-raised text-muted ring-1 ring-line"}`} aria-hidden>
+                      {stt === "done" ? <Check size={18} strokeWidth={2.6} /> : i + 1}
+                    </span>
+                    {isNext && <span className="ml-auto hidden rounded-full bg-accentsoft px-2 py-0.5 text-xs font-medium text-accentink xl:inline">Next</span>}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center gap-1.5 text-sm font-medium"><Icon size={14} strokeWidth={1.8} className="shrink-0 text-muted" aria-hidden />{s.label}{stt === "done" && <span className="sr-only">done</span>}</span>
+                    <span className="mt-0.5 block text-sm text-muted">{fact[i]}</span>
+                  </span>
+                  <ChevronRight size={16} className="shrink-0 text-muted xl:hidden" aria-hidden />
+                </Link>
+                </ViewTransition>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
 
       <Card className="mt-4">
-        <h2 className="mb-3 text-base font-semibold">Your runway</h2>
-        {plan ? <RunwayStrip plan={plan} progress={v.pathway.done} /> : <p className="text-sm text-muted">Choose a job to see your plan on your runway.</p>}
+        <h2 className="mb-3 text-base font-semibold">Your learning</h2>
+        {plan ? <RunwayStrip plan={plan} progress={v.pathway.done} /> : <p className="text-sm text-muted">Choose a job to see your learning plan.</p>}
         {next && (
           <div className="mt-5 flex flex-wrap items-end justify-between gap-3 rounded-2xl bg-raised p-4">
             <div className="min-w-0">

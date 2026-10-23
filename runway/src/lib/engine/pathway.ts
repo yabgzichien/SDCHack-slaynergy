@@ -51,13 +51,14 @@ export function stepDone(step: PlanStep, state: SessionState): boolean {
   switch (step.activity) {
     case "task": return taskDone(step.cardId ? cardById(step.cardId) : null, w);
     case "resume": return !!state.resume && !!w.resumeApplied;
+    case "meeting": return !!w.advisorMet;
     default: return !!state.progress[step.id];
   }
 }
 export const doneMap = (plan: Plan, state: SessionState) => Object.fromEntries(plan.steps.map((s) => [s.id, stepDone(s, state)]));
 
 // Motivation badges: earned as the worker goes, one per finished step plus a few milestones. They are self-reported progress
-// (a ticked course is the worker's word), so they are labelled as such. The advisor-confirmed pathway badge is the verified one.
+// (a ticked course is the worker's word), so they are labelled as such. The pathway badge, logged when every step is done, is the shareable one.
 export type Achievement = { id: string; title: string; detail: string; kind: "skill" | "ai" | "people" | "milestone"; earned: boolean };
 export function achievements(plan: Plan | null, state: SessionState): Achievement[] {
   if (!plan) return [];
@@ -67,6 +68,7 @@ export function achievements(plan: Plan | null, state: SessionState): Achievemen
     const earned = stepDone(s, state);
     if (earned) finished++;
     if (s.activity === "task") out.push({ id: `${s.id}-ai`, title: "AI checker", detail: "Found every planted mistake in an AI-written answer.", kind: "ai", earned });
+    else if (s.activity === "meeting") out.push({ id: `${s.id}-met`, title: "Met an advisor", detail: "Had a session with an advisor and got their advice.", kind: "people", earned });
     else if (s.activity === "resume") out.push({ id: `${s.id}-resume`, title: "Resume ready", detail: "Scanned your resume and applied the fixes.", kind: "people", earned });
     else if (s.strand === "job") {
       const names = s.skills.map((k) => k.name);
@@ -76,7 +78,7 @@ export function achievements(plan: Plan | null, state: SessionState): Achievemen
   const n = plan.steps.length;
   out.push({ id: "m-first", title: "First step", detail: "Finished your first step.", kind: "milestone", earned: finished >= 1 });
   out.push({ id: "m-half", title: "Halfway", detail: "Finished half of your plan.", kind: "milestone", earned: n > 0 && finished * 2 >= n });
-  out.push({ id: "m-all", title: "Every step done", detail: "Finished all steps. Ask an advisor to confirm.", kind: "milestone", earned: n > 0 && finished === n });
+  out.push({ id: "m-all", title: "Every step done", detail: "Finished all steps. Your pathway badge is ready.", kind: "milestone", earned: n > 0 && finished === n });
   return out;
 }
 
@@ -88,6 +90,7 @@ export function completionGate(plan: Plan | null, state: SessionState): { ok: bo
   if (left.length) missing.push(`Finish ${left.length} more step${left.length === 1 ? "" : "s"}.`);
   const task = plan.steps.find((s) => s.activity === "task");
   if (task && !state.pathway?.quiz?.passed) missing.push("Pass the short AI quiz.");
+  if (plan.steps.some((s) => s.activity === "meeting") && !state.pathway?.advisorMet) missing.push("Meet an advisor and get their advice.");
   return { ok: missing.length === 0, missing };
 }
 
@@ -97,13 +100,14 @@ export type BadgeRecord = {
   steps: { title: string; strand: string; url?: string; provider?: string }[];
   quiz: { card: string; attempts: number } | null;
   portfolio: { card: string; template: string; sheet: Record<string, string> } | null;
-  // approvedPlanAt and approvedBy appear only on badges issued while plans still needed approval;
-  // confirmedBy is missing on the earliest badges, issued before advisors signed in.
-  counsellor: { approvedPlanAt?: string; confirmedAt: string; approvedBy?: Signer; confirmedBy?: Signer };
+  // The advisor meeting that is part of every plan. Badges issued before it existed carry "counsellor" instead.
+  met?: { advisor: Signer; at: string; topic: string };
+  // Older badges only: an advisor confirmed completion (and, earlier still, approved the plan).
+  counsellor?: { approvedPlanAt?: string; confirmedAt: string; approvedBy?: Signer; confirmedBy?: Signer };
 };
 
 // The public badge record. The name and the portfolio appear only if the worker opted in.
-export function badgeRecord(plan: Plan, state: SessionState, id: string, now: string, by?: Signer): BadgeRecord {
+export function badgeRecord(plan: Plan, state: SessionState, id: string, now: string): BadgeRecord {
   const w = state.pathway ?? {};
   const task = plan.steps.find((s) => s.activity === "task");
   const card = task?.cardId ? cardById(task.cardId) : null;
@@ -111,14 +115,14 @@ export function badgeRecord(plan: Plan, state: SessionState, id: string, now: st
   const role = plan.kind === "reshape" ? plan.title.replace(/^staying in your job as /, "") : plan.title;
   return {
     id, v: 1,
-    title: `Runway pathway completed · ${role}`,
+    title: `Jobbery pathway completed · ${role}`,
     role, strands, issued: now,
-    holder: w.showName && state.profile ? state.profile.name : "A Runway learner",
+    holder: w.showName && state.profile ? state.profile.name : "A Jobbery learner",
     synthetic: !!state.profile?.synthetic,
     steps: plan.steps.map((s) => ({ title: s.title, strand: s.strand, url: s.url, provider: s.provider })),
     quiz: card && w.quiz ? { card: card.title, attempts: w.quiz.attempts } : null,
     portfolio: w.publishPortfolio && card && w.template?.trim() && w.sheet && sheetDone(card, w) ? { card: card.title, template: w.template, sheet: w.sheet } : null,
-    counsellor: { confirmedAt: now, confirmedBy: by },
+    met: w.advisorMet ? { advisor: w.advisorMet.by, at: w.advisorMet.at, topic: w.advisorMet.topic } : undefined,
   };
 }
 
@@ -126,7 +130,7 @@ export function badgeRecord(plan: Plan, state: SessionState, id: string, now: st
 export function linkedinAddUrl(b: Pick<BadgeRecord, "title" | "id" | "issued">, badgeUrl: string) {
   const d = new Date(b.issued);
   const q = new URLSearchParams({
-    startTask: "CERTIFICATION_NAME", name: b.title, organizationName: "Runway",
+    startTask: "CERTIFICATION_NAME", name: b.title, organizationName: "Jobbery",
     issueYear: String(d.getUTCFullYear()), issueMonth: String(d.getUTCMonth() + 1), certUrl: badgeUrl, certId: b.id,
   });
   return `https://www.linkedin.com/profile/add?${q}`;

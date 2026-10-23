@@ -39,7 +39,7 @@ export default function MarketPage() {
       </ol>
 
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-base font-semibold">{released ? "Still open: DOSM answers the job question on 17 Nov 2026, Epoch AI the AI questions in Jan 2027" : "Open: answered when the Apr to Jun 2026 numbers come out"}</h2>
+        <h2 className="text-base font-semibold">{released ? "Still open: DOSM answers the job question on 17 Nov 2026, Epoch AI the AI questions in Jan 2027" : "Open questions"}</h2>
         <DemoLabel />
       </div>
       <FeaturedMarkets events={w.events} />

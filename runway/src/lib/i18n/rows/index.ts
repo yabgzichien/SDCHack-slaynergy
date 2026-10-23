@@ -1,0 +1,16 @@
+import type { Row } from "../index";
+import { ROLES } from "./roles";
+import { SKILLS } from "./skills";
+import { SDG } from "./sdg";
+import { MISC } from "./misc";
+import { SKILLS_PAGE } from "./skillspage";
+import { JOBS } from "./jobs";
+import { MAP } from "./map";
+import { PLAN } from "./plan";
+import { FORECAST } from "./forecast";
+import { START } from "./start";
+import { TRUST } from "./trust";
+import { TASKCARD } from "./taskcard";
+import { MISC2 } from "./misc2";
+
+export const ROWS: Row[] = [...ROLES, ...SKILLS, ...SDG, ...MISC, ...SKILLS_PAGE, ...JOBS, ...MAP, ...PLAN, ...FORECAST, ...START, ...TRUST, ...TASKCARD, ...MISC2];
