@@ -17,10 +17,19 @@ export function LandingLiveMarket({ event }: { event: EventView }) {
   const [feed, setFeed] = useState<Feed | null>(null);
   useEffect(() => {
     let on = true;
-    const pull = () => fetch(`/api/market?event=${encodeURIComponent(event.id)}`, { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).then((d) => on && d && setFeed(d)).catch(() => {});
+    const controller = new AbortController();
+    let timer: number | undefined;
+    const pull = async () => {
+      try {
+        if (document.visibilityState === "visible") {
+          const response = await fetch(`/api/market?event=${encodeURIComponent(event.id)}`, { cache: "no-store", signal: controller.signal });
+          if (response.ok) { const data = await response.json(); if (on) setFeed(data); }
+        }
+      } catch { /* keep the last picture */ }
+      finally { if (on) timer = window.setTimeout(pull, 3000); }
+    };
     pull();
-    const id = window.setInterval(() => { if (document.visibilityState === "visible") pull(); }, 3000);
-    return () => { on = false; window.clearInterval(id); };
+    return () => { on = false; window.clearTimeout(timer); controller.abort(); };
   }, [event.id]);
   const main = feed?.strikes[1] ?? feed?.strikes[0];
   const data = useMemo(() => {
@@ -43,7 +52,7 @@ export function LandingLiveMarket({ event }: { event: EventView }) {
       <div className="mt-4 flex flex-wrap items-end gap-x-3 gap-y-1">
         <p className="num text-5xl font-semibold leading-none text-[#213c32]" aria-live="polite">{main ? Math.round(main.price * 100) : "–"}%</p>
         <p className="pb-1 text-sm text-[var(--muted)]">think Yes</p>
-        <p className={`num pb-1 text-sm font-semibold ${change > 0 ? "text-[#3f8a52]" : change < 0 ? "text-[#b86a2c]" : "text-[var(--muted)]"}`}>{change === 0 ? "no change" : `${change > 0 ? "▲" : "▼"} ${Math.abs(change)}`} in the last hour</p>
+        <p className={`num pb-1 text-sm font-semibold ${change > 0 ? "text-[#3f8a52]" : change < 0 ? "text-[#b86a2c]" : "text-[var(--muted)]"}`}>{change === 0 ? "no change" : `${change > 0 ? "▲" : "▼"} ${Math.abs(change)}%`} in the last hour</p>
       </div>
       <div className="mt-4 h-48" role="img" aria-label={`Live chart of how many players think Yes over the last hour, now ${main ? Math.round(main.price * 100) : 0}%`}>
         {data.length > 1 ? (

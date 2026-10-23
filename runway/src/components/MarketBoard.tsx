@@ -37,16 +37,19 @@ export function MarketBoard({ event }: { event: EventView }) {
 
   useEffect(() => {
     let on = true;
+    const controller = new AbortController();
+    let timer: number | undefined;
     const pull = async () => {
       try {
-        const r = await fetch(`/api/market?event=${encodeURIComponent(event.id)}`, { cache: "no-store" });
-        if (r.ok) { const d = await r.json(); if (on) setFeed(d); }
+        if (document.visibilityState === "visible") {
+          const r = await fetch(`/api/market?event=${encodeURIComponent(event.id)}`, { cache: "no-store", signal: controller.signal });
+          if (r.ok) { const d = await r.json(); if (on) setFeed(d); }
+        }
       } catch { /* keep the last picture */ }
+      finally { if (on && !event.settled) timer = window.setTimeout(pull, 3000); }
     };
     pull();
-    if (event.settled) return () => { on = false; };
-    const id = window.setInterval(() => { if (document.visibilityState === "visible") pull(); }, 3000);
-    return () => { on = false; window.clearInterval(id); };
+    return () => { on = false; window.clearTimeout(timer); controller.abort(); };
   }, [event.id, event.settled, tick]);
 
   const strikes = useMemo(() => feed?.strikes ?? [], [feed]);
@@ -110,7 +113,7 @@ export function MarketBoard({ event }: { event: EventView }) {
             <div className="mt-2 flex flex-wrap items-end gap-x-3 gap-y-1">
               <p className="num text-[2.5rem] leading-none" aria-live="polite">{pct(yesP)}</p>
               <p className="pb-1 text-sm text-muted">of players think Yes (mostly computer-made)</p>
-              <p className={`num pb-1 text-sm font-medium ${dChange > 0 ? "text-rise" : dChange < 0 ? "text-fall" : "text-muted"}`} title="Change over the last hour">{dChange === 0 ? "no change" : `${dChange > 0 ? "up" : "down"} ${Math.abs(dChange)}`} in the last hour</p>
+              <p className={`num pb-1 text-sm font-medium ${dChange > 0 ? "text-rise" : dChange < 0 ? "text-fall" : "text-muted"}`} title="Change over the last hour">{dChange === 0 ? "no change" : `${dChange > 0 ? "up" : "down"} ${Math.abs(dChange)}%`} in the last hour</p>
               <div className="w-full"><DemoLabel /></div>
             </div>
           )}

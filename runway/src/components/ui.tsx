@@ -63,7 +63,7 @@ export function SourceChip({ name, date, url }: { name: string; date: string; ur
   return url ? <a href={url} target="_blank" rel="noreferrer" className={`${cls} hover:text-ink`}>{inner}</a> : <span className="text-xs text-muted">{inner}</span>;
 }
 
-// Short names for the 17 UN Sustainable Development Goals, so a chip reads "Decent work" rather than "SDG 8.5".
+// Short names for the 17 UN Sustainable Development Goals used in goal details.
 export const SDG_SHORT: Record<string, string> = {
   "1": "No poverty", "2": "Zero hunger", "3": "Good health", "4": "Quality education", "5": "Gender equality", "6": "Clean water",
   "7": "Clean energy", "8": "Decent work", "9": "Industry and innovation", "10": "Fewer inequalities", "11": "Sustainable cities",
@@ -71,11 +71,11 @@ export const SDG_SHORT: Record<string, string> = {
 };
 export const sdgName = (target: string) => SDG_SHORT[target.split(".")[0]] ?? `Goal ${target}`;
 
-// The chip names the goal in words; the exact UN target number sits in the tooltip and the accessible name.
+// Keep the chip concise; the exact UN target number sits in the tooltip and the accessible name.
 export function SdgTag({ target, why }: { target: string; why?: string }) {
   const goal = target.split(".")[0];
   const tip = `UN Sustainable Development Goal ${goal}, target ${target}${why ? `. ${why}` : ""}`;
-  return <span title={tip} aria-label={tip} className="inline-flex items-center rounded-full bg-accentsoft px-2.5 py-0.5 text-xs font-medium text-accentink">UN goal {goal} · {sdgName(target)}</span>;
+  return <span title={tip} aria-label={tip} className="inline-flex items-center rounded-full bg-accentsoft px-2.5 py-0.5 text-xs font-medium text-accentink">UN goal {goal}</span>;
 }
 
 // Detail most people can skip: the method, the formula, the source codes. Closed by default.

@@ -62,7 +62,7 @@ export default function TrendsPage() {
       <div className="mt-4 statistics-reveal"><JobGroupShares asOfQuarter={w.asOfQuarter} /></div>
       <div className="mt-4 statistics-reveal"><AiCapability asOfQuarter={w.asOfQuarter} /></div>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+      <div className="mt-4 grid gap-y-4 gap-x-8 lg:grid-cols-2">
         <Card className="statistics-opportunities statistics-reveal">
           <div className="statistics-opportunities-heading">
             <H sub="Hiring is growing and AI cannot easily replace these jobs.">Good jobs to aim for</H>
@@ -86,7 +86,7 @@ export default function TrendsPage() {
             {r.decliningJobs.map((j) => (
               <li key={j.occupationId} className="flex items-center justify-between gap-2 rounded-2xl bg-raised px-4 py-2.5">
                 <div className="min-w-0"><p className="text-sm font-medium">{j.title}</p><p className="num text-xs text-muted">AI can do {j.exposure >= 0.45 ? "a lot" : j.exposure >= 0.3 ? "some" : "a little"} of this job</p></div>
-                <p className="num shrink-0 text-sm text-fall">starts changing {j.earliest}</p>
+                <p className="num shrink-0 text-xs text-fall">starts changing {j.earliest}</p>
               </li>
             ))}
           </ul>

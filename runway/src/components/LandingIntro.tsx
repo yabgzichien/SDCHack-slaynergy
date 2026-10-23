@@ -21,9 +21,9 @@ const markSeen = () => { try { sessionStorage.setItem(INTRO_SEEN, "1"); } catch 
 const GUIDE = [
   { icon: UserRound, color: "#4f86c6", title: "Tell us about you", does: "Scan your resume or answer a few short questions.", gets: "Your skills, ready to check" },
   { icon: Gauge, color: "#6a5fc1", title: "See your skills", does: "Each skill gets a date when AI may do most of it.", gets: "Which skills last" },
-  { icon: Briefcase, color: "#d08a1e", title: "Pick a job", does: "Jobs you can reach in time, with why each one fits.", gets: "Your best job" },
-  { icon: MapPin, color: "#c4614a", title: "See where the jobs are", does: "A map of jobs, pay and unemployment by state.", gets: "Where to look" },
-  { icon: ListChecks, color: "#3f8a52", title: "Follow your plan", does: "Free courses, an AI quiz and an advisor, week by week.", gets: "A badge for LinkedIn" },
+  { icon: Briefcase, color: "#d08a1e", title: "Pick a job", does: "Jobs you can reach in time, and why each one fits.", gets: "Your best job" },
+  { icon: MapPin, color: "#c4614a", title: "See where the jobs are", does: "A map of jobs, pay and unemployment, organised by state.", gets: "Where to look" },
+  { icon: ListChecks, color: "#3f8a52", title: "Follow your plan", does: "Free courses, AI quizzes and advice, week after week.", gets: "A badge for LinkedIn" },
 ];
 
 export function LandingIntro() {
@@ -104,23 +104,23 @@ export function LandingIntro() {
           <div ref={sceneRef} className="landing-bird-flight"><LandingSdgAnimation replayKey={replayKey} /></div>
           <div className="landing-intro-heading">
             <h1 id="landing-title" className="landing-reveal">{t("Find a job that AI won't replace.")}</h1>
-            <p className="landing-intro-subtitle landing-reveal">{t("See which of your skills AI may take over, which jobs you can reach in time, and get a weekly plan to get there. Free.")}</p>
+            <p className="landing-intro-subtitle landing-reveal">{t("See which of your skills AI may take over, which jobs are projected to remain safe in the near future, and learn how to future-proof yourself, completely for free.")}</p>
             <div className="landing-hero-actions landing-reveal"><a href="#journey" className="landing-secondary">{t("See how it works")} <ArrowDown size={18} aria-hidden /></a></div>
           </div>
           <div className="landing-wave" aria-hidden="true" />
         </section>
 
         <section id="about" className="landing-about" aria-labelledby="about-title">
-          <div className="landing-about-heading landing-reveal"><h2 id="about-title">{t("What is Jobbery?")}</h2><p>{t("A free tool for people who lost their job, or worry that AI will change it. It uses public data from Malaysia and AI research, and shows where every number comes from.")}</p></div>
+          <div className="landing-about-heading landing-reveal"><h2 id="about-title">{t("What is Jobbery?")}</h2><p>{t("A free tool for people who have lost their job, or worry that AI will change it. Jobbery uses Malaysian public data and AI research, while showing where every number comes from.")}</p></div>
           <div className="landing-about-cards">
-            <Link href="/start" className="landing-about-card landing-reveal"><span className="landing-about-icon"><Compass size={66} strokeWidth={1.4} aria-hidden="true" /></span><span className="landing-about-copy"><strong>{t("Find jobs that fit you")}</strong><span>{t("Jobs that match your skills and interests, that you can reach before your deadline.")}</span></span><span className="landing-about-arrow"><ArrowRight size={20} aria-hidden="true" /></span></Link>
-            <Link href="/forecast" className="landing-about-card landing-reveal"><span className="landing-about-icon"><Binoculars size={66} strokeWidth={1.4} aria-hidden="true" /></span><span className="landing-about-copy"><strong>{t("See how AI is changing jobs")}</strong><span>{t("Which skills AI may take over, and when, from dated public data.")}</span></span><span className="landing-about-arrow"><ArrowRight size={20} aria-hidden="true" /></span></Link>
+            <Link href="/start" className="landing-about-card landing-reveal"><span className="landing-about-icon"><Compass size={66} strokeWidth={1.4} aria-hidden="true" /></span><span className="landing-about-copy"><strong>{t("Find jobs that fit you")}</strong><span>{t("Jobs that match your skills and interests, which you can learn to keep ahead of AI restructuring.")}</span></span><span className="landing-about-arrow"><ArrowRight size={20} aria-hidden="true" /></span></Link>
+            <Link href="/forecast" className="landing-about-card landing-reveal"><span className="landing-about-icon"><Binoculars size={66} strokeWidth={1.4} aria-hidden="true" /></span><span className="landing-about-copy"><strong>{t("See how AI is changing jobs")}</strong><span>{t("Which skills AI may take over, and when, based on publicly available data.")}</span></span><span className="landing-about-arrow"><ArrowRight size={20} aria-hidden="true" /></span></Link>
             <Link href="/courses" className="landing-about-card landing-reveal"><span className="landing-about-icon"><BookOpen size={66} strokeWidth={1.4} aria-hidden="true" /></span><span className="landing-about-copy"><strong>{t("Learn with free courses")}</strong><span>{t("Hand-checked courses for the skills you are missing, laid out week by week.")}</span></span><span className="landing-about-arrow"><ArrowRight size={20} aria-hidden="true" /></span></Link>
           </div>
         </section>
 
         <section id="journey" className="landing-journey scroll-mt-24" aria-labelledby="journey-title">
-          <div className="landing-section-heading landing-reveal"><span className="landing-section-label">{t("5 STEPS")}</span><h2 id="journey-title">{t("How it works")}<span className="landing-period">.</span></h2><p>{t("Five steps. The same five steps you see at the top of every page.")}</p></div>
+          <div className="landing-section-heading landing-reveal"><span className="landing-section-label">{t("Just 5 steps")}</span><h2 id="journey-title">{t("How it works")}<span className="landing-period">.</span></h2><p>{t("Learn how to outlast AI, in just 5 simple steps.")}</p></div>
           <ol className="relative mt-8 grid gap-3 md:grid-cols-5">
             <span aria-hidden className="absolute left-[10%] right-[10%] top-7 hidden h-1 rounded-full bg-gradient-to-r from-[#4f86c6] via-[#d08a1e] to-[#3f8a52] md:block" />
             {GUIDE.map((g, i) => (
@@ -137,14 +137,14 @@ export function LandingIntro() {
 
         <section className="landing-reveal mx-auto my-6 w-[min(1180px,calc(100%-42px))] rounded-[28px] bg-gradient-to-br from-[#305d40] to-[#22442f] px-6 py-10 text-center text-white sm:px-10" aria-labelledby="cta-title">
           <h2 id="cta-title" className="text-[clamp(28px,3.4vw,42px)] leading-tight">{t("Ready to find your next job?")}</h2>
-          <p className="mx-auto mt-3 max-w-xl text-base text-white/80">{t("Start with your resume or a few questions. You can check and change everything.")}</p>
+          <p className="mx-auto mt-3 max-w-xl text-base text-white/80">{t("Start with your resume or a few questions. You can check and change anything.")}</p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link href="/start" className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[#f8c982] px-7 text-base font-semibold text-[#203b2b] transition-transform hover:-translate-y-0.5">{t("Start now")} <ArrowRight size={18} aria-hidden /></Link>
           </div>
         </section>
 
         <section id="statistics" className="landing-statistics" aria-labelledby="statistics-title">
-          <div className="landing-stats-top landing-reveal"><div><span className="landing-section-label">{t("THE DATA")}</span><h2 id="statistics-title">{t("How AI is changing work")}<span className="landing-period">.</span></h2><p>{t("A few real numbers from public government and research data. Each one says where it came from.")}</p></div><Link href="/trends" className="landing-text-link landing-stats-all">{t("See all statistics")} <ArrowRight size={16} aria-hidden /></Link></div>
+          <div className="landing-stats-top landing-reveal"><div><span className="landing-section-label">{t("THE DATA")}</span><h2 id="statistics-title">{t("How AI is changing your work")}<span className="landing-period">.</span></h2><p>{t("Supported by real numbers from public government and research data, with sources attached accordingly.")}</p></div><Link href="/trends" className="landing-text-link landing-stats-all">{t("See all statistics")} <ArrowRight size={16} aria-hidden /></Link></div>
           {view && ai && (
             <div className="landing-data-grid">
               <article className="landing-chart-card landing-reveal">

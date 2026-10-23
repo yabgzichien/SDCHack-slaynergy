@@ -361,7 +361,7 @@
 .landing-content :is(.landing-section-label,.landing-card-index) { color:#3f6a4c; font-size:12px; font-weight:700; letter-spacing:.12em; }
 
 /* Reading text: 15–17px, darker than before, comfortable leading. */
-.landing-content .landing-intro-heading > .landing-intro-subtitle { max-width:540px; margin-top:20px; color:#2f3d38; font-size:19px; line-height:1.5; }
+.landing-content .landing-intro-heading > .landing-intro-subtitle { max-width:440px; margin-top:20px; color:#2f3d38; font-size:19px; line-height:1.5; }
 .landing-content :is(.landing-about-heading p,.landing-section-heading p,.landing-stats-top p) { margin-top:12px; color:var(--body); font-size:17px; line-height:1.5; }
 .landing-content .landing-about-copy > span { color:var(--body); font-size:15px; line-height:1.5; }
 .landing-content .landing-step p { color:var(--body); font-size:15px; line-height:1.6; }

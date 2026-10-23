@@ -2,7 +2,7 @@ import type { Row } from "../index";
 
 // UN Sustainable Development Goals: goal names, target texts, and the one-line "why" attached to jobs and skills.
 export const SDG: Row[] = [
-  // Short goal names used on chips
+  // Short goal names used in goal details
   ["No poverty", "Tiada kemiskinan", "无贫穷", "வறுமை இல்லை"],
   ["Zero hunger", "Kelaparan sifar", "零饥饿", "பசி இல்லை"],
   ["Good health", "Kesihatan yang baik", "良好健康", "நல்ல ஆரோக்கியம்"],
@@ -20,7 +20,7 @@ export const SDG: Row[] = [
   ["Life on land", "Hidupan di darat", "陆地生物", "நிலத்தில் உயிர்"],
   ["Peace and justice", "Keamanan dan keadilan", "和平与正义", "அமைதியும் நீதியும்"],
   ["Partnerships", "Perkongsian", "伙伴关系", "கூட்டாண்மைகள்"],
-  ["UN goal {goal} · {name}", "Matlamat PBB {goal} · {name}", "联合国目标 {goal} · {name}", "ஐ.நா. இலக்கு {goal} · {name}"],
+  ["UN goal {goal}", "Matlamat PBB {goal}", "联合国目标 {goal}", "ஐ.நா. இலக்கு {goal}"],
   ["UN goal {goal}: {name}", "Matlamat PBB {goal}: {name}", "联合国目标 {goal}：{name}", "ஐ.நா. இலக்கு {goal}: {name}"],
   ["UN Sustainable Development Goal {goal}, target {target}", "Matlamat Pembangunan Mampan PBB {goal}, sasaran {target}", "联合国可持续发展目标 {goal}，具体目标 {target}", "ஐ.நா. நிலையான வளர்ச்சி இலக்கு {goal}, குறியீடு {target}"],
   ["UN Sustainable Development Goal {goal}, target {target}. {why}", "Matlamat Pembangunan Mampan PBB {goal}, sasaran {target}. {why}", "联合国可持续发展目标 {goal}，具体目标 {target}。{why}", "ஐ.நா. நிலையான வளர்ச்சி இலக்கு {goal}, குறியீடு {target}. {why}"],

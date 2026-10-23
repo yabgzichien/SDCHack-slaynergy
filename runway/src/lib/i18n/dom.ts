@@ -145,6 +145,10 @@ function lookupExact(lang: Lang, text: string, onMiss: Miss | undefined, depth: 
 
 type NodeState = { orig: string; written: string | null };
 const textState = new WeakMap<Text, NodeState>();
+// A complete translated sentence may span inline markup (for example
+// `You have <span>1000</span> points`). Those nodes are written together by
+// applyComposite, so the ordinary per-element pass must leave them alone.
+const compositeOwned = new WeakSet<Text>();
 const attrState = new WeakMap<Element, Map<string, NodeState>>();
 const missing = new Set<string>();
 const produced = new Set<string>();
@@ -170,6 +174,7 @@ function applyText(el: Element, lang: Lang) {
   }
   if (run.length) groups.push(run);
   for (const group of groups) {
+    if (group.some((n) => compositeOwned.has(n))) continue;
     const states = group.map((n) => { const s = original(n, textState.get(n), n.nodeValue ?? ""); textState.set(n, s); return s; });
     const english = states.map((s) => s.orig).join("");
     const tr = lookup(lang, english, report);
@@ -183,6 +188,92 @@ function applyText(el: Element, lang: Lang) {
       states[i].written = tr === null ? null : want;
     });
   }
+}
+
+// Inline markup used for emphasis, links and numbers must not break sentence
+// matching. Translate the element's complete sentence, then use the translated
+// inline child as an anchor so its styling remains in the right place.
+const INLINE = new Set(["A", "ABBR", "B", "BDI", "BDO", "CITE", "CODE", "DEL", "EM", "I", "INS", "KBD", "MARK", "Q", "S", "SAMP", "SMALL", "SPAN", "STRONG", "SUB", "SUP", "TIME", "U", "VAR", "WBR", "SVG"]);
+
+function textNodes(root: Element): Text[] {
+  const out: Text[] = [];
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  for (let n = walker.nextNode(); n; n = walker.nextNode()) out.push(n as Text);
+  return out;
+}
+
+function applyComposite(el: Element, lang: Lang) {
+  const children = Array.from(el.children);
+  if (!children.some((c) => INLINE.has(c.tagName) && c.textContent?.trim())) return;
+  if (children.some((c) => !INLINE.has(c.tagName))) return;
+  const nodes = textNodes(el);
+  if (nodes.length < 2) return;
+  const states = nodes.map((n) => {
+    const st = original(n, textState.get(n), n.nodeValue ?? "");
+    textState.set(n, st);
+    return st;
+  });
+  const english = states.map((s) => s.orig).join("");
+  const tr = lookup(lang, english, report);
+  if (tr === null) {
+    // This also restores the original sentence when switching back to English.
+    nodes.forEach((n, i) => {
+      if (!compositeOwned.has(n)) return;
+      if (n.nodeValue !== states[i].orig) n.nodeValue = states[i].orig;
+      states[i].written = null;
+      compositeOwned.delete(n);
+    });
+    return;
+  }
+
+  type Anchor = { start: number; end: number; text: string; at: number };
+  const anchors: Anchor[] = [];
+  let searchAt = 0;
+  for (const child of children) {
+    if (!INLINE.has(child.tagName)) continue;
+    const inside = textNodes(child);
+    if (!inside.length) continue;
+    const start = nodes.indexOf(inside[0]);
+    const end = nodes.indexOf(inside[inside.length - 1]);
+    if (start < 0 || end < start) continue;
+    const source = states.slice(start, end + 1).map((s) => s.orig).join("");
+    const anchor = norm(lookup(lang, source) ?? source);
+    if (!anchor || !/[\p{L}\p{N}]/u.test(anchor)) continue;
+    const at = tr.indexOf(anchor, searchAt);
+    if (at < 0) continue;
+    anchors.push({ start, end, text: anchor, at });
+    searchAt = at + anchor.length;
+  }
+  // Without an anchor we cannot retain the intended inline emphasis safely.
+  if (!anchors.length) return;
+
+  const writes = nodes.map(() => "");
+  const put = (from: number, to: number, value: string, fallback: number) => {
+    const target = from <= to ? from : fallback;
+    writes[target] += value;
+  };
+  let charAt = 0;
+  let leafAt = 0;
+  let fallback = 0;
+  for (const anchor of anchors) {
+    put(leafAt, anchor.start - 1, tr.slice(charAt, anchor.at), fallback);
+    writes[anchor.start] += anchor.text;
+    charAt = anchor.at + anchor.text.length;
+    leafAt = anchor.end + 1;
+    fallback = anchor.start;
+  }
+  put(leafAt, nodes.length - 1, tr.slice(charAt), fallback);
+
+  nodes.forEach((n, i) => {
+    const lead = i === 0 ? english.match(/^\s*/)?.[0] ?? "" : "";
+    const trail = i === nodes.length - 1 ? english.match(/\s*$/)?.[0] ?? "" : "";
+    const want = lead + writes[i] + trail;
+    if (n.nodeValue !== want) n.nodeValue = want;
+    states[i].written = want;
+    compositeOwned.add(n);
+    missing.delete(norm(states[i].orig));
+  });
+  produced.add(norm(tr));
 }
 
 function applyAttrs(el: Element, lang: Lang) {
@@ -212,9 +303,13 @@ function applyElement(el: Element, lang: Lang) {
 
 function applyTree(root: Element, lang: Lang) {
   if (skipped(root)) return;
+  const elements: Element[] = [root];
   applyElement(root, lang);
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, { acceptNode: (n) => skipped(n as Element) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
-  for (let n = walker.nextNode(); n; n = walker.nextNode()) applyElement(n as Element, lang);
+  for (let n = walker.nextNode(); n; n = walker.nextNode()) { elements.push(n as Element); applyElement(n as Element, lang); }
+  // Parents run last so the longest registered sentence wins over a shorter
+  // phrase inside one of its inline children.
+  for (let i = elements.length - 1; i >= 0; i--) applyComposite(elements[i], lang);
 }
 
 const titleOrig = { value: "" };

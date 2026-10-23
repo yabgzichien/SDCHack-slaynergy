@@ -2,12 +2,14 @@
 import { useEffect, useState } from "react";
 import { Card, Chip, H, PageTitle, SourceChip } from "@/components/ui";
 import { useApp } from "@/components/AppProvider";
+import { useT } from "@/components/I18nProvider";
 
 type Fair = { pairs: number; identical: number; pass: boolean };
 type Log = { ok: boolean; checked: number; brokenAt: number | null; head: { seq: number; hash: string; ts: string } | null; recent: { seq: number; ts: string; type: string; hash: string }[] };
 
 export default function TrustPage() {
   const { view } = useApp();
+  const { t } = useT();
   const [fair, setFair] = useState<Fair | null>(null);
   const [log, setLog] = useState<Log | null>(null);
   useEffect(() => {
@@ -20,8 +22,9 @@ export default function TrustPage() {
 
       <Card tone="raised">
         <H>Fairness check</H>
+        <p className="text-sm">{t("To ensure fairness, Jobbery bases job recommendations and learning plans on your skills, job preferences, available study time, qualifications, field of study and previous job field. Age, gender and race play no part in the jobs, plans or skills suggested. Your highest qualification is used only to check a job's entry requirement.")}</p>
         {fair ? (
-          <p className="text-sm">We tested: the same skills with a different age or gender give the same results. <b className="num">{fair.identical} of {fair.pairs}</b> profile pairs gave identical rankings and scores. {fair.pass ? "Passed." : "FAILED."} Age, gender and background are never inputs to matching, and a second test gives two profiles that differ only in age and name and checks they get the same jobs and plan. Your highest qualification is used only to check a job&apos;s entry requirement. The same test runs automatically in the code repository.</p>
+          <p className="mt-3 text-sm">We tested: the same skills with a different age or gender give the same results. <b className="num">{fair.identical} of {fair.pairs}</b> profile pairs gave identical rankings and scores. {fair.pass ? "Passed." : "FAILED."} {t("Automated tests also check that changing only a profile's age and name leaves its jobs and plan unchanged.")}</p>
         ) : <p className="text-sm text-muted">Running the check…</p>}
       </Card>
 
