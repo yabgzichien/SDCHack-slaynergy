@@ -74,6 +74,7 @@ SDC Hackathon 2026 · Domain 1: Aiversecity Future-Ready Workforce · Licence: A
 - **A person to ask, on the worker's terms.** The worker can book a meeting with an advisor whenever they want one. Nothing waits on an advisor's approval (see [section 10](#10-advisor-meetings)).
 - **Every number shows its source.** Each forecast, demand figure and course has a source and date chip. Explanations are filled in from templates, so the app can't invent jobs, courses or statistics.
 - **Plain language.** Pages are written for someone who has never read a chart like these: "about 14 in every 100 job ads", not "14.2% share".
+- **Multilingual interface.** Already available in English, Bahasa Malaysia, Chinese and Tamil. Use the language picker in the header to switch languages.
 - **Private by default.** A scanned resume is read in memory and never stored. If the worker leaves AI on, the text is also sent once to the Groq API to read it. Only the score, the fixes and the skill IDs are kept.
 - **AI suggests, the worker decides.** The one GenAI feature is an optional resume reader (Qwen3.8 27B on the Groq API). It proposes extra skills, each quoting the resume line it is based on, and better wording for weak lines. The worker accepts or rejects every suggestion. Server checks drop any skill that is not on Jobbery's list or not backed by a real line, and any rewrite that adds a number the original line does not have. Scores, forecasts, matching and plans are computed by tested, readable code (`jobbery/src/lib/engine/`), so the same inputs always give the same answer.
 
@@ -428,7 +429,6 @@ The hash log records "advice given", the advisor's ID and a **hash of the note, 
 
 ### Inclusive design
 
-- **Bahasa Malaysia and Chinese** versions of the interface.
 - **Accessibility:** a full screen-reader and keyboard pass, larger text and high-contrast options, and plain-language reading level checks on every page.
 - **Low-bandwidth mode** for older phones and patchy mobile data.
 - **More starting points:** task cards for the other nine sectors, so users outside finance get the same AI-at-work practice.
