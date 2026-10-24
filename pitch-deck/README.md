@@ -30,11 +30,11 @@ Title 8 s · Problem 30 · Who 12 · Solution 19 · Different 32 · Must-haves 1
 
 | On the slide | Source in this repo |
 |---|---|
-| Clerical share of job ads, 9.9% (2022 Q2) to 7.3% (2026 Q2) | `runway/data/series.json`, DOSM Job Market Insights; the sparkline is its 20 quarters |
+| Clerical share of job ads, 9.9% (2022 Q2) to 7.3% (2026 Q2) | `jobbery/data/series.json`, DOSM Job Market Insights; the sparkline is its 20 quarters |
 | 43% of a general office clerk's tasks in real AI use | Anthropic Economic Index 2025-02-10, O*NET 43-9061 (9 of 21 tasks) |
 | Data entry clerks 0.70 on ILO exposure | ILO WP 140 (2025 scores), ISCO 4132 |
 | 52,607 / 74,841 unemployment benefit applications | `docs/PRD.md` (SAYS Malaysia report) |
-| 44 / 50 / 5% odds for slow / medium / fast | `runway/anchors/forecasts-2026Q4.json` |
+| 44 / 50 / 5% odds for slow / medium / fast | `jobbery/anchors/forecasts-2026Q4.json` |
 | 66 replayed releases, about 200 simulated forecasters, Brier 0.242 vs 0.25 | `README.md` section 8 |
 | 81 tests, 42 of 42 fairness pairs | `npx vitest run`, `/trust` page |
 | Release dates | `series.json` `sources[]` |
