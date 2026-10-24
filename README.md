@@ -1,6 +1,6 @@
 # Jobbery
 
-**A deadline-based job plan for young office workers who have just been laid off.**
+**A deadline-based job plan for young office users who have just been laid off.**
 
 SDC Hackathon 2026 · Domain 1: Aiversecity Future-Ready Workforce · Licence: Apache-2.0
 
@@ -53,7 +53,7 @@ SDC Hackathon 2026 · Domain 1: Aiversecity Future-Ready Workforce · Licence: A
 
 *The landing page introduces Jobbery and the path from skills to jobs and learning.*
 
-**The problem.** 2026 is on track to be Malaysia's worst year for retrenchments since the pandemic, and white-collar workers have been hit hardest. A laid-off worker gets 3 to 6 months of PERKESO Job Search Allowance. In that time they need to know which of their skills AI will soon do, which jobs are actually growing, and what to learn first. Most "AI job risk" tools give one fixed score from old research.
+**The problem.** 2026 is on track to be Malaysia's worst year for retrenchments since the pandemic, and white-collar users have been hit hardest. A laid-off worker gets 3 to 6 months of PERKESO Job Search Allowance. In that time they need to know which of their skills AI will soon do, which jobs are actually growing, and what to learn first. Most "AI job risk" tools give one fixed score from old research.
 
 **What Jobbery does.**
 
@@ -431,7 +431,7 @@ The hash log records "advice given", the advisor's ID and a **hash of the note, 
 - **Bahasa Malaysia and Chinese** versions of the interface.
 - **Accessibility:** a full screen-reader and keyboard pass, larger text and high-contrast options, and plain-language reading level checks on every page.
 - **Low-bandwidth mode** for older phones and patchy mobile data.
-- **More starting points:** task cards for the other nine sectors, so workers outside finance get the same AI-at-work practice.
+- **More starting points:** task cards for the other nine sectors, so users outside finance get the same AI-at-work practice.
 
 ### Automatic re-planning
 
