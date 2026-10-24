@@ -40,9 +40,9 @@ export function H({ children, sub, level = 2 }: { children: ReactNode; sub?: Rea
 // The screen's title: one serif sentence that answers the screen's question, with one plain line under it.
 export function PageTitle({ title, children, aside, compact = false }: { step?: string; title: ReactNode; children?: ReactNode; aside?: ReactNode; compact?: boolean }) {
   return (
-    <header className={`${compact ? "mb-4" : "mb-8"} flex flex-wrap items-end justify-between gap-4`}>
-      <div className="max-w-3xl">
-        <h1 className={`greeting ${compact ? "text-[1.5rem] sm:text-[2rem]" : "text-[1.75rem] sm:text-[2.75rem]"}`}>{title}</h1>
+    <header className={`${compact ? "mb-4" : "mb-8"} flex max-w-full flex-wrap items-end justify-between gap-4`}>
+      <div className="min-w-0 max-w-full flex-1 basis-[32rem] sm:max-w-3xl">
+        <h1 className={`greeting max-w-full [overflow-wrap:anywhere] [text-wrap:balance] ${compact ? "text-[1.5rem] sm:text-[2rem]" : "text-[1.75rem] sm:text-[2.75rem]"}`}>{title}</h1>
         {children && <p className={`${compact ? "mt-1.5 text-sm" : "mt-3 text-base"} text-muted`}>{children}</p>}
       </div>
       {aside}

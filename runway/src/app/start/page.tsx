@@ -330,7 +330,7 @@ function Q({ title, help, children }: { title: string; help?: string; children: 
         <Image src="/cockatiel-thinking.png" alt="" width={88} height={88} className="h-16 w-16 shrink-0 object-contain sm:h-20 sm:w-20" />
       </div>
       {help && <p className="mt-3 text-base text-muted">{help}</p>}
-      <div className="mt-8">{children}</div>
+      <div className="about-you-information-frame mt-8">{children}</div>
     </section>
   );
 }

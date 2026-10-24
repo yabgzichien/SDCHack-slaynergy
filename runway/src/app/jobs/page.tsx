@@ -61,9 +61,9 @@ export default function JobsPage() {
     <div className="jobs-page">
       <PageTitle
         title={
-          <span className="inline-flex items-baseline gap-4 whitespace-nowrap">
+          <span className="inline-flex max-w-full flex-wrap items-baseline gap-x-4 gap-y-1">
             <span className="shrink-0 text-lg tracking-normal sm:text-xl">Aim for:</span>
-            <span data-no-translate className="inline-block rounded-lg bg-cuesoft px-3 py-1 font-extrabold leading-none text-cueink">{jobTitle(best.title)}</span>
+            <span data-no-translate className="min-w-0 max-w-full rounded-lg bg-cuesoft px-3 py-1 font-extrabold leading-tight text-cueink [box-decoration-break:clone] [overflow-wrap:anywhere]">{jobTitle(best.title)}</span>
           </span>
         }
       >

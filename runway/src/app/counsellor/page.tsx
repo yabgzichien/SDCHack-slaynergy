@@ -1,11 +1,12 @@
 "use client";
+import Image from "next/image";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
-import { ArrowRight, BookOpen, Briefcase, CalendarClock, Check, CircleCheck, Clock3, FileText, Landmark, ListChecks, Mic, Users, Wrench, type LucideIcon } from "lucide-react";
+import { ArrowRight, BookOpen, Briefcase, CalendarClock, Check, CircleCheck, Clock3, FileText, Landmark, ListChecks, MessageCircle, Mic, Users, Wrench, type LucideIcon } from "lucide-react";
 import { useApp, type Catalog } from "@/components/AppProvider";
 import { ResumeSheet } from "@/components/ResumeSheet";
 import { buildResume } from "@/lib/build-resume";
 import { useSpeed } from "@/components/useSpeed";
-import { Bar, Btn, Card, Chip, DemoLabel, Estimate, FutureBar, H, PageTitle, SdgTag, Skeleton, pct, sdgName } from "@/components/ui";
+import { Bar, Btn, Card, Chip, DemoLabel, Estimate, FutureBar, H, SdgTag, Skeleton, pct, sdgName } from "@/components/ui";
 import { dayLabel, MAX_NOTES, myDay, myTime, slotStart, topicLabel, upcoming, whenLabel, type Meeting } from "@/lib/engine/meetings";
 import type { SessionState, Signer } from "@/lib/engine/state";
 import type { View } from "@/lib/engine/view";
@@ -133,30 +134,43 @@ function SignIn({ demoPasscode, act, busy, error }: { demoPasscode: string | nul
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   return (
-    <div className="max-w-xl">
-      <PageTitle title="Advisor sign-in">Every worker meets an advisor once as part of their plan: a mock interview, advice, or anything else they ask. Your name is shown to the worker, and recorded in the tamper-evident log with every piece of advice you give.</PageTitle>
-      {demoPasscode && (
-        <Card className="mb-4">
-          <h2 className="text-base font-semibold">Try it as a demo advisor</h2>
-          <p className="mt-1 text-sm text-muted">One click signs you in. No name or passcode needed.</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {DEMO_ADVISORS.map((n) => <Btn key={n} onClick={() => act("signIn", { name: n, passcode: demoPasscode })} disabled={busy}>{n}</Btn>)}
-          </div>
+    <div className="counsellor-signin">
+      <header className="counsellor-hero">
+        <h1 className="counsellor-hero-title"><span className="statistics-headline-highlight">Advisor sign-in</span></h1>
+        <div className="counsellor-hero-banner">
+          <span className="statistics-hero-icon" aria-hidden="true"><MessageCircle size={29} strokeWidth={2.6} /></span>
+          <p>Every worker meets an advisor once as part of their plan: a mock interview, advice, or anything else they ask. Your name is shown to the worker, and recorded in the tamper-evident log with every piece of advice you give.</p>
+        </div>
+        <div className="counsellor-hero-art" aria-hidden="true">
+          <Image src="/cockatiel-lecturer-professional.png" alt="" width={1254} height={1254} className="counsellor-hero-mascot" priority />
+        </div>
+      </header>
+
+      <div className="counsellor-signin-options grid max-w-5xl items-center gap-4 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
+        {demoPasscode && (
+          <Card className="counsellor-signin-option counsellor-demo-option">
+            <h2 className="text-xl font-bold tracking-tight sm:text-2xl">Try it as a demo advisor</h2>
+            <p className="mt-1 text-sm text-muted">One click signs you in. No name or passcode needed.</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {DEMO_ADVISORS.map((n) => <Btn key={n} onClick={() => act("signIn", { name: n, passcode: demoPasscode })} disabled={busy}>{n}</Btn>)}
+            </div>
+          </Card>
+        )}
+        {demoPasscode && <ArrowRight size={32} className="counsellor-signin-arrow mx-auto rotate-90 text-accent lg:rotate-0" aria-hidden />}
+        <Card tone="raised" className={`${demoPasscode ? "counsellor-signin-option counsellor-manual-option" : "lg:col-span-3"}`}>
+          <form onSubmit={(e) => { e.preventDefault(); act("signIn", { name, passcode: code }); }} className="space-y-3">
+            <label className="block text-sm font-medium">Your name
+              <input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} autoComplete="name" required className="mt-1 block min-h-12 w-full rounded-2xl border border-control bg-raised px-3" placeholder="For example: Puan Aisyah, JobsMalaysia Shah Alam" />
+            </label>
+            <label className="block text-sm font-medium">Advisor passcode
+              <input value={code} onChange={(e) => setCode(e.target.value)} type="password" autoComplete="current-password" required className="mt-1 block min-h-12 w-full rounded-2xl border border-control bg-raised px-3" />
+            </label>
+            {error && <p role="alert" className="text-sm text-negative">{error}</p>}
+            <Btn type="submit" disabled={busy}>Sign in</Btn>
+          </form>
+          {demoPasscode && <p className="mt-4 text-sm text-muted">Demo: the passcode is <code className="num rounded bg-surface2 px-1.5 py-0.5 text-ink">{demoPasscode}</code>. A real deployment sets its own.</p>}
         </Card>
-      )}
-      <Card tone="raised">
-        <form onSubmit={(e) => { e.preventDefault(); act("signIn", { name, passcode: code }); }} className="space-y-3">
-          <label className="block text-sm font-medium">Your name
-            <input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} autoComplete="name" required className="mt-1 block min-h-12 w-full rounded-2xl border border-control bg-raised px-3" placeholder="For example: Puan Aisyah, JobsMalaysia Shah Alam" />
-          </label>
-          <label className="block text-sm font-medium">Advisor passcode
-            <input value={code} onChange={(e) => setCode(e.target.value)} type="password" autoComplete="current-password" required className="mt-1 block min-h-12 w-full rounded-2xl border border-control bg-raised px-3" />
-          </label>
-          {error && <p role="alert" className="text-sm text-negative">{error}</p>}
-          <Btn type="submit" disabled={busy}>Sign in</Btn>
-        </form>
-        {demoPasscode && <p className="mt-4 text-sm text-muted">Demo: the passcode is <code className="num rounded bg-surface2 px-1.5 py-0.5 text-ink">{demoPasscode}</code>. A real deployment sets its own.</p>}
-      </Card>
+      </div>
     </div>
   );
 }

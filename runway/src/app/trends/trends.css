@@ -147,6 +147,67 @@
   object-fit: contain;
 }
 
+/* The advisor entry page shares the illustrated editorial language without inheriting trend-page motion. */
+.counsellor-signin > .counsellor-hero {
+  position: relative;
+  display: grid;
+  gap: 24px;
+  margin-bottom: 40px;
+  padding-top: 12px;
+  text-align: left;
+}
+
+.counsellor-hero-title {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  padding-right: 300px;
+  font-size: clamp(2rem, 3.6vw, 3.25rem);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+
+.counsellor-hero-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  min-height: 148px;
+  padding: 20px 330px 20px 24px;
+  border-radius: 22px;
+  background: linear-gradient(110deg, rgb(245 221 163 / .3), rgb(239 229 190 / .38));
+}
+
+.counsellor-hero-banner p {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+.counsellor-hero-art {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 310px;
+  height: 226px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.counsellor-hero-mascot {
+  position: absolute;
+  right: 34px;
+  bottom: -30px;
+  width: 252px;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 14px rgb(33 60 50 / .1));
+}
+
 .statistics-page .source-disclosure-toggle {
   position: relative;
   padding-right: 80px;
@@ -246,6 +307,10 @@
   .statistics-page .statistics-hero-banner { padding-right: 320px; }
   .statistics-hero-art { width: 310px; height: 210px; }
   .statistics-hero-mascot { width: 280px; right: 38px; }
+  .counsellor-hero-title { padding-right: 275px; }
+  .counsellor-hero-banner { padding-right: 300px; }
+  .counsellor-hero-art { width: 290px; }
+  .counsellor-hero-mascot { right: 24px; width: 248px; }
 }
 
 @media (max-width: 700px) {
@@ -256,4 +321,9 @@
   .statistics-hero-icon svg { width: 23px; height: 23px; }
   .statistics-hero-art { top: 0; bottom: auto; width: 140px; height: 84px; }
   .statistics-hero-mascot { right: 30px; width: 112px; }
+  .counsellor-signin > .counsellor-hero { gap: 20px; padding-top: 0; margin-bottom: 28px; }
+  .counsellor-hero-title { min-height: 84px; padding-right: 140px; }
+  .counsellor-hero-banner { min-height: 0; gap: 12px; padding: 20px 16px; }
+  .counsellor-hero-art { top: 0; width: 140px; height: 98px; }
+  .counsellor-hero-mascot { right: 20px; bottom: -18px; width: 116px; filter: none; }
 }

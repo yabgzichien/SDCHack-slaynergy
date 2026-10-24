@@ -28,15 +28,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { t } = useT();
   const home = (path === "/" && !state?.profile) || path === "/about";
   const start = path === "/start";
-  // Courses sits in the same page frame as Statistics and the forecast pages.
   const isPublicLayout = home || start;
-  const showCareerPattern = path === "/trends" || path === "/courses" || path === "/forecast" || path === "/market" || path.startsWith("/market/");
   // The step bar belongs to the journey pages only; the forecast game, trends, advisor and the like sit outside it.
   // The dashboard has none: its step cards already show the same five steps.
   const inJourney = currentStep(path) >= 0;
 
   return (
-    <div className={`landing-page public-shell${isPublicLayout ? "" : " app-page-shell"}${showCareerPattern ? " has-career-pattern" : ""}`}>
+    <div className={`landing-page public-shell${isPublicLayout ? "" : " app-page-shell"}`}>
       <SiteHeader />
       {isPublicLayout ? (
         <main id="main" className={home ? "public-home" : "public-start"}>{children}</main>

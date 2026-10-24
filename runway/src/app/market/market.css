@@ -73,7 +73,7 @@
   background: #edf4ec;
 }
 
-.forecast-step-2 { background: #fff6e9; border-color: #edd6bc; }
+.forecast-step-2 { background: #f5f7ee; border-color: #dce7db; }
 .forecast-step-3 { background: #f5f7ee; }
 .forecast-step-heading { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
 .forecast-step-heading h3 { font-size: 1.05rem; line-height: 1.2; letter-spacing: -0.025em; }

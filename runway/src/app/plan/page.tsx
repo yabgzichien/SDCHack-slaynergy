@@ -27,9 +27,9 @@ export default function PlanPage() {
   return (
     <div className="plan-page">
       <PageTitle title={next ? (
-        <span className="inline-flex max-w-full flex-wrap items-baseline gap-x-2 md:max-w-none md:flex-nowrap">
+        <span className="inline-flex max-w-full flex-wrap items-baseline gap-x-2">
           <span className="text-[0.48em] font-semibold tracking-normal text-muted">Next:</span>
-          <span className="min-w-0 rounded-[0.18em] bg-cuesoft px-[0.18em] py-[0.05em] text-cueink [box-decoration-break:clone] md:shrink-0 md:whitespace-nowrap">{next.title}</span>
+          <span className="min-w-0 max-w-full rounded-[0.18em] bg-cuesoft px-[0.18em] py-[0.05em] text-cueink [box-decoration-break:clone] [overflow-wrap:anywhere]">{next.title}</span>
         </span>
       ) : "Every step is done. Well done."}>
         {next ? `${next.weekStart === next.weekEnd ? `Week ${next.weekStart}` : `Weeks ${next.weekStart}–${next.weekEnd}`} of your plan for ${plan.title}, about ${Math.round(next.hours)} hours.` : `You finished the plan for ${plan.title}. Get your badge below.`}

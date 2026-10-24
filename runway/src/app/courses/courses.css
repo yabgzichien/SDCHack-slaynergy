@@ -1,5 +1,4 @@
 /* Courses page: shared statistics hero with a compact learning sidebar and course catalogue. */
-.app-page-shell.has-career-pattern:has(.courses-page)::before { opacity:.12; animation:none; }
 .courses-layout { --courses-border:#e6e1d8; --courses-muted:#66716b; display:grid; grid-template-columns:minmax(240px, .8fr) minmax(0, 2fr); align-items:start; gap:28px; }
 .courses-sidebar { display:grid; gap:20px; min-width:0; }
 .courses-page .courses-sidebar-card { padding:24px; background:rgb(255 255 255 / .38); border:1px solid #d8e0d2; border-radius:24px; box-shadow:0 3px 14px rgb(49 43 31 / .02); }
@@ -60,7 +59,7 @@
 .courses-page .statistics-hero-art { top:auto; bottom:2px; height:132px; }
 .courses-page .statistics-hero-mascot { width:132px; right:16px; }
 @media (min-width:1100px) {
-  .courses-page.statistics-page .statistics-hero-banner p { max-width:none; white-space:nowrap; font-size:clamp(.875rem, 1.15vw, 1rem); }
+  .courses-page.statistics-page .statistics-hero-banner p { max-width:none; font-size:clamp(.875rem, 1.15vw, 1rem); }
 }
 @media (max-width:700px) { .courses-page .statistics-hero-mascot { width:104px; right:28px; } }
 @media (max-width:700px) {

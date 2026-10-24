@@ -39,7 +39,7 @@ export default function SkillsPage() {
   const shelf = (y: number) => (y >= 2034 ? { t: "Safe for years", tone: "rise" as const } : y < 2031 ? { t: "AI may take over soon", tone: "fall" as const } : { t: "Safe for now", tone: "neutral" as const });
 
   return (
-    <div>
+    <div className="skills-page">
       <PageTitle title={<span className="skills-title">{fading.length
         ? (lang === "en" ? <>AI could do most of <mark>{fading.length} of your {mine.length} skills</mark> before 2031.</> : `AI could do most of ${fading.length} of your ${mine.length} skills before 2031.`)
         : (lang === "en" ? <>AI is unlikely to take over <mark>any of your {mine.length} skills</mark> before 2031.</> : `AI is unlikely to take over any of your ${mine.length} skills before 2031.`)}</span>}>

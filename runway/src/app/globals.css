@@ -159,6 +159,31 @@ input[type="range"] { accent-color: var(--accent); width: 100%; }
   :root { --line: color-mix(in srgb, var(--ink) 45%, transparent); }
 }
 
+/* Advisor sign-in: two clear paths arrive in sequence and the arrow quietly signals their relationship. */
+@keyframes counsellor-option-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes counsellor-arrow-nudge {
+  0%, 100% { transform: translateY(0) rotate(90deg); }
+  50% { transform: translateY(5px) rotate(90deg); }
+}
+@media (min-width: 1024px) {
+  @keyframes counsellor-arrow-nudge {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(6px); }
+  }
+}
+.counsellor-signin-option { animation: counsellor-option-in 520ms cubic-bezier(0.22, 1, 0.36, 1) both; transition: transform 180ms ease, box-shadow 180ms ease; }
+.counsellor-demo-option { animation-delay: 70ms; }
+.counsellor-manual-option { animation-delay: 220ms; }
+.counsellor-signin-option:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgb(32 59 43 / 0.1); }
+.counsellor-signin-arrow { animation: counsellor-arrow-nudge 1.6s ease-in-out 620ms infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .counsellor-signin-option, .counsellor-signin-arrow { animation: none; transition: none; }
+  .counsellor-signin-option:hover { transform: none; }
+}
+
 /* Job map: state names drawn by the app over the shapes */
 
 /* A short amber pulse on something that just changed (the job now shown on the map), so the change is noticed. */

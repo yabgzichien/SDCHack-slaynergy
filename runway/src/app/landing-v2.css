@@ -2,6 +2,9 @@
 .public-shell .landing-content { min-height:0; background:transparent; }
 .public-start { width:min(calc(100% - 40px),1000px); margin:0 auto; padding:43px 0 90px; font-family:var(--font-instrument-sans),sans-serif; animation:public-enter .55s cubic-bezier(.2,.8,.2,1) both; }
 .public-start > div { max-width:820px; }
+/* The onboarding controls stay legible over the shared floating-icon layer. */
+.about-you-information-frame { padding:24px; border:1px solid rgb(255 255 255 / .72); border-radius:28px; background:rgb(255 255 255 / .56); box-shadow:0 10px 28px rgb(33 60 50 / .05); backdrop-filter:blur(4px); }
+@media (max-width:640px) { .about-you-information-frame { padding:16px; border-radius:22px; } }
 .public-courses { width:min(calc(100% - 64px),1240px); margin:0 auto; padding:44px 0 96px; animation:public-enter .55s cubic-bezier(.2,.8,.2,1) both; }
 @keyframes public-enter { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
 .landing-page * { box-sizing:border-box; }
@@ -119,8 +122,8 @@
 @keyframes intro-clear { to { opacity:0; visibility:hidden; } }
 
 /* Sketch-led landing layout and scroll behavior. */
-.landing-page.public-shell { --pattern-tile-height:700px; position:relative; isolation:isolate; background:#fff7ed; }
-.public-shell::before { content:""; position:fixed; z-index:-1; inset:0; pointer-events:none; background-image:url('/career-pattern.svg'); background-repeat:repeat; background-size:1000px var(--pattern-tile-height); animation:career-icons-rise 54s linear infinite; }
+.landing-page.public-shell { --pattern-tile-height:700px; --career-pattern-opacity:.46; position:relative; isolation:isolate; background:#fff7ed; }
+.public-shell::before { content:""; position:fixed; z-index:-1; inset:0; pointer-events:none; opacity:var(--career-pattern-opacity); background-image:url('/career-pattern.svg'); background-repeat:repeat; background-size:1000px var(--pattern-tile-height); animation:career-icons-rise 100s linear infinite; }
 .public-shell > main { position:relative; }
 .public-shell .landing-content { background:transparent; }
 @keyframes career-icons-rise { to { background-position:0 calc(-1 * var(--pattern-tile-height)); } }
@@ -149,7 +152,7 @@
 .landing-travel-bird.is-positioned { opacity:1; }
 .landing-content:not(.is-scene-active) .landing-travel-bird { opacity:0; }
 .landing-travel-bird img { display:block; width:100%; height:auto; animation:landing-bird-arrive 1.75s .28s cubic-bezier(.22,.7,.22,1) both; }
-.landing-section-heading h2 { width:max-content; max-width:100%; margin:11px auto 0; }
+.landing-section-heading h2 { width:fit-content; max-width:100%; margin:11px auto 0; }
 @keyframes landing-block-pop { 0% { opacity:0; transform:translateY(38px) scale(.72); } 72% { opacity:1; transform:translateY(-5px) scale(1.035); } 100% { opacity:1; transform:translateY(0) scale(1); } }
 @keyframes landing-bird-arrive { 0% { opacity:0; transform:translate(-80px,-80px) rotate(-12deg) scale(.8); } 25% { opacity:1; } 78% { transform:translate(3px,-9px) rotate(2deg) scale(1); } 100% { opacity:1; transform:translate(0,0) rotate(0) scale(1); } }
 .landing-bird-flight.is-leaving .landing-bird { animation:bird-depart .85s ease-in both; }
@@ -165,7 +168,6 @@
 .landing-page .landing-step:nth-child(5),.landing-page .landing-metrics > div:nth-child(3) { transition-delay:.2s; }
 @keyframes bird-arrive { from { opacity:0; transform:translate(-65vw,-55px) rotate(-14deg) scale(.78); } 70% { opacity:1; transform:translate(8px,-5px) rotate(2deg) scale(1.02); } to { opacity:1; transform:translate(0,0) rotate(0) scale(1); } }
 @keyframes bird-depart { from { opacity:1; transform:translate(0,0) rotate(0) scale(1); } to { opacity:0; transform:translate(65vw,-80px) rotate(12deg) scale(.82); } }
-@media (min-width:1100px) { .landing-intro-heading h1 { white-space:nowrap; } }
 @media (max-width:1050px) { .landing-intro-heading h1 { font-size:clamp(26px,3vw,32px); }.landing-about-grid { gap:14px; }.landing-about-item .landing-info-card { padding:22px; }.landing-bird-flight .landing-sdg-scene { width:min(100%,285px); } }
 @media (max-width:1100px) { .landing-nav { display:none; }.landing-mobile-menu { display:block; } }
 @media (max-width:760px) { .landing-header.is-compact { min-height:56px; }.landing-header.is-compact .landing-brand { font-size:20px; }.landing-intro { padding:48px 0 60px; }.landing-intro-heading h1 { font-size:clamp(26px,5.4vw,33px); line-height:1.35; }.landing-intro-heading > .landing-intro-subtitle { font-size:12px; }.landing-about-grid { grid-template-columns:1fr 1fr; gap:16px; }.landing-bird-flight { grid-column:1/-1; min-height:205px; }.landing-bird-flight .landing-bird { width:190px; }.landing-about-item { min-height:0; }.landing-about-item .landing-info-card { min-height:250px; } }
@@ -185,9 +187,9 @@
   --primary:#305d40; --primary-ink:#fff; --focus:#c97652;
   min-height:100vh;
 }
-.app-page-shell::before { opacity:.22; }
-.app-page-shell.has-career-pattern::before { opacity:.85; }
 .app-page-main { position:relative; width:min(calc(100% - 48px),1120px); min-height:55vh; margin:0 auto; padding:52px 0 92px; color:var(--ink); font-family:var(--font-instrument-sans),sans-serif; animation:public-enter .55s cubic-bezier(.2,.8,.2,1) both; }
+.landing-page main :is(h1,h2,h3,h4,h5,h6,p,li,dt,dd,figcaption,blockquote) { min-width:0; max-width:100%; overflow-wrap:anywhere; }
+.landing-page main :is(h1,h2,h3,h4,h5,h6) { text-wrap:balance; }
 .app-page-main .greeting { font-family:var(--font-instrument-sans),sans-serif; font-weight:700; line-height:1.2; letter-spacing:-.045em; }
 .app-page-footer { position:relative; display:grid; gap:8px; width:min(calc(100% - 48px),1120px); margin:0 auto; padding:28px 0 45px; border-top:1px solid var(--line); color:var(--muted); font-family:var(--font-instrument-sans),sans-serif; font-size:12px; line-height:1.6; }
 .app-page-footer a,.app-page-footer button { color:#2e6944; text-decoration:underline; text-underline-offset:3px; }
@@ -461,6 +463,10 @@
 /* Skills page title: heavy sans with the key phrase on a marker stripe */
 .app-page-main .greeting .skills-title { font-family:var(--font-sans); font-weight:800; letter-spacing:-.035em; line-height:1.14; color:#223d33; }
 .skills-title mark { color:#2f5d45; background:linear-gradient(transparent 58%, #f6c47f 58%, #f6c47f 94%, transparent 94%); border-radius:6px; padding:0 .18em; margin:0 -.1em; -webkit-box-decoration-break:clone; box-decoration-break:clone; }
+@media (min-width:900px) {
+  .skills-page > header > div { max-width:none; flex-basis:100%; }
+  .skills-page .greeting { white-space:nowrap; font-size:clamp(1.75rem,2.4vw,2.25rem); }
+}
 
 /* The header's main action: "Start now" (or "Continue" with a profile). Amber so it stands out from the green nav. */
 .landing-nav-cta { display:inline-flex; align-items:center; min-height:40px; padding:0 18px; border-radius:999px; background:#f8c982; color:#203b2b; font-family:var(--font-instrument-sans),sans-serif; font-size:14px; font-weight:700; white-space:nowrap; box-shadow:0 2px 8px rgb(201 116 26 / .25); transition:transform .2s, background .2s; }
