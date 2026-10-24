@@ -23,7 +23,7 @@ export default function ChangesPage() {
   return (
     <div>
       <PageTitle title={plan ? plan.text.replace(/\.$/, ".") : "The new data is in."}>
-        New job-ad figures for April to June 2026 (published 18 Aug 2026) and new AI test scores answered {view.world.settledEvents.length} questions. Here is what moved, starting with what matters most to you.
+        {`New job-ad figures for ${view.world.latestLabel}${view.world.asOfLabel.includes("published") ? ` (${view.world.asOfLabel.replace(/^.*\((published [^)]*)\).*$/, "$1")})` : ""} and new AI test scores answered ${view.world.settledEvents.length} questions. Here is what moved, starting with what matters most to you.`}
       </PageTitle>
       <div className="space-y-4">
         {groups.map((g) => (

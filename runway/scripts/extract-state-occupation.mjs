@@ -8,7 +8,7 @@ import fs from "node:fs";
 const DIR = "data/raw/dosm";
 const STATES = ["Johor", "Kedah", "Kelantan", "Melaka", "Negeri Sembilan", "Pahang", "Pulau Pinang", "Perak", "Perlis", "Selangor", "Terengganu", "Sabah", "Sarawak", "W.P. Kuala Lumpur", "W.P. Labuan", "W.P. Putrajaya"];
 const OCCUPATIONS = ["managers", "professionals", "technicians", "clerical", "service", "agriculture", "craft", "operators", "elementary"];
-// MSIC 2008 sections in the column order of Table B4.8, as the short keys build-geo.mjs uses
+// MSIC 2008 sections in the column order of Table B4.8, as the short keys build-geo.ts uses
 const INDUSTRIES = [
   ["agriculture", "mining", "manufacturing", "utilities", "water", "construction", "trade"],
   ["transport", "accommodation", "ict", "finance", "realestate", "professional", "admin"],

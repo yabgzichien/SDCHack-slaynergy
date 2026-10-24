@@ -7,6 +7,10 @@ import { AnsweredBadge, EventIcon, LiveBadge, topicOf } from "@/components/Marke
 import { Btn, PageTitle, Skeleton } from "@/components/ui";
 
 // One question: should I buy Yes or No on this release?
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const day = (iso: string) => { const [y, m, d] = iso.split("-").map(Number); return `${d} ${MONTHS[m - 1]} ${y}`; };
+const today = () => new Date(Date.now() + 8 * 3600_000).toISOString().slice(0, 10); // Malaysian calendar day
+
 export default function MarketEventPage() {
   const { view } = useApp();
   const { id } = useParams<{ id: string }>();
@@ -30,11 +34,12 @@ export default function MarketEventPage() {
         <div className="-mt-4 mb-5 flex flex-wrap items-center gap-3 rounded-2xl border border-[#cfd6df] bg-[#eef1f5] px-4 py-3 text-sm text-[#3c4655]">
           <AnsweredBadge />
           <span>This is a <b>past question</b>. The {ev.settles} answered it{ev.fact ? `: ${ev.fact}` : "."}</span>
+          {ev.practice && ev.strikes.some((x) => x.executions.length > 0) && <span>Your predictions here are practice: the numbers were already out when you made them, so they are not scored.</span>}
         </div>
       ) : (
         <div className="-mt-4 mb-5 flex flex-wrap items-center gap-3 rounded-2xl bg-risesoft px-4 py-3 text-sm">
           <LiveBadge />
-          <span>Open for predictions. The answer comes from the {ev.settles}.</span>
+          <span>{ev.closesAt && today() > ev.closesAt ? `Closed for new predictions on ${day(ev.closesAt)}.` : ev.closesAt ? `Open for predictions until ${day(ev.closesAt)}.` : "Open for predictions."} The answer comes from the {ev.settles}.</span>
         </div>
       )}
       <MarketBoard key={`${ev.id}-${ev.settled}`} event={ev} />

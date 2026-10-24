@@ -1,9 +1,9 @@
-import { series } from "./data";
+import { prevQuarter, series, sourceById } from "./data";
 import { FUTURES, FUTURE_IDS, type FutureId } from "./futures-def";
 import { crowdTilt, futureWeights, type Weights3 } from "./futures";
 import { FORECASTERS, KIND_LABEL, brier, forecasterName, updateWeights, START_BALANCE, type Kind, type MarketRun, type Weights } from "./market";
 import { liveQuestions, replayHistory, updateScores } from "./replay";
-import { eventTitle, factFor, ladder, type Question, type Strike } from "./questions";
+import { epochSettleDay, eventTitle, factFor, isoDay, ladder, LIVE_QUARTER, quarterEnd, quarterPlain, type Question, type Strike } from "./questions";
 import { ETA, INFLUENCE_MAX } from "./market";
 import type { SessionState } from "./state";
 import { baseRun, runTape, type Execution, type TapeResult } from "./tape";
@@ -20,6 +20,11 @@ export type StrikeView = {
 export type EventView = {
   id: string; quarter: string; title: string; short: string; text: string; source: { name: string; url: string }; settles: string; reason: string;
   phase: "live" | "next"; strikes: StrikeView[]; clockStart: number; nowT: number; fact: string | null; settled: boolean;
+  // Last day new predictions are taken (an Epoch AI question closes when its quarter ends, because Epoch publishes
+  // results as they come in). Null for DOSM: its numbers stay unknown until the release.
+  closesAt: string | null;
+  // Settled before this session could predict on it: predictions here are practice and not scored.
+  practice: boolean;
   // What the main answer would do to the three futures once it settles, before anyone knows the answer. Null once settled.
   whatIf: { now: Weights3; yes: Weights3; no: Weights3 } | null;
 };
@@ -27,7 +32,8 @@ export type EventView = {
 // Your forecast there is the chance you left the market at after your last trade; no trade counts as 50%.
 export const MAX_ORDER = 50; // points per prediction at normal influence; at most double that for the most accurate players
 export type YouStats = {
-  forecasts: { eventId: string; title: string; forecast: number | null; outcome: boolean | null }[];
+  // practice: made on a question that was never open to you (its numbers were already out), so it is not scored.
+  forecasts: { eventId: string; title: string; forecast: number | null; outcome: boolean | null; practice: boolean }[];
   brier: number | null; scored: number; traded: number; influenceBefore: number; influence: number; maxOrder: number;
 };
 export type ForecasterRow = { id: string; name: string; kind: string; influence: number; brier: number | null; roi: number | null };
@@ -36,6 +42,10 @@ export type World = {
   release: 0 | 1;
   asOfQuarter: string;
   asOfLabel: string;
+  latestLabel: string; // the latest release in words, e.g. "Apr to Jun 2026"
+  // When the open questions get their answers (ISO days): DOSM's announced release day, if known, and the first day the
+  // open Epoch AI quarter can settle.
+  nextAnswers: { dosm: string | null; epoch: string | null };
   events: EventView[];
   settledEvents: EventView[];
   futures: { id: FutureId; name: string; blurb: string; weight: number; earned: number; tilt: number; capMult: number; adoptMult: number; drift: number }[];
@@ -55,10 +65,12 @@ const top20 = (w: Weights) => [...FORECASTERS].sort((a, b) => (w[b.id] ?? 1) - (
 
 type Phase = { events: { q: Question; strikes: Strike[]; tapes: TapeResult[] }[]; nowT: number; t0: number };
 
-function tapesFor(qs: Question[], W: Weights, wkey: string, state: SessionState, nowT: number, collect: boolean) {
+function tapesFor(qs: Question[], W: Weights, wkey: string, state: SessionState, nowT: number | ((q: Question) => number), collect: boolean) {
   return qs.map((q) => {
     const strikes = ladder(q);
-    return { q, strikes, tapes: strikes.map((s) => runTape(s, W, wkey, state.orders, nowT, collect)) };
+    const t = typeof nowT === "number" ? nowT : nowT(q);
+    const fw = series.market.tapeWeights?.[q.id];
+    return { q, strikes, tapes: strikes.map((s) => runTape(s, fw ?? W, fw ? "F" : wkey, state.orders, t, collect)) };
   });
 }
 
@@ -73,29 +85,37 @@ export function computeWorld(state: SessionState, nowMs: number = Date.now()): W
   const nowT1 = Math.max(0, (nowMs - t1) / 1000);
 
   const liveQs = liveQuestions("live");
-  const p0: Phase = { events: tapesFor(liveQs, W0, "W0", state, nowT0, released), nowT: nowT0, t0 };
+  // A question that settled while this session was open stops trading at the moment it settled, so the predictions
+  // made on it while it was open count; one that settled before the session started stops at the session's start.
+  const settledT = (q: Question) => {
+    const at = series.market.frozen[q.id]?.settledAt;
+    return at ? Math.min(Math.max(0, (Date.parse(at) - t0) / 1000), Math.max(0, (nowMs - t0) / 1000)) : nowT0;
+  };
+  const p0: Phase = { events: tapesFor(liveQs, W0, "W0", state, released ? settledT : nowT0, released), nowT: nowT0, t0 };
 
   // settle: base-strike outcomes update influence and the futures' stored scores
   let W: Weights = W0;
   let S = base.scores;
   const baseRuns0: MarketRun[] = p0.events.map((e) => baseRun(e.strikes[1], W0, "W0"));
+  // A prediction on a question counts only if the question was still open when it was made. The questions settled by
+  // the release a session starts after were never open to it: predictions on them are practice and are not scored.
   const yourForecasts = p0.events.map((e) => {
     const ex = e.tapes[1].executions;
-    return { eventId: e.q.id, title: eventTitle(e.q), forecast: ex.length ? ex[ex.length - 1].priceAfter : null, outcome: released ? e.strikes[1].outcome ?? null : null };
+    return { eventId: e.q.id, title: eventTitle(e.q), forecast: ex.length ? ex[ex.length - 1].priceAfter : null, outcome: released ? e.strikes[1].outcome ?? null : null, practice: !series.market.frozen[e.q.id]?.settledAt };
   });
   // Rank and influence use the same score: every headline question counts, and one you did not trade counts as 50%.
-  // You are scored on a release only if you made a prediction on it. Sessions start after the 2026 Q2 release, so nobody can
-  // predict on it now; your record starts with the questions still open.
-  const traded = yourForecasts.filter((f) => f.forecast !== null).length;
+  // You are scored on a release only if you made a prediction on it while it was open.
+  const scorable = yourForecasts.filter((f) => !f.practice);
+  const traded = scorable.filter((f) => f.forecast !== null).length;
   const scoredYou = released && traded > 0;
-  const yourLoss = scoredYou ? yourForecasts.reduce((a, f) => a + brier(f.forecast ?? 0.5, f.outcome!), 0) : 0;
+  const yourLoss = scoredYou ? scorable.reduce((a, f) => a + brier(f.forecast ?? 0.5, f.outcome!), 0) : 0;
   if (released) {
     W = updateWeights(W0, baseRuns0, scoredYou ? [{ id: YOU, prev: 1, loss: yourLoss }] : []);
     S = updateScores(base.scores, baseRuns0);
   }
   const you: YouStats = {
-    forecasts: yourForecasts, scored: scoredYou ? yourForecasts.length : 0, traded,
-    brier: scoredYou ? yourLoss / yourForecasts.length : null,
+    forecasts: yourForecasts, scored: scoredYou ? scorable.length : 0, traded,
+    brier: scoredYou ? yourLoss / scorable.length : null,
     influenceBefore: 1, influence: W[YOU] ?? 1, maxOrder: Math.round(MAX_ORDER * Math.min(2, W[YOU] ?? 1)),
   };
   const p1: Phase | null = released ? { events: tapesFor(liveQuestions("next"), W, "W1", state, nowT1, false), nowT: nowT1, t0: t1 } : null;
@@ -158,7 +178,9 @@ export function computeWorld(state: SessionState, nowMs: number = Date.now()): W
       });
       return {
         id: q.id, quarter: q.quarter, title: eventTitle(q), short: q.kind === "dosm" ? "Office admin jobs" : series.epoch[q.series].name, text: q.text, source: q.source, settles: q.settles, reason: q.reason, phase,
-        strikes: views, clockStart: ph.t0, nowT: ph.nowT, fact: settleNow ? factFor(q) : null, settled: settleNow,
+        strikes: views, clockStart: ph.t0, nowT: tapes[0]?.nowT ?? ph.nowT, fact: settleNow ? factFor(q) : null, settled: settleNow,
+        closesAt: !settleNow && q.kind === "epoch" ? quarterEnd(q.quarter) : null,
+        practice: settleNow && !series.market.frozen[q.id]?.settledAt,
         whatIf: settleNow ? null : whatIf[q.id] ?? null,
       };
     });
@@ -185,10 +207,13 @@ export function computeWorld(state: SessionState, nowMs: number = Date.now()): W
     return { kind: KIND_LABEL[k], count: m.length, influence: mean(m.map((f) => W[f.id])) };
   });
 
-  const asOfQuarter = released ? "2026Q2" : "2026Q1";
+  const live = LIVE_QUARTER(), pub = series.dosm.publishedAt[live];
+  const asOfQuarter = released ? live : prevQuarter(live);
   return {
     release: state.release, asOfQuarter,
-    asOfLabel: released ? `DOSM 2026 Q2 (published 18 Aug 2026)` : `DOSM 2026 Q1; 2026 Q2 release held back`,
+    asOfLabel: released ? `DOSM ${live.replace("Q", " Q")}${pub ? ` (published ${isoDay(pub)})` : ""}` : `DOSM ${asOfQuarter.replace("Q", " Q")}; ${live.replace("Q", " Q")} release held back`,
+    latestLabel: quarterPlain(live),
+    nextAnswers: { dosm: sourceById.dosm?.next ?? null, epoch: series.market.epoch.open.length ? epochSettleDay(series.market.epoch.open[0]) : null },
     events, settledEvents: settledOut,
     futures: FUTURES.map((f) => ({
       id: f.id, name: f.name, blurb: f.blurb, weight: weights[f.id], earned: stored[f.id], tilt: weights[f.id] - stored[f.id],
@@ -225,7 +250,7 @@ export function computeLeaderboard(state: SessionState, nowMs: number = Date.now
   const W0 = base.weights;
   const live = liveQuestions("live");
   const runs = live.map((q) => baseRun(ladder(q)[1], W0, "W0"));
-  const W = released ? updateWeights(W0, runs, w.you.scored ? [{ id: YOU, prev: 1, loss: w.you.forecasts.reduce((a, f) => a + brier(f.forecast ?? 0.5, f.outcome!), 0) }] : []) : W0;
+  const W = released ? updateWeights(W0, runs, w.you.scored ? [{ id: YOU, prev: 1, loss: w.you.forecasts.filter((f) => !f.practice).reduce((a, f) => a + brier(f.forecast ?? 0.5, f.outcome!), 0) }] : []) : W0;
   const roiById = w.agentRoi;
   const rows: LeaderRow[] = FORECASTERS.map((f) => {
     let { sum, n } = base.agentBrier[f.id];
@@ -242,7 +267,7 @@ export function computeLeaderboard(state: SessionState, nowMs: number = Date.now
     return { kind, label: KIND_LABEL[kind], count: m.length, brier: mean(m.map((r) => r.brier ?? 0)), influence: mean(m.map((r) => r.influence)) };
   });
   const history = released
-    ? [...base.influenceHistory, { q: "2026Q2", byKind: Object.fromEntries(kinds.map((x) => [x.kind, x.influence])) as Record<Kind, number> }]
+    ? [...base.influenceHistory, { q: LIVE_QUARTER(), byKind: Object.fromEntries(kinds.map((x) => [x.kind, x.influence])) as Record<Kind, number> }]
     : base.influenceHistory;
   return {
     released, rows, eta: ETA, history, kinds,

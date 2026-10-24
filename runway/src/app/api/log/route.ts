@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { logAll, logHead, logRecent, verifyChain } from "@/lib/server/store";
+import { ensureData } from "@/lib/server/refresh";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  await ensureData();
   const all = await logAll();
   const check = verifyChain(all);
   const head = await logHead();

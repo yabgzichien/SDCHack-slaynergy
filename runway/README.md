@@ -12,7 +12,7 @@ futures (slow, medium, fast AI progress) is. The worker leaves with a week-by-we
 ```bash
 npm install
 npm run dev          # http://localhost:3000
-npm test             # engine tests: fairness, LMSR, futures weights, replay, release, log
+npm test             # engine tests: fairness, LMSR, futures weights, replay, data refresh, settlement, log
 npm run typecheck
 npm run build && npm start
 ```
@@ -80,7 +80,8 @@ this as Kedah"). Your state is optional, only used by the map, and a test checks
 Malaysia publishes no open data on job ads by state and occupation, so "jobs like this" counts workers in the industries
 the job belongs to (DOSM employed persons by industry and state, 2021, scaled to each state's 2026 Q2 employment). It is
 labelled as an estimate. Unemployment (2026 Q2) and median wages (2025) are from OpenDOSM. Boundaries: geoBoundaries
-(OpenStreetMap, ODbL), drawn without a third-party base map. Rebuild with `npm run data:build` (`scripts/build-geo.mjs`).
+(OpenStreetMap, ODbL), drawn without a third-party base map. Unemployment and wages refresh automatically (see
+[Data and updating](#data-and-updating)); rebuild the starting data with `npm run data:build` (`scripts/build-geo.ts`).
 
 ## Prediction market (Kalshi-style)
 
@@ -95,10 +96,9 @@ The headline strike (the middle one) feeds the futures' weights; the others are 
 ## Demo path
 
 1. **Try as Hafiz** (home page) or **Scan my resume** (use the sample resume) → skills → jobs → plan. Forecasts live under the ••• menu.
-2. On **Forecasts** (••• menu), optionally place a bet. Then press **New data released** (top bar, any page).
-   The server settles five questions against the real, held-back DOSM 2026 Q2 release and Epoch AI data,
-   updates forecaster influence, re-weights the futures, and recomputes expiry dates, job ranking and the plan.
-   The **What changed and why** panel lists every change with its source and date.
+2. On **Forecasts** (••• menu), optionally make a prediction on an open question. The latest real release (DOSM 2026 Q2
+   and Epoch AI to Jun 2026) is already loaded: **What changed and why** lists what it changed, with sources and dates.
+   Open questions settle by themselves when the next real release arrives (see [Data and updating](#data-and-updating)).
 3. **Jobs**: pick SDG goals to re-rank jobs and see the trade-off.
 4. **Plan** → *Send to counsellor* → switch to **Counsellor** (top bar) → approve.
 5. **/trust**: fairness check, hash-chain verification, data sources.
@@ -108,26 +108,61 @@ The headline strike (the middle one) feeds the futures' weights; the others are 
 | Path | What |
 |---|---|
 | `src/lib/engine/` | Pure engine, no framework imports: LMSR, simulated forecasters, history replay, futures weights, expiry dates, matching, plan, diff |
-| `src/lib/server/` | Postgres/SQLite store, hash-chained log, signed session cookie |
-| `src/app/api/` | `state`, `action`, `resume`, `log`, `fairness` |
+| `src/lib/server/` | Postgres/SQLite store, hash-chained log, signed session cookie, automatic data refresh (`refresh.ts`, `sources.ts`) |
+| `src/lib/datasrc/` | Source-file parsers and the validation checks, shared by the build scripts and the server |
+| `src/app/api/` | `state`, `action`, `resume`, `log`, `fairness`, `data` (the active data snapshot and each source's status) |
 | `src/app/*` | Pages: `/`, `/start`, `/resume`, `/profile`, `/skills`, `/futures` (Forecasts), `/jobs`, `/plan`, `/counsellor`, `/trust` |
 | `data/` | Committed snapshots and closed lists: `series.json` (generated), `roles.json`, `skills.json`, `courses.json`, `occupations.json`, `personas.json`, `sdg.json` |
-| `scripts/` | `build-series.mjs` (raw files → `data/series.json`), `anchor-log.mjs` (publish log fingerprint) |
+| `scripts/` | `build-series.ts` and `build-geo.ts` (raw files → snapshot 0), `data-refresh.ts` (one refresh by hand), `anchor-log.mjs` (publish log fingerprint) |
 | `docs/` | Data feasibility notes and the method write-up |
 
 ## Data and updating
 
-`data/raw/` (git-ignored) holds the source downloads; `npm run data:build` turns them into `data/series.json`:
+The data updates itself. The server keeps its data as numbered **snapshots** in the database. Snapshot 0 is the
+committed `data/series.json` and `data/states.json`. Every API request calls `ensureData()`
+(`src/lib/server/refresh.ts`): it loads the newest snapshot and, when the last check is old enough, starts a background
+refresh without making the request wait. There is no scheduler to run: the first visit after the interval does the
+check. It checks daily, hourly from DOSM's announced release day until two days after, and weekly for the pinned-source
+alerts. A database lock lets only one refresh run at a time.
 
-| Source | File | Used for |
+| Source | How it updates | Used for |
 |---|---|---|
-| DOSM Job Market Insights (2026 Q2 release, 18 Aug 2026) | `data/raw/dosm/jmi_q2_2026.xlsx` | clerical share of online ads; job demand by occupation group |
-| Epoch AI benchmarking data (retrieved 2026-10-20, CC-BY) | `data/raw/epoch/*.csv` | market questions and history replay |
-| Anthropic Economic Index, release 2025-02-10 (CC-BY) | `data/raw/aei_2025_02_10/` | share of an occupation's tasks seen in AI use |
-| ILO 2025 GenAI exposure scores (CC BY 4.0) | `data/raw/ilo/ilo.xlsx` | exposure of each occupation to generative AI |
+| DOSM Job Market Insights | **Automatic.** The server opens the next quarter's release page (`…/big-data-analytics-job-market-insights-q32026`), downloads the documents it links and keeps the one that is a real xlsx. An unpublished page lists no documents. | clerical share of online ads; job demand; the DOSM questions |
+| Epoch AI benchmarking data (CC-BY) | **Automatic.** `benchmark_data.zip`, complete quarters only | the AI questions and history replay |
+| OpenDOSM labour force and wages by state (CC BY 4.0) | **Automatic.** `lfs_qtr_state.csv`, `wages_state.csv` | the job map |
+| ILO 2025 GenAI exposure scores (CC BY 4.0) | **Pinned; alert only** | exposure of each occupation; skill expiry dates |
+| Anthropic Economic Index, release 2025-02-10 (CC-BY) | **Pinned; alert only** | share of an occupation's tasks seen in AI use |
+| DOSM Labour Force Survey Report 2024 (tables B4.5, B4.8) | **Pinned; alert only** | workers by state and industry or occupation (job map) |
 
-To update: put a newer DOSM workbook (and Epoch zip) in `data/raw/`, change the cut-off constants in
-`scripts/build-series.mjs` and `src/lib/engine/questions.ts`, and re-run `npm run data:build`.
+The pinned sources change how things are measured when a new edition comes out, so a weekly check only lists a new
+version on the Sources page (and in the log) for a person to review. It never applies one.
+
+**Checks before going live** (`src/lib/datasrc/validate.ts`): the parsers' shape checks; no quarter disappears; past
+values move only a little (DOSM revisions up to 0.5 points, Epoch past best scores may rise from late results but never
+fall); new values are believable (a clerical share move of under 5 points a quarter). If a source fails, the server
+keeps its last good data and settles nothing for it. It logs `snapshot_rejected` with the reason, shows it on the
+Sources page, and tries again at the next check.
+
+**Settling** (`src/lib/engine/calendar.ts`): the quarters the market is on come from the data, not from constants.
+- **DOSM:** a quarter settles when its release arrives.
+- **Epoch AI:** a quarter settles on the first check at least 30 days after it ends, and only once every live benchmark
+  has a result for it, because results for late-quarter models arrive weeks later. An Epoch question closes to new
+  predictions when its quarter ends.
+- **Questions are frozen:** each question keeps the wording, lines and forecaster influence it was first asked with.
+- **Settlements are final:** once a question settles it keeps the two values it settled on. A later revision is logged
+  as `revision` and never re-settles.
+- **Logging:** every new snapshot's SHA-256 hash is written to the hash-chained log (`data_snapshot`), with the
+  settlements (`data_release`).
+- **Scoring:** predictions on a release that was already out when a session started count as practice and are not scored.
+
+Commands:
+- `npm run data:refresh` runs one refresh now against the app's database.
+- `DATA_REFRESH=off` switches automatic checks off on a server.
+- To rebuild snapshot 0 from the raw files (for example after reviewing a new ILO or AEI release), run
+  `scripts/fetch-sources.sh`, then `npm run data:build`. Rebuilding keeps the questions already frozen in `series.json`.
+
+On a Replit Autoscale deployment, a refresh runs while the instance is up. If the instance stops mid-refresh, the lock
+runs out after 10 minutes and the next visit tries again.
 
 ## Guardrails
 

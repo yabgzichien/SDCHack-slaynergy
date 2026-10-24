@@ -4,6 +4,7 @@ import { aiReadResume } from "@/lib/server/ai-resume";
 import { computeWorld } from "@/lib/engine/world";
 import { getSessionId } from "@/lib/server/session";
 import { loadState, logEvent, saveState } from "@/lib/server/store";
+import { ensureData } from "@/lib/server/refresh";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -32,6 +33,7 @@ async function extract(file: File): Promise<string> {
 // Groq API once to read it). It is never stored or logged;
 // only the score, the skills you confirm and your findings summary are kept in your session.
 export async function POST(req: Request) {
+  await ensureData();
   const sid = (await getSessionId())!;
   let text = "";
   let useAi = true;

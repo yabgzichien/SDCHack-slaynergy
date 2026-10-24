@@ -8,15 +8,23 @@ import { useApp } from "./AppProvider";
 import { useT } from "./I18nProvider";
 import { StepBar, currentStep } from "./Journey";
 import { SiteHeader } from "./SiteHeader";
+import { series } from "@/lib/engine/data";
 
-// The latest real figures are always loaded; the next ones come out on the dates below.
+// The latest real figures are always loaded (the server refreshes them by itself); the next ones come out below.
+const FULL_MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const MONTH_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const dayOf = (iso: string) => { const [y, m, d] = iso.split("-").map(Number); return `${d} ${MONTH_SHORT[m - 1]} ${y}`; };
 function ReleaseNotice() {
   const { view } = useApp();
   const { t } = useT();
   if (!view) return null;
+  const q = view.world.asOfQuarter, pub = series.dosm.publishedAt[q], next = view.world.nextAnswers.dosm;
+  const upTo = `${FULL_MONTHS[Number(q[5]) * 3 - 1]} ${q.slice(0, 4)}`;
+  // Plain English: the page translator fills the blanks and localises the dates in them.
+  const line = `${pub ? `Job figures up to ${upTo} (DOSM, published ${dayOf(pub)}).` : `Job figures up to ${upTo} (DOSM).`} ${next ? `Next: ${dayOf(next)}.` : "Next: DOSM's next release."}`;
   return (
     <div className="app-release-notice">
-      <span>{t("Job figures up to June 2026 (DOSM, published 18 Aug 2026). Next: 17 Nov 2026.")}</span>
+      <span>{line}</span>
       <Link href="/changes">{t("What the latest figures changed")}</Link>
     </div>
   );

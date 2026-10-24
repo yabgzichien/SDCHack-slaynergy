@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useApp } from "@/components/AppProvider";
-import { Btn, Card, DemoLabel, H, More, PageTitle, Skeleton } from "@/components/ui";
+import { Btn, Card, DemoLabel, H, More, PageTitle, Skeleton, nextAnswersLine } from "@/components/ui";
 import type { Leaderboard, LeaderRow } from "@/lib/engine/world";
 import { MarketTabs } from "@/components/MarketTabs";
 import { ChevronRight, Trophy, UserRound } from "lucide-react";
@@ -57,7 +57,7 @@ export default function LeaderboardPage() {
           {you.brier === null ? (
             <>
               <p className="text-2xl font-semibold leading-tight">Not scored yet</p>
-              <p className="mt-2 text-sm text-muted">You start with a normal vote (1×). Your predictions are scored when the real numbers come out: DOSM on 17 Nov 2026, Epoch AI in Jan 2027. A question you skip counts as a 50/50 prediction.</p>
+              <p className="mt-2 text-sm text-muted">You start with a normal vote (1×). Your predictions are scored when the real numbers come out. {view ? nextAnswersLine(view.world.nextAnswers) : ""} A question you skip counts as a 50/50 prediction.</p>
             </>
           ) : (
             <div className="grid grid-cols-3 gap-2 text-center">
@@ -122,7 +122,7 @@ export default function LeaderboardPage() {
           </table>
         </div>
         {rows.length > 10 && <div className="mt-3"><Btn variant="quiet" onClick={() => setAll(!all)}>{all ? "Show the top 10" : `Show all ${rows.length}`}</Btn></div>}
-        <p className="mt-3 text-sm text-muted">Error score: how far predictions were from what really happened. 0 is perfect; always predicting 50/50 scores 0.25. Computer-made players earned their record on {lb.track.questions} real past releases, {quarter(lb.track.from)} to {quarterEnd(lb.track.to)}{lb.released ? ", plus the Apr to Jun 2026 numbers" : ""}.</p>
+        <p className="mt-3 text-sm text-muted">Error score: how far predictions were from what really happened. 0 is perfect; always predicting 50/50 scores 0.25. Computer-made players earned their record on {lb.track.questions} real past releases, {quarter(lb.track.from)} to {quarterEnd(lb.track.to)}{lb.released && view ? `, plus the ${view.world.latestLabel} numbers` : ""}.</p>
       </Card>
 
       <Card className="mt-4">

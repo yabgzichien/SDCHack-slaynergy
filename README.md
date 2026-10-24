@@ -135,14 +135,16 @@ All data is public or synthetic. Every source is a **dated snapshot** saved in t
 
 ### How it gets into the app
 
-We download source files instead of calling a live API. Government releases come out quarterly as workbooks, so a dated file is more reliable than an API, and anyone can check exactly what the app used.
+The server downloads the public source files itself and keeps each version as a numbered, hashed snapshot. Government releases come out quarterly as workbooks, so a dated file is more reliable than an API, and anyone can check exactly which data a prediction was settled on.
 
 ```mermaid
 flowchart LR
-    R[Raw downloads<br/>data/raw/<br/>DOSM xlsx, Epoch csv,<br/>AEI, ILO] -->|npm run data:build| S[Build scripts<br/>build-series.mjs<br/>build-geo.mjs]
-    S --> J[Committed snapshots<br/>data/series.json<br/>data/states.json]
+    R[Raw downloads<br/>data/raw/<br/>DOSM xlsx, Epoch csv,<br/>AEI, ILO] -->|npm run data:build| S[Build scripts<br/>build-series.ts<br/>build-geo.ts]
+    S --> J[Snapshot 0<br/>data/series.json<br/>data/states.json]
+    F[Server refresh<br/>DOSM, Epoch AI,<br/>OpenDOSM] -->|checked, then saved| D[Snapshots 1, 2, ...<br/>in the database]
+    J --> D
     L[Hand-checked lists<br/>roles, skills, courses,<br/>sdg, task cards] --> E
-    J --> E[Engine<br/>src/lib/engine/]
+    D --> E[Engine<br/>src/lib/engine/]
     E --> API[Next.js API routes<br/>/api/state, /api/action,<br/>/api/market ...]
     API --> UI[Pages show every number<br/>with a source + date chip]
 ```
@@ -160,13 +162,23 @@ This is the part that tracks AI progress and turns it into skill and job signals
 
 These four signals combine into a **skill expiry date**: the year AI is expected to do most of the work behind a skill *and* be in common use for it (see [section 8](#8-handling-uncertainty-how-the-forecasting-works)).
 
-### Can it be updated? Yes.
+### Does it update? Yes, automatically.
 
-1. Put the newer DOSM workbook (or Epoch export) in `runway/data/raw/`.
-2. Change the cut-off dates in `scripts/build-series.mjs` and `src/lib/engine/questions.ts`.
-3. Run `npm run data:build`.
+When someone uses the app and the last check is old enough, the server checks for new data in the background:
+- **How often:** daily, and hourly around DOSM's release day.
+- **Updated automatically:** DOSM Job Market Insights, Epoch AI benchmark results, and OpenDOSM's state labour force and wages.
+- **Checked first:** new numbers must pass checks against the numbers they replace. If a check fails, the last good data stays and nothing settles.
+- **Pinned, alert only:** the ILO exposure scores, the Anthropic Economic Index and DOSM's yearly Labour Force Survey tables. A new edition changes how they are measured, so the Sources page flags it for a person to review.
 
-When the new data loads, open market questions settle against it, the futures are re-weighted, and every worker's expiry dates, job ranking and plan are recomputed. A "what changed and why" panel lists each change with its source. The next scheduled releases are **DOSM Jul–Sep 2026 (17 Nov 2026)** and **Epoch AI Oct–Dec 2026 (Jan 2027)**.
+When new data goes live:
+- Open questions whose answers are in settle, and settlements are final.
+  - DOSM questions settle when the release arrives.
+  - Epoch AI questions settle 30 days after their quarter ends, once late benchmark results are in.
+- The futures are re-weighted, and every worker's expiry dates, job ranking and plan are recomputed.
+- A "what changed and why" panel lists each change with its source.
+- The snapshot's hash goes into the tamper-evident log.
+
+The next releases are **DOSM Jul–Sep 2026 (17 Nov 2026)** and **Epoch AI Oct–Dec 2026 (checked from 30 Jan 2027)**. Details: [runway/README.md](runway/README.md#data-and-updating).
 
 ---
 
@@ -416,7 +428,7 @@ The worker always confirms a new plan before it replaces the old one.
 | **Storage** | PostgreSQL on Replit (`pg`); SQLite (`better-sqlite3`) when running locally |
 | **Sessions and trust** | Signed session cookie; SHA-256 hash-chained log, with its fingerprint committed to Git |
 | **Resume scan** | `unpdf` (PDF) and `mammoth` (Word), with rule-based scoring. Optional AI reader: Qwen3.8 27B through the Groq API (`src/lib/server/ai-resume.ts`), with server-side checks and a rule-only fallback. |
-| **Data pipeline** | Node scripts (`build-series.mjs`, `build-geo.mjs`) turn raw downloads into committed JSON snapshots |
+| **Data pipeline** | The server fetches DOSM, Epoch AI and OpenDOSM itself, checks them and saves hashed snapshots (`src/lib/server/refresh.ts`); build scripts (`build-series.ts`, `build-geo.ts`) make the starting snapshot from raw downloads |
 | **Tests** | Vitest: fairness, LMSR, futures weights, replay, matching, planning, log |
 | **Hosting** | Replit. No GPU needed: the AI model runs on Groq's hosted API. |
 
@@ -436,7 +448,8 @@ The app runs at http://localhost:3000. Other commands:
 |---|---|
 | `npm test` | Runs the engine tests |
 | `npm run typecheck` | Checks types |
-| `npm run data:build` | Rebuilds data snapshots from `data/raw/` |
+| `npm run data:build` | Rebuilds the starting data snapshot from `data/raw/` |
+| `npm run data:refresh` | Checks the sources for new data now (the app also does this by itself) |
 | `npm run anchor` | Writes the hash log's fingerprint to `anchors/` |
 
 Without `DATABASE_URL`, sessions are kept in `.data/runway.db` (SQLite). On Replit, set `DATABASE_URL` to the built-in Postgres and `SESSION_SECRET` to a random string. For the AI resume reader, add `GROQ_API_KEY` in Replit Secrets (locally, in `runway/.env.local`, which is gitignored). Without it, the rule scan runs alone.

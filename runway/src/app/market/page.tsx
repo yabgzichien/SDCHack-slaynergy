@@ -9,6 +9,7 @@ import { ForecastDetails } from "@/components/ForecastDetails";
 import { MarketTabs } from "@/components/MarketTabs";
 import { ForecastNav } from "@/components/ForecastNav";
 import "./market.css";
+import { nextAnswersLine } from "@/components/ui";
 
 const HOW = [
   { icon: Vote, title: "Choose a question", text: "Explore the questions below. Pick an answer, then forecast Yes or No." },
@@ -65,7 +66,7 @@ export default function MarketPage() {
               <h2 id="open-questions-title" className="flex items-center gap-3">Open questions <LiveBadge /></h2>
               <span className="forecast-demo-badge">Demo mode</span>
             </div>
-            <p className="forecast-section-description">{released ? "Make your prediction before the next release. Malaysia’s job figures arrive on 17 Nov 2026; AI results follow in Jan 2027." : "Choose a question about Malaysian jobs or AI progress and make your prediction."} The ones outlined in amber are waiting for your prediction.</p>
+            <p className="forecast-section-description">{released ? `Make your prediction before the next release. ${nextAnswersLine(w.nextAnswers)}` : "Choose a question about Malaysian jobs or AI progress and make your prediction."} The ones outlined in amber are waiting for your prediction.</p>
             <ul className="grid gap-4 md:grid-cols-2">{w.events.map((e) => <li key={e.id}><MarketCard e={e} /></li>)}</ul>
             <p className="mt-3 text-sm text-muted">About 200 computer-made players predict alongside you, so the % moves while you watch. <Link href="/leaderboard" className="underline decoration-control underline-offset-2 hover:text-ink">See who predicts best</Link>.</p>
           </section>

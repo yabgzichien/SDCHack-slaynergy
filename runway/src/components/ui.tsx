@@ -9,7 +9,7 @@ export const QUESTION_PLAIN: Record<string, string> = {
   dosm: "How many Malaysian job ads are for office admin jobs",
   metr: "How long a task AI can finish on its own",
   swe: "How well AI fixes real software bugs",
-  hle: "How well AI answers very hard expert questions",
+  hle: "How well AI answers expert-level questions",
   tbench: "How well AI handles everyday computer tasks",
 };
 export const questionPlain = (eventId: string) => QUESTION_PLAIN[eventId.split("-")[0]] ?? null;
@@ -19,6 +19,13 @@ export const FUTURE_PLAIN: Record<string, string> = {
   medium: "AI keeps improving at its recent pace, and companies follow. Routine office tasks shrink steadily.",
   fast: "AI improves faster than lately, and companies rush to use it. Routine office tasks shrink quickly.",
 };
+const MONTH_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const dayOf = (iso: string) => { const [y, m, d] = iso.split("-").map(Number); return `${d} ${MONTH_SHORT[m - 1]} ${y}`; };
+// When the open questions get their answers, in one sentence (both dates come from the data).
+export function nextAnswersLine(n: { dosm: string | null; epoch: string | null }) {
+  const jobs = n.dosm ? `Malaysia’s job figures arrive on ${dayOf(n.dosm)}.` : "Malaysia’s job figures arrive with DOSM’s next release.";
+  return n.epoch ? `${jobs} AI results are checked from ${dayOf(n.epoch)}.` : jobs;
+}
 export const pct = (x: number, d = 0) => `${(x * 100).toFixed(d)}%`;
 
 // A tonal panel: one step off the white ground, no border, no shadow. tone="raised" is the one white card on a screen.

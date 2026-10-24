@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { EDUCATION_LABEL, INTERESTS, SECTORS, occupations, personas, roles, sdg, skills } from "../engine/data";
+import { dataVersion, EDUCATION_LABEL, INTERESTS, SECTORS, occupations, personas, roles, sdg, skills } from "../engine/data";
 import type { SessionState } from "../engine/state";
 import { computeView } from "../engine/view";
 
@@ -40,4 +40,5 @@ export const catalog = () => ({
   interests: INTERESTS,
 });
 
-export const respond = (state: SessionState) => NextResponse.json({ state, view: computeView(state), catalog: catalog() });
+// dataVersion: the data snapshot the view was computed from; the browser loads the same snapshot before showing it.
+export const respond = (state: SessionState) => NextResponse.json({ state, view: computeView(state), catalog: catalog(), dataVersion });

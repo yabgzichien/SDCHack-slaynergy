@@ -32,8 +32,20 @@ interface Driver {
   insertMeeting(id: string, slotId: string, sid: string, start: string, status: string, data: string): Promise<boolean>;
   updateMeeting(id: string, status: string, data: string): Promise<void>;
   meetings(): Promise<{ sid: string; data: string }[]>;
+  // Data snapshots (see src/lib/server/refresh.ts): append-only, newest id is the active one.
+  latestSnapshotId(): Promise<number | null>;
+  snapshot(id: number): Promise<SnapshotRow | null>;
+  insertSnapshot(row: SnapshotRow): Promise<void>;
+  // Small key-value store for the refresh lock and the per-source status. setIf only writes when the stored value is
+  // missing or sorts below `below` (an ISO time), so it doubles as a lock with an expiry.
+  getKv(key: string): Promise<string | null>;
+  setKv(key: string, value: string): Promise<void>;
+  setKvIf(key: string, value: string, below: string): Promise<boolean>;
 }
+export type SnapshotRow = { id: number; createdAt: string; hash: string; series: string; states: string };
 
+const DATA_TABLES = `CREATE TABLE IF NOT EXISTS snapshots (id INTEGER PRIMARY KEY, created_at TEXT NOT NULL, hash TEXT NOT NULL, series TEXT NOT NULL, states TEXT NOT NULL);
+  CREATE TABLE IF NOT EXISTS kv (key TEXT PRIMARY KEY, value TEXT NOT NULL);`;
 const MEETING_TABLES = `CREATE TABLE IF NOT EXISTS slots (id TEXT PRIMARY KEY, start TEXT NOT NULL, advisor TEXT NOT NULL);
   CREATE TABLE IF NOT EXISTS meetings (id TEXT PRIMARY KEY, slot_id TEXT NOT NULL, sid TEXT NOT NULL, start TEXT NOT NULL, status TEXT NOT NULL, data TEXT NOT NULL);
   CREATE UNIQUE INDEX IF NOT EXISTS meetings_live_slot ON meetings (slot_id) WHERE status <> 'cancelled';`;
@@ -48,7 +60,8 @@ function sqliteDriver(): Driver {
   db.exec(`CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, state TEXT NOT NULL, updated_at INTEGER NOT NULL);
            CREATE TABLE IF NOT EXISTS log (seq INTEGER PRIMARY KEY, ts TEXT NOT NULL, type TEXT NOT NULL, session TEXT NOT NULL, payload TEXT NOT NULL, prev TEXT NOT NULL, hash TEXT NOT NULL);
            CREATE TABLE IF NOT EXISTS cases (id TEXT PRIMARY KEY, sid TEXT NOT NULL UNIQUE, updated_at INTEGER NOT NULL);
-           ${MEETING_TABLES}`);
+           ${MEETING_TABLES}
+           ${DATA_TABLES}`);
   const appendTx = db.transaction((type: string, session: string, payload: string): LogEntry => {
     const last = db.prepare("SELECT * FROM log ORDER BY seq DESC LIMIT 1").get() as LogEntry | undefined;
     const base = { seq: (last?.seq ?? 0) + 1, ts: new Date().toISOString(), type, session, payload, prev: last?.hash ?? GENESIS };
@@ -76,6 +89,17 @@ function sqliteDriver(): Driver {
     },
     async updateMeeting(id, status, data) { db.prepare("UPDATE meetings SET status=?, data=? WHERE id=?").run(status, data, id); },
     async meetings() { return db.prepare("SELECT sid, data FROM meetings ORDER BY start DESC LIMIT 1000").all() as { sid: string; data: string }[]; },
+    async latestSnapshotId() { return (db.prepare("SELECT id FROM snapshots ORDER BY id DESC LIMIT 1").get() as { id: number } | undefined)?.id ?? null; },
+    async snapshot(id) {
+      const r = db.prepare("SELECT * FROM snapshots WHERE id=?").get(id) as Record<string, unknown> | undefined;
+      return r ? { id: Number(r.id), createdAt: String(r.created_at), hash: String(r.hash), series: String(r.series), states: String(r.states) } : null;
+    },
+    async insertSnapshot(r) { db.prepare("INSERT INTO snapshots (id,created_at,hash,series,states) VALUES (?,?,?,?,?)").run(r.id, r.createdAt, r.hash, r.series, r.states); },
+    async getKv(key) { return (db.prepare("SELECT value FROM kv WHERE key=?").get(key) as { value: string } | undefined)?.value ?? null; },
+    async setKv(key, value) { db.prepare("INSERT INTO kv (key,value) VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value").run(key, value); },
+    async setKvIf(key, value, below) {
+      return db.prepare("INSERT INTO kv (key,value) VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value WHERE kv.value < ?").run(key, value, below).changes === 1;
+    },
   };
 }
 
@@ -88,7 +112,8 @@ function pgDriver(url: string): Driver {
     await pool.query(`CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, state TEXT NOT NULL, updated_at BIGINT NOT NULL);
       CREATE TABLE IF NOT EXISTS log (seq BIGINT PRIMARY KEY, ts TEXT NOT NULL, type TEXT NOT NULL, session TEXT NOT NULL, payload TEXT NOT NULL, prev TEXT NOT NULL, hash TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS cases (id TEXT PRIMARY KEY, sid TEXT NOT NULL UNIQUE, updated_at BIGINT NOT NULL);
-      ${MEETING_TABLES}`);
+      ${MEETING_TABLES}
+      ${DATA_TABLES}`);
   })());
   const toEntry = (r: Record<string, unknown>): LogEntry => ({ ...(r as unknown as LogEntry), seq: Number(r.seq) });
   return {
@@ -125,13 +150,26 @@ function pgDriver(url: string): Driver {
     },
     async updateMeeting(id, status, data) { await init(); await pool.query("UPDATE meetings SET status=$1, data=$2 WHERE id=$3", [status, data, id]); },
     async meetings() { await init(); return (await pool.query("SELECT sid, data FROM meetings ORDER BY start DESC LIMIT 1000")).rows; },
+    async latestSnapshotId() { await init(); const r = await pool.query("SELECT id FROM snapshots ORDER BY id DESC LIMIT 1"); return r.rows[0] ? Number(r.rows[0].id) : null; },
+    async snapshot(id) {
+      await init();
+      const r = (await pool.query("SELECT * FROM snapshots WHERE id=$1", [id])).rows[0];
+      return r ? { id: Number(r.id), createdAt: r.created_at, hash: r.hash, series: r.series, states: r.states } : null;
+    },
+    async insertSnapshot(r) { await init(); await pool.query("INSERT INTO snapshots (id,created_at,hash,series,states) VALUES ($1,$2,$3,$4,$5)", [r.id, r.createdAt, r.hash, r.series, r.states]); },
+    async getKv(key) { await init(); return (await pool.query("SELECT value FROM kv WHERE key=$1", [key])).rows[0]?.value ?? null; },
+    async setKv(key, value) { await init(); await pool.query("INSERT INTO kv (key,value) VALUES ($1,$2) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value", [key, value]); },
+    async setKvIf(key, value, below) {
+      await init();
+      return ((await pool.query("INSERT INTO kv (key,value) VALUES ($1,$2) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value WHERE kv.value < $3", [key, value, below])).rowCount ?? 0) === 1;
+    },
   };
 }
 
 // Kept on globalThis so hot reloads reuse one connection. Bump the key when the driver gains methods or tables.
-const g = globalThis as unknown as { __runwayDb3?: Driver };
+const g = globalThis as unknown as { __runwayDb4?: Driver };
 function db(): Driver {
-  return (g.__runwayDb3 ??= process.env.DATABASE_URL ? pgDriver(process.env.DATABASE_URL) : sqliteDriver());
+  return (g.__runwayDb4 ??= process.env.DATABASE_URL ? pgDriver(process.env.DATABASE_URL) : sqliteDriver());
 }
 
 export async function loadState(id: string): Promise<SessionState> {
@@ -162,6 +200,15 @@ export const listMeetings = async (): Promise<StoredMeeting[]> => (await db().me
 export const meetingsOf = async (sid: string) => (await listMeetings()).filter((m) => m.sid === sid);
 export const findMeeting = async (id: string) => (await listMeetings()).find((m) => m.id === id) ?? null;
 export const logEvent = (type: string, sid: string, payload: unknown) => db().append(type, anonymise(sid), JSON.stringify(payload));
+// Server events (data snapshots, settlements, rejected fetches) are logged under the session "server".
+export const logSystem = (type: string, payload: unknown) => db().append(type, "server", JSON.stringify(payload));
+export const latestSnapshotId = () => db().latestSnapshotId();
+export const getSnapshot = (id: number) => db().snapshot(id);
+export const insertSnapshot = (r: SnapshotRow) => db().insertSnapshot(r);
+export const getKv = (key: string) => db().getKv(key);
+export const setKv = (key: string, value: string) => db().setKv(key, value);
+export const setKvIf = (key: string, value: string, below: string) => db().setKvIf(key, value, below);
+export const sha256 = sha;
 export const logHead = () => db().head();
 export const logAll = () => db().all();
 export const logRecent = (n: number) => db().recent(n);

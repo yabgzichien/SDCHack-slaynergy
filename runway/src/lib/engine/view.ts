@@ -1,5 +1,5 @@
-import { KIND_LABEL } from "./market";
-import { skills, skillById, roles, roleById, occupations, occupationById, series, sdg, sourceById, SECTORS, INTERESTS, EDUCATION_LABEL, EDUCATION_RANK, quarterIndex, type SectorId } from "./data";
+import { skills, skillById, roles, roleById, occupations, occupationById, series, sdg, sourceById, SECTORS, INTERESTS, EDUCATION_LABEL, EDUCATION_RANK, quarterIndex, prevQuarter, type SectorId } from "./data";
+import { isoDay, LIVE_QUARTER, quarterPlain } from "./questions";
 import { computeWorld, type World } from "./world";
 import { expiryFor, durability, fmtYear, NOW, THRESHOLD, type SkillExpiry } from "./expiry";
 import type { Weights3 } from "./futures";
@@ -162,7 +162,7 @@ function radarFor(w: World): Radar {
     sources: [
       { name: "ILO 2025 GenAI exposure (ISCO-08)", detail: "How exposed each occupation's tasks are to generative AI", url: ilo.url, date: `scores ${ilo.latest}; retrieved ${ilo.retrieved}` },
       { name: "Anthropic Economic Index", detail: "Share of an occupation's tasks seen in real AI use", url: aei.url, date: `release ${aei.latest.split(" ")[0]}; retrieved ${aei.retrieved}` },
-      { name: "DOSM Job Market Insights", detail: "Online job ads by occupation group (demand)", url: dosm.url, date: w.release ? "2026 Q2 (published 18 Aug 2026)" : "to 2026 Q1; Q2 held back" },
+      { name: "DOSM Job Market Insights", detail: "Online job ads by occupation group (demand)", url: dosm.url, date: w.asOfLabel.replace(/^DOSM /, "") },
       { name: "Epoch AI benchmarks", detail: "How fast AI capability is growing (anchors the futures)", url: ep.url, date: `to ${w.asOfQuarter.replace("Q", " Q")}; retrieved ${ep.retrieved}` },
     ],
   };
@@ -319,7 +319,8 @@ const monthsBetween = (a: number, b: number) => Math.round((b - a) * 12);
 
 function diffViews(a: View, b: View, state: SessionState): Change[] {
   const out: Change[] = [];
-  const dosmSrc = { name: "DOSM Job Market Insights, 2026 Q2 release", url: sourceById.dosm.url, date: "18 Aug 2026" };
+  const live = LIVE_QUARTER(), pub = series.dosm.publishedAt[live];
+  const dosmSrc = { name: `DOSM Job Market Insights, ${live.replace("Q", " Q")} release`, url: sourceById.dosm.url, date: pub ? isoDay(pub) : `retrieved ${sourceById.dosm.retrieved}` };
   const epochSrc = { name: "Epoch AI benchmarking data", url: sourceById.epoch.url, date: `retrieved ${sourceById.epoch.retrieved}` };
 
   const headline = b.world.settledEvents.map((e) => ({ e, s: e.strikes.find((x) => x.base)! }));
@@ -338,13 +339,13 @@ function diffViews(a: View, b: View, state: SessionState): Change[] {
     out.push({
       kind: "futures", text: `${f.name}: ${pct(x)} → ${pct(y)} likely${d === 0 ? " (no change)" : ""}`,
       why: `It predicted the real answer correctly in ${headline.filter(({ s: q }) => (q.settled!.outcome ? q.futures[f.id] : 1 - q.futures[f.id]) > 0.5).length} of ${headline.length} questions.`,
-      source: { name: "Settled market questions", url: sourceById.epoch.url, date: "2026 Q2 data" },
+      source: { name: "Settled market questions", url: sourceById.epoch.url, date: `${live.replace("Q", " Q")} data` },
     });
   }
   const ka = a.world.kindSummary, kb = b.world.kindSummary;
   const moved = kb.map((k) => ({ k: k.kind, d: k.influence - ka.find((z) => z.kind === k.kind)!.influence })).sort((x, y) => Math.abs(y.d) - Math.abs(x.d))[0];
   out.push({
-    kind: "forecasters", text: `The computer-made ${KIND_LABEL[moved.k as keyof typeof KIND_LABEL]}s' vote changed the most (${moved.d > 0 ? "up" : "down"} ${Math.abs(moved.d).toFixed(2)}× on average).`,
+    kind: "forecasters", text: `The computer-made ${moved.k}s' vote changed the most (${moved.d > 0 ? "up" : "down"} ${Math.abs(moved.d).toFixed(2)}× on average).`,
     why: "Players whose predictions were closer to the real answers got a bigger vote.", source: epochSrc,
   });
   if (state.profile) {
@@ -355,7 +356,7 @@ function diffViews(a: View, b: View, state: SessionState): Change[] {
     for (const s of shifts) {
       out.push({
         kind: "skills", text: `${s.name}: AI could take it over by ${s.to} (was ${s.from}, ${Math.abs(s.m)} months ${s.m > 0 ? "later" : "sooner"}).`,
-        why: "Our prediction of how fast AI is moving changed, so the date moved.", source: { name: "ILO 2025 exposure + Anthropic Economic Index + futures", url: sourceById.ilo.url, date: "weights as of 2026 Q2" },
+        why: "Our prediction of how fast AI is moving changed, so the date moved.", source: { name: "ILO 2025 exposure + Anthropic Economic Index + futures", url: sourceById.ilo.url, date: `weights as of ${live.replace("Q", " Q")}` },
       });
     }
     if (!shifts.length) out.push({ kind: "skills", text: "None of your skill dates moved by a month or more.", why: "Our prediction of how fast AI is moving changed too little to move any date.", source: epochSrc });
@@ -370,10 +371,10 @@ function diffViews(a: View, b: View, state: SessionState): Change[] {
     } else if (b.plan) out.push({ kind: "plan", text: `Plan unchanged: ${b.plan.title}, ${b.plan.totalWeeks} weeks.`, why: "The job at the top of your list stayed the same.", source: dosmSrc });
   }
   const q = series.dosm.quarters;
-  const q1 = q.find((d) => d.q === "2026Q1")!, q2 = q.find((d) => d.q === "2026Q2")!;
+  const q1 = q.find((d) => d.q === prevQuarter(live))!, q2 = q.find((d) => d.q === live)!;
   out.push({
     kind: "demand", text: `Office admin jobs: ${q1.clerical_share.toFixed(1)} → ${q2.clerical_share.toFixed(1)} in every 100 job ads. All job ads ${q2.total >= q1.total ? "up" : "down"} ${Math.abs(((q2.total / q1.total) - 1) * 100).toFixed(1)}%.`,
-    why: "Real government (DOSM) numbers for Apr to Jun 2026.", source: dosmSrc,
+    why: `Real government (DOSM) numbers for ${quarterPlain(live)}.`, source: dosmSrc,
   });
   return out;
 }

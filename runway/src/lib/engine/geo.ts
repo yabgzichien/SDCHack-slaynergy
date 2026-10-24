@@ -3,8 +3,8 @@ import { GROUP_LABEL, type GroupKey, type SectorId } from "./data";
 
 // Where the work is, state by state. Everything here is computed from public, dated data (data/states.json):
 //   - workers by state and industry, and by state and occupation group (DOSM Labour Force Survey Report 2024),
-//     scaled to today by each state's employment (OpenDOSM LFS, 2026 Q2)
-//   - unemployment by state (OpenDOSM LFS, 2026 Q2) and median monthly wage by state (OpenDOSM, 2025)
+//     scaled to today by each state's employment (OpenDOSM LFS, latest quarter)
+//   - unemployment by state (OpenDOSM LFS, latest quarter) and median monthly wage by state (OpenDOSM, latest year)
 // DOSM publishes no state figures for single jobs, nor industry and occupation together by state. So "jobs like this" is
 // estimated as the people in a job's industries, times the share of the state's workers in the job's occupation group.
 // The app labels these numbers as estimates.
@@ -17,10 +17,16 @@ export type StateRow = {
   industry: Record<string, number>;
   occupation: Record<string, number>; // employed persons by MASCO major group, thousands
 };
-type StatesFile = { generatedAt: string; sources: { id: string; name: string; url: string; latest: string; licence: string }[]; industryYear: number; occupationYear: number; nationalIndustry: Record<string, number>; nationalOccupation: Record<string, number>; states: StateRow[] };
-export const geo = statesJson as unknown as StatesFile;
-export const STATES = geo.states;
-export const stateById: Record<string, StateRow> = Object.fromEntries(STATES.map((s) => [s.id, s]));
+export type StatesFile = { generatedAt: string; sources: { id: string; name: string; url: string; latest: string; licence: string }[]; industryYear: number; occupationYear: number; nationalIndustry: Record<string, number>; nationalOccupation: Record<string, number>; states: StateRow[] };
+// data/states.json is snapshot 0; newer snapshots swap in through setStates (see setSeries in data.ts).
+export let geo = statesJson as unknown as StatesFile;
+export let STATES = geo.states;
+export let stateById: Record<string, StateRow> = Object.fromEntries(STATES.map((s) => [s.id, s]));
+export function setStates(next: StatesFile) {
+  geo = next;
+  STATES = next.states;
+  stateById = Object.fromEntries(STATES.map((s) => [s.id, s]));
+}
 
 export const INDUSTRY_LABEL: Record<string, string> = {
   finance: "finance and insurance", professional: "professional, scientific and technical services", admin: "administrative and support services",

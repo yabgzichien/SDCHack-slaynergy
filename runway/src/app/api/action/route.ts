@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import { NextResponse } from "next/server";
 import { computeView } from "@/lib/engine/view";
 import { computeWorld } from "@/lib/engine/world";
+import { isoDay } from "@/lib/engine/questions";
 import { skillById, personas, occupationById, roleById, INTERESTS, isEducation, isStudyField, EDUCATION_RANK } from "@/lib/engine/data";
 import { initialState, STAY_ID, type Profile, type SessionState } from "@/lib/engine/state";
 import { stateById, isReach } from "@/lib/engine/geo";
@@ -14,9 +15,12 @@ import { issueBadge, personaState } from "@/lib/engine/review";
 import { courseById } from "@/lib/engine/data";
 import type { PathwayWork } from "@/lib/engine/state";
 import { MAX_PER_ANSWER, moveAllowance } from "@/lib/market-math";
+import { ensureData } from "@/lib/server/refresh";
 
 export const dynamic = "force-dynamic";
 
+// The Malaysian calendar day, as "2026-10-24".
+const malaysiaToday = () => new Date(Date.now() + 8 * 3600_000).toISOString().slice(0, 10);
 const INTEREST_IDS = INTERESTS.map((i) => i.id);
 const bad = (message: string) => NextResponse.json({ error: message }, { status: 400 });
 const num = (x: unknown, lo: number, hi: number, d: number) => {
@@ -78,6 +82,7 @@ function cleanPathway(raw: Record<string, unknown>, cardId: string | undefined):
 }
 
 export async function POST(req: Request) {
+  await ensureData();
   const sid = (await getSessionId())!;
   let body: Record<string, unknown>;
   try { body = await req.json(); } catch { return bad("Invalid request."); }
@@ -117,6 +122,8 @@ export async function POST(req: Request) {
       if (w.events.some((e) => e.settled)) return bad("That market has already settled.");
       const strike = w.events.flatMap((e) => e.strikes).find((s) => s.marketId === market);
       if (!strike) return bad("That market is not open.");
+      const open = w.events.find((e) => e.strikes.some((s) => s.marketId === market))!;
+      if (action === "buy" && open.closesAt && malaysiaToday() > open.closesAt) return bad(`New predictions on this question closed on ${isoDay(open.closesAt)}. It settles once the late results are in.`);
       if (action === "buy" && amount > w.user.balance + 1e-6) return bad(`You only have ${w.user.balance.toFixed(0)} points.`);
       const used = strike.executions.filter((x) => x.action === "buy").reduce((a, x) => a + x.points, 0);
       if (action === "buy" && used + amount > MAX_PER_ANSWER + 1e-6) return bad(`You can put at most ${MAX_PER_ANSWER} points into one answer. You have ${Math.max(0, MAX_PER_ANSWER - used).toFixed(0)} left here.`);
@@ -127,18 +134,6 @@ export async function POST(req: Request) {
       if (state.orders.length >= 300) return bad("Order limit reached for this session. Press Start over to reset.");
       state = { ...state, orders: [...state.orders, { id: `o${state.orders.length + 1}`, market, t, side, action, amount }] };
       await logEvent("order", sid, { market, side, action, amount: +amount.toFixed(2) });
-      break;
-    }
-    case "release": {
-      if (state.release === 1) return bad("The new data has already been released.");
-      const before = computeView(state);
-      state = { ...state, release: 1, clock: { t0: state.clock?.t0 ?? new Date().toISOString(), t1: new Date().toISOString() } };
-      const after = computeView(state);
-      await logEvent("data_release", sid, {
-        release: "DOSM 2026 Q2 (published 2026-08-18) with Epoch AI data to 2026-06-30",
-        settled: after.world.settledEvents.map((e) => { const s = e.strikes.find((x) => x.base)!; return { id: e.id, outcome: s.settled!.outcome, crowd: +s.close.toFixed(3) }; }),
-        futures: { before: before.world.futures.map((f) => +f.weight.toFixed(3)), after: after.world.futures.map((f) => +f.weight.toFixed(3)) },
-      });
       break;
     }
     case "homeState": {

@@ -37,7 +37,6 @@ function Logo({ c, size = 46, fallback: Fallback = BookOpen }: { c: { provider: 
     </span>
   );
 }
-const day = (d: string) => new Date(`${d}T00:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 const weeks = (s: PlanStep) => (s.weekStart === s.weekEnd ? `week ${s.weekStart}` : `weeks ${s.weekStart} to ${s.weekEnd}`);
 const covers = (c: Course, key: string) => key.split("+").every((k) => c.skills.includes(k));
 
@@ -233,7 +232,7 @@ function Courses() {
                     ) : (
                       <a href={c.url} target="_blank" rel="noreferrer" className="courses-open press inline-flex min-h-10 items-center gap-2 text-sm font-semibold">Open the course <ArrowRight size={16} aria-hidden /></a>
                     )}
-                    <p className="mt-1.5 text-[11px] text-muted">{ok ? `Link checked ${day(c.checked)}` : "This site blocks automatic checks; open it to confirm."}</p>
+                    {!ok && <p className="mt-1.5 text-[11px] text-muted">This site blocks automatic checks; open it to confirm.</p>}
                   </div>
                 </li>
               );

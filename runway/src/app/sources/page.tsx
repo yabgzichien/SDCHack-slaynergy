@@ -1,12 +1,15 @@
 "use client";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useApp } from "@/components/AppProvider";
 import { Card, PageTitle, Skeleton, SourceChip, questionPlain } from "@/components/ui";
 import { MarketTabs } from "@/components/MarketTabs";
 import { EventIcon, topicOf } from "@/components/MarketCards";
-import { Briefcase, CalendarClock, ChevronRight, Cpu } from "lucide-react";
+import { Briefcase, CalendarClock, ChevronRight, Cpu, RefreshCw } from "lucide-react";
 import { series, sourceById } from "@/lib/engine/data";
 import type { EventView } from "@/lib/engine/world";
+import { quarterEnd as quarterEndDay } from "@/lib/engine/questions";
+import type { DataStatus } from "@/lib/server/refresh";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const day = (iso: string) => { const [y, m, d] = iso.slice(0, 10).split("-").map(Number); return `${d} ${MONTHS[m - 1]} ${y}`; };
@@ -32,12 +35,19 @@ function latestEpoch(id: string) {
   return { value: `${last.v.toFixed(1)}%`, q: last.q };
 }
 
+const prevQ = (q: string) => { let y = +q.slice(0, 4), n = +q[5] - 1; if (n === 0) { n = 4; y--; } return `${y}Q${n}`; };
 const DOSM_TINT = "#0ea5e9", EPOCH_TINT = "#8b5cf6";
 const daysUntil = (iso: string) => Math.ceil((new Date(`${iso.slice(0, 10)}T00:00:00+08:00`).getTime() - Date.now()) / 86400000);
 
 // One question: where do the answers to the prediction questions come from, and can I check them myself?
 export default function SourcesPage() {
-  const { view } = useApp();
+  const { view, dataVersion } = useApp();
+  const [info, setInfo] = useState<{ snapshot: number; status: DataStatus; disabled: boolean } | null>(null);
+  useEffect(() => {
+    let on = true;
+    fetch("/api/data?info=1", { cache: "no-store" }).then((r) => r.json()).then((d) => on && setInfo(d.info)).catch(() => {});
+    return () => { on = false; };
+  }, [dataVersion]);
   if (!view) return <Skeleton lines={6} />;
   const open = view.world.events;
   const dosmOpen = open.filter((e) => seriesOf(e) === "dosm");
@@ -49,6 +59,8 @@ export default function SourcesPage() {
   const published = series.dosm.publishedAt[now.q];
   const change = now.clerical_share - before.clerical_share;
   const dosmDays = dosm.next ? daysUntil(dosm.next) : null;
+  const epochQ = epochOpen.map((e) => e.quarter).sort()[0];
+  const epochDay = view.world.nextAnswers.epoch;
 
   return (
     <div>
@@ -72,8 +84,8 @@ export default function SourcesPage() {
             <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-white/20"><Cpu size={26} aria-hidden /></span>
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-wide opacity-90">AI ability · Epoch AI</p>
-              <p className="num text-2xl font-semibold tracking-[-0.02em]">Jan 2027</p>
-              <p className="text-sm opacity-90">Best score by 31 Dec vs by 30 Sep · settles {epochOpen.length} questions</p>
+              <p className="num text-2xl font-semibold tracking-[-0.02em]">{epochDay ? day(epochDay) : "Next quarter"}</p>
+              <p className="text-sm opacity-90">{epochQ ? `Best score by ${day(quarterEndDay(epochQ))} vs by ${day(quarterEndDay(prevQ(epochQ)))} · ` : ""}settles {epochOpen.length} questions</p>
             </div>
           </li>
         </ol>
@@ -152,7 +164,43 @@ export default function SourcesPage() {
         </Card>
       </div>
 
+      {info && <UpdatesCard info={info} />}
+
       <p className="mt-6 rounded-2xl bg-surface px-4 py-3 text-sm text-muted">Other data the app uses, such as the ILO&apos;s AI exposure scores and the Anthropic Economic Index, does not settle questions. It is listed under <Link href="/trust" className="underline decoration-control underline-offset-2 hover:text-ink">Our approach</Link>.</p>
     </div>
+  );
+}
+
+const SOURCE_LABEL: Record<string, string> = { dosm: "DOSM Job Market Insights", epoch: "Epoch AI benchmark results", opendosm: "OpenDOSM state labour force and wages" };
+const stamp = (iso: string) => `${day(iso)}, ${new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kuala_Lumpur" })}`;
+
+// The server checks the sources by itself; this shows when it last looked and what it found.
+function UpdatesCard({ info }: { info: { snapshot: number; status: DataStatus; disabled: boolean } }) {
+  const { status } = info;
+  return (
+    <Card tone="raised" className="rise-in mt-4">
+      <h2 className="flex items-center gap-2 text-base font-semibold"><RefreshCw size={18} aria-hidden className="text-cue" />Automatic updates</h2>
+      <p className="mt-1 text-sm text-muted">
+        The app checks these sources by itself, every day, and every hour on DOSM&apos;s release day. New numbers go live only if they pass checks against the numbers they replace; if a check fails, the last good numbers stay and nothing is settled.
+        {" "}Data version {info.snapshot}.{status.checkedAt ? ` Last checked ${stamp(status.checkedAt)}.` : " Not checked yet."}{info.disabled ? " Automatic updates are switched off on this server." : ""}
+      </p>
+      <ul className="mt-3 space-y-1.5 text-sm">
+        {(["dosm", "epoch", "opendosm"] as const).map((k) => {
+          const st = status.sources[k];
+          return (
+            <li key={k} className="flex flex-wrap items-baseline justify-between gap-x-3 rounded-xl bg-surface2/60 px-3 py-2">
+              <span className="font-medium">{SOURCE_LABEL[k]}</span>
+              <span className={st && !st.ok ? "text-fall" : "text-muted"}>{st ? `${st.detail}${st.updatedAt ? ` · last new numbers ${day(st.updatedAt)}` : ""}` : "Not checked yet"}</span>
+            </li>
+          );
+        })}
+      </ul>
+      <p className="mt-3 text-sm text-muted">The ILO&apos;s AI exposure scores, the Anthropic Economic Index and DOSM&apos;s yearly Labour Force Survey tables are kept as they are, because a new edition changes how they are measured. Once a week the app looks for a new edition and lists it here for a person to review.</p>
+      {status.alerts.length > 0 && (
+        <ul className="mt-2 space-y-1.5 text-sm">{status.alerts.map((a) => (
+          <li key={a.id} className="rounded-xl px-3 py-2 ring-2 ring-cue" style={{ background: "var(--cue-soft)" }}><span className="font-medium text-cueink">New version to review: {a.name}</span> <span className="text-cueink">({a.found}).</span> <a href={a.url} target="_blank" rel="noreferrer" className="underline decoration-control underline-offset-2">Open</a></li>
+        ))}</ul>
+      )}
+    </Card>
   );
 }

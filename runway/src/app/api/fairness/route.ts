@@ -3,11 +3,13 @@ import { matchRoles, pickInputs } from "@/lib/engine/matching";
 import { occupations } from "@/lib/engine/data";
 import { computeWorld } from "@/lib/engine/world";
 import { initialState } from "@/lib/engine/state";
+import { ensureData } from "@/lib/server/refresh";
 
 export const dynamic = "force-dynamic";
 
 // Runs matching on profile pairs that differ ONLY in age/gender and checks that the results are identical.
 export async function GET() {
+  await ensureData();
   const w = computeWorld(initialState()).weights;
   let pairs = 0, same = 0;
   for (const o of occupations) {

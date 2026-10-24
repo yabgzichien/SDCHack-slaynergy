@@ -9,11 +9,12 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:layout": "node node_modules/@playwright/test/cli.js test tests/layout-overflow.spec.ts",
-    "data:build": "node scripts/build-series.mjs && node scripts/build-geo.mjs",
+    "data:build": "tsx scripts/build-series.ts && tsx scripts/build-geo.ts",
     "anchor": "node scripts/anchor-log.mjs",
     "anchor:forecasts": "tsx scripts/anchor-forecasts.ts",
     "typecheck": "tsc --noEmit",
-    "build:map": "node scripts/build-map.mjs"
+    "build:map": "node scripts/build-map.mjs",
+    "data:refresh": "tsx scripts/data-refresh.ts"
   },
   "dependencies": {
     "better-sqlite3": "^13.0.3",

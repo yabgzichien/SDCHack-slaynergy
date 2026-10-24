@@ -388,7 +388,8 @@ describe("field of study and staying in your job", () => {
   });
 });
 
-import { computeLeaderboard, YOU } from "@/lib/engine/world";
+import { computeLeaderboard as lb0, computeWorld as w0, YOU } from "@/lib/engine/world";
+import { withSeries } from "@/lib/engine/data";
 
 describe("leaderboard: influence follows accuracy", () => {
   // Real 2026 Q2 outcomes of the headline lines: DOSM yes, SWE-bench yes, the others no.
@@ -396,6 +397,18 @@ describe("leaderboard: influence follows accuracy", () => {
   const bets = (right: boolean): SessionState => ({
     ...initialState(), release: 1, clock: { t0: T0, t1: T1 },
     orders: Object.entries(truth).map(([ev, o], i) => ({ id: `o${i}`, market: `${ev}~1`, t: 30 + i, side: (o === right ? "yes" : "no") as "yes" | "no", action: "buy" as const, amount: 300 })),
+  });
+  // As if the 2026 Q2 questions had been open in this session and settled at T1, so predictions on them count.
+  const openedQ2: typeof series = JSON.parse(JSON.stringify(series));
+  for (const id of Object.keys(truth)) openedQ2.market.frozen[id].settledAt = T1;
+  const computeLeaderboard = (st: SessionState, now: number) => withSeries(openedQ2, () => lb0(st, now));
+  const computeWorld = (st: SessionState, now: number) => withSeries(openedQ2, () => w0(st, now));
+  it("predictions on a release that was already out when the session started are practice, not scored", () => {
+    const w = w0(bets(true), Date.parse(T1) + 1000);
+    expect(w.you.forecasts.every((f) => f.practice)).toBe(true);
+    expect(w.you.scored).toBe(0);
+    expect(w.you.brier).toBeNull();
+    expect(computeWorld(bets(true), Date.parse(T1) + 1000).you.scored).toBe(5);
   });
   it("ranks every simulated forecaster and you by Brier score, lowest first", () => {
     const lb = computeLeaderboard(bets(true), Date.parse(T1) + 1000);

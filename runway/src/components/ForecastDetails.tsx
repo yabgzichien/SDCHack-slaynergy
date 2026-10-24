@@ -17,7 +17,7 @@ export function ForecastDetails() {
       <Card tone="raised">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-base font-semibold">The AI outlook</h3>
-          <span className="text-sm text-muted">{w.release ? "Updated with the Apr to Jun 2026 numbers" : "Using numbers up to Mar 2026"}</span>
+          <span className="text-sm text-muted">{w.release ? `Updated with the ${w.latestLabel} numbers` : `Using numbers up to ${w.asOfQuarter.replace("Q", " Q")}`}</span>
         </div>
         <div className="mt-4"><FutureBar futures={w.futures} height={16} /></div>
         <div className="mt-5 grid gap-4 md:grid-cols-3">

@@ -7,7 +7,7 @@ import { useApp } from "./AppProvider";
 import { FUTURE_COLOR, FutureBar, pct } from "./ui";
 import { LandingLiveMarket } from "./LandingLiveMarket";
 
-// "Humanity's Last Exam: AI on very hard expert exam questions, Oct to Dec 2026" -> "AI on very hard expert exam questions"
+// "Humanity's Last Exam: AI on expert-level exam questions, Oct to Dec 2026" -> "AI on expert-level exam questions"
 const plainName = (title: string) => {
   const head = title.split(/, [A-Z][a-z]{2} to /)[0];
   return (head.includes(": ") ? head.split(": ")[1] : head).replace(/\s*\(METR\)/, "");

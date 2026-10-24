@@ -1,7 +1,7 @@
-import { makeQuestions, LAST_BEFORE, LIVE_QUARTER, NEXT_QUARTER, NEXT_QUARTER_EPOCH, type Question } from "./questions";
+import { makeQuestions, type Question } from "./questions";
 import { FORECASTERS, runMarket, updateWeights, brier, logLik, type Kind, type MarketRun, type Weights } from "./market";
 import { FUTURE_IDS, UPDATE_STRENGTH, FADE_PER_QUARTER, type FutureId } from "./futures-def";
-import { quarterIndex } from "./data";
+import { quarterIndex, perSnapshot } from "./data";
 
 export type Scores = Record<FutureId, number>;
 export const zeroScores = (): Scores => ({ slow: 0, medium: 0, fast: 0 });
@@ -37,11 +37,9 @@ export type Replay = {
   influenceHistory: { q: string; byKind: Record<Kind, number> }[];
 };
 
-let cache: Replay | null = null;
-
 // Re-run every past release in order. Weights used for each question come only from earlier questions.
-export function replayHistory(): Replay {
-  if (cache) return cache;
+export const replayHistory = perSnapshot(buildReplay);
+function buildReplay(): Replay {
   const all = makeQuestions().filter((q) => q.phase === "replay");
   const quarters = [...new Set(all.map((q) => q.quarter))].sort((a, b) => quarterIndex(a) - quarterIndex(b));
   let w: Weights = Object.fromEntries(FORECASTERS.map((f) => [f.id, 1]));
@@ -74,14 +72,12 @@ export function replayHistory(): Replay {
     w = updateWeights(w, runs);
     influenceHistory.push({ q: qt, byKind: byKind(w) });
   }
-  cache = {
+  return {
     weights: w, scores: S, agentBrier, influenceHistory,
     stats: { questions: n, brierLmsr: sumL / n, brierWeightedMean: sumW / n, brierUnweighted: sumU / n, brierCoin: 0.25, brierBaseRate: sumB / n, brierFutures: { slow: sumF.slow / n, medium: sumF.medium / n, fast: sumF.fast / n }, perQuarter },
   };
-  return cache;
 }
 
 export function liveQuestions(phase: "live" | "next"): Question[] {
   return makeQuestions().filter((q) => q.phase === phase);
 }
-export { LAST_BEFORE, LIVE_QUARTER, NEXT_QUARTER, NEXT_QUARTER_EPOCH };

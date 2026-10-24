@@ -1,16 +1,19 @@
 import { NextResponse } from "next/server";
 import { computeWorld } from "@/lib/engine/world";
+import { series } from "@/lib/engine/data";
 import { ladder } from "@/lib/engine/questions";
 import { liveQuestions, replayHistory } from "@/lib/engine/replay";
 import { updateWeights } from "@/lib/engine/market";
 import { baseRun, runTape } from "@/lib/engine/tape";
 import { getSessionId } from "@/lib/server/session";
 import { loadState, saveState } from "@/lib/server/store";
+import { ensureData } from "@/lib/server/refresh";
 
 export const dynamic = "force-dynamic";
 
 // Live chart feed for one event: every strike's price history plus the latest trades. The client polls this every few seconds.
 export async function GET(req: Request) {
+  await ensureData();
   const sid = (await getSessionId())!;
   let state = await loadState(sid);
   if (!state.clock) { state = { ...state, clock: { t0: new Date().toISOString() } }; await saveState(sid, state); }
@@ -24,8 +27,9 @@ export async function GET(req: Request) {
   const isSettledPhase = ev.phase === "live" && released;
   const live = liveQuestions("live");
   const baseRuns0 = live.map((q) => baseRun(ladder(q)[1], base.weights, "W0"));
-  const W = ev.phase === "next" ? updateWeights(base.weights, baseRuns0) : base.weights;
-  const wkey = ev.phase === "next" ? "W1" : "W0";
+  const fw = series.market.tapeWeights?.[ev.id];
+  const W = fw ?? (ev.phase === "next" ? updateWeights(base.weights, baseRuns0) : base.weights);
+  const wkey = fw ? "F" : ev.phase === "next" ? "W1" : "W0";
   const q = (ev.phase === "next" ? liveQuestions("next") : live).find((x) => x.id === ev.id)!;
   const nowT = ev.nowT;
 

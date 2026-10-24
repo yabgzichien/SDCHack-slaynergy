@@ -76,16 +76,55 @@ export const INTERESTS: { id: string; label: string }[] = [
 ];
 export type GroupKey = "managers" | "professionals" | "technicians" | "clerical" | "service" | "craft" | "operators";
 
-const s = seriesJson as unknown as {
+// What the market asks and has settled, derived from the data by engine/calendar.ts and stored with each snapshot.
+// frozen: every question as it was first asked (so a later revision or backfill never changes a question people
+// predicted on), plus, once it settles, the two values it settled on (so a settlement is final) and when.
+export type FrozenQuestion = { threshold: number; strikes: number[]; text: string; reason: string; pair?: [number, number]; settledAt?: string };
+export type MarketCalendar = {
+  derivedAt: string;
+  dosm: { live: string; next: string };
+  epoch: { live: string; open: string[] };
+  frozen: Record<string, FrozenQuestion>;
+  // The forecasters' influence each open or just-settled question's market runs with, frozen when it opened, so a later
+  // replay of history never changes the market a prediction was made in.
+  tapeWeights?: Record<string, Record<string, number>>;
+};
+export type Series = {
   generatedAt: string;
   sources: Source[];
   dosm: { publishedAt: Record<string, string>; quarters: DosmQuarter[] };
   epoch: Record<string, EpochSeries>;
   aei: Record<string, { title: string; tasks: number; coverage: number; usage: number }>;
   ilo: Record<string, { title: string; score: number; gradient: string | null }>;
+  market: MarketCalendar;
 };
 
-export const series = s;
+// The active data snapshot. data/series.json is snapshot 0; the server swaps in newer snapshots it fetched itself
+// (src/lib/server/refresh.ts), and the browser swaps in the server's (components/AppProvider). Importers read it through
+// the live binding. dataVersion is the snapshot id; anything cached from the data keys on dataStamp, which changes on
+// every swap.
+export let series = seriesJson as unknown as Series;
+export let sourceById: Record<string, Source> = Object.fromEntries(series.sources.map((x) => [x.id, x]));
+export let dataVersion = 0;
+export let dataStamp = 0;
+export function setSeries(next: Series, version: number) {
+  series = next;
+  sourceById = Object.fromEntries(next.sources.map((x) => [x.id, x]));
+  dataVersion = version;
+  dataStamp++;
+}
+// A cache that is rebuilt whenever the active snapshot changes.
+export function perSnapshot<T>(build: () => T): () => T {
+  let stamp = -1, value: T;
+  return () => { if (stamp !== dataStamp) { value = build(); stamp = dataStamp; } return value; };
+}
+// Run f with another snapshot active, then put the old one back. f must be synchronous.
+export function withSeries<T>(tmp: Series, f: () => T): T {
+  const [s0, v0] = [series, dataVersion];
+  setSeries(tmp, -1);
+  try { return f(); } finally { setSeries(s0, v0); }
+}
+
 export const skills = skillsJson as unknown as Skill[];
 export const roles = rolesJson as unknown as Role[];
 export const courses = coursesJson as unknown as Course[];
@@ -97,7 +136,6 @@ export const skillById = Object.fromEntries(skills.map((x) => [x.id, x]));
 export const roleById = Object.fromEntries(roles.map((x) => [x.id, x]));
 export const courseById = Object.fromEntries(courses.map((x) => [x.id, x]));
 export const occupationById = Object.fromEntries(occupations.map((x) => [x.id, x]));
-export const sourceById = Object.fromEntries(s.sources.map((x) => [x.id, x]));
 
 // Typical monthly pay for each occupation group across Malaysia (DOSM Salaries & Wages Survey Report 2024). DOSM's
 // release gives medians for the top three groups and only means for the rest, so each figure says which it is.

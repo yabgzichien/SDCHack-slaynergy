@@ -5,6 +5,7 @@ import { allSlots, publicMeeting } from "@/lib/server/meetings";
 import { recordMeeting } from "@/lib/engine/review";
 import { getSessionId } from "@/lib/server/session";
 import { anonymise, insertMeeting, listMeetings, loadState, saveState, updateMeeting } from "@/lib/server/store";
+import { ensureData } from "@/lib/server/refresh";
 
 export const dynamic = "force-dynamic";
 
@@ -26,10 +27,12 @@ async function payload(sid: string | null) {
 }
 
 export async function GET() {
+  await ensureData();
   return NextResponse.json(await payload(await getSessionId(false)));
 }
 
 export async function POST(req: Request) {
+  await ensureData();
   let body: Record<string, unknown>;
   try { body = await req.json(); } catch { return bad("Invalid request."); }
   const sid = await getSessionId(false);

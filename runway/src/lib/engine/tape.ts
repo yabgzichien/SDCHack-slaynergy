@@ -2,6 +2,7 @@ import { cost, newMarket, price as lprice, tradeToward, type Lmsr } from "./lmsr
 import { clamp, gaussian, hashString, logit, mulberry32, sigmoid } from "./math";
 import { FORECASTERS, runMarket, type MarketRun, type Weights } from "./market";
 import type { Question } from "./questions";
+import { dataStamp } from "./data";
 import { moveAllowance, moveLimit } from "../market-math";
 
 // A market's "tape": every trade in time order, so the chart can move in real time.
@@ -34,9 +35,11 @@ export type TapeResult = {
 type LiveEvent = { t: number; agent: string; target: number; budget: number };
 type HistEvent = { agent: string; side: "yes" | "no"; shares: number; spent: number; price: number };
 type Prepared = { run: MarketRun; histState: Lmsr; hist: TapePoint[]; histEvents: HistEvent[]; live: LiveEvent[]; next: () => LiveEvent };
-const cache = new Map<string, Prepared>();
+let cache = new Map<string, Prepared>();
+let cacheStamp = -1;
 
 function prepare(q: Question, w: Weights, wkey: string): Prepared {
+  if (cacheStamp !== dataStamp) { cache = new Map(); cacheStamp = dataStamp; }
   const key = `${q.id}|${wkey}`;
   const hit = cache.get(key);
   if (hit) return hit;

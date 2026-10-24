@@ -7,6 +7,7 @@ import { getCounsellor, signIn, signOut, usingDemoPasscode, DEMO_PASSCODE } from
 import { publicMeeting } from "@/lib/server/meetings";
 import { catalog } from "@/lib/server/respond";
 import { addSlot, anonymise, insertMeeting, listMeetings, loadState, logEvent, openSlots, removeSlot, saveState, updateMeeting } from "@/lib/server/store";
+import { ensureData } from "@/lib/server/refresh";
 
 export const dynamic = "force-dynamic";
 
@@ -37,11 +38,13 @@ async function payload(q: { meeting?: string | null }) {
 }
 
 export async function GET(req: Request) {
+  await ensureData();
   const u = new URL(req.url).searchParams;
   return NextResponse.json(await payload({ meeting: u.get("meeting") }));
 }
 
 export async function POST(req: Request) {
+  await ensureData();
   let body: Record<string, unknown>;
   try { body = await req.json(); } catch { return bad("Invalid request."); }
   const type = String(body.type ?? "");

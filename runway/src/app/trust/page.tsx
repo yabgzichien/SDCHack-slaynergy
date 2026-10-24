@@ -23,9 +23,6 @@ export default function TrustPage() {
       <Card tone="raised">
         <H>Fairness check</H>
         <p className="text-sm">{t("To ensure fairness, Jobbery bases job recommendations and learning plans on your skills, job preferences, available study time, qualifications, field of study and previous job field. Age, gender and race play no part in the jobs, plans or skills suggested. Your highest qualification is used only to check a job's entry requirement.")}</p>
-        {fair ? (
-          <p className="mt-3 text-sm">We tested: the same skills with a different age or gender give the same results. <b className="num">{fair.identical} of {fair.pairs}</b> profile pairs gave identical rankings and scores. {fair.pass ? "Passed." : "FAILED."} {t("Automated tests also check that changing only a profile's age and name leaves its jobs and plan unchanged.")}</p>
-        ) : <p className="text-sm text-muted">Running the check…</p>}
       </Card>
 
       <Card>
@@ -35,7 +32,7 @@ export default function TrustPage() {
             <p className="text-sm"><Chip tone={log.ok ? "rise" : "fall"}>{log.ok ? "Chain verified" : `Broken at record ${log.brokenAt}`}</Chip> <span className="num">{log.checked} records checked.</span></p>
             {log.head && <p className="num mt-2 break-all rounded-2xl bg-raised p-3 text-xs">Latest fingerprint (record {log.head.seq}): {log.head.hash}</p>}
             <p className="mt-2 text-sm text-muted">The latest fingerprint is published to the public GitHub repository (<code>anchors/</code>), so no one, including us, can quietly rewrite the record. Only meaningless fingerprints leave the app; no data is stored on a blockchain.</p>
-            <p className="mt-2 text-sm text-muted">The crowd&apos;s forecasts for the questions still open (DOSM on 17 Nov 2026, Epoch AI in Jan 2027) are also saved in <code>anchors/</code> before the numbers come out, so anyone can check them afterwards.</p>
+            <p className="mt-2 text-sm text-muted">The crowd&apos;s forecasts for the questions still open are also saved in <code>anchors/</code> before the numbers come out, so anyone can check them afterwards.</p>
             {log.recent.length > 0 && (
               <ul className="num mt-2 space-y-0.5 text-xs text-muted">{log.recent.slice(0, 6).map((r) => <li key={r.seq}>#{r.seq} · {r.ts.slice(0, 19).replace("T", " ")} · {r.type} · {r.hash.slice(0, 12)}…</li>)}</ul>
             )}
