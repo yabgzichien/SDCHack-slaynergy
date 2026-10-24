@@ -30,14 +30,14 @@ SDC Hackathon 2026 · Domain 1: Aiversecity Future-Ready Workforce · Licence: A
 ### Run locally
 
 ```bash
-cd jobbery
+cd src
 npm install
 npm run dev
 ```
 
 Open http://localhost:3000. See [section 15](#15-run-it) for tests and other commands.
 
-> The app's code lives in [`jobbery/`](jobbery/). For setup, the advisor passcode and a judge's walkthrough, see [`jobbery/README.md`](jobbery/README.md).
+> The app's code lives in [`src/`](src/). For setup, the advisor passcode and a judge's walkthrough, see [`src/README.md`](src/README.md).
 
 ---
 
@@ -66,7 +66,7 @@ Open http://localhost:3000. See [section 15](#15-run-it) for tests and other com
 
 ## 1. Summary
 
-![Jobbery landing page](jobbery/public/screenshots/landing.png)
+![Jobbery landing page](src/public/screenshots/landing.png)
 
 *The landing page introduces Jobbery and the path from skills to jobs and learning.*
 
@@ -93,7 +93,7 @@ Open http://localhost:3000. See [section 15](#15-run-it) for tests and other com
 - **Plain language.** Pages are written for someone who has never read a chart like these: "about 14 in every 100 job ads", not "14.2% share".
 - **Multilingual interface.** Already available in English, Bahasa Malaysia, Chinese and Tamil. Use the language picker in the header to switch languages.
 - **Private by default.** A scanned resume is read in memory and never stored. If the user leaves AI on, the text is also sent once to the Groq API to read it. Only the score, the fixes and the skill IDs are kept.
-- **AI suggests, the user decides.** The one GenAI feature is an optional resume reader (Qwen3.8 27B on the Groq API). It proposes extra skills, each quoting the resume line it is based on, and better wording for weak lines. The user accepts or rejects every suggestion. Server checks drop any skill that is not on Jobbery's list or not backed by a real line, and any rewrite that adds a number the original line does not have. Scores, forecasts, matching and plans are computed by tested, readable code (`jobbery/src/lib/engine/`), so the same inputs always give the same answer.
+- **AI suggests, the user decides.** The one GenAI feature is an optional resume reader (Qwen3.8 27B on the Groq API). It proposes extra skills, each quoting the resume line it is based on, and better wording for weak lines. The user accepts or rejects every suggestion. Server checks drop any skill that is not on Jobbery's list or not backed by a real line, and any rewrite that adds a number the original line does not have. Scores, forecasts, matching and plans are computed by tested, readable code (`src/src/lib/engine/`), so the same inputs always give the same answer.
 
 ---
 
@@ -186,11 +186,11 @@ These four signals combine into a **skill expiry date**: the year AI is expected
 
 ### Does it update? Yes, automatically.
 
-![Sources page showing automatic data-update status](jobbery/public/screenshots/sources.jpg)
+![Sources page showing automatic data-update status](src/public/screenshots/sources.jpg)
 
 *The Sources page shows automatic checks, the active data version, source results and review alerts.*
 
-![Sources page showing the official data providers and release dates](jobbery/public/screenshots/sources-overview.jpg)
+![Sources page showing the official data providers and release dates](src/public/screenshots/sources-overview.jpg)
 
 *Official source cards show the latest figures and when the next releases are due.*
 
@@ -208,13 +208,13 @@ When new data goes live:
 - A "what changed and why" panel lists each change with its source.
 - The snapshot's hash goes into the tamper-evident log.
 
-The next releases are **DOSM Jul–Sep 2026 (17 Nov 2026)** and **Epoch AI Oct–Dec 2026 (checked from 30 Jan 2027)**. Details: [jobbery/README.md](jobbery/README.md#data-and-updating).
+The next releases are **DOSM Jul–Sep 2026 (17 Nov 2026)** and **Epoch AI Oct–Dec 2026 (checked from 30 Jan 2027)**. Details: [src/README.md](src/README.md#data-and-updating).
 
 ---
 
 ## 5. Future-role matching and skills gap
 
-![Suggested jobs for the demo user](jobbery/public/screenshots/jobs.jpg)
+![Suggested jobs for the demo user](src/public/screenshots/jobs.jpg)
 
 *Suggested jobs for the demo user, with skill overlap, reasons for the match and preparation time.*
 
@@ -269,11 +269,11 @@ The Jobs page reads as three numbered stops: **① your best job → ② other g
 
 ## 6. Personalised reskilling pathway
 
-![Personalised learning plan in the webapp](jobbery/public/screenshots/plan.jpg)
+![Personalised learning plan in the webapp](src/public/screenshots/plan.jpg)
 
 *The selected job becomes a learning pathway with a next step, weekly timeline and progress.*
 
-![Complete weekly learning timeline](jobbery/public/screenshots/plan-detail.jpg)
+![Complete weekly learning timeline](src/public/screenshots/plan-detail.jpg)
 
 *The weekly timeline shows every course, practice task and application step.*
 
@@ -339,11 +339,11 @@ Jobbery itself works toward **4.3, 4.4, 8.5, 8.6** (youth not in employment), **
 
 ## 8. Handling uncertainty: how the forecasting works
 
-![Skill forecasts under different AI futures](jobbery/public/screenshots/skills.jpg)
+![Skill forecasts under different AI futures](src/public/screenshots/skills.jpg)
 
 *The Skills page compares slow, medium and fast AI futures and shows estimated dates for each skill.*
 
-![Complete list of forecast dates for the demo profile's skills](jobbery/public/screenshots/skills-detail.jpg)
+![Complete list of forecast dates for the demo profile's skills](src/public/screenshots/skills-detail.jpg)
 
 *The full skill list shows the estimated dates and which skills remain safer for longer.*
 
@@ -372,7 +372,7 @@ The date shown is the average of the three futures, weighted by how likely each 
 
 ### The prediction market
 
-![Prediction market in the webapp](jobbery/public/screenshots/market.jpg)
+![Prediction market in the webapp](src/public/screenshots/market.jpg)
 
 *The Forecast page explains points-based predictions and when upcoming data releases will settle the questions.*
 
@@ -386,7 +386,7 @@ The date shown is the average of the three futures, weighted by how likely each 
 ### Being honest about it
 
 - In the replay of real past releases, the market only just beats a coin flip (Brier 0.242 vs 0.25). One quarter's change is hard to call. The market's main job is to **score the futures in public against official numbers**.
-- The crowd's forecasts for open questions are **hashed into the repo before the data comes out** (`jobbery/anchors/`), so nobody, including us, can change them afterwards.
+- The crowd's forecasts for open questions are **hashed into the repo before the data comes out** (`src/anchors/`), so nobody, including us, can change them afterwards.
 - Every screen shows "these are estimates, not certainties", and the user can switch between slow, medium and fast to see their dates under each. To disagree with the chances, they guess on an open question, and that guess is scored like everyone else's.
 - **Points only, never money.** Gambling law, Muslim users and financially vulnerable users all rule out real money.
 
@@ -394,11 +394,11 @@ The date shown is the average of the three futures, weighted by how likely each 
 
 ## 9. Job map and moving for work
 
-![Malaysia job map for the selected role](jobbery/public/screenshots/map.jpg)
+![Malaysia job map for the selected role](src/public/screenshots/map.jpg)
 
 *The job map compares estimated employment, state median pay and unemployment across Malaysia.*
 
-![All 16 states ranked by estimated jobs with unemployment and median pay](jobbery/public/screenshots/map-detail.jpg)
+![All 16 states ranked by estimated jobs with unemployment and median pay](src/public/screenshots/map-detail.jpg)
 
 *The table below the map lists all 16 states with estimated jobs, unemployment and median pay.*
 
@@ -429,7 +429,7 @@ Every plan includes **one meeting with an advisor**, placed just before applying
 
 **Advisor side: "Advisor view"** (`/counsellor`). Judges can sign in with one click as a demo advisor. A "needs you" strip at the top lists meetings still waiting for advice, with orange markers on anything waiting and green on what is done. Each meeting leads with the user, the job they are aiming for and their question; the date is a small line underneath. Their plan is shown as a timeline with an icon per step type. Two tabs:
 
-![Advisor dashboard with a demo meeting waiting for advice](jobbery/public/screenshots/advisor-desk.jpg)
+![Advisor dashboard with a demo meeting waiting for advice](src/public/screenshots/advisor-desk.jpg)
 
 *The demo advisor sees a meeting that needs advice, the user's question and the advice form.*
 
@@ -438,19 +438,19 @@ Every plan includes **one meeting with an advisor**, placed just before applying
 | **Meetings** | Sees the user's question, profile, top jobs, plan, the futures behind the advice, and **their resume drawn as a page** (rebuilt from their profile and finished steps, never the uploaded file). Writes advice, which appears on the user's Plan page. |
 | **My free times** | Opens or closes half-hour slots on a 14-day grid. |
 
-![Advisor view of the user's complete learning plan](jobbery/public/screenshots/advisor-detail.jpg)
+![Advisor view of the user's complete learning plan](src/public/screenshots/advisor-detail.jpg)
 
 *The advisor can review every step of the user's learning plan before giving advice.*
 
-![Resume reconstructed from the demo user's profile](jobbery/public/screenshots/advisor-resume.jpg)
+![Resume reconstructed from the demo user's profile](src/public/screenshots/advisor-resume.jpg)
 
 *The advisor sees the resume rebuilt from the demo profile and completed steps.*
 
-![Advisor view of the demo user's profile, AI futures and reachable jobs](jobbery/public/screenshots/advisor-insights.jpg)
+![Advisor view of the demo user's profile, AI futures and reachable jobs](src/public/screenshots/advisor-insights.jpg)
 
 *The user's profile, forecast assumptions and top job matches are shown together.*
 
-![Advisor free-times calendar](jobbery/public/screenshots/advisor-times.jpg)
+![Advisor free-times calendar](src/public/screenshots/advisor-times.jpg)
 
 *The advisor opens or closes half-hour slots and can see booked times in the two-week calendar.*
 
@@ -460,7 +460,7 @@ The hash log records "advice given", the advisor's ID and a **hash of the note, 
 
 ## 11. Learner motivation
 
-![Skill badges for the demo learning plan](jobbery/public/screenshots/learner-badges.jpg)
+![Skill badges for the demo learning plan](src/public/screenshots/learner-badges.jpg)
 
 *The plan shows progress toward skill and milestone badges, the advisor meeting and the pathway badge.*
 
@@ -470,7 +470,7 @@ The hash log records "advice given", the advisor's ID and a **hash of the note, 
 - **A verified LinkedIn badge** at the end, issued once every step is done (including advice from an advisor) and checkable by anyone at `/badge/[id]` against the hash log. The badge page shows a certificate-style badge, the completed steps grouped by strand, and the log record. It says "pathway completed", never "certified".
 - **The market leaderboard.** Forecasters earn an accuracy score, a rank and influence.
 
-![Forecast leaderboard showing player rankings and vote influence](jobbery/public/screenshots/leaderboard.jpg)
+![Forecast leaderboard showing player rankings and vote influence](src/public/screenshots/leaderboard.jpg)
 
 *The leaderboard shows rankings, accuracy scores and the influence earned by demo forecasters.*
 
@@ -478,7 +478,7 @@ The hash log records "advice given", the advisor's ID and a **hash of the note, 
 
 ## 12. Fairness check
 
-![Trust page showing passed fairness checks and verified hash chain](jobbery/public/screenshots/fairness.jpg)
+![Trust page showing passed fairness checks and verified hash chain](src/public/screenshots/fairness.jpg)
 
 *The live Trust page reports the fairness result and verifies the tamper-evident record chain.*
 
@@ -488,7 +488,7 @@ The hash log records "advice given", the advisor's ID and a **hash of the note, 
 - **Tamper-evident log.** Every guess, settlement, advice note and badge is added to a hash-chained log. Its fingerprint is committed to this repo (`npm run anchor`).
 - **Labelled simulations.** Simulated forecasters and demo personas are always marked as made up. No real CVs or personal data are used.
 
-![Trust page listing public data sources and labelled synthetic data](jobbery/public/screenshots/fairness-sources.jpg)
+![Trust page listing public data sources and labelled synthetic data](src/public/screenshots/fairness-sources.jpg)
 
 *The source list identifies the public datasets, their dates and the demo data.*
 
@@ -534,7 +534,7 @@ The user always confirms a new plan before it replaces the old one.
 ## 15. Run it
 
 ```bash
-cd jobbery
+cd src
 npm install
 npm run dev
 ```
@@ -549,7 +549,7 @@ The app runs at http://localhost:3000. Other commands:
 | `npm run data:refresh` | Checks the sources for new data now (the app also does this by itself) |
 | `npm run anchor` | Writes the hash log's fingerprint to `anchors/` |
 
-Without `DATABASE_URL`, sessions are kept in `.data/jobbery.db` (SQLite). For a deployment with PostgreSQL, set `DATABASE_URL` and a random `SESSION_SECRET` in the Vercel project environment. Add `GROQ_API_KEY` there for the AI resume reader (locally, use `jobbery/.env.local`, which is gitignored). Without that key, the rule scan runs alone.
+Without `DATABASE_URL`, sessions are kept in `.data/jobbery.db` (SQLite). For a deployment with PostgreSQL, set `DATABASE_URL` and a random `SESSION_SECRET` in the Vercel project environment. Add `GROQ_API_KEY` there for the AI resume reader (locally, use `src/.env.local`, which is gitignored). Without that key, the rule scan runs alone.
 
 ### Demo shortcuts
 
@@ -564,7 +564,7 @@ Steps that normally need the user to stop and think have a dashed amber **"Demo:
 
 The sample user Hafiz and a finance job (e.g. tax preparer) show every step; quizzes for other fields come later.
 
-For the advisor passcode and a judge's walkthrough, see [`jobbery/README.md`](jobbery/README.md).
+For the advisor passcode and a judge's walkthrough, see [`src/README.md`](src/README.md).
 
 ---
 
@@ -575,7 +575,7 @@ For the advisor passcode and a judge's walkthrough, see [`jobbery/README.md`](jo
 ├── README.md              This file
 ├── Domain 1.pdf           Domain brief
 ├── docs/                  PRD and data-feasibility notes
-└── jobbery/                The Next.js app (Jobbery was the working name)
+└── src/                    The Next.js app
     ├── src/app/           Pages and API routes: start, jobs, map, plan, badge,
     │                      market, trends, sources, advisor, counsellor, trust
     ├── src/components/    Shared UI: header, charts, market board, journey
@@ -606,7 +606,7 @@ Jobbery uses AI in two ways: one GenAI model that reads resumes, and a forecasti
 | | |
 |---|---|
 | **Model** | Qwen3.8 27B (`qwen/qwen3.8-27b`), an open-weight model, through the Groq API |
-| **Code** | `jobbery/src/lib/server/ai-resume.ts`, called from `jobbery/src/app/api/resume/route.ts` |
+| **Code** | `src/src/lib/server/ai-resume.ts`, called from `src/src/app/api/resume/route.ts` |
 | **Must-have it serves** | Skills profile intake |
 | **Switch** | "Also let AI read it" checkbox on the resume page (on by default) |
 
@@ -616,7 +616,7 @@ Jobbery uses AI in two ways: one GenAI model that reads resumes, and a forecasti
 
 **The user stays in control.** AI skills appear as chips marked "· AI", unticked, with their quoted evidence. Each rewrite has Accept and Reject buttons. An accepted line can be edited, then copied into the user's own resume. Nothing changes unless the user chooses it. The resume score always comes from the rules, never from the AI.
 
-**Checks so it cannot make things up.** The server drops anything the resume does not support (`checkAiRead`, tested in `jobbery/tests/ai-resume.test.ts`):
+**Checks so it cannot make things up.** The server drops anything the resume does not support (`checkAiRead`, tested in `src/tests/ai-resume.test.ts`):
 - a skill ID that is not on Jobbery's list, or whose quote is not in the resume
 - a rewrite of a line that is not in the resume
 - a rewrite that adds a number the original line does not have (missing figures must be placeholders like `[how many]`)
@@ -629,7 +629,7 @@ The prompt also tells the model not to add purposes or overstate the role ("help
 
 ### 18.2 A forecast that learns
 
-The forecasting engine (`jobbery/src/lib/engine/`) is statistical learning, not a language model. It keeps three possible speeds of AI change (slow, medium, fast) and weights them by how well each one predicted past official releases (DOSM job ads, Epoch AI benchmarks): log-likelihood scoring with fading memory, a form of Bayesian model averaging. A prediction market (LMSR, points only) adds the crowd's view of the next release. When a release settles the questions, the weights update, and so do every user's skill dates, job ranking and plan. See [section 8](#8-handling-uncertainty-how-the-forecasting-works).
+The forecasting engine (`src/src/lib/engine/`) is statistical learning, not a language model. It keeps three possible speeds of AI change (slow, medium, fast) and weights them by how well each one predicted past official releases (DOSM job ads, Epoch AI benchmarks): log-likelihood scoring with fading memory, a form of Bayesian model averaging. A prediction market (LMSR, points only) adds the crowd's view of the next release. When a release settles the questions, the weights update, and so do every user's skill dates, job ranking and plan. See [section 8](#8-handling-uncertainty-how-the-forecasting-works).
 
 ### 18.3 What is not AI
 

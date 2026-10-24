@@ -5,7 +5,7 @@ handoff.md
 # Local tooling
 .claude/
 .taste-skill/
-jobbery/design-references/
+src/design-references/
 
 # Documents: only README.md is committed unless the owner says otherwise
 *.md
@@ -27,42 +27,42 @@ secrets/
 # PDFs, images and video
 *.pdf
 *.png
-!jobbery/public/cockatiel-mascot.png
-!jobbery/public/cockatiel-peeking.png
-!jobbery/public/cockatiel-statistics-header.png
-!jobbery/public/cockatiel-cursor.png
-!jobbery/public/cockatiel-cursor-art.png
-!jobbery/public/cockatiel-ai-icon.png
-!jobbery/public/cockatiel-welcome.png
-!jobbery/public/cockatiel-worried.png
-!jobbery/public/cockatiel-dejected.png
-!jobbery/public/cockatiel-spectacles.png
-!jobbery/public/cockatiel-sunglasses.png
-!jobbery/public/cockatiel-reading.png
-!jobbery/public/cockatiel-sdg-blocks.png
-!jobbery/public/sdg-block-stack.png
-!jobbery/public/cockatiel-landing.png
-!jobbery/public/landing-sdg-stack.png
-!jobbery/public/landing-cockatiel-flight.png
-!jobbery/public/landing-nature-skyline.png
-!jobbery/public/cockatiel-thinking.png
-!jobbery/public/cockatiel-running.png
-!jobbery/public/cockatiel-cursor-moderate.png
-!jobbery/public/cockatiel-cursor-jobs-art.png
-!jobbery/public/cockatiel-ai-icon-v2.png
-!jobbery/public/cockatiel-walk-step-a.png
-!jobbery/public/cockatiel-walk-step-b.png
+!src/public/cockatiel-mascot.png
+!src/public/cockatiel-peeking.png
+!src/public/cockatiel-statistics-header.png
+!src/public/cockatiel-cursor.png
+!src/public/cockatiel-cursor-art.png
+!src/public/cockatiel-ai-icon.png
+!src/public/cockatiel-welcome.png
+!src/public/cockatiel-worried.png
+!src/public/cockatiel-dejected.png
+!src/public/cockatiel-spectacles.png
+!src/public/cockatiel-sunglasses.png
+!src/public/cockatiel-reading.png
+!src/public/cockatiel-sdg-blocks.png
+!src/public/sdg-block-stack.png
+!src/public/cockatiel-landing.png
+!src/public/landing-sdg-stack.png
+!src/public/landing-cockatiel-flight.png
+!src/public/landing-nature-skyline.png
+!src/public/cockatiel-thinking.png
+!src/public/cockatiel-running.png
+!src/public/cockatiel-cursor-moderate.png
+!src/public/cockatiel-cursor-jobs-art.png
+!src/public/cockatiel-ai-icon-v2.png
+!src/public/cockatiel-walk-step-a.png
+!src/public/cockatiel-walk-step-b.png
 *.jpg
 *.jpeg
 *.gif
 *.webp
-!jobbery/public/cockatiel-progress-expressions.webp
-!jobbery/public/landing-cockatiel.webp
-!jobbery/public/landing-sdg-blocks.webp
+!src/public/cockatiel-progress-expressions.webp
+!src/public/landing-cockatiel.webp
+!src/public/landing-sdg-blocks.webp
 *.avif
 *.bmp
 *.svg
-!jobbery/public/career-pattern.svg
+!src/public/career-pattern.svg
 *.ico
 *.mp4
 *.mov
@@ -73,7 +73,7 @@ secrets/
 
 # The Next.js app serves these files directly. Keep every production asset in
 # version control so deployment environments receive the same public folder.
-!jobbery/public/**
+!src/public/**
 
 # Editor lock files
 .~lock.*#
