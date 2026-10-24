@@ -49,34 +49,34 @@ SDC Hackathon 2026 · Domain 1: Aiversecity Future-Ready Workforce · Licence: A
 
 ## 1. Summary
 
-![Jobbery landing page](jobbery/public/screenshots/landing.jpg)
+![Jobbery landing page](jobbery/public/screenshots/landing.png)
 
 *The landing page introduces Jobbery and the path from skills to jobs and learning.*
 
-**The problem.** 2026 is on track to be Malaysia's worst year for retrenchments since the pandemic, and white-collar users have been hit hardest. A laid-off worker gets 3 to 6 months of PERKESO Job Search Allowance. In that time they need to know which of their skills AI will soon do, which jobs are actually growing, and what to learn first. Most "AI job risk" tools give one fixed score from old research.
+**The problem.** 2026 is on track to be Malaysia's worst year for retrenchments since the pandemic, and white-collar users have been hit hardest. A laid-off user gets 3 to 6 months of PERKESO Job Search Allowance. In that time they need to know which of their skills AI will soon do, which jobs are actually growing, and what to learn first. Most "AI job risk" tools give one fixed score from old research.
 
 **What Jobbery does.**
 
-| Step | What the worker gets |
+| Step | What the user gets |
 |---|---|
 | **Forecast** | Which skills and jobs are rising or falling, from public, dated data. Each skill gets an "expiry date". |
 | **Match** | Jobs they can reach before their deadline, ranked with a score they can open up, and the skills they're missing. |
 | **Plan** | A week-by-week plan with real free courses, AI-at-work practice and interview prep, every step tagged to a UN SDG. |
 
-**What makes it different.** Forecasts aren't fixed. A **prediction market** (points only, never money) asks checkable questions about the next official data release. When the release comes out, the questions settle, and the futures that matched reality gain weight. Each worker's dates, job ranking and plan then update.
+**What makes it different.** Forecasts aren't fixed. A **prediction market** (points only, never money) asks checkable questions about the next official data release. When the release comes out, the questions settle, and the futures that matched reality gain weight. Each user's dates, job ranking and plan then update.
 
 ---
 
 ## 2. How it is human-centred
 
-- **The worker decides.** Jobbery ranks options and explains them. It never picks a job for anyone, and there are no automated hiring decisions.
-- **Built around a real deadline.** Every plan is measured against the months the worker says they have and the hours a week they can study.
-- **A person to ask, on the worker's terms.** The worker can book a meeting with an advisor whenever they want one. Nothing waits on an advisor's approval (see [section 10](#10-advisor-meetings)).
+- **The user decides.** Jobbery ranks options and explains them. It never picks a job for anyone, and there are no automated hiring decisions.
+- **Built around a real deadline.** Every plan is measured against the months the user says they have and the hours a week they can study.
+- **A person to ask, on the user's terms.** The user can book a meeting with an advisor whenever they want one. Nothing waits on an advisor's approval (see [section 10](#10-advisor-meetings)).
 - **Every number shows its source.** Each forecast, demand figure and course has a source and date chip. Explanations are filled in from templates, so the app can't invent jobs, courses or statistics.
 - **Plain language.** Pages are written for someone who has never read a chart like these: "about 14 in every 100 job ads", not "14.2% share".
 - **Multilingual interface.** Already available in English, Bahasa Malaysia, Chinese and Tamil. Use the language picker in the header to switch languages.
-- **Private by default.** A scanned resume is read in memory and never stored. If the worker leaves AI on, the text is also sent once to the Groq API to read it. Only the score, the fixes and the skill IDs are kept.
-- **AI suggests, the worker decides.** The one GenAI feature is an optional resume reader (Qwen3.8 27B on the Groq API). It proposes extra skills, each quoting the resume line it is based on, and better wording for weak lines. The worker accepts or rejects every suggestion. Server checks drop any skill that is not on Jobbery's list or not backed by a real line, and any rewrite that adds a number the original line does not have. Scores, forecasts, matching and plans are computed by tested, readable code (`jobbery/src/lib/engine/`), so the same inputs always give the same answer.
+- **Private by default.** A scanned resume is read in memory and never stored. If the user leaves AI on, the text is also sent once to the Groq API to read it. Only the score, the fixes and the skill IDs are kept.
+- **AI suggests, the user decides.** The one GenAI feature is an optional resume reader (Qwen3.8 27B on the Groq API). It proposes extra skills, each quoting the resume line it is based on, and better wording for weak lines. The user accepts or rejects every suggestion. Server checks drop any skill that is not on Jobbery's list or not backed by a real line, and any rewrite that adds a number the original line does not have. Scores, forecasts, matching and plans are computed by tested, readable code (`jobbery/src/lib/engine/`), so the same inputs always give the same answer.
 
 ---
 
@@ -84,7 +84,7 @@ SDC Hackathon 2026 · Domain 1: Aiversecity Future-Ready Workforce · Licence: A
 
 ```mermaid
 flowchart TD
-    A([Laid-off office worker<br/>3–6 months to find work]) --> B{How to start?}
+    A([Laid-off office user<br/>3–6 months to find work]) --> B{How to start?}
     B -->|Upload or paste| C[Scan my resume<br/>score + fixes + skills found]
     B -->|Answer questions| D[Onboarding<br/>last job, qualification, months, hours/week, interests]
     B -->|Demo| E[Try as Hafiz<br/>synthetic persona]
@@ -113,8 +113,8 @@ flowchart TD
 
 | User | Need |
 |---|---|
-| **Primary: laid-off worker**, 22–35, from finance or admin back-office work | To know which skills will last, which reachable jobs are growing, and what to learn each week |
-| **Secondary: advisor**, for example an employment officer | To meet each worker once (a mock interview, advice, or anything else they ask), seeing their profile and plan |
+| **Primary: laid-off user**, 22–35, from finance or admin back-office work | To know which skills will last, which reachable jobs are growing, and what to learn each week |
+| **Secondary: advisor**, for example an employment officer | To meet each user once (a mock interview, advice, or anything else they ask), seeing their profile and plan |
 | **Forecasters** (simulated now, real people later) | To make checkable guesses about upcoming data and build a track record |
 
 ---
@@ -158,7 +158,7 @@ flowchart LR
 
 This is the part that tracks AI progress and turns it into skill and job signals.
 
-| Signal | From | What the worker sees |
+| Signal | From | What the user sees |
 |---|---|---|
 | **Capability:** how fast AI is getting better | Epoch AI benchmark scores, by quarter | "How AI is changing jobs" chart on **Trends** |
 | **Adoption:** how much AI is actually used for a task | Anthropic Economic Index task coverage | Feeds each skill's expiry date |
@@ -173,6 +173,10 @@ These four signals combine into a **skill expiry date**: the year AI is expected
 
 *The Sources page shows automatic checks, the active data version, source results and review alerts.*
 
+![Sources page showing the official data providers and release dates](jobbery/public/screenshots/sources-overview.jpg)
+
+*Official source cards show the latest figures and when the next releases are due.*
+
 When someone uses the app and the last check is old enough, the server checks for new data in the background:
 - **How often:** daily, and hourly around DOSM's release day.
 - **Updated automatically:** DOSM Job Market Insights, Epoch AI benchmark results, and OpenDOSM's state labour force and wages.
@@ -183,7 +187,7 @@ When new data goes live:
 - Open questions whose answers are in settle, and settlements are final.
   - DOSM questions settle when the release arrives.
   - Epoch AI questions settle 30 days after their quarter ends, once late benchmark results are in.
-- The futures are re-weighted, and every worker's expiry dates, job ranking and plan are recomputed.
+- The futures are re-weighted, and every user's expiry dates, job ranking and plan are recomputed.
 - A "what changed and why" panel lists each change with its source.
 - The snapshot's hash goes into the tamper-evident log.
 
@@ -193,54 +197,54 @@ The next releases are **DOSM Jul–Sep 2026 (17 Nov 2026)** and **Epoch AI Oct�
 
 ## 5. Future-role matching and skills gap
 
-![Suggested jobs for the demo worker](jobbery/public/screenshots/jobs.jpg)
+![Suggested jobs for the demo user](jobbery/public/screenshots/jobs.jpg)
 
-*Suggested jobs for the demo worker, with skill overlap, reasons for the match and preparation time.*
+*Suggested jobs for the demo user, with skill overlap, reasons for the match and preparation time.*
 
 Jobbery has **89 roles in 10 sectors** and **80 skills**. Each role lists the skills it needs, each weighted by importance (1–3), plus the qualification it requires.
 
 ### The match score
 
-Every role gets a score from five parts. The worker can open the score and see each part.
+Every role gets a score from five parts. The user can open the score and see each part.
 
 | Part | Weight | What it measures |
 |---|---|---|
-| **Skill overlap** | 25% | How much of the role's skill list (weighted by importance) the worker already has |
+| **Skill overlap** | 25% | How much of the role's skill list (weighted by importance) the user already has |
 | **Future outlook** | 30% | How long the role's skills are expected to last before AI does most of the work |
 | **Job demand** | 20% | Whether DOSM job ads for this job group are rising or falling |
-| **Reachable in time** | 15% | How much room the plan leaves before the worker's deadline |
-| **Interests and field** | 10% | Fit with the worker's interests and their last job's sector |
+| **Reachable in time** | 15% | How much room the plan leaves before the user's deadline |
+| **Interests and field** | 10% | Fit with the user's interests and their last job's sector |
 
 Adjustments:
 - **Skills at risk:** a role whose skills mostly expire soon loses up to 8 points.
-- **Few jobs nearby:** if the worker says where they can work, a role that is scarce there loses up to 6 points. It is moved down, never hidden.
-- **SDG goal bonus:** +12 points if the role serves a goal the worker picked.
+- **Few jobs nearby:** if the user says where they can work, a role that is scarce there loses up to 6 points. It is moved down, never hidden.
+- **SDG goal bonus:** +12 points if the role serves a goal the user picked.
 
 ### Which roles are ranked
 
-- **Only reachable roles are ranked.** Reachable means the plan's weeks fit within the worker's deadline (months × 4.345, minus 2 weeks of slack).
-- **Qualification check:** roles that need more than the worker's highest qualification (SPM, diploma, degree...) aren't ranked. They're listed as longer-term paths.
+- **Only reachable roles are ranked.** Reachable means the plan's weeks fit within the user's deadline (months × 4.345, minus 2 weeks of slack).
+- **Qualification check:** roles that need more than the user's highest qualification (SPM, diploma, degree...) aren't ranked. They're listed as longer-term paths.
 
 ### The skills gap
 
-For each role, the gap is the list of skills the worker doesn't have yet. Each missing skill shows:
+For each role, the gap is the list of skills the user doesn't have yet. Each missing skill shows:
 - its importance to the role
 - its expiry date under each future
 - the course that will cover it
 
-The more skills the worker already has, the fewer weeks of practice the role needs. So a civil engineer is matched to civil engineering, not to something unrelated.
+The more skills the user already has, the fewer weeks of practice the role needs. So a civil engineer is matched to civil engineering, not to something unrelated.
 
-### Why this job: the explanation the worker sees
+### Why this job: the explanation the user sees
 
 The Jobs page reads as three numbered stops: **① your best job → ② other good matches → ③ where in Malaysia**, with an amber highlight and a "Next: compare 4 other jobs" cue to guide a first-time user. Each job has its own icon, and every card shows the same three short reasons as chips:
 
 | Reason | Built from |
 |---|---|
-| **Fits what you care about** | The interests the worker picked that match the role, and whether it is in their field. If none match, it says so. |
+| **Fits what you care about** | The interests the user picked that match the role, and whether it is in their field. If none match, it says so. |
 | **Builds on what you know** | "You have 3 of 4 skills", and the skills still to add. |
 | **Hard for AI to take over** | A one-line **human core** for each of the 89 roles (e.g. "Earning the trust of people new to banking, face to face"), with its O\*NET page as the source, then an honest split: what **AI will handle** (skills that fade, with dates) and what **stays yours** (lasting skills). |
 
-**See why** opens the job page: the three reasons in full, the score breakdown, the skills gap, and **pay**. DOSM publishes no pay per job per state, so the page shows the national figure for the job's occupation group (DOSM Salaries & Wages Survey 2024: a median for managers, professionals and technicians, an average, labelled as such, for the other groups), next to all-worker median pay by state.
+**See why** opens the job page: the three reasons in full, the score breakdown, the skills gap, and **pay**. DOSM publishes no pay per job per state, so the page shows the national figure for the job's occupation group (DOSM Salaries & Wages Survey 2024: a median for managers, professionals and technicians, an average, labelled as such, for the other groups), next to all-user median pay by state.
 
 **Select job** saves the choice and moves on to the Job Map. The map and the plan always follow the selected job, and switching jobs asks first if it would reset plan progress.
 
@@ -252,7 +256,11 @@ The Jobs page reads as three numbered stops: **① your best job → ② other g
 
 *The selected job becomes a learning pathway with a next step, weekly timeline and progress.*
 
-The plan is built from the chosen role's skills gap, the worker's **hours per week** and their **deadline**.
+![Complete weekly learning timeline](jobbery/public/screenshots/plan-detail.jpg)
+
+*The weekly timeline shows every course, practice task and application step.*
+
+The plan is built from the chosen role's skills gap, the user's **hours per week** and their **deadline**.
 
 ### How courses are chosen
 
@@ -261,7 +269,7 @@ The plan is built from the chosen role's skills gap, the worker's **hours per we
 3. Repeat until every skill is covered. A skill with no checked course gets a 20-hour HRD Corp e-LATiH placeholder, clearly marked. Jobbery never invents a course.
 4. **Weeks for a step = course hours ÷ hours per week**, rounded up. Steps run one after another, so the plan shows real calendar weeks.
 
-The worker can **swap a course** for another one that covers the same skills, where one exists.
+The user can **swap a course** for another one that covers the same skills, where one exists.
 
 ### Three strands
 
@@ -270,7 +278,7 @@ Steps run in this order. Each strand has its own colour across the plan, the pro
 | Strand | Steps | Estimated time |
 |---|---|---|
 | **Job** | Gap courses, e.g. Khan Academy, Microsoft Learn, Coursera, Kaggle, freeCodeCamp, HRD Corp | From each course's listed hours |
-| **AI at work** | Free AI courses, then a **short quiz**: find the planted mistakes in a sample AI answer about a real task from the worker's field. Optional portfolio piece: a reusable prompt + a "how I do this task" sheet | Course hours + 1 h |
+| **AI at work** | Free AI courses, then a **short quiz**: find the planted mistakes in a sample AI answer about a real task from the user's field. Optional portfolio piece: a reusable prompt + a "how I do this task" sheet | Course hours + 1 h |
 | **People** | Free interview and workplace-communication courses | From each course's listed hours |
 | **People** | **Update your resume with your new skills.** No new upload: the resume is rebuilt from the profile, the skills from the start-up resume scan, finished courses (marked *New*) and the portfolio piece, beside a checklist of the scan's fixes | 2 h |
 | **People** | Meet an advisor (a mock interview, the resume, or anything else) | 1 h |
@@ -280,7 +288,7 @@ The resume update comes **after** the courses, so it can show the new skills, an
 
 **Example (synthetic):** Hafiz, 27, a bank operations executive, has 5 months and 10 hours a week. His plan lists every step with a date range, hours, cost (free) and funding label (*Free*, *PERKESO training support* or *HRD Corp once re-employed*).
 
-The quiz result, prompt and sheet become a **portfolio** the worker can show an employer (folded away on the Plan page until opened). The finance task card (monthly budget variance report, from the O\*NET budget analyst task list) is written in full. Cards for the other sectors come in the final round.
+The quiz result, prompt and sheet become a **portfolio** the user can show an employer (folded away on the Plan page until opened). The finance task card (monthly budget variance report, from the O\*NET budget analyst task list) is written in full. Cards for the other sectors come in the final round.
 
 **Plan types:** *switch* (train for a new job), *bridge* (keep the current job for income while training), *reshape* (stay in the job and add the skills that keep it going).
 
@@ -301,7 +309,7 @@ The quiz result, prompt and sheet become a **portfolio** the worker can show an 
 
 ### SDGs change choices, not just labels
 
-- **A goal picker re-ranks jobs.** The worker picks the goals they care about. Matching roles get a bonus, and the trade-off is shown, e.g. "+3 weeks of training, but this role fights financial crime (SDG 16.4)".
+- **A goal picker re-ranks jobs.** The user picks the goals they care about. Matching roles get a bonus, and the trade-off is shown, e.g. "+3 weeks of training, but this role fights financial crime (SDG 16.4)".
 - **Every plan step shows its SDG**, taken from the skill it teaches.
 - **The Plan page shows each goal as an official-colour UN SDG tile** with its target numbers and the official target text, nothing hidden, including the new job's own goal.
 - **A two-layer summary shows how the career path contributes:**
@@ -317,6 +325,10 @@ Jobbery itself works toward **4.3, 4.4, 8.5, 8.6** (youth not in employment), **
 ![Skill forecasts under different AI futures](jobbery/public/screenshots/skills.jpg)
 
 *The Skills page compares slow, medium and fast AI futures and shows estimated dates for each skill.*
+
+![Complete list of forecast dates for the demo profile's skills](jobbery/public/screenshots/skills-detail.jpg)
+
+*The full skill list shows the estimated dates and which skills remain safer for longer.*
 
 Nobody knows how fast AI will progress, so Jobbery doesn't give one forecast. It works with **three futures**, and a prediction market decides how likely each one is.
 
@@ -358,7 +370,7 @@ The date shown is the average of the three futures, weighted by how likely each 
 
 - In the replay of real past releases, the market only just beats a coin flip (Brier 0.242 vs 0.25). One quarter's change is hard to call. The market's main job is to **score the futures in public against official numbers**.
 - The crowd's forecasts for open questions are **hashed into the repo before the data comes out** (`jobbery/anchors/`), so nobody, including us, can change them afterwards.
-- Every screen shows "these are estimates, not certainties", and the worker can switch between slow, medium and fast to see their dates under each. To disagree with the chances, they guess on an open question, and that guess is scored like everyone else's.
+- Every screen shows "these are estimates, not certainties", and the user can switch between slow, medium and fast to see their dates under each. To disagree with the chances, they guess on an open question, and that guess is scored like everyone else's.
 - **Points only, never money.** Gambling law, Muslim users and financially vulnerable users all rule out real money.
 
 ---
@@ -369,9 +381,13 @@ The date shown is the average of the three futures, weighted by how likely each 
 
 *The job map compares estimated employment, state median pay and unemployment across Malaysia.*
 
-The **Map** page shows, state by state, where jobs like the one the worker picked are found. The map of Malaysia can be dragged and zoomed, with quick views for all of Malaysia, Peninsular Malaysia, Sabah and Sarawak.
+![Complete Malaysia map with state labels, legend and comparison figures](jobbery/public/screenshots/map-detail.jpg)
 
-- **The map comes first.** Above it, a compact row of job pills: the worker's **suggested** jobs, **their current job** (labelled), and **Other jobs**, a searchable list where every job is marked *Not suggested* (or *Not in reach yet*, preview only). The selected job is highlighted amber and a short "Showing … · Selected" line pulses when it changes.
+*The map view shows every state, its legend and the selected state's employment, pay and unemployment figures.*
+
+The **Map** page shows, state by state, where jobs like the one the user picked are found. The map of Malaysia can be dragged and zoomed, with quick views for all of Malaysia, Peninsular Malaysia, Sabah and Sarawak.
+
+- **The map comes first.** Above it, a compact row of job pills: the user's **suggested** jobs, **their current job** (labelled), and **Other jobs**, a searchable list where every job is marked *Not suggested* (or *Not in reach yet*, preview only). The selected job is highlighted amber and a short "Showing … · Selected" line pulses when it changes.
 - **Colour the map by:** jobs like this · unemployment rate · median pay.
 - **All 16 states as a table** is always shown under the map.
 - **Each state's figures:** an estimated number of jobs like this, median monthly pay, unemployment rate.
@@ -385,20 +401,20 @@ Malaysia publishes no open data on job ads by state and occupation. So "jobs lik
 
 ## 10. Advisor meetings
 
-Every plan includes **one meeting with an advisor**, placed just before applying. The worker chooses what it is for: a mock interview, the resume, advice, or anything else. **The plan step is ticked as soon as the meeting is booked** (and unticked if it is cancelled). The LinkedIn badge still needs the advisor's advice after the meeting. There is no separate sign-off: the human in the loop is the meeting.
+Every plan includes **one meeting with an advisor**, placed just before applying. The user chooses what it is for: a mock interview, the resume, advice, or anything else. **The plan step is ticked as soon as the meeting is booked** (and unticked if it is cancelled). The LinkedIn badge still needs the advisor's advice after the meeting. There is no separate sign-off: the human in the loop is the meeting.
 
-**Worker side: "Meet an advisor" (`/advisor`)**
+**user side: "Meet an advisor" (`/advisor`)**
 - A two-week calendar of 30-minute slots in Malaysia time, pooled across all advisors.
 - Pick a slot and a topic (a mock interview, which job to aim for, courses and what they cost, fitting it into my time, interviews and applications, or something else), then write a question.
 - Can be booked from the first step. A plan isn't required.
 - One upcoming booking at a time. Either side can cancel, and the advisor gives a reason.
 - A **Demo advisor** always has weekday slots, so the calendar is never empty.
 
-**Advisor side: "Advisor view"** (`/counsellor`). Judges can sign in with one click as a demo advisor. A "needs you" strip at the top lists meetings still waiting for advice, with orange markers on anything waiting and green on what is done. Each meeting leads with the worker, the job they are aiming for and their question; the date is a small line underneath. Their plan is shown as a timeline with an icon per step type. Two tabs:
+**Advisor side: "Advisor view"** (`/counsellor`). Judges can sign in with one click as a demo advisor. A "needs you" strip at the top lists meetings still waiting for advice, with orange markers on anything waiting and green on what is done. Each meeting leads with the user, the job they are aiming for and their question; the date is a small line underneath. Their plan is shown as a timeline with an icon per step type. Two tabs:
 
 | Tab | What the advisor does |
 |---|---|
-| **Meetings** | Sees the worker's question, profile, top jobs, plan, the futures behind the advice, and **their resume drawn as a page** (rebuilt from their profile and finished steps, never the uploaded file). Writes advice, which appears on the worker's Plan page. |
+| **Meetings** | Sees the user's question, profile, top jobs, plan, the futures behind the advice, and **their resume drawn as a page** (rebuilt from their profile and finished steps, never the uploaded file). Writes advice, which appears on the user's Plan page. |
 | **My free times** | Opens or closes half-hour slots on a 14-day grid. |
 
 The hash log records "advice given", the advisor's ID and a **hash of the note, not the note itself**.
@@ -407,7 +423,7 @@ The hash log records "advice given", the advisor's ID and a **hash of the note, 
 
 ## 11. Learner motivation
 
-- **A visible timeline.** A progress strip shows the weeks of the plan against the worker's deadline, so they always know where they stand.
+- **A visible timeline.** A progress strip shows the weeks of the plan against the user's deadline, so they always know where they stand.
 - **Badges as they go:** one for each finished step (e.g. "Tax preparation and compliance", "AI checker", "Resume updated"), plus milestones: *First step*, *Halfway*, *Every step done*. Each badge has its strand's colour and icon (blue job skills, amber AI, purple people, gold milestones). They are self-reported and labelled as such.
 - **Real evidence, not just ticks.** The AI quiz and the resume update complete only when the work is done in Jobbery, and they build a portfolio.
 - **A verified LinkedIn badge** at the end, issued once every step is done (including advice from an advisor) and checkable by anyone at `/badge/[id]` against the hash log. The badge page shows a certificate-style badge, the completed steps grouped by strand, and the log record. It says "pathway completed", never "certified".
@@ -418,7 +434,7 @@ The hash log records "advice given", the advisor's ID and a **hash of the note, 
 ## 12. Fairness check
 
 - **Age, gender and background are never inputs.** Matching accepts only a whitelisted input type (`pickInputs`): skills, months, hours, interests, goals, qualification, field and area.
-- **A test proves it.** The same skills with a different age or gender give exactly the same matches. Another test checks that the worker's home state alone never changes their matches.
+- **A test proves it.** The same skills with a different age or gender give exactly the same matches. Another test checks that the user's home state alone never changes their matches.
 - **The check runs live** on the **Trust** page (`/trust`, via `/api/fairness`), along with hash-chain verification and the full list of data sources.
 - **Tamper-evident log.** Every guess, settlement, advice note and badge is added to a hash-chained log. Its fingerprint is committed to this repo (`npm run anchor`).
 - **Labelled simulations.** Simulated forecasters and demo personas are always marked as made up. No real CVs or personal data are used.
@@ -435,13 +451,13 @@ The hash log records "advice given", the advisor's ID and a **hash of the note, 
 
 ### Automatic re-planning
 
-Today, the plan is rebuilt when the worker changes their job, hours or course choice, or when new data moves the futures. Next, it will re-plan on its own when life gets in the way:
+Today, the plan is rebuilt when the user changes their job, hours or course choice, or when new data moves the futures. Next, it will re-plan on its own when life gets in the way:
 
 - **Falling behind:** if steps run late, the remaining steps are rescheduled to the deadline, and the app says plainly whether the job is still reachable.
-- **Running out of time:** if the deadline can no longer be met, it suggests a shorter route (a bridge plan or a closer role) for the worker to choose.
+- **Running out of time:** if the deadline can no longer be met, it suggests a shorter route (a bridge plan or a closer role) for the user to choose.
 - **New data:** when a release shortens a skill's expiry date, the steps for that skill move up or are swapped, and the "what changed and why" panel explains it.
 
-The worker always confirms a new plan before it replaces the old one.
+The user always confirms a new plan before it replaces the old one.
 
 ---
 
@@ -484,16 +500,16 @@ Without `DATABASE_URL`, sessions are kept in `.data/jobbery.db` (SQLite). On Rep
 
 ### Demo shortcuts
 
-Steps that normally need the worker to stop and think have a dashed amber **"Demo:"** button, so the whole pathway can be shown in a few minutes:
+Steps that normally need the user to stop and think have a dashed amber **"Demo:"** button, so the whole pathway can be shown in a few minutes:
 
 | Where | Button | What it does |
 |---|---|---|
 | AI quiz (`/plan/task`) | Demo: mark every mistake correctly | Passes the quiz |
 | Portfolio piece (`/plan/task`) | Demo: fill in a sample and save | Saves a sample prompt and sheet |
 | Resume update (`/plan/resume`) | Demo: apply every fix and finish | Ticks every fix and finishes the step |
-| Meet an advisor (`/advisor`) | Demo: skip to after the meeting | Sends labelled sample advice to the worker's own booked meeting |
+| Meet an advisor (`/advisor`) | Demo: skip to after the meeting | Sends labelled sample advice to the user's own booked meeting |
 
-The sample worker Hafiz and a finance job (e.g. tax preparer) show every step; quizzes for other fields come later.
+The sample user Hafiz and a finance job (e.g. tax preparer) show every step; quizzes for other fields come later.
 
 For the advisor passcode and a judge's walkthrough, see [`jobbery/README.md`](jobbery/README.md).
 
@@ -531,7 +547,7 @@ For the advisor passcode and a judge's walkthrough, see [`jobbery/README.md`](jo
 
 ## 18. How we use AI
 
-Jobbery uses AI in two ways: one GenAI model that reads resumes, and a forecasting engine that learns from data. Neither one makes decisions for the worker.
+Jobbery uses AI in two ways: one GenAI model that reads resumes, and a forecasting engine that learns from data. Neither one makes decisions for the user.
 
 ### 18.1 GenAI resume reader
 
@@ -546,7 +562,7 @@ Jobbery uses AI in two ways: one GenAI model that reads resumes, and a forecasti
 1. **Extra skills** the keyword rules missed. They can only come from Jobbery's own list of 80 skills, and each one must quote the resume line it is based on.
 2. **Better wording** for up to 5 weak lines (for example "Responsible for processing loan applications" becomes "Processed [how many] loan applications and verified supporting documents").
 
-**The worker stays in control.** AI skills appear as chips marked "· AI", unticked, with their quoted evidence. Each rewrite has Accept and Reject buttons. An accepted line can be edited, then copied into the worker's own resume. Nothing changes unless the worker chooses it. The resume score always comes from the rules, never from the AI.
+**The user stays in control.** AI skills appear as chips marked "· AI", unticked, with their quoted evidence. Each rewrite has Accept and Reject buttons. An accepted line can be edited, then copied into the user's own resume. Nothing changes unless the user chooses it. The resume score always comes from the rules, never from the AI.
 
 **Checks so it cannot make things up.** The server drops anything the resume does not support (`checkAiRead`, tested in `jobbery/tests/ai-resume.test.ts`):
 - a skill ID that is not on Jobbery's list, or whose quote is not in the resume
@@ -561,7 +577,7 @@ The prompt also tells the model not to add purposes or overstate the role ("help
 
 ### 18.2 A forecast that learns
 
-The forecasting engine (`jobbery/src/lib/engine/`) is statistical learning, not a language model. It keeps three possible speeds of AI change (slow, medium, fast) and weights them by how well each one predicted past official releases (DOSM job ads, Epoch AI benchmarks): log-likelihood scoring with fading memory, a form of Bayesian model averaging. A prediction market (LMSR, points only) adds the crowd's view of the next release. When a release settles the questions, the weights update, and so do every worker's skill dates, job ranking and plan. See [section 8](#8-handling-uncertainty-how-the-forecasting-works).
+The forecasting engine (`jobbery/src/lib/engine/`) is statistical learning, not a language model. It keeps three possible speeds of AI change (slow, medium, fast) and weights them by how well each one predicted past official releases (DOSM job ads, Epoch AI benchmarks): log-likelihood scoring with fading memory, a form of Bayesian model averaging. A prediction market (LMSR, points only) adds the crowd's view of the next release. When a release settles the questions, the weights update, and so do every user's skill dates, job ranking and plan. See [section 8](#8-handling-uncertainty-how-the-forecasting-works).
 
 ### 18.3 What is not AI
 
