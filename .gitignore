@@ -71,6 +71,10 @@ secrets/
 *.mkv
 *.m4v
 
+# The Next.js app serves these files directly. Keep every production asset in
+# version control so deployment environments receive the same public folder.
+!runway/public/**
+
 # Build caches and editor lock files
 pitch-deck/build/*.whl
 .~lock.*#
