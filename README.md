@@ -381,9 +381,9 @@ The date shown is the average of the three futures, weighted by how likely each 
 
 *The job map compares estimated employment, state median pay and unemployment across Malaysia.*
 
-![Complete Malaysia map with state labels, legend and comparison figures](jobbery/public/screenshots/map-detail.jpg)
+![All 16 states ranked by estimated jobs with unemployment and median pay](jobbery/public/screenshots/map-detail.jpg)
 
-*The map view shows every state, its legend and the selected state's employment, pay and unemployment figures.*
+*The table below the map lists all 16 states with estimated jobs, unemployment and median pay.*
 
 The **Map** page shows, state by state, where jobs like the one the user picked are found. The map of Malaysia can be dragged and zoomed, with quick views for all of Malaysia, Peninsular Malaysia, Sabah and Sarawak.
 
