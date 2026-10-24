@@ -13,7 +13,7 @@ const sans = Instrument_Sans({ subsets: ["latin"], variable: "--font-instrument-
 
 export const metadata: Metadata = {
   title: "Jobbery: find a future-proof job before your time runs out",
-  description: "Jobbery helps young office workers who have just been laid off find a growing job that AI is unlikely to take soon, using forecasts tested against real data releases.",
+  description: "Jobbery helps fresh graduates and everyone in the workforce explore growing jobs, develop relevant skills and plan their next career step, using forecasts tested against real data releases.",
   icons: { icon: "/cockatiel-ai-icon-v2.png", apple: "/cockatiel-ai-icon-v2.png" },
 };
 export const viewport: Viewport = { width: "device-width", initialScale: 1, colorScheme: "only light" };

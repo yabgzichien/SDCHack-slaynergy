@@ -1,6 +1,6 @@
 # Jobbery
 
-Helps young office workers who have just been laid off find a future-proof job before their time runs out.
+Helps fresh graduates and everyone in the workforce explore growing jobs and build a career plan around their own goals and deadline, whether entering their first job, upskilling, changing careers or returning to work.
 SDC Hackathon 2026 · Domain 1 (Aiversecity Future-Ready Workforce).
 
 Forecast → Match → Plan. Skill and job forecasts come from public, dated data. A prediction market

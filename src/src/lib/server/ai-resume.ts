@@ -18,7 +18,7 @@ export type AiRead = { model: string; skills: AiSkill[]; rewrites: AiRewrite[] }
 const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 const nums = (s: string) => s.match(/\d+(?:[.,]\d+)?/g) ?? [];
 
-const SYSTEM = `You read resumes for Jobbery, a job-planning app for laid-off office workers in Malaysia.
+const SYSTEM = `You read resumes for Jobbery, a career-planning app for fresh graduates and everyone in the workforce in Malaysia.
 Return JSON only, in this shape:
 {"skills":[{"id":"<id from the list>","evidence":"<short exact quote from the resume>"}],
  "rewrites":[{"before":"<one exact line from the resume>","after":"<improved line>","why":"<one short plain sentence>"}]}

@@ -1,6 +1,6 @@
 # Jobbery
 
-**A deadline-based job plan for young office users who have just been laid off.**
+**A deadline-based career plan for fresh graduates and everyone in the workforce.**
 
 SDC Hackathon 2026 · Domain 1: Aiversecity Future-Ready Workforce · Licence: Apache-2.0
 
@@ -73,7 +73,7 @@ Open http://localhost:3000. See [section 15](#15-run-it) for tests and other com
 
 *The landing page introduces Jobbery and the path from skills to jobs and learning.*
 
-**The problem.** 2026 is on track to be Malaysia's worst year for retrenchments since the pandemic, and white-collar users have been hit hardest. A laid-off user gets 3 to 6 months of PERKESO Job Search Allowance. In that time they need to know which of their skills AI will soon do, which jobs are actually growing, and what to learn first. Most "AI job risk" tools give one fixed score from old research.
+**The problem.** Fresh graduates need a path into their first job, while people already in the workforce need ways to develop their skills, change careers, return to work or find a new role after job loss. They need to understand how AI may change their skills, which jobs are growing, and what to learn first. Jobbery helps them plan around their own career goals, available study time and chosen deadline. Most "AI job risk" tools give one fixed score from old research.
 
 **What Jobbery does.**
 
@@ -104,9 +104,9 @@ Open http://localhost:3000. See [section 15](#15-run-it) for tests and other com
 
 ```mermaid
 flowchart TD
-    A([Laid-off office user<br/>3–6 months to find work]) --> B{How to start?}
+    A([Fresh graduates and everyone in the workforce<br/>First job, upskilling, career change or return to work]) --> B{How to start?}
     B -->|Upload or paste| C[Scan my resume<br/>score + fixes + skills found]
-    B -->|Answer questions| D[Onboarding<br/>last job, qualification, months, hours/week, interests]
+    B -->|Answer questions| D[Onboarding<br/>background, qualification, skills, chosen deadline,<br/>hours/week and interests]
     B -->|Demo| E[Try as Hafiz<br/>synthetic persona]
     C --> F[You: confirm profile]
     D --> F
@@ -133,7 +133,8 @@ flowchart TD
 
 | User | Need |
 |---|---|
-| **Primary: laid-off user**, 22–35, from finance or admin back-office work | To know which skills will last, which reachable jobs are growing, and what to learn each week |
+| **Fresh graduates** entering the workforce | To understand their skills, explore reachable first jobs and build a weekly learning plan |
+| **Everyone in the workforce**, including employed people, career changers, jobseekers and people returning to work | To keep skills relevant, explore growing roles and plan their next career step around their own deadline |
 | **Secondary: advisor**, for example an employment officer | To meet each user once (a mock interview, advice, or anything else they ask), seeing their profile and plan |
 | **Forecasters** (simulated now, real people later) | To make checkable guesses about upcoming data and build a track record |
 
@@ -285,7 +286,7 @@ The plan is built from the chosen role's skills gap, the user's **hours per week
 ### How courses are chosen
 
 1. Take the missing skills.
-2. Pick the hand-checked free course that covers the most missing skills per hour (a greedy cover).
+2. Pick the hand-checked free course that covers the most missing skills per hour.
 3. Repeat until every skill is covered. A skill with no checked course gets a 20-hour HRD Corp e-LATiH placeholder, clearly marked. Jobbery never invents a course.
 4. **Weeks for a step = course hours ÷ hours per week**, rounded up. Steps run one after another, so the plan shows real calendar weeks.
 
@@ -381,7 +382,7 @@ The date shown is the average of the three futures, weighted by how likely each 
 
 1. **Questions are checkable.** For example: "Will clerical job ads rise by more than 3 points in the next DOSM release?" Each question has three strike levels, and each is a Yes/No market priced by an LMSR (logarithmic market scoring rule) market maker.
 2. **Each future makes a prediction** for every question.
-3. **When the real data comes out**, questions settle. Futures that predicted well gain weight (at half strength, with older quarters fading). Open questions tilt the weights a little using the crowd's current price.
+3. The app keeps three possible **AI futures**—slow, medium, and fast—and adjusts how much weight it gives each one.
 4. **No future drops below 5%**, so no future is ever ruled out.
 5. **Forecasters are scored with the Brier score.** Influence moves to the most accurate ones.
 6. **About 200 simulated forecasters** (always labelled) earned track records by replaying real past releases. Judges and users can make guesses too, and each question shows what a Yes or No would change ("If Yes: data entry expires around Nov 2029").
@@ -573,28 +574,267 @@ For the advisor passcode and a judge's walkthrough, see [`src/README.md`](src/RE
 
 ## 16. Project structure
 
-```
+```text
 .
-├── README.md              Project overview, demo links and setup
-├── LICENSE                Apache-2.0 licence
-├── .replit                Run and build commands from the repository root
-├── submission/            Pitch deck, proposal, tools declaration and Replit proof
-└── src/                   Next.js application root (run npm commands here)
-    ├── README.md          App setup and judge walkthrough
-    ├── package.json       Dependencies and scripts
-    ├── package-lock.json  Locked dependency versions
-    ├── .env.example       Environment variable template
-    ├── src/app/           Pages and API routes
-    ├── src/components/    Shared UI, charts and journey components
-    ├── src/lib/engine/    Forecasting, matching, planning and hash-chained log
-    ├── src/lib/i18n/      English, Malay, Chinese and Tamil strings
-    ├── src/lib/server/    Sessions, storage and server integrations
-    ├── public/            Production images, screenshots and map assets
-    ├── data/              Committed JSON snapshots
-    ├── scripts/           Data builds, refresh and anchoring scripts
-    ├── anchors/           Committed forecast fingerprints
-    └── tests/             Unit tests and Playwright layout checks
+├── .gitignore
+├── .replit  # Repository-root run and deployment commands
+├── LICENSE
+├── README.md
+├── src/  # Next.js application root; run npm commands here
+│   ├── .env.example  # Environment variable template
+│   ├── .gitignore
+│   ├── .replit
+│   ├── eslint.config.mjs  # Lint configuration
+│   ├── LICENSE
+│   ├── next.config.ts  # Next.js build configuration
+│   ├── package-lock.json  # Locked dependency versions
+│   ├── package.json  # Dependencies and npm scripts
+│   ├── playwright.config.ts  # Browser-test configuration
+│   ├── README.md
+│   ├── tsconfig.json  # TypeScript configuration
+│   ├── vitest.config.mts  # Unit-test configuration
+│   ├── anchors/
+│   │   └── forecasts-2026Q4.json
+│   ├── data/  # Committed data snapshots
+│   │   ├── courses.json
+│   │   ├── logos.json
+│   │   ├── occupations.json
+│   │   ├── personas.json
+│   │   ├── roles.json
+│   │   ├── sdg.json
+│   │   ├── series.json
+│   │   ├── skill-keywords.json
+│   │   ├── skills.json
+│   │   ├── states.json
+│   │   └── task-cards.json
+│   ├── public/  # Production assets, including mascot images and illustrations
+│   │   ├── geo/
+│   │   │   └── malaysia-states.json
+│   │   └── screenshots/  # README screenshots
+│   ├── scripts/  # Data collection, builds, refresh and anchoring
+│   │   ├── anchor-forecasts.ts
+│   │   ├── anchor-log.mjs
+│   │   ├── build-geo.ts
+│   │   ├── build-map.mjs
+│   │   ├── build-series.ts
+│   │   ├── data-refresh.ts
+│   │   ├── extract-state-occupation.mjs
+│   │   ├── fetch-logos.mjs
+│   │   └── fetch-sources.sh
+│   ├── src/  # Application source code
+│   │   ├── app/  # Pages, layouts, styles and API routes
+│   │   │   ├── globals.css
+│   │   │   ├── landing-v2.css
+│   │   │   ├── layout.tsx
+│   │   │   ├── page.tsx
+│   │   │   ├── about/
+│   │   │   │   └── page.tsx
+│   │   │   ├── advisor/
+│   │   │   │   └── page.tsx
+│   │   │   ├── api/
+│   │   │   │   ├── action/
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── counsellor/
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── data/
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── fairness/
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── leaderboard/
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── log/
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── market/
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── meetings/
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── resume/
+│   │   │   │   │   └── route.ts
+│   │   │   │   └── state/
+│   │   │   │       └── route.ts
+│   │   │   ├── badge/
+│   │   │   │   └── [id]/
+│   │   │   │       └── page.tsx
+│   │   │   ├── changes/
+│   │   │   │   └── page.tsx
+│   │   │   ├── counsellor/
+│   │   │   │   └── page.tsx
+│   │   │   ├── courses/
+│   │   │   │   ├── courses.css
+│   │   │   │   └── page.tsx
+│   │   │   ├── forecast/
+│   │   │   │   └── page.tsx
+│   │   │   ├── futures/
+│   │   │   │   └── page.tsx
+│   │   │   ├── goals/
+│   │   │   │   └── page.tsx
+│   │   │   ├── jobs/
+│   │   │   │   ├── jobs.css
+│   │   │   │   ├── page.tsx
+│   │   │   │   ├── [id]/
+│   │   │   │   │   └── page.tsx
+│   │   │   │   └── all/
+│   │   │   │       └── page.tsx
+│   │   │   ├── leaderboard/
+│   │   │   │   └── page.tsx
+│   │   │   ├── map/
+│   │   │   │   └── page.tsx
+│   │   │   ├── market/
+│   │   │   │   ├── market.css
+│   │   │   │   ├── page.tsx
+│   │   │   │   └── [id]/
+│   │   │   │       └── page.tsx
+│   │   │   ├── plan/
+│   │   │   │   ├── page.tsx
+│   │   │   │   ├── resume/
+│   │   │   │   │   └── page.tsx
+│   │   │   │   └── task/
+│   │   │   │       └── page.tsx
+│   │   │   ├── profile/
+│   │   │   │   └── page.tsx
+│   │   │   ├── radar/
+│   │   │   │   └── page.tsx
+│   │   │   ├── resume/
+│   │   │   │   └── page.tsx
+│   │   │   ├── skills/
+│   │   │   │   └── page.tsx
+│   │   │   ├── sources/
+│   │   │   │   └── page.tsx
+│   │   │   ├── start/
+│   │   │   │   └── page.tsx
+│   │   │   ├── trends/
+│   │   │   │   ├── page.tsx
+│   │   │   │   └── trends.css
+│   │   │   └── trust/
+│   │   │       └── page.tsx
+│   │   ├── components/  # Shared UI components
+│   │   │   ├── AiTrendCharts.tsx
+│   │   │   ├── AppProvider.tsx
+│   │   │   ├── AppShell.tsx
+│   │   │   ├── CustomCursor.tsx
+│   │   │   ├── ExpiryTrack.tsx
+│   │   │   ├── ForecastDetails.tsx
+│   │   │   ├── ForecastNav.tsx
+│   │   │   ├── I18nProvider.tsx
+│   │   │   ├── JobberyStrip.tsx
+│   │   │   ├── JobBits.tsx
+│   │   │   ├── JobIcon.tsx
+│   │   │   ├── JobPicker.tsx
+│   │   │   ├── JobsNav.tsx
+│   │   │   ├── journey-bar.css
+│   │   │   ├── Journey.tsx
+│   │   │   ├── LandingForecast.tsx
+│   │   │   ├── LandingIntro.tsx
+│   │   │   ├── LandingLiveMarket.tsx
+│   │   │   ├── LandingMap.tsx
+│   │   │   ├── LandingSdgAnimation.tsx
+│   │   │   ├── LanguageSwitcher.tsx
+│   │   │   ├── MalaysiaMap.tsx
+│   │   │   ├── MarketBoard.tsx
+│   │   │   ├── MarketCards.tsx
+│   │   │   ├── MarketTabs.tsx
+│   │   │   ├── Meetings.tsx
+│   │   │   ├── PageTransition.tsx
+│   │   │   ├── Pathway.tsx
+│   │   │   ├── ReleaseOverlay.tsx
+│   │   │   ├── ResumePaper.tsx
+│   │   │   ├── ResumeSheet.tsx
+│   │   │   ├── ScoreRing.tsx
+│   │   │   ├── SdgIcon.tsx
+│   │   │   ├── Segmented.tsx
+│   │   │   ├── SiteHeader.tsx
+│   │   │   ├── SkipLink.tsx
+│   │   │   ├── SourceDisclosure.tsx
+│   │   │   ├── StepNav.tsx
+│   │   │   ├── strands.ts
+│   │   │   ├── ui.tsx
+│   │   │   ├── useSelectJob.ts
+│   │   │   └── useSpeed.ts
+│   │   └── lib/
+│   │       ├── build-resume.ts
+│   │       ├── legacy.ts
+│   │       ├── logo-domain.mjs
+│   │       ├── malaysia-map.json
+│   │       ├── map-figures.ts
+│   │       ├── map-scale.ts
+│   │       ├── market-math.ts
+│   │       ├── sample-resume.ts
+│   │       ├── suggested.ts
+│   │       ├── datasrc/
+│   │       │   ├── parse.ts
+│   │       │   └── validate.ts
+│   │       ├── engine/  # Forecasting, matching, learning plans and market logic
+│   │       │   ├── calendar.ts
+│   │       │   ├── data.ts
+│   │       │   ├── expiry.ts
+│   │       │   ├── futures-def.ts
+│   │       │   ├── futures.ts
+│   │       │   ├── geo.ts
+│   │       │   ├── lmsr.ts
+│   │       │   ├── market.ts
+│   │       │   ├── matching.ts
+│   │       │   ├── math.ts
+│   │       │   ├── meetings.ts
+│   │       │   ├── pathway.ts
+│   │       │   ├── plan.ts
+│   │       │   ├── questions.ts
+│   │       │   ├── replay.ts
+│   │       │   ├── resume.ts
+│   │       │   ├── review.ts
+│   │       │   ├── state.ts
+│   │       │   ├── tape.ts
+│   │       │   ├── view.ts
+│   │       │   └── world.ts
+│   │       ├── i18n/  # Translations and language helpers
+│   │       │   ├── dates.ts
+│   │       │   ├── dom.ts
+│   │       │   ├── index.ts
+│   │       │   ├── ms.ts
+│   │       │   ├── ta.ts
+│   │       │   ├── zh.ts
+│   │       │   └── rows/
+│   │       │       ├── forecast.ts
+│   │       │       ├── humanedge.ts
+│   │       │       ├── index.ts
+│   │       │       ├── jobs.ts
+│   │       │       ├── map.ts
+│   │       │       ├── misc.ts
+│   │       │       ├── misc2.ts
+│   │       │       ├── plan.ts
+│   │       │       ├── roles.ts
+│   │       │       ├── sdg.ts
+│   │       │       ├── skills.ts
+│   │       │       ├── skillspage.ts
+│   │       │       ├── sources.ts
+│   │       │       ├── start.ts
+│   │       │       ├── taskcard.ts
+│   │       │       ├── trust.ts
+│   │       │       └── updates.ts
+│   │       └── server/  # Storage, sessions, data refresh and AI resume reader
+│   │           ├── ai-resume.ts
+│   │           ├── counsellor.ts
+│   │           ├── meetings.ts
+│   │           ├── refresh.ts
+│   │           ├── respond.ts
+│   │           ├── session.ts
+│   │           ├── sources.ts
+│   │           └── store.ts
+│   └── tests/  # Unit tests and browser layout checks
+│       ├── ai-resume.test.ts
+│       ├── data-refresh.test.ts
+│       ├── engine.test.ts
+│       ├── i18n.test.ts
+│       ├── layout-overflow.spec.ts
+│       └── rename.test.ts
+└── submission/  # Submission documents and pitch deck
+    ├── Jobbery pitch deck.pdf
+    ├── Jobbery pitch deck.pptx
+    ├── Replit Proof Of Use.pdf
+    ├── SDC2026_slaynergy_Preliminary.pdf
+    └── SDC2026_slaynergy_TechDeclaration.pdf
 ```
+
+This tree lists the tracked code, configuration, datasets and submission files. Individual images in `src/public/` and `src/public/screenshots/` are grouped under their folders.
 
 The outer `src/` is the application root; `src/src/` contains its Next.js source code.
 Local dependencies, build output, databases, logs and raw data downloads are excluded from Git.
