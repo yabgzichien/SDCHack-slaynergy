@@ -19,10 +19,10 @@ SDC Hackathon 2026 · Domain 1: Aiversecity Future-Ready Workforce · Licence: A
 | Resource | Link or status |
 |---|---|
 | **GitHub repository** | https://github.com/yabgzichien/SDCHack-slaynergy |
-| **Live demo** | [Jobbery on Vercel](https://sdc-runway.vercel.app/) |
+| **Live demo** | https://sdc-runway.vercel.app/ |
 | **RunPod endpoint** | Not used |
 | **Slide deck** | [PDF](submission/Jobbery%20pitch%20deck.pdf) · [PowerPoint](submission/Jobbery%20pitch%20deck.pptx) |
-| **Demo video** | [Watch the demo on YouTube](https://www.youtube.com/watch?v=pRHKh5LNF-s) |
+| **Demo video** | https://www.youtube.com/watch?v=pRHKh5LNF-s |
 | **Preliminary proposal** | [PDF](submission/SDC2026_slaynergy_Preliminary.pdf) |
 | **Technical and tools declaration** | [PDF](submission/SDC2026_slaynergy_TechDeclaration.pdf) |
 | **Replit proof of use** | [PDF](submission/Replit%20Proof%20Of%20Use.pdf) |
