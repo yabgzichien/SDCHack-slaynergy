@@ -412,10 +412,30 @@ Every plan includes **one meeting with an advisor**, placed just before applying
 
 **Advisor side: "Advisor view"** (`/counsellor`). Judges can sign in with one click as a demo advisor. A "needs you" strip at the top lists meetings still waiting for advice, with orange markers on anything waiting and green on what is done. Each meeting leads with the user, the job they are aiming for and their question; the date is a small line underneath. Their plan is shown as a timeline with an icon per step type. Two tabs:
 
+![Advisor dashboard with a demo meeting waiting for advice](jobbery/public/screenshots/advisor-desk.jpg)
+
+*The demo advisor sees a meeting that needs advice, the user's question and the advice form.*
+
 | Tab | What the advisor does |
 |---|---|
 | **Meetings** | Sees the user's question, profile, top jobs, plan, the futures behind the advice, and **their resume drawn as a page** (rebuilt from their profile and finished steps, never the uploaded file). Writes advice, which appears on the user's Plan page. |
 | **My free times** | Opens or closes half-hour slots on a 14-day grid. |
+
+![Advisor view of the user's complete learning plan](jobbery/public/screenshots/advisor-detail.jpg)
+
+*The advisor can review every step of the user's learning plan before giving advice.*
+
+![Resume reconstructed from the demo user's profile](jobbery/public/screenshots/advisor-resume.jpg)
+
+*The advisor sees the resume rebuilt from the demo profile and completed steps.*
+
+![Advisor view of the demo user's profile, AI futures and reachable jobs](jobbery/public/screenshots/advisor-insights.jpg)
+
+*The user's profile, forecast assumptions and top job matches are shown together.*
+
+![Advisor free-times calendar](jobbery/public/screenshots/advisor-times.jpg)
+
+*The advisor opens or closes half-hour slots and can see booked times in the two-week calendar.*
 
 The hash log records "advice given", the advisor's ID and a **hash of the note, not the note itself**.
 
@@ -423,21 +443,37 @@ The hash log records "advice given", the advisor's ID and a **hash of the note, 
 
 ## 11. Learner motivation
 
+![Skill badges for the demo learning plan](jobbery/public/screenshots/learner-badges.jpg)
+
+*The plan shows progress toward skill and milestone badges, the advisor meeting and the pathway badge.*
+
 - **A visible timeline.** A progress strip shows the weeks of the plan against the user's deadline, so they always know where they stand.
 - **Badges as they go:** one for each finished step (e.g. "Tax preparation and compliance", "AI checker", "Resume updated"), plus milestones: *First step*, *Halfway*, *Every step done*. Each badge has its strand's colour and icon (blue job skills, amber AI, purple people, gold milestones). They are self-reported and labelled as such.
 - **Real evidence, not just ticks.** The AI quiz and the resume update complete only when the work is done in Jobbery, and they build a portfolio.
 - **A verified LinkedIn badge** at the end, issued once every step is done (including advice from an advisor) and checkable by anyone at `/badge/[id]` against the hash log. The badge page shows a certificate-style badge, the completed steps grouped by strand, and the log record. It says "pathway completed", never "certified".
 - **The market leaderboard.** Forecasters earn an accuracy score, a rank and influence.
 
+![Forecast leaderboard showing player rankings and vote influence](jobbery/public/screenshots/leaderboard.jpg)
+
+*The leaderboard shows rankings, accuracy scores and the influence earned by demo forecasters.*
+
 ---
 
 ## 12. Fairness check
+
+![Trust page showing passed fairness checks and verified hash chain](jobbery/public/screenshots/fairness.jpg)
+
+*The live Trust page reports the fairness result and verifies the tamper-evident record chain.*
 
 - **Age, gender and background are never inputs.** Matching accepts only a whitelisted input type (`pickInputs`): skills, months, hours, interests, goals, qualification, field and area.
 - **A test proves it.** The same skills with a different age or gender give exactly the same matches. Another test checks that the user's home state alone never changes their matches.
 - **The check runs live** on the **Trust** page (`/trust`, via `/api/fairness`), along with hash-chain verification and the full list of data sources.
 - **Tamper-evident log.** Every guess, settlement, advice note and badge is added to a hash-chained log. Its fingerprint is committed to this repo (`npm run anchor`).
 - **Labelled simulations.** Simulated forecasters and demo personas are always marked as made up. No real CVs or personal data are used.
+
+![Trust page listing public data sources and labelled synthetic data](jobbery/public/screenshots/fairness-sources.jpg)
+
+*The source list identifies the public datasets, their dates and the demo data.*
 
 ---
 
