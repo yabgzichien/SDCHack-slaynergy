@@ -4,7 +4,7 @@ import { CartesianGrid, Line, LineChart, ReferenceDot, ResponsiveContainer, Tool
 import type { EventView } from "@/lib/engine/world";
 import { MAX_MOVE, MAX_MOVE_WINDOW, MAX_PER_ANSWER, MOVE_WINDOW_S, moveAllowance, quoteBuy, quoteSell } from "@/lib/market-math";
 import { useApp } from "./AppProvider";
-import { Btn, Card, Chip, DemoLabel, FUTURE_COLOR, FUTURE_NAME, SourceChip, pct as fpct } from "./ui";
+import { Btn, Card, DemoLabel, FUTURE_COLOR, FUTURE_NAME, SourceChip, pct as fpct } from "./ui";
 import { AnsweredBadge, AnswerStamp, LiveBadge, STRIKE_COLORS } from "./MarketCards";
 import { Lock } from "lucide-react";
 

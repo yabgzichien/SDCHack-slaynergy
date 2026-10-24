@@ -44,3 +44,8 @@ next-env.d.ts
 /data/raw/
 !.env.example
 /.data/
+
+# Local runtime and browser-test output
+*.log
+/test-results/
+/playwright-report/

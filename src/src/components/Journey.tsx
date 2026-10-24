@@ -112,7 +112,9 @@ let lastBird: number | null = null;
 
 // The bird walks along the bar to whatever element is marked as its target.
 // It eases towards the target every frame, so it also follows pills as they grow and shrink.
-function useBird(row: React.RefObject<HTMLDivElement | null>, bird: React.RefObject<HTMLDivElement | null>, key: string) {
+function useBird(key: string) {
+  const row = useRef<HTMLDivElement>(null);
+  const bird = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const r = row.current, b = bird.current;
     if (!r || !b) return;
@@ -147,6 +149,7 @@ function useBird(row: React.RefObject<HTMLDivElement | null>, bird: React.RefObj
     ro.observe(r);
     return () => { cancelAnimationFrame(raf); ro.disconnect(); };
   }, [row, bird, key]);
+  return { row, bird };
 }
 
 // The journey bar: five segmented pills, filled from the left as steps are done, with the bird walking above.
@@ -155,9 +158,7 @@ function useBird(row: React.RefObject<HTMLDivElement | null>, bird: React.RefObj
 export function StepBar({ sub, inline }: { sub?: SubSteps; inline?: boolean }) {
   const { cur, status } = useJourney();
   const { t } = useT();
-  const row = useRef<HTMLDivElement>(null);
-  const bird = useRef<HTMLDivElement>(null);
-  useBird(row, bird, `${cur}:${sub?.index ?? ""}`);
+  const { row, bird } = useBird(`${cur}:${sub?.index ?? ""}`);
   return (
     <nav className={`jbar${inline ? " is-inline" : ""}`} aria-label={t("Your steps")}>
       <div className="jbar-inner">

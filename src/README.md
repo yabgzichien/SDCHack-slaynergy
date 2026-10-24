@@ -7,7 +7,11 @@ Forecast → Match → Plan. Skill and job forecasts come from public, dated dat
 (points only, never money) whose questions settle on real data releases decides how likely each of three
 futures (slow, medium, fast AI progress) is. The worker leaves with a week-by-week plan they choose, and can book an advisor for a second opinion.
 
+[Watch the demo video](https://www.youtube.com/watch?v=pRHKh5LNF-s) · [Submission files](../submission/)
+
 ## Run it
+
+From the repository root, run `cd src` first. For Vercel, set the project Root Directory to `src`.
 
 ```bash
 npm install

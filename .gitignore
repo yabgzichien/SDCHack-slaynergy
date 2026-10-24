@@ -77,3 +77,16 @@ secrets/
 
 # Editor lock files
 .~lock.*#
+
+# Local generated output, including leftovers from previous app folder names
+**/node_modules/
+**/.next/
+**/.data/
+**/test-results/
+**/playwright-report/
+*.log
+*.tsbuildinfo
+next-env.d.ts
+
+# Retired app directory: local caches and reference material only
+/jobbery/

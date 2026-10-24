@@ -210,7 +210,8 @@ describe("the market: three answers per question, buy and sell", () => {
 });
 
 describe("new data never pushes a worker back into a fading job", () => {
-  it("after the release, no persona's top job is one whose skills are at risk, and no role jumps more than 8 places", () => {
+  // This checks full forecasts for every persona before and after a release.
+  it("after the release, no persona's top job is one whose skills are at risk, and no role jumps more than 8 places", { timeout: 120000 }, () => {
     for (const p of personas) {
       const o = occupations.find((x) => x.id === p.occupation)!;
       const st: SessionState = { ...initialState(), profile: { name: p.name, occupationId: o.id, education: p.education, years: p.years, skills: o.skills, interests: p.interests, months: p.months, hoursPerWeek: p.hoursPerWeek, budget: "free", synthetic: true } };
@@ -767,7 +768,8 @@ describe("courses: one list for the plan and the Courses page", () => {
     for (const s of plan.steps.filter((x) => x.course)) expect(courses.some((c) => c.id === s.course!.id && !c.catalogOnly)).toBe(true);
     expect(courses.filter((c) => c.catalogOnly).map((c) => c.id).sort()).toEqual(["elatih", "perkeso_eis", "rakyat_digital"]);
   });
-  it("swaps a step's course only for one that teaches every skill the step covers", () => {
+  // Searching across roles builds several complete plans before checking swaps.
+  it("swaps a step's course only for one that teaches every skill the step covers", { timeout: 120000 }, () => {
     // Hafiz's suggested courses have no alternatives, so use the first job whose plan has one.
     const base = (() => {
       for (const r of roles) {

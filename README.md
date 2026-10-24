@@ -21,8 +21,11 @@ SDC Hackathon 2026 · Domain 1: Aiversecity Future-Ready Workforce · Licence: A
 | **GitHub repository** | https://github.com/yabgzichien/SDCHack-slaynergy |
 | **Live demo** | [Jobbery on Vercel](https://sdc-runway.vercel.app/) |
 | **RunPod endpoint** | Not used |
-| **Slide deck** | TBC |
-| **Demo video** | TBC |
+| **Slide deck** | [PDF](submission/Jobbery%20pitch%20deck.pdf) · [PowerPoint](submission/Jobbery%20pitch%20deck.pptx) |
+| **Demo video** | [Watch the demo on YouTube](https://www.youtube.com/watch?v=pRHKh5LNF-s) |
+| **Preliminary proposal** | [PDF](submission/SDC2026_slaynergy_Preliminary.pdf) |
+| **Technical and tools declaration** | [PDF](submission/SDC2026_slaynergy_TechDeclaration.pdf) |
+| **Replit proof of use** | [PDF](submission/Replit%20Proof%20Of%20Use.pdf) |
 | **How to run** | [Section 15](#15-run-it) |
 | **Project structure** | [Section 16](#16-project-structure) |
 | **Replit usage** | [Section 17](#17-how-we-used-replit-and-runpod) |
@@ -572,22 +575,29 @@ For the advisor passcode and a judge's walkthrough, see [`src/README.md`](src/RE
 
 ```
 .
-├── README.md              This file
-├── Domain 1.pdf           Domain brief
-├── docs/                  PRD and data-feasibility notes
-└── src/                    The Next.js app
-    ├── src/app/           Pages and API routes: start, jobs, map, plan, badge,
-    │                      market, trends, sources, advisor, counsellor, trust
-    ├── src/components/    Shared UI: header, charts, market board, journey
-    ├── src/lib/engine/    Pure TypeScript engine: LMSR market, forecasters, futures,
-    │                      expiry dates, matching, planning, hash-chained log
+├── README.md              Project overview, demo links and setup
+├── LICENSE                Apache-2.0 licence
+├── .replit                Run and build commands from the repository root
+├── submission/            Pitch deck, proposal, tools declaration and Replit proof
+└── src/                   Next.js application root (run npm commands here)
+    ├── README.md          App setup and judge walkthrough
+    ├── package.json       Dependencies and scripts
+    ├── package-lock.json  Locked dependency versions
+    ├── .env.example       Environment variable template
+    ├── src/app/           Pages and API routes
+    ├── src/components/    Shared UI, charts and journey components
+    ├── src/lib/engine/    Forecasting, matching, planning and hash-chained log
     ├── src/lib/i18n/      English, Malay, Chinese and Tamil strings
-    ├── src/lib/server/    Sessions and storage
-    ├── data/              Raw downloads and committed JSON snapshots
-    ├── scripts/           Data-build and anchoring scripts
-    ├── anchors/           Committed fingerprints of the hash log
-    └── tests/             Vitest engine tests
+    ├── src/lib/server/    Sessions, storage and server integrations
+    ├── public/            Production images, screenshots and map assets
+    ├── data/              Committed JSON snapshots
+    ├── scripts/           Data builds, refresh and anchoring scripts
+    ├── anchors/           Committed forecast fingerprints
+    └── tests/             Unit tests and Playwright layout checks
 ```
+
+The outer `src/` is the application root; `src/src/` contains its Next.js source code.
+Local dependencies, build output, databases, logs and raw data downloads are excluded from Git.
 
 ---
 
