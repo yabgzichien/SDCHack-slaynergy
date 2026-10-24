@@ -593,7 +593,7 @@ For the advisor passcode and a judge's walkthrough, see [`jobbery/README.md`](jo
 
 ## 17. How we used Replit and RunPod
 
-**Replit.** We used Replit for code generation only. The live app is hosted on [Vercel](https://sdc-runway.vercel.app/).
+**Replit.** We used Replit for code generation only.
 
 **RunPod.** We did not use RunPod. Nothing needs a GPU on our side: the AI resume reader calls Qwen3.8 27B on Groq's hosted API, resume scoring is rule-based, and the forecasting engine is plain TypeScript.
 
