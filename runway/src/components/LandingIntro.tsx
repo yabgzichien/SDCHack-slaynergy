@@ -8,6 +8,7 @@ import { useApp } from "./AppProvider";
 import { useT } from "./I18nProvider";
 import { LandingSdgAnimation } from "./LandingSdgAnimation";
 import { LandingForecast } from "./LandingForecast";
+import { LandingMap } from "./LandingMap";
 import { AiCapabilityChart, aiCapability } from "./AiTrendCharts";
 import { sourceById } from "@/lib/engine/data";
 
@@ -140,6 +141,7 @@ export function LandingIntro() {
 
         <section id="statistics" className="landing-statistics landing-section-reveal" aria-labelledby="statistics-title">
           <div className="landing-stats-top landing-reveal"><div><span className="landing-section-label">{t("THE DATA")}</span><h2 id="statistics-title">{t("How AI is changing your work")}<span className="landing-period">.</span></h2><p>{t("Supported by real numbers from public government and research data, with sources attached accordingly.")}</p></div><Link href="/trends" className="landing-text-link landing-stats-all">{t("See all statistics")} <ArrowRight size={16} aria-hidden /></Link></div>
+          <p className="landing-update-note landing-reveal">{t("We automatically check for new releases and update these figures when new data is available.")}</p>
           {view && ai && (
             <div className="landing-data-grid">
               <article className="landing-chart-card landing-reveal">
@@ -161,6 +163,7 @@ export function LandingIntro() {
           )}
         </section>
         <LandingForecast />
+        <LandingMap />
       </div>
       <footer className="landing-footer landing-reveal"><span>{t("Jobbery © 2026")}</span><span>{t("Find a next step that fits.")}</span><div className="landing-footer-actions"><Link href="/trust">{t("Our approach")} <ArrowRight size={14} aria-hidden /></Link><button onClick={() => { window.scrollTo({ top: 0, behavior: "auto" }); setSceneActive(true); setReplayKey((key) => key + 1); }}><RotateCcw size={14} aria-hidden /> {t("Replay intro")}</button></div></footer>
     </div>

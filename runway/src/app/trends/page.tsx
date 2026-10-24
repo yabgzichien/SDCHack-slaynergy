@@ -54,6 +54,7 @@ export default function TrendsPage() {
           <span className="statistics-hero-icon" aria-hidden="true"><ChartNoAxesColumnIncreasing size={30} strokeWidth={3} /></span>
           <p>Which jobs are being hired more, which are being hired less, and how quickly AI is getting better. All numbers come from public government and research data. Each one says where it came from.</p>
         </div>
+        <p className="mt-4 text-sm text-muted">We automatically check for new releases and update these figures when new data is available.</p>
         <div className="statistics-hero-art" aria-hidden="true">
           <Image src="/cockatiel-statistics-header.png" alt="" width={420} height={315} className="statistics-hero-mascot" priority />
         </div>

@@ -39,6 +39,7 @@ export function LandingForecast() {
         <Link href="/market#how" className="landing-text-link landing-stats-all">How this forecast works <ArrowRight size={16} aria-hidden /></Link>
       </div>
 
+      <p className="landing-update-note landing-reveal">We automatically check for new releases and update these figures when new data is available.</p>
       <div className="landing-data-grid landing-forecast-grid">
         {jobs ? <LandingLiveMarket event={jobs} /> : null}
 

@@ -2,6 +2,7 @@ import type { Row } from "../index";
 
 // Automatic data updates: the Sources page status panel, release dates worked out from the data, and closed questions.
 export const UPDATES: Row[] = [
+  ["We automatically check for new releases and update these figures when new data is available.", "Kami menyemak keluaran baharu secara automatik dan mengemas kini angka ini apabila data baharu tersedia.", "我们会自动检查最新发布的数据，并在有新数据时更新这些数字。", "புதிய வெளியீடுகளைத் தானாகச் சரிபார்த்து, புதிய தரவு கிடைக்கும்போது இந்தப் புள்ளிவிவரங்களைப் புதுப்பிக்கிறோம்."],
   // Sources page: automatic updates panel
   ["Automatic updates", "Kemas kini automatik", "自动更新", "தானியங்கி புதுப்பிப்புகள்"],
   ["The app checks these sources by itself, every day, and every hour on DOSM's release day.", "Aplikasi menyemak sumber ini sendiri, setiap hari, dan setiap jam pada hari keluaran DOSM.", "应用每天自动检查这些来源，在 DOSM 发布当天每小时检查一次。", "இந்தச் செயலி இந்த மூலங்களைத் தானாகவே தினமும், DOSM வெளியீட்டு நாளில் ஒவ்வொரு மணி நேரமும் சரிபார்க்கிறது."],

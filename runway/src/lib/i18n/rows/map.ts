@@ -2,6 +2,19 @@ import type { Row } from "../index";
 
 // Job map page.
 export const MAP: Row[] = [
+  ["PAY ACROSS MALAYSIA", "GAJI DI SELURUH MALAYSIA", "马来西亚各地薪资", "மலேசியா முழுவதும் ஊதியம்"],
+  ["See how pay differs by state", "Lihat perbezaan gaji mengikut negeri", "了解各州薪资差异", "மாநிலங்களுக்கு இடையிலான ஊதிய வேறுபாடுகளைப் பாருங்கள்"],
+  ["Compare median monthly pay across Malaysia, then personalise your map to explore work that fits you.", "Bandingkan gaji bulanan penengah di seluruh Malaysia, kemudian sesuaikan peta anda untuk meneroka pekerjaan yang sesuai.", "比较马来西亚各州的月薪中位数，再定制地图以探索适合你的工作。", "மலேசியா முழுவதும் மாத ஊதியத்தின் இடைநிலையை ஒப்பிட்டு, உங்களுக்குப் பொருத்தமான வேலையை ஆராய வரைபடத்தைத் தனிப்பயனாக்குங்கள்."],
+  ["Personalise your map", "Sesuaikan peta anda", "定制你的地图", "உங்கள் வரைபடத்தைத் தனிப்பயனாக்குங்கள்"],
+  ["STATE SALARY HEATMAP", "PETA HABA GAJI NEGERI", "各州薪资热力图", "மாநில ஊதிய வெப்ப வரைபடம்"],
+  ["Median monthly pay", "Gaji bulanan penengah", "月薪中位数", "மாத ஊதியத்தின் இடைநிலை"],
+  ["Malaysia heatmap of median monthly pay by state", "Peta haba Malaysia bagi gaji bulanan penengah mengikut negeri", "马来西亚各州月薪中位数热力图", "மாநில வாரியான மாத ஊதிய இடைநிலையைக் காட்டும் மலேசிய வெப்ப வரைபடம்"],
+  ["Darker green means higher median monthly pay.", "Hijau lebih gelap bermakna gaji bulanan penengah lebih tinggi.", "绿色越深，月薪中位数越高。", "அடர் பச்சை நிறம் அதிக மாத ஊதிய இடைநிலையைக் குறிக்கிறது."],
+  ["State-wide figures across jobs, not salaries for a particular occupation.", "Angka seluruh negeri merentas pekerjaan, bukan gaji bagi pekerjaan tertentu.", "这些数字涵盖全州各类工作，并非特定职业的薪资。", "இவை மாநிலம் முழுவதும் பல வேலைகளுக்கான புள்ளிவிவரங்கள்; குறிப்பிட்ட தொழிலுக்கான ஊதியம் அல்ல."],
+  ["Source: OpenDOSM, {year}", "Sumber: OpenDOSM, {year}", "来源：OpenDOSM，{year}", "மூலம்: OpenDOSM, {year}"],
+  ["SALARY STATISTICS", "STATISTIK GAJI", "薪资统计", "ஊதியப் புள்ளிவிவரங்கள்"],
+  ["Highest state medians", "Gaji penengah negeri tertinggi", "月薪中位数最高的州", "அதிக ஊதிய இடைநிலை கொண்ட மாநிலங்கள்"],
+  ["Median pay is the middle salary: half of workers earn more and half earn less.", "Gaji penengah ialah gaji di tengah: separuh pekerja memperoleh lebih dan separuh memperoleh kurang.", "薪资中位数是位于中间的薪资：一半工人的收入更高，另一半更低。", "இடைநிலை ஊதியம் என்பது நடுவில் உள்ள ஊதியம்: பாதி தொழிலாளர்கள் இதைவிட அதிகமாகவும், பாதி குறைவாகவும் சம்பாதிக்கிறார்கள்."],
   ["Where in Malaysia are the jobs?", "Di mana di Malaysia pekerjaan itu?", "马来西亚哪里有工作？", "மலேசியாவில் வேலைகள் எங்கே உள்ளன?"],
   ["Answer a few questions and choose a job first; the map then shows where jobs like it are.", "Jawab beberapa soalan dan pilih pekerjaan dahulu; peta kemudian menunjukkan di mana pekerjaan seperti itu berada.", "请先回答几个问题并选择一份工作；地图会显示这类工作在哪里。", "முதலில் சில கேள்விகளுக்குப் பதிலளித்து ஒரு வேலையைத் தேர்ந்தெடுங்கள்; பிறகு அதுபோன்ற வேலைகள் எங்கே உள்ளன என்று வரைபடம் காட்டும்."],
   ["Choose a job", "Pilih pekerjaan", "选择一份工作", "ஒரு வேலையைத் தேர்ந்தெடுங்கள்"],

@@ -409,7 +409,7 @@
 .landing-content :is(.landing-journey, .landing-statistics) { background:transparent; border-top:0; }
 .landing-content .landing-journey { padding-bottom:28px; }
 .landing-content .landing-start-cta { width:min(1060px, calc(100% - 42px)); margin:12px auto 24px; padding:28px 24px; border-radius:24px; background:linear-gradient(135deg, #4c7657, #3e654c); }
-.landing-content #statistics { padding-bottom:32px; }
+.landing-content #statistics,.landing-content .landing-forecast { padding-bottom:32px; }
 .landing-content .landing-forecast { padding-top:32px; }
 
 /* Statistics: one large figure states the takeaway; the chart backs it up. */
@@ -446,6 +446,16 @@
   .landing-speed strong { grid-row:span 2; font-size:40px; }
   .landing-stat-hero { flex-direction:column; gap:10px; }
 }
+
+/* Public salary preview shares the map page's state data and colour scale. */
+.landing-content .landing-maps { padding-top:32px; }
+.landing-update-note { margin-top:16px; color:var(--body); font-size:14px; line-height:1.6; }
+.landing-map-grid > article { min-width:0; }
+.landing-salary-list { margin-top:22px; padding:0; list-style:none; }
+.landing-salary-list li { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:20px 0; border-bottom:1px solid var(--line); }
+.landing-salary-list strong { flex-shrink:0; font-size:22px; color:#355c35; }
+@media (max-width:900px) { .landing-content .landing-map-grid { grid-template-columns:1fr; } }
+@media (max-width:520px) { .landing-maps .landing-chart-card { padding:16px; } .landing-salary-list strong { font-size:19px; } }
 
 /* Custom language dropdown */
 .lang-picker { position:relative; }

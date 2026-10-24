@@ -31,6 +31,7 @@ export default function MarketPage() {
       <PageTitle title={<span className="statistics-headline-highlight">The Forecast</span>}>
         Free points, never money. The better your predictions, the more your vote counts in Jobbery&apos;s forecast of how fast AI changes jobs.
       </PageTitle>
+      <p className="mb-6 text-sm text-muted">We automatically check for new releases and update these figures when new data is available.</p>
 
       <div className="forecast-layout">
         <ForecastNav showResults={showResults} />
