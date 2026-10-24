@@ -49,6 +49,10 @@ SDC Hackathon 2026 · Domain 1: Aiversecity Future-Ready Workforce · Licence: A
 
 ## 1. Summary
 
+![Jobbery landing page](runway/public/screenshots/landing.jpg)
+
+*The landing page introduces Jobbery and the path from skills to jobs and learning.*
+
 **The problem.** 2026 is on track to be Malaysia's worst year for retrenchments since the pandemic, and white-collar workers have been hit hardest. A laid-off worker gets 3 to 6 months of PERKESO Job Search Allowance. In that time they need to know which of their skills AI will soon do, which jobs are actually growing, and what to learn first. Most "AI job risk" tools give one fixed score from old research.
 
 **What Jobbery does.**
@@ -164,6 +168,10 @@ These four signals combine into a **skill expiry date**: the year AI is expected
 
 ### Does it update? Yes, automatically.
 
+![Sources page showing automatic data-update status](runway/public/screenshots/sources.jpg)
+
+*The Sources page shows automatic checks, the active data version, source results and review alerts.*
+
 When someone uses the app and the last check is old enough, the server checks for new data in the background:
 - **How often:** daily, and hourly around DOSM's release day.
 - **Updated automatically:** DOSM Job Market Insights, Epoch AI benchmark results, and OpenDOSM's state labour force and wages.
@@ -183,6 +191,10 @@ The next releases are **DOSM Jul–Sep 2026 (17 Nov 2026)** and **Epoch AI Oct�
 ---
 
 ## 5. Future-role matching and skills gap
+
+![Suggested jobs for the demo worker](runway/public/screenshots/jobs.jpg)
+
+*Suggested jobs for the demo worker, with skill overlap, reasons for the match and preparation time.*
 
 Jobbery has **89 roles in 10 sectors** and **80 skills**. Each role lists the skills it needs, each weighted by importance (1–3), plus the qualification it requires.
 
@@ -234,6 +246,10 @@ The Jobs page reads as three numbered stops: **① your best job → ② other g
 ---
 
 ## 6. Personalised reskilling pathway
+
+![Personalised learning plan in the webapp](runway/public/screenshots/plan.jpg)
+
+*The selected job becomes a learning pathway with a next step, weekly timeline and progress.*
 
 The plan is built from the chosen role's skills gap, the worker's **hours per week** and their **deadline**.
 
@@ -297,6 +313,10 @@ Jobbery itself works toward **4.3, 4.4, 8.5, 8.6** (youth not in employment), **
 
 ## 8. Handling uncertainty: how the forecasting works
 
+![Skill forecasts under different AI futures](runway/public/screenshots/skills.jpg)
+
+*The Skills page compares slow, medium and fast AI futures and shows estimated dates for each skill.*
+
 Nobody knows how fast AI will progress, so Jobbery doesn't give one forecast. It works with **three futures**, and a prediction market decides how likely each one is.
 
 ### Three futures
@@ -322,6 +342,10 @@ The date shown is the average of the three futures, weighted by how likely each 
 
 ### The prediction market
 
+![Prediction market in the webapp](runway/public/screenshots/market.jpg)
+
+*The Forecast page explains points-based predictions and when upcoming data releases will settle the questions.*
+
 1. **Questions are checkable.** For example: "Will clerical job ads rise by more than 3 points in the next DOSM release?" Each question has three strike levels, and each is a Yes/No market priced by an LMSR (logarithmic market scoring rule) market maker.
 2. **Each future makes a prediction** for every question.
 3. **When the real data comes out**, questions settle. Futures that predicted well gain weight (at half strength, with older quarters fading). Open questions tilt the weights a little using the crowd's current price.
@@ -339,6 +363,10 @@ The date shown is the average of the three futures, weighted by how likely each 
 ---
 
 ## 9. Job map and moving for work
+
+![Malaysia job map for the selected role](runway/public/screenshots/map.jpg)
+
+*The job map compares estimated employment, state median pay and unemployment across Malaysia.*
 
 The **Map** page shows, state by state, where jobs like the one the worker picked are found. The map of Malaysia can be dragged and zoomed, with quick views for all of Malaysia, Peninsular Malaysia, Sabah and Sarawak.
 
