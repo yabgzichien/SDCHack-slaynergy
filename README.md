@@ -4,21 +4,38 @@
 
 SDC Hackathon 2026 · Domain 1: Aiversecity Future-Ready Workforce · Licence: Apache-2.0
 
-| | |
+## Team information
+
+| Field | Details |
 |---|---|
 | **Team name** | #slaynergy |
 | **Team domain** | Domain 1: Aiversecity Future-Ready Workforce |
+| **Team leader** | Yang Zi Chien |
+| **University** | Xiamen University Malaysia |
+| **Number of members** | 5 |
 
 ### Links
 
-| | |
+| Resource | Link or status |
 |---|---|
+| **GitHub repository** | https://github.com/yabgzichien/SDCHack-slaynergy |
 | **Live demo** | [Jobbery on Vercel](https://sdc-runway.vercel.app/) |
-| **Pitch video** | _TODO: add video URL_ |
-| **Source code** | https://github.com/yabgzichien/SDCHack-slaynergy |
+| **RunPod endpoint** | Not used |
+| **Slide deck** | TBC |
+| **Demo video** | TBC |
 | **How to run** | [Section 15](#15-run-it) |
 | **Project structure** | [Section 16](#16-project-structure) |
 | **Replit usage** | [Section 17](#17-how-we-used-replit-and-runpod) |
+
+### Run locally
+
+```bash
+cd jobbery
+npm install
+npm run dev
+```
+
+Open http://localhost:3000. See [section 15](#15-run-it) for tests and other commands.
 
 > The app's code lives in [`jobbery/`](jobbery/). For setup, the advisor passcode and a judge's walkthrough, see [`jobbery/README.md`](jobbery/README.md).
 
