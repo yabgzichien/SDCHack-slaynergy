@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowRight, Binoculars, BookOpen, Briefcase, Compass, Gauge, ListChecks, MapPin, RotateCcw, UserRound } from "lucide-react";
 import { useApp } from "./AppProvider";
 import { useT } from "./I18nProvider";
@@ -10,12 +10,6 @@ import { LandingSdgAnimation } from "./LandingSdgAnimation";
 import { LandingForecast } from "./LandingForecast";
 import { AiCapabilityChart, aiCapability } from "./AiTrendCharts";
 import { sourceById } from "@/lib/engine/data";
-
-// The intro plays once per visit: coming back to the home page or reloading it does not replay it ("Replay intro" does).
-const INTRO_SEEN = "jobbery-intro-seen";
-const noSubscribe = () => () => {};
-const readSeen = () => { try { return sessionStorage.getItem(INTRO_SEEN) === "1"; } catch { return false; } };
-const markSeen = () => { try { sessionStorage.setItem(INTRO_SEEN, "1"); } catch { /* private mode: it may play again */ } };
 
 // The guide follows the step bar inside the app, so a first-time visitor recognises each step later.
 const GUIDE = [
@@ -32,8 +26,7 @@ export function LandingIntro() {
   const rootRef = useRef<HTMLDivElement>(null);
   const [playing, setSceneActive] = useState(true);
   const [replayKey, setReplayKey] = useState(0);
-  const seen = useSyncExternalStore(noSubscribe, readSeen, () => false);
-  const sceneActive = playing && (!seen || replayKey > 0);
+  const sceneActive = playing;
   const birdRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<HTMLDivElement>(null);
   const ai = view ? aiCapability(view.world.asOfQuarter) : null;
@@ -43,14 +36,14 @@ export function LandingIntro() {
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (!sceneActive) return;
-    const timer = window.setTimeout(() => { markSeen(); setSceneActive(false); }, reduced ? 0 : 2700);
+    const timer = window.setTimeout(() => setSceneActive(false), reduced ? 0 : 3000);
     return () => window.clearTimeout(timer);
   }, [replayKey, sceneActive]);
 
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
-    const items = root.querySelectorAll<HTMLElement>(".landing-reveal");
+    const items = root.querySelectorAll<HTMLElement>(".landing-reveal, .landing-section-reveal");
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) {
       items.forEach((item) => item.classList.add("is-visible"));
       return;
@@ -96,10 +89,10 @@ export function LandingIntro() {
 
   return (
     <div ref={rootRef} className={`landing-page landing-content${sceneActive ? "" : " is-scene-active"}`}>
-      {sceneActive && <div key={replayKey} className="intro-overlay"><div className="intro-overlay-inner" aria-hidden="true"><span className="intro-word">Jobbery</span><Image src="/cockatiel-running.png" alt="" width={1254} height={1254} className="intro-mascot" priority /><span className="intro-speed intro-speed-one" /><span className="intro-speed intro-speed-two" /></div><button className="intro-skip" onClick={() => { markSeen(); setSceneActive(false); }}>{t("Skip intro")} <ArrowRight size={16} /></button></div>}
+      {sceneActive && <div key={replayKey} className="intro-overlay"><div className="intro-overlay-inner" aria-hidden="true"><span className="intro-word">Jobbery</span><Image src="/cockatiel-running.png" alt="" width={1254} height={1254} className="intro-mascot" priority /><span className="intro-speed intro-speed-one" /><span className="intro-speed intro-speed-two" /></div><button className="intro-skip" onClick={() => setSceneActive(false)}>{t("Skip intro")} <ArrowRight size={16} /></button></div>}
       <div ref={birdRef} className="landing-travel-bird" aria-hidden="true"><Image key={replayKey} src="/landing-cockatiel-flight.png" alt="" width={1353} height={1163} priority /></div>
       <div>
-        <section className="landing-intro" aria-labelledby="landing-title">
+        <section className="landing-intro landing-section-reveal" aria-labelledby="landing-title">
           <div className="landing-hero-landscape" aria-hidden="true" />
           <div ref={sceneRef} className="landing-bird-flight"><LandingSdgAnimation replayKey={replayKey} /></div>
           <div className="landing-intro-heading">
@@ -119,31 +112,33 @@ export function LandingIntro() {
           </div>
         </section>
 
-        <section id="journey" className="landing-journey scroll-mt-24" aria-labelledby="journey-title">
-          <div className="landing-section-heading landing-reveal"><span className="landing-section-label">{t("Just 5 steps")}</span><h2 id="journey-title">{t("How it works")}<span className="landing-period">.</span></h2><p>{t("Learn how to outlast AI, in just 5 simple steps.")}</p></div>
-          <ol className="relative mt-8 grid gap-3 md:grid-cols-5">
-            <span aria-hidden className="absolute left-[10%] right-[10%] top-7 hidden h-1 rounded-full bg-gradient-to-r from-[#4f86c6] via-[#d08a1e] to-[#3f8a52] md:block" />
-            {GUIDE.map((g, i) => (
-              <li key={g.title} className="landing-reveal relative flex flex-col rounded-[20px] border bg-white p-5" style={{ borderColor: `${g.color}55` }}>
-                <span className="relative z-10 grid size-14 place-items-center rounded-2xl text-white shadow-[0_4px_12px_rgb(0_0_0/0.15)]" style={{ background: g.color }}><g.icon size={26} aria-hidden /></span>
-                <span className="mt-4 text-xs font-bold uppercase tracking-wide" style={{ color: g.color }}>{t("Step {n}", { n: String(i + 1) })}</span>
-                <h3 className="mt-1 text-lg leading-snug">{t(g.title)}</h3>
-                <p className="mt-2 text-sm text-[var(--muted)]">{t(g.does)}</p>
-                <p className="mt-auto pt-3 text-sm font-semibold" style={{ color: g.color }}>→ {t(g.gets)}</p>
-              </li>
-            ))}
-          </ol>
-        </section>
+        <div className="landing-section-reveal">
+          <section id="journey" className="landing-journey scroll-mt-24" aria-labelledby="journey-title">
+            <div className="landing-section-heading landing-reveal"><span className="landing-section-label">{t("Just 5 steps")}</span><h2 id="journey-title">{t("How it works")}<span className="landing-period">.</span></h2><p>{t("Learn how to outlast AI, in just 5 simple steps.")}</p></div>
+            <ol className="relative mt-8 grid gap-3 md:grid-cols-5">
+              <span aria-hidden className="absolute left-[10%] right-[10%] top-7 hidden h-1 rounded-full bg-gradient-to-r from-[#4f86c6] via-[#d08a1e] to-[#3f8a52] md:block" />
+              {GUIDE.map((g, i) => (
+                <li key={g.title} className="landing-reveal relative flex flex-col rounded-[20px] border bg-white p-5" style={{ borderColor: `${g.color}55` }}>
+                  <span className="relative z-10 grid size-14 place-items-center rounded-2xl text-white shadow-[0_4px_12px_rgb(0_0_0/0.15)]" style={{ background: g.color }}><g.icon size={26} aria-hidden /></span>
+                  <span className="mt-4 text-xs font-bold uppercase tracking-wide" style={{ color: g.color }}>{t("Step {n}", { n: String(i + 1) })}</span>
+                  <h3 className="mt-1 text-lg leading-snug">{t(g.title)}</h3>
+                  <p className="mt-2 text-sm text-[var(--muted)]">{t(g.does)}</p>
+                  <p className="mt-auto pt-3 text-sm font-semibold" style={{ color: g.color }}>→ {t(g.gets)}</p>
+                </li>
+              ))}
+            </ol>
+          </section>
 
-        <section className="landing-start-cta landing-reveal text-center text-white" aria-labelledby="cta-title">
-          <h2 id="cta-title" className="text-[clamp(26px,3vw,36px)] leading-tight">{t("Ready to find your next job?")}</h2>
-          <p className="mx-auto mt-3 max-w-xl text-base text-white/90">{t("Start with your resume or a few questions. You can check and change anything.")}</p>
-          <div className="mt-4 flex flex-wrap justify-center gap-3">
-            <Link href="/start" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#f8c982] px-6 text-base font-semibold text-[#203b2b] transition-transform hover:-translate-y-0.5">{t("Start now")} <ArrowRight size={18} aria-hidden /></Link>
-          </div>
-        </section>
+          <section className="landing-start-cta landing-reveal text-center text-white" aria-labelledby="cta-title">
+            <h2 id="cta-title" className="text-[clamp(26px,3vw,36px)] leading-tight">{t("Ready to find your next job?")}</h2>
+            <p className="mx-auto mt-3 max-w-xl text-base text-white/90">{t("Start with your resume or a few questions. You can check and change anything.")}</p>
+            <div className="mt-4 flex flex-wrap justify-center gap-3">
+              <Link href="/start" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#f8c982] px-6 text-base font-semibold text-[#203b2b] transition-transform hover:-translate-y-0.5">{t("Start now")} <ArrowRight size={18} aria-hidden /></Link>
+            </div>
+          </section>
+        </div>
 
-        <section id="statistics" className="landing-statistics" aria-labelledby="statistics-title">
+        <section id="statistics" className="landing-statistics landing-section-reveal" aria-labelledby="statistics-title">
           <div className="landing-stats-top landing-reveal"><div><span className="landing-section-label">{t("THE DATA")}</span><h2 id="statistics-title">{t("How AI is changing your work")}<span className="landing-period">.</span></h2><p>{t("Supported by real numbers from public government and research data, with sources attached accordingly.")}</p></div><Link href="/trends" className="landing-text-link landing-stats-all">{t("See all statistics")} <ArrowRight size={16} aria-hidden /></Link></div>
           {view && ai && (
             <div className="landing-data-grid">

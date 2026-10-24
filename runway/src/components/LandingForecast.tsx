@@ -29,7 +29,7 @@ export function LandingForecast() {
   const jobs = w.events.find((e) => e.id.startsWith("dosm")) ?? null;
 
   return (
-    <section id="forecast" className="landing-statistics landing-forecast" aria-labelledby="forecast-title">
+    <section id="forecast" className="landing-statistics landing-forecast landing-section-reveal" aria-labelledby="forecast-title">
       <div className="landing-stats-top landing-reveal">
         <div>
           <span className="landing-section-label">FORECAST MARKET</span>
