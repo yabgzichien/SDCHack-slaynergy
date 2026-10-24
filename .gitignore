@@ -75,6 +75,5 @@ secrets/
 # version control so deployment environments receive the same public folder.
 !jobbery/public/**
 
-# Build caches and editor lock files
-pitch-deck/build/*.whl
+# Editor lock files
 .~lock.*#

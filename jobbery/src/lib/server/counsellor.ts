@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { hmac } from "./session";
 import { legacyKey } from "../legacy";
 
-// Counsellor sign-in. One shared passcode (COUNSELLOR_PASSCODE, a Replit secret) plus the counsellor's own name.
+// Counsellor sign-in. One shared passcode (COUNSELLOR_PASSCODE) plus the counsellor's own name.
 // Without the secret the published demo passcode works, so judges can try the counsellor view.
 // Production would give each counsellor their own login; the name here is what the log and the badge record.
 export const DEMO_PASSCODE = "counsellor-demo";

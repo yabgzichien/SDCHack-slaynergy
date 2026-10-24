@@ -1,5 +1,5 @@
 // Publishes the tamper-evident log's latest fingerprint into the repo, where anyone can compare it with the app.
-// Usage: BASE_URL=https://your-app.replit.app npm run anchor   (then commit the anchors/ folder)
+// Usage: BASE_URL=https://sdc-runway.vercel.app npm run anchor   (then commit the anchors/ folder)
 import fs from "node:fs";
 
 const base = process.env.BASE_URL || "http://localhost:3000";

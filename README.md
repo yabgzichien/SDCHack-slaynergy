@@ -13,7 +13,7 @@ SDC Hackathon 2026 · Domain 1: Aiversecity Future-Ready Workforce · Licence: A
 
 | | |
 |---|---|
-| **Live demo** | _TODO: add Replit app URL_ |
+| **Live demo** | [Jobbery on Vercel](https://sdc-runway.vercel.app/) |
 | **Pitch video** | _TODO: add video URL_ |
 | **Source code** | https://github.com/yabgzichien/SDCHack-slaynergy |
 | **How to run** | [Section 15](#15-run-it) |
@@ -505,12 +505,12 @@ The user always confirms a new plan before it replaces the old one.
 | **Styling and motion** | Tailwind CSS 4, Framer Motion, Lucide icons |
 | **Charts and map** | Recharts; a hand-drawn SVG map of Malaysia from geoBoundaries (no third-party base map) |
 | **Engine** | Pure TypeScript in `src/lib/engine/`: LMSR market, simulated forecasters, history replay, futures weights, expiry dates, matching, planning |
-| **Storage** | PostgreSQL on Replit (`pg`); SQLite (`better-sqlite3`) when running locally |
+| **Storage** | PostgreSQL (`pg`) when `DATABASE_URL` is set; SQLite (`better-sqlite3`) when running locally |
 | **Sessions and trust** | Signed session cookie; SHA-256 hash-chained log, with its fingerprint committed to Git |
 | **Resume scan** | `unpdf` (PDF) and `mammoth` (Word), with rule-based scoring. Optional AI reader: Qwen3.8 27B through the Groq API (`src/lib/server/ai-resume.ts`), with server-side checks and a rule-only fallback. |
 | **Data pipeline** | The server fetches DOSM, Epoch AI and OpenDOSM itself, checks them and saves hashed snapshots (`src/lib/server/refresh.ts`); build scripts (`build-series.ts`, `build-geo.ts`) make the starting snapshot from raw downloads |
 | **Tests** | Vitest: fairness, LMSR, futures weights, replay, matching, planning, log |
-| **Hosting** | Replit. No GPU needed: the AI model runs on Groq's hosted API. |
+| **Hosting** | Vercel. No GPU needed: the AI model runs on Groq's hosted API. |
 
 ---
 
@@ -532,7 +532,7 @@ The app runs at http://localhost:3000. Other commands:
 | `npm run data:refresh` | Checks the sources for new data now (the app also does this by itself) |
 | `npm run anchor` | Writes the hash log's fingerprint to `anchors/` |
 
-Without `DATABASE_URL`, sessions are kept in `.data/jobbery.db` (SQLite). On Replit, set `DATABASE_URL` to the built-in Postgres and `SESSION_SECRET` to a random string. For the AI resume reader, add `GROQ_API_KEY` in Replit Secrets (locally, in `jobbery/.env.local`, which is gitignored). Without it, the rule scan runs alone.
+Without `DATABASE_URL`, sessions are kept in `.data/jobbery.db` (SQLite). For a deployment with PostgreSQL, set `DATABASE_URL` and a random `SESSION_SECRET` in the Vercel project environment. Add `GROQ_API_KEY` there for the AI resume reader (locally, use `jobbery/.env.local`, which is gitignored). Without that key, the rule scan runs alone.
 
 ### Demo shortcuts
 
@@ -558,7 +558,6 @@ For the advisor passcode and a judge's walkthrough, see [`jobbery/README.md`](jo
 ├── README.md              This file
 ├── Domain 1.pdf           Domain brief
 ├── docs/                  PRD and data-feasibility notes
-├── submission/            Hackathon submission and tools-declaration templates
 └── jobbery/                The Next.js app (Jobbery was the working name)
     ├── src/app/           Pages and API routes: start, jobs, map, plan, badge,
     │                      market, trends, sources, advisor, counsellor, trust
@@ -577,7 +576,7 @@ For the advisor passcode and a judge's walkthrough, see [`jobbery/README.md`](jo
 
 ## 17. How we used Replit and RunPod
 
-**Replit.** We wrote part of the code on Replit and host the live app there, using its built-in PostgreSQL for sessions and plans (see [Run it](#15-run-it) for the `DATABASE_URL` and `SESSION_SECRET` settings).
+**Replit.** We used Replit for code generation only. The live app is hosted on [Vercel](https://sdc-runway.vercel.app/).
 
 **RunPod.** We did not use RunPod. Nothing needs a GPU on our side: the AI resume reader calls Qwen3.8 27B on Groq's hosted API, resume scoring is rule-based, and the forecasting engine is plain TypeScript.
 

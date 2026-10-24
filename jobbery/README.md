@@ -17,8 +17,8 @@ npm run typecheck
 npm run build && npm start
 ```
 
-Without `DATABASE_URL` the app keeps sessions and the hash log in `.data/jobbery.db` (SQLite). On Replit, set
-`DATABASE_URL` to the built-in Postgres and `SESSION_SECRET` to a random string (see `.env.example`).
+Without `DATABASE_URL` the app keeps sessions and the hash log in `.data/jobbery.db` (SQLite). For a deployment with
+PostgreSQL, set `DATABASE_URL` and a random `SESSION_SECRET` in the Vercel project environment (see `.env.example`).
 
 ## Home page
 
@@ -51,7 +51,7 @@ id (`c-` plus 8 hex characters, from the name) on every piece of advice, and the
 note, not the text.
 
 The passcode is shared and comes from the `COUNSELLOR_PASSCODE` secret; without it the demo code above works. A real
-deployment would give each advisor their own login (for example Replit Auth or the agency's single sign-on).
+deployment would give each advisor their own login (for example the agency's single sign-on).
 
 ## Jobs, sectors and qualifications
 
@@ -161,8 +161,8 @@ Commands:
 - To rebuild snapshot 0 from the raw files (for example after reviewing a new ILO or AEI release), run
   `scripts/fetch-sources.sh`, then `npm run data:build`. Rebuilding keeps the questions already frozen in `series.json`.
 
-On a Replit Autoscale deployment, a refresh runs while the instance is up. If the instance stops mid-refresh, the lock
-runs out after 10 minutes and the next visit tries again.
+On Vercel, a refresh starts when a request finds a check due. If the instance stops mid-refresh, the lock runs out
+after 10 minutes and the next visit tries again.
 
 ## Guardrails
 

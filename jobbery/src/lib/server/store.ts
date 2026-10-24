@@ -6,7 +6,7 @@ import type { SessionState, Signer } from "../engine/state";
 import { initialState } from "../engine/state";
 import { legacyKey } from "../legacy";
 
-// Storage: Postgres when DATABASE_URL is set (Replit), otherwise a local SQLite file.
+// Storage: Postgres when DATABASE_URL is set, otherwise a local SQLite file.
 // The tamper-evident log is one append-only hash chain shared by all sessions.
 export type LogEntry = { seq: number; ts: string; type: string; session: string; payload: string; prev: string; hash: string };
 
