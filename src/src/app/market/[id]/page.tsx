@@ -5,7 +5,6 @@ import { useApp } from "@/components/AppProvider";
 import { MarketBoard } from "@/components/MarketBoard";
 import { AnsweredBadge, EventIcon, OpenBadge, topicOf } from "@/components/MarketCards";
 import { Btn, PageTitle, Skeleton } from "@/components/ui";
-import { PastForecast } from "@/components/History";
 
 // One question: should I buy Yes or No on this release?
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -13,10 +12,9 @@ const day = (iso: string) => { const [y, m, d] = iso.split("-").map(Number); ret
 const today = () => new Date(Date.now() + 8 * 3600_000).toISOString().slice(0, 10); // Malaysian calendar day
 
 export default function MarketEventPage() {
-  const { view, history } = useApp();
+  const { view } = useApp();
   const { id } = useParams<{ id: string }>();
   if (!view) return <Skeleton lines={6} />;
-  if (history.past) return <PastForecast />;
   const key = decodeURIComponent(id);
   const ev = view.world.events.find((e) => e.id === key) ?? view.world.settledEvents.find((e) => e.id === key);
   if (!ev) {

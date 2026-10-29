@@ -73,15 +73,14 @@ describe("history timeline: nothing from after the day", () => {
     }
   });
 
-  it("lists the questions open on a past day without their answers", () => {
+  it("lists the questions open on a past day, each settled only after that day", () => {
     for (const s of past) {
       const open = openQuestionsAt(s.day);
       expect(open.length).toBeGreaterThan(0);
       for (const q of open) {
-        expect(q).not.toHaveProperty("outcome");
-        expect(q.settles).not.toMatch(/published/); // a later release day is not shown before it was public
         const qq = makeQuestions().find((x) => x.id === q.id)!;
         expect((settleDay(qq) ?? "9999") > s.day).toBe(true);
+        if (q.answer) expect(q.answer.day > s.day).toBe(true);
       }
     }
   });

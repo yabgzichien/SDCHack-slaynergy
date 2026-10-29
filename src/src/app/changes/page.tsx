@@ -7,16 +7,8 @@ const ORDER = ["plan", "jobs", "skills", "futures", "market", "forecasters", "de
 
 // One question: what did the new data change for me, and why?
 export default function ChangesPage() {
-  const { view, history } = useApp();
+  const { view } = useApp();
   if (!view) return <Skeleton lines={6} />;
-  if (history.past) {
-    return (
-      <div>
-        <PageTitle title="You are viewing the past.">What each release changed is listed in History, at the top of the page.</PageTitle>
-        <Btn onClick={() => history.setOpen(true)}>Open History</Btn>
-      </div>
-    );
-  }
   const changes = view.changes;
   if (!changes) {
     return (

@@ -8,7 +8,6 @@ import { useApp } from "./AppProvider";
 import { useT } from "./I18nProvider";
 import { StepBar, currentStep } from "./Journey";
 import { SiteHeader } from "./SiteHeader";
-import { HistoryPanel, PastBanner } from "./History";
 import { series } from "@/lib/engine/data";
 
 // The latest real figures are always loaded (the server refreshes them by itself); the next ones come out below.
@@ -45,8 +44,6 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className={`landing-page public-shell${isPublicLayout ? "" : " app-page-shell"}`}>
       <SiteHeader />
-      <HistoryPanel />
-      <PastBanner />
       {isPublicLayout ? (
         <main id="main" className={home ? "public-home" : "public-start"}>{children}</main>
       ) : (

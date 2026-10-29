@@ -1,7 +1,7 @@
 // The history timeline: the app as it stood on the day of each past DOSM release, using only what was public that day.
 // Nothing here writes, settles or stores anything: every past figure is worked out from the data already loaded.
 import { series, sourceById, prevQuarter, quarterIndex, perSnapshot } from "./data";
-import { epochSettleDay, eventTitle, futureProbs, isoDay, ladder, makeQuestions, quarterPlain, type Question } from "./questions";
+import { epochSettleDay, eventTitle, futureProbs, ladder, makeQuestions, type Question } from "./questions";
 import { updateScores, zeroScores, type Scores } from "./replay";
 import { futureWeights, type Weights3 } from "./futures";
 import type { MarketRun } from "./market";
@@ -97,8 +97,9 @@ export function scoresAt(day: string): Scores {
 export const weightsAt = (day: string): Weights3 => futureWeights(scoresAt(day), zeroScores());
 
 // The questions that were open on that day: asked (their quarter had begun, or for DOSM the quarter before had been
-// published) and not yet answered. Their answers are left out on purpose: they came out after that day.
-export type OpenThen = { id: string; title: string; text: string; settles: string; source: { name: string; url: string } };
+// published) and not yet answered then. Each carries the answer it got later and the day that answer came out, so the
+// Forecast page can show that past market as settled.
+export type OpenThen = { id: string; quarter: string; title: string; text: string; source: { name: string; url: string }; answer: { outcome: boolean; day: string } | null };
 export function openQuestionsAt(day: string): OpenThen[] {
   return makeQuestions()
     .filter((q) => {
@@ -107,9 +108,10 @@ export function openQuestionsAt(day: string): OpenThen[] {
       if (q.kind === "dosm") { const p = settleDay({ kind: "dosm", quarter: prevQuarter(q.quarter) }); return p !== null && p <= day; }
       return quarterStart(q.quarter) <= day;
     })
-    // DOSM's release day is left out: it was not public on that day. Epoch AI's check day follows a fixed rule.
-    .map((q) => ({
-      id: q.id, title: eventTitle(q), text: q.text, source: q.source,
-      settles: q.kind === "dosm" ? `DOSM numbers for ${quarterPlain(q.quarter)}` : `Epoch AI results for ${quarterPlain(q.quarter)}, checked from ${isoDay(epochSettleDay(q.quarter))}`,
-    }));
+    .map((q) => {
+      const s = settleDay(q);
+      // Scored on the same line as the replay and the release step (see batches above).
+      const outcome = q.phase === "live" ? ladder(q)[1].outcome : q.outcome;
+      return { id: q.id, quarter: q.quarter, title: eventTitle(q), text: q.text, source: q.source, answer: s && outcome !== undefined ? { outcome, day: s } : null };
+    });
 }

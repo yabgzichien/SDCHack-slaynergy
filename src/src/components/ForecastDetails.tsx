@@ -1,13 +1,15 @@
 "use client";
 import { useApp } from "@/components/AppProvider";
+import { dayLabel } from "@/components/History";
 import { Card, Estimate, FUTURE_COLOR, FUTURE_PLAIN, FutureBar, More, pct } from "@/components/ui";
 
 // How the three AI speeds get their chances. Shown on the market page.
+// While a past release is picked, the outlook shows that day's chances (from the answers public then).
 export function ForecastDetails() {
-  const { view } = useApp();
+  const { view, history } = useApp();
   if (!view) return null;
-  const w = view.world;
-  const r = w.replay;
+  const w = (history.past?.view ?? view).world;
+  const r = view.world.replay; // the track record over all replayed releases, the same whichever release is picked
 
   return (
     <section id="how" className="forecast-section forecast-results" aria-labelledby="forecast-purpose-title">
@@ -17,7 +19,7 @@ export function ForecastDetails() {
       <Card tone="raised">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-base font-semibold">The AI outlook</h3>
-          <span className="text-sm text-muted">{w.release ? `Updated with the ${w.latestLabel} numbers` : `Using numbers up to ${w.asOfQuarter.replace("Q", " Q")}`}</span>
+          <span className="text-sm text-muted">{w.past ? `As it stood on ${dayLabel(w.past.day)}, from the answers public that day` : w.release ? `Updated with the ${w.latestLabel} numbers` : `Using numbers up to ${w.asOfQuarter.replace("Q", " Q")}`}</span>
         </div>
         <div className="mt-4"><FutureBar futures={w.futures} height={16} /></div>
         <div className="mt-5 grid gap-4 md:grid-cols-3">

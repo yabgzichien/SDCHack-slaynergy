@@ -7,10 +7,11 @@ import { useSpeed } from "@/components/useSpeed";
 import { AiCapability, JobGroupShares } from "@/components/AiTrendCharts";
 import { Card, H, SdgTag, Skeleton, SourceChip } from "@/components/ui";
 import { SourceDisclosure } from "@/components/SourceDisclosure";
+import { ReleasePicker } from "@/components/History";
 
 // One question: what is changing in the job market? Written for someone who has never read a chart like this.
 export default function TrendsPage() {
-  const { view } = useApp();
+  const { view, history } = useApp();
   const { speed } = useSpeed(view);
   const pageRef = useRef<HTMLDivElement>(null);
   const ready = Boolean(view);
@@ -45,7 +46,8 @@ export default function TrendsPage() {
   }, [ready]);
 
   if (!view) return <Skeleton lines={6} />;
-  const r = view.radar, w = view.world;
+  // The charts are today's; the job and skill lists below follow the release picked above them.
+  const w = view.world, r = (history.past?.view ?? view).radar;
   return (
     <div className="statistics-page" ref={pageRef}>
       <header className="statistics-hero statistics-reveal">
@@ -61,9 +63,10 @@ export default function TrendsPage() {
       </header>
 
       <div className="mt-4 statistics-reveal"><JobGroupShares asOfQuarter={w.asOfQuarter} /></div>
-      <div className="mt-4 statistics-reveal"><AiCapability asOfQuarter={w.epochQuarter ?? w.asOfQuarter} /></div>
+      <div className="mt-4 statistics-reveal"><AiCapability asOfQuarter={w.asOfQuarter} /></div>
 
-      <div className="mt-4 grid gap-y-4 gap-x-8 lg:grid-cols-2">
+      <div className="mt-8 statistics-reveal"><ReleasePicker label="Job lists as of" /></div>
+      <div className="grid gap-y-4 gap-x-8 lg:grid-cols-2">
         <Card className="statistics-opportunities statistics-reveal">
           <div className="statistics-opportunities-heading">
             <H sub="Hiring is growing and AI cannot easily replace these jobs.">Good jobs to aim for</H>
