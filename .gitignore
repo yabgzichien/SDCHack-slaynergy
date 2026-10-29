@@ -90,3 +90,6 @@ next-env.d.ts
 
 # Retired app directory: local caches and reference material only
 /jobbery/
+
+# Pitch deck: kept local (built from slides outside the repo; the PDF goes in the submission)
+pitch-deck/
