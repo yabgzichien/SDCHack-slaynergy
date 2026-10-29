@@ -1,23 +1,21 @@
 "use client";
 import { useCallback, useSyncExternalStore } from "react";
-import type { View } from "@/lib/engine/view";
 import { readStored } from "@/lib/legacy";
+import { FORECAST, SPEEDS, type Speed } from "@/lib/speed";
 
-// The AI speed the person picked on Skills, kept in this browser so every page shows the same dates.
-// Until they pick one, every page uses the speed we think is most likely.
+// The AI speed the person is previewing, kept in this browser so every page shows the same one (docs/adr/0002).
+// Until they pick one, every page shows Our forecast. Previewing never saves weights or changes the plan.
 const KEY = "jobbery-ai-speed";
 const EVT = "jobbery-ai-speed";
 const read = () => { try { return readStored(localStorage, KEY); } catch { return null; } };
 const subscribe = (cb: () => void) => { window.addEventListener(EVT, cb); return () => window.removeEventListener(EVT, cb); };
 
-export function useSpeed(view: View | null) {
+export function useSpeed() {
   const chosen = useSyncExternalStore(subscribe, read, () => null);
-  const futures = view?.pace.futures ?? [];
-  const likely = futures.length ? [...futures].sort((a, b) => b.weight - a.weight)[0].id : "medium";
-  const speed = chosen && futures.some((f) => f.id === chosen) ? chosen : likely;
-  const setSpeed = useCallback((id: string) => {
+  const speed: Speed = chosen && (SPEEDS as readonly string[]).includes(chosen) ? (chosen as Speed) : FORECAST;
+  const setSpeed = useCallback((id: Speed) => {
     try { localStorage.setItem(KEY, id); } catch { /* ignore */ }
     window.dispatchEvent(new Event(EVT));
   }, []);
-  return { speed, likely, setSpeed };
+  return { speed, previewing: speed !== FORECAST, setSpeed };
 }

@@ -15,7 +15,9 @@ import { stateById } from "@/lib/engine/geo";
 import { roleById, type GroupKey, type SectorId } from "@/lib/engine/data";
 import type { StayView, RoleMatchView } from "@/lib/engine/view";
 import { STAY_ID } from "@/lib/engine/state";
-import { suggestedJobs } from "@/lib/suggested";
+import { rankMove, suggestedJobs } from "@/lib/suggested";
+import { SpeedBar } from "@/components/SpeedBar";
+import { FUTURE_NAME } from "@/components/ui";
 import { Btn, Card, Chip, LinkRow, More, NextRow, PageTitle, SdgTag, Skeleton, Stop, sdgName } from "@/components/ui";
 import "./jobs.css";
 
@@ -34,11 +36,13 @@ export default function JobsPage() {
   const { view, state, catalog, busy } = useApp();
   const { lang, t } = useT();
   const selectJob = useSelectJob();
-  const { speed } = useSpeed(view);
+  const { speed, previewing } = useSpeed();
   if (!view || !state || !catalog) return <Skeleton lines={6} />;
   if (!state.profile) return <div><PageTitle title="Which job should you aim for?">Answer a few questions first.</PageTitle><Btn href="/start">Get started</Btn></div>;
   const p = state.profile;
-  const [best, ...others] = suggestedJobs(view);
+  const [best, ...others] = suggestedJobs(view, speed);
+  const forecastBest = suggestedJobs(view)[0] ?? null;
+  const move = (id: string) => rankMove(view, speed, id);
   const bridge = view.bridge;
   // Selecting a job saves it and moves on to the next step, the job map, which then shows that job.
   const select = (id: string) => selectJob(id);
@@ -67,12 +71,21 @@ export default function JobsPage() {
           </span>
         }
       >
-        Of the {view.matches.length} jobs you can reach in {p.months} months, this one fits you best. Start here, then compare the others.
+        {previewing
+          ? `Of the ${view.matches.length} jobs you can reach in ${p.months} months, this one would fit you best if AI is ${FUTURE_NAME[speed]}. This is an estimate.`
+          : `Of the ${view.matches.length} jobs you can reach in ${p.months} months, this one fits you best. Start here, then compare the others.`}
       </PageTitle>
 
       <div className="jobs-layout">
         <JobsNav showOthers={others.length > 0} />
         <div className="jobs-content space-y-10">
+        <SpeedBar view={view}>
+          <p className="mt-2 text-sm font-medium" aria-live="polite">
+            {previewing && forecastBest && (best.roleId === forecastBest.roleId
+              ? `If AI is ${FUTURE_NAME[speed]}, your best job stays ${best.title}.`
+              : `If AI is ${FUTURE_NAME[speed]}, your best job would be ${best.title}, instead of ${forecastBest.title}.`)}
+          </p>
+        </SpeedBar>
         <Stop n={1} id="best-job" title="Your best job" current>
           <Card tone="raised" className="ring-2 ring-cue">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
@@ -83,6 +96,8 @@ export default function JobsPage() {
                     <h3 data-no-translate className="text-xl font-extrabold">{jobTitle(best.title)}</h3>
                     <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                       {selectedId === best.roleId && <Chip tone="cue">Selected</Chip>}
+                      {previewing && <Chip tone="demo">If AI is {FUTURE_NAME[speed]} (estimate)</Chip>}
+                      <MoveChip n={move(best.roleId)} speed={speed} />
                       <SdgTag target={best.sdgTarget} why={best.sdgWhy} />
                       {best.sdgMatch && <Chip tone="rise">Matches your goals</Chip>}
                       <BriefWhy m={best} />
@@ -111,7 +126,10 @@ export default function JobsPage() {
                 <li key={m.roleId} className={`flex h-full flex-col rounded-[22px] bg-surface p-4 ${selectedId === m.roleId ? "ring-2 ring-cue" : ""}`}>
                   <div className="flex items-start justify-between gap-2">
                     <JobBadge name={m.why.icon} size="sm" />
-                    {selectedId === m.roleId && <Chip tone="cue">Selected</Chip>}
+                    <span className="flex flex-wrap justify-end gap-1">
+                      <MoveChip n={move(m.roleId)} speed={speed} />
+                      {selectedId === m.roleId && <Chip tone="cue">Selected</Chip>}
+                    </span>
                   </div>
                   <Link data-no-translate href={`/jobs/${m.roleId}`} className="job-card-title mt-3 underline-offset-2 hover:underline"><strong>{jobTitle(m.title)}</strong></Link>
                   <div className="mt-2"><BriefWhy m={m} stack /></div>
@@ -155,6 +173,14 @@ export default function JobsPage() {
       <NextRow back="/skills" next="/map" nextLabel="Next: where in Malaysia" />
     </div>
   );
+}
+
+// Where a job sits under a previewed AI speed compared with Our forecast. Nothing under Our forecast.
+function MoveChip({ n, speed }: { n: number | null; speed: string }) {
+  if (n === null) return null;
+  const name = FUTURE_NAME[speed];
+  if (n === 0) return <Chip>Same place under {name}</Chip>;
+  return <Chip tone={n > 0 ? "rise" : "fall"}>{n > 0 ? `▲ up ${n}` : `▼ down ${-n}`} under {name}</Chip>;
 }
 
 const an = (t: string) => (/^[aeiou]/i.test(t) ? "an" : "a");

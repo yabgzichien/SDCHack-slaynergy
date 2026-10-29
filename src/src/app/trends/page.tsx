@@ -12,7 +12,7 @@ import { ReleasePicker } from "@/components/History";
 // One question: what is changing in the job market? Written for someone who has never read a chart like this.
 export default function TrendsPage() {
   const { view, history } = useApp();
-  const { speed } = useSpeed(view);
+  const { speed } = useSpeed();
   const pageRef = useRef<HTMLDivElement>(null);
   const ready = Boolean(view);
 

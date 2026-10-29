@@ -1,5 +1,6 @@
 "use client";
 import { FUTURE_COLOR, FUTURE_NAME } from "./ui";
+import { FORECAST } from "@/lib/speed";
 
 const FROM = 2026, TO = 2040;
 const yearOf = (label: string): number | null => {
@@ -10,7 +11,10 @@ const yearOf = (label: string): number | null => {
 };
 
 // A skill's shelf life on a 2026–2040 axis: one dot per future, and a bar to the weighted date.
-export function ExpiryTrack({ byFuture, expected, durable, axis = true, pick }: { byFuture: Record<string, string>; expected: string; durable: boolean; axis?: boolean; pick?: string }) {
+export function ExpiryTrack({ byFuture: all, expected, durable, axis = true, pick: picked }: { byFuture: Record<string, string>; expected: string; durable: boolean; axis?: boolean; pick?: string }) {
+  // One dot per AI speed; "forecast" (Our forecast) is the bar's default end, not a dot of its own.
+  const byFuture = Object.fromEntries(Object.entries(all).filter(([k]) => k !== FORECAST));
+  const pick = picked === FORECAST ? undefined : picked;
   // with a speed picked, the bar runs to that speed's date and its dot is drawn larger
   const end = pick ? byFuture[pick] : expected;
   const ended = pick ? !end.startsWith("after") : !durable;

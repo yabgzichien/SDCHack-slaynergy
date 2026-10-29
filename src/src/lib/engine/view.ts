@@ -7,6 +7,7 @@ import { areaFor } from "./geo";
 import { matchRoles, pickInputs, demandFor, tradeoff, AT_RISK_BELOW, PROJECT_QUARTERS, type MatchInput, type RoleMatch } from "./matching";
 import { buildPlan, buildReshapePlan, type Plan } from "./plan";
 import { FUTURES, FUTURE_IDS, type FutureId } from "./futures-def";
+import { FORECAST } from "../speed";
 import { STAY_ID, type SessionState } from "./state";
 import { mean } from "./math";
 import { dosmQuarterAt, epochQuarterAt, historyStops, scoresAt, settleDay, yearOf, type Stop } from "./history";
@@ -123,10 +124,14 @@ export type RoleMatchView = Omit<RoleMatch, "gaps" | "picks"> & {
   };
 };
 
+// A skill's date under each AI speed, plus "forecast": the date under Our forecast (the blend), so a page can look up
+// whichever the person is previewing with one key.
+const yearUnder = (e: SkillExpiry, id: string) => (id === FORECAST ? (e.durable ? Infinity : e.expected) : e.byFuture[id as FutureId]);
+const dates = (e: SkillExpiry) => Object.fromEntries([...FUTURE_IDS, FORECAST].map((id) => [id, Number.isFinite(yearUnder(e, id)) ? fmtYear(yearUnder(e, id)) : "after 2040"]));
+const years = (e: SkillExpiry) => Object.fromEntries([...FUTURE_IDS, FORECAST].map((id) => [id, Number.isFinite(yearUnder(e, id)) ? yearUnder(e, id) : null]));
 const eview = (e: SkillExpiry): SkillExpiryView => ({
   expected: e.durable ? `after 2040` : fmtYear(e.expected), expectedYear: e.expected, exposure: e.exposure, durable: e.durable, coverage: e.coverage,
-  byFuture: Object.fromEntries(FUTURE_IDS.map((id) => [id, Number.isFinite(e.byFuture[id]) ? fmtYear(e.byFuture[id]) : "after 2040"])),
-  byFutureYear: Object.fromEntries(FUTURE_IDS.map((id) => [id, Number.isFinite(e.byFuture[id]) ? e.byFuture[id] : null])),
+  byFuture: dates(e), byFutureYear: years(e),
 });
 
 function radarFor(w: World): Radar {
@@ -137,7 +142,7 @@ function radarFor(w: World): Radar {
   });
   const toSkill = ({ s, e }: { s: (typeof skills)[number]; e: SkillExpiry }): RadarSkill => ({
     skillId: s.id, name: s.name, expected: e.durable ? "after 2040" : fmtYear(e.expected), expectedYear: e.expected,
-    byFuture: Object.fromEntries(FUTURE_IDS.map((id) => [id, Number.isFinite(e.byFuture[id]) ? fmtYear(e.byFuture[id]) : "after 2040"])),
+    byFuture: dates(e),
     exposure: e.exposure, gradient: s.ilo ? series.ilo[s.ilo]?.gradient ?? null : null, coverage: e.coverage,
     iloTitle: s.ilo ? series.ilo[s.ilo]?.title ?? null : null, sdgTarget: s.sdg.target, durable: e.durable,
   });
@@ -306,8 +311,8 @@ function stayFor(occId: string, have: string[], wt: World["weights"]) {
   const status = ilo?.gradient?.includes("Gradient 4") ? "fast" as const : ilo?.gradient?.startsWith("Exposed") || outlook < AT_RISK_BELOW ? "changing" as const : "steady" as const;
   const fast = status === "fast";
   const byYear = [...own].sort((a, b) => a.expiry.expected - b.expiry.expected);
-  const fadeYear = Object.fromEntries(FUTURE_IDS.map((f) => {
-    const ys = own.map((x) => x.expiry.byFuture[f]).sort((a, b) => a - b);
+  const fadeYear = Object.fromEntries([...FUTURE_IDS, FORECAST].map((f) => {
+    const ys = own.map((x) => yearUnder(x.expiry, f)).sort((a, b) => a - b);
     const half = ys[Math.ceil(ys.length / 2) - 1];
     return [f, half !== undefined && Number.isFinite(half) ? fmtYear(half) : null];
   }));
@@ -329,7 +334,7 @@ function stayFor(occId: string, have: string[], wt: World["weights"]) {
     .sort((a, b) => count(b.skillId) - count(a.skillId) || durability(b.expiry) - durability(a.expiry));
   const grow = [...first, ...fill].slice(0, STAY_SKILLS - 1);
   const show = (x: { skillId: string; expiry: SkillExpiry }) => ({ skillId: x.skillId, name: skillById[x.skillId].name, expected: x.expiry.durable ? "after 2040" : fmtYear(x.expiry.expected),
-    byFuture: Object.fromEntries(FUTURE_IDS.map((f) => [f, Number.isFinite(x.expiry.byFuture[f]) ? fmtYear(x.expiry.byFuture[f]) : "after 2040"])) });
+    byFuture: dates(x.expiry) });
   return { growing: grow, fast, view: { occupationId: occ.id, title: occ.title, status, fast, outlook, ilo, fadeYear, fading: mine.map(show), growing: grow.map(show) } };
 }
 
@@ -347,7 +352,7 @@ function whyFor(m: RoleMatch, interests: string[], field: SectorId | undefined, 
     inField: !!field && field === r.sector,
     have: m.have.filter((id) => id !== "ai_tools").map((id) => ({ skillId: id, name: name(id) })),
     humanEdge: r.humanEdge, icon: r.icon,
-    aiDoes: fades.map((x) => ({ skillId: x.id, name: name(x.id), byFuture: Object.fromEntries(FUTURE_IDS.map((f) => [f, Number.isFinite(x.e.byFuture[f]) ? fmtYear(x.e.byFuture[f]) : "after 2040"])) })),
+    aiDoes: fades.map((x) => ({ skillId: x.id, name: name(x.id), byFuture: dates(x.e) })),
     staysYours: stays.map((x) => ({ skillId: x.id, name: name(x.id) })),
   };
 }

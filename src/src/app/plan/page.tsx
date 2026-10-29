@@ -2,7 +2,10 @@
 import Link from "next/link";
 import { useApp } from "@/components/AppProvider";
 import { JobberyStrip } from "@/components/JobberyStrip";
-import { Btn, Card, Chip, H, PageTitle, SdgTag, Skeleton, SourceChip, sdgName } from "@/components/ui";
+import { Btn, Card, Chip, FUTURE_COLOR, FUTURE_NAME, H, PageTitle, SdgTag, Skeleton, SourceChip, sdgName } from "@/components/ui";
+import { useSpeed } from "@/components/useSpeed";
+import { useSelectJob } from "@/components/useSelectJob";
+import type { View } from "@/lib/engine/view";
 import { SdgIcon } from "@/components/SdgIcon";
 import { roleById, sdg as SDG_TARGETS } from "@/lib/engine/data";
 import { activityHref, BadgePanel, BadgeShelf, Portfolio } from "@/components/Pathway";
@@ -76,6 +79,8 @@ export default function PlanPage() {
           </Card>
         );
       })()}
+
+      <SpeedPlans view={view} planRoleId={plan.roleId} planTitle={plan.title} />
 
       <Card className="mt-4">
         <H sub={`${done} of ${plan.steps.length} steps done · ${plan.totalWeeks} weeks at ${state.profile.hoursPerWeek} hours a week`}>Your learning</H>
@@ -151,5 +156,35 @@ export default function PlanPage() {
       </div>
 
     </div>
+  );
+}
+
+// The job Jobbery would suggest if one AI speed were certain (docs/adr/0002). The plan never follows a preview: the
+// person can switch to that job themselves.
+function SpeedPlans({ view, planRoleId, planTitle }: { view: View; planRoleId: string; planTitle: string }) {
+  const { speed, previewing } = useSpeed();
+  const { busy } = useApp();
+  const selectJob = useSelectJob();
+  if (!view.scenarios?.length) return null;
+  return (
+    <Card className="mt-4">
+      <H sub={`Your plan stays on ${planTitle} unless you choose. These are estimates.`}>If AI moves faster or slower</H>
+      <ul className="space-y-1.5">
+        {view.scenarios.map((sc) => {
+          const same = sc.best?.roleId === planRoleId;
+          return (
+            <li key={sc.id} className={`flex min-h-12 flex-wrap items-center gap-x-3 gap-y-1 rounded-2xl px-4 py-2 ${previewing && speed === sc.id ? "bg-cuesoft ring-1 ring-cue" : "bg-raised"}`}>
+              <span aria-hidden className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: FUTURE_COLOR[sc.id] }} />
+              <span className="min-w-0 flex-1 text-sm">
+                {sc.best ? `Under ${FUTURE_NAME[sc.id]} AI, your best job would be ${sc.best.title} (about ${sc.best.weeks} weeks).` : `Under ${FUTURE_NAME[sc.id]} AI, no job is reachable in your time.`}
+              </span>
+              {sc.best && (same
+                ? <Chip tone="rise">Same as your plan</Chip>
+                : <Btn variant="ghost" disabled={busy} onClick={() => selectJob(sc.best!.roleId, null)}>Plan for {sc.best.title} instead</Btn>)}
+            </li>
+          );
+        })}
+      </ul>
+    </Card>
   );
 }

@@ -9,13 +9,14 @@ import { JobBadge } from "@/components/JobIcon";
 import { GROUP_LABEL, GROUP_PAY, GROUP_PAY_SOURCE, roleById, sourceById } from "@/lib/engine/data";
 import { stateJobs } from "@/lib/engine/geo";
 import { areaName } from "@/lib/engine/geo";
-import { Bar, Btn, Card, Chip, Estimate, H, More, PageTitle, SdgTag, Skeleton, SourceChip } from "@/components/ui";
+import { Bar, Btn, Card, Chip, Estimate, FUTURE_NAME, H, More, PageTitle, SdgTag, Skeleton, SourceChip } from "@/components/ui";
+import { SpeedBar } from "@/components/SpeedBar";
 
 // One question: why does this job score what it does, and what am I missing?
 export default function JobDetailPage() {
   const { view, state, busy } = useApp();
   const { id } = useParams<{ id: string }>();
-  const { speed } = useSpeed(view);
+  const { speed, previewing } = useSpeed();
   const selectJob = useSelectJob();
   if (!view || !state) return <Skeleton lines={6} />;
   const m = view.matches.find((x) => x.roleId === id);
@@ -34,6 +35,7 @@ export default function JobDetailPage() {
   const where = state.profile?.state && state.profile.move && state.profile.move !== "anywhere" ? areaName(state.profile.state, state.profile.move, state.profile.moveTo) : null;
   // Selecting moves on to the next step, the job map, which then shows this job.
   const choose = () => selectJob(m.roleId);
+  const under = previewing ? view.scenarios?.find((s) => s.id === speed)?.roles[m.roleId] : undefined;
   return (
     <div>
       <Link href="/jobs" className="mb-4 inline-block text-sm text-muted underline decoration-control underline-offset-2 hover:text-ink">Jobs</Link>
@@ -49,6 +51,16 @@ export default function JobDetailPage() {
       </header>
       <div className="mb-6 flex flex-wrap gap-2">
         <Btn onClick={choose} disabled={busy} className="min-h-12 px-6 text-base">{chosen ? "Selected: see it on the job map" : "Select job and see the job map"}</Btn>
+      </div>
+
+      <div className="mb-4">
+        <SpeedBar view={view}>
+          {under && (
+            <p className="num mt-2 text-sm font-medium" aria-live="polite">
+              {`If AI is ${FUTURE_NAME[speed]}: number ${under.rank} on your list (number ${m.rank} with Our forecast), score ${Math.round(under.score * 100)} (now ${Math.round(m.score * 100)}).${under.atRisk ? " AI may take over its skills soon." : ""}`}
+            </p>
+          )}
+        </SpeedBar>
       </div>
 
       <Card tone="raised" className="mb-4">
