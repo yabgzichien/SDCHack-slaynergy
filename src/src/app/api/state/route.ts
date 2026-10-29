@@ -4,6 +4,8 @@ import { respond } from "@/lib/server/respond";
 import { ensureData } from "@/lib/server/refresh";
 
 export const dynamic = "force-dynamic";
+// A background data refresh (run with after()) can take up to a minute: each source fetch has a 60 s timeout.
+export const maxDuration = 60;
 
 export async function GET() {
   await ensureData();

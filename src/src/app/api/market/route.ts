@@ -10,6 +10,8 @@ import { loadState, saveState } from "@/lib/server/store";
 import { ensureData } from "@/lib/server/refresh";
 
 export const dynamic = "force-dynamic";
+// A background data refresh (run with after()) can take up to a minute: each source fetch has a 60 s timeout.
+export const maxDuration = 60;
 
 // Live chart feed for one event: every strike's price history plus the latest trades. The client polls this every few seconds.
 export async function GET(req: Request) {

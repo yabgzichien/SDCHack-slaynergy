@@ -7,6 +7,8 @@ import { loadState, logEvent, saveState } from "@/lib/server/store";
 import { ensureData } from "@/lib/server/refresh";
 
 export const dynamic = "force-dynamic";
+// A background data refresh (run with after()) can take up to a minute: each source fetch has a 60 s timeout.
+export const maxDuration = 60;
 export const runtime = "nodejs";
 
 const MAX_BYTES = 3 * 1024 * 1024;

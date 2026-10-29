@@ -18,6 +18,8 @@ import { MAX_PER_ANSWER, moveAllowance } from "@/lib/market-math";
 import { ensureData } from "@/lib/server/refresh";
 
 export const dynamic = "force-dynamic";
+// A background data refresh (run with after()) can take up to a minute: each source fetch has a 60 s timeout.
+export const maxDuration = 60;
 
 // The Malaysian calendar day, as "2026-10-24".
 const malaysiaToday = () => new Date(Date.now() + 8 * 3600_000).toISOString().slice(0, 10);

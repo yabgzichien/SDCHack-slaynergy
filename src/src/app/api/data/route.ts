@@ -4,6 +4,8 @@ import { geo } from "@/lib/engine/geo";
 import { dataInfo, ensureData } from "@/lib/server/refresh";
 
 export const dynamic = "force-dynamic";
+// A background data refresh (run with after()) can take up to a minute: each source fetch has a 60 s timeout.
+export const maxDuration = 60;
 
 // The active data snapshot, for the browser to swap in (components/AppProvider), plus when each source was last checked.
 // ?info=1 returns only the status, for the Sources page.

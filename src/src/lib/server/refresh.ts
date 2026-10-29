@@ -8,6 +8,7 @@
 // ILO, the Anthropic Economic Index and the DOSM annual Labour Force Survey report are pinned: a weekly check only
 // raises an alert on the Sources page when a newer version appears. Once a person has reviewed a new version and rebuilt
 // data/series.json with it, applyPins() carries it into the live snapshots (a new, logged snapshot; nothing settles).
+import { after } from "next/server";
 import seriesJson from "../../../data/series.json";
 import statesJson from "../../../data/states.json";
 import { prevQuarter, series, setSeries, withSeries, type Series } from "../engine/data";
@@ -49,7 +50,14 @@ export async function ensureData(now: number = Date.now()): Promise<void> {
   if (id === null) id = await seed();
   if (mem.loaded !== id) await load(id);
   if (mem.pinsOk !== mem.loaded) await applyPins(now);
-  if (!refreshDisabled()) void maybeRefresh(now);
+  if (!refreshDisabled()) runAfterResponse(() => maybeRefresh(now));
+}
+
+// On Vercel, work left running after the response is sent can be frozen, so a background refresh goes through
+// after(), which keeps the function alive until it finishes (within the route's maxDuration). Outside a request (the
+// CLI, tests) after() throws, and the refresh just runs in the background as before.
+function runAfterResponse(task: () => Promise<void>) {
+  try { after(task); } catch { void task(); }
 }
 
 // The pinned sources (ILO exposure scores, the Anthropic Economic Index) live in the bundled data/series.json. The live
