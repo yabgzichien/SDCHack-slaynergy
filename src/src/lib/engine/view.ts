@@ -4,9 +4,9 @@ import { computeWorld, type World } from "./world";
 import { expiryFor, durability, fmtYear, nowYear, withNow, THRESHOLD, type SkillExpiry } from "./expiry";
 import type { Weights3 } from "./futures";
 import { areaFor } from "./geo";
-import { matchRoles, pickInputs, demandFor, tradeoff, AT_RISK_BELOW, type RoleMatch } from "./matching";
+import { matchRoles, pickInputs, demandFor, tradeoff, AT_RISK_BELOW, PROJECT_QUARTERS, type MatchInput, type RoleMatch } from "./matching";
 import { buildPlan, buildReshapePlan, type Plan } from "./plan";
-import { FUTURES, FUTURE_IDS } from "./futures-def";
+import { FUTURES, FUTURE_IDS, type FutureId } from "./futures-def";
 import { STAY_ID, type SessionState } from "./state";
 import { mean } from "./math";
 import { dosmQuarterAt, epochQuarterAt, historyStops, scoresAt, settleDay, yearOf, type Stop } from "./history";
@@ -50,6 +50,18 @@ export type View = {
   // For each open question: how your soonest-fading skill's date would move if the main answer settles Yes or No.
   whatIfYou: Record<string, { skill: string; now: string; yes: string; no: string }>;
   data: { name: string; detail: string; url: string; date: string; licence: string }[];
+  // Previewing an AI speed: the same reachable jobs ranked as if that speed were certain (docs/adr/0002). Estimates.
+  // Null for the "before" view used to list what a release changed.
+  scenarios: ScenarioView[] | null;
+};
+export type ScenarioId = FutureId;
+export type ScenarioView = {
+  id: ScenarioId; weights: Weights3;
+  // Office-admin job ads, projected PROJECT_QUARTERS ahead with this speed's drift: a projection, not a DOSM figure.
+  clerical: { now: number; projected: number; quarters: number; driftPp: number };
+  // The job the app would suggest under this speed: the best lasting job, else the top of the list.
+  best: { roleId: string; title: string; weeks: number; score: number; atRisk: boolean } | null;
+  roles: Record<string, { rank: number; score: number; outlook: number; atRisk: boolean }>;
 };
 // The task card as the browser sees it: the planted mistakes stay on the server until the worker finds them.
 export type CardView = Omit<TaskCard, "sampleAnswer"> & { sampleAnswer: { id: string; text: string; reveal?: { kind: string; why: string } }[]; mistakes: number };
@@ -171,11 +183,29 @@ function radarFor(w: World): Radar {
   };
 }
 
-function viewCore(state: SessionState, release: 0 | 1, nowMs?: number): View {
-  return viewFrom(state, computeWorld({ ...state, release }, nowMs));
+function viewCore(state: SessionState, release: 0 | 1, nowMs?: number, withScenarios = true): View {
+  return viewFrom(state, computeWorld({ ...state, release }, nowMs), withScenarios);
 }
 
-function viewFrom(state: SessionState, world: World): View {
+// The reachable jobs ranked under each AI speed taken as certain, with that speed's office-admin drift projected
+// PROJECT_QUARTERS ahead. Which jobs are reachable never depends on the speed, so plan lengths are reused (weeksOf).
+export function scenarioMatches(input: MatchInput, asOf: string, weeksOf: (roleId: string) => number): ScenarioView[] {
+  const now = demandFor("clerical", asOf).recent;
+  return FUTURES.map((f) => {
+    const weights = { slow: 0, medium: 0, fast: 0, [f.id]: 1 } as Weights3;
+    const shift = f.clericalDriftPp * PROJECT_QUARTERS;
+    const ms = matchRoles(input, weights, asOf, shift).filter((m) => m.reachable);
+    const top = ms.find((m) => m.outlook >= LASTING_OUTLOOK) ?? ms[0] ?? null;
+    return {
+      id: f.id, weights,
+      clerical: { now, projected: Math.max(0, now + shift), quarters: PROJECT_QUARTERS, driftPp: f.clericalDriftPp },
+      best: top && { roleId: top.roleId, title: top.title, weeks: weeksOf(top.roleId), score: top.score, atRisk: top.atRisk },
+      roles: Object.fromEntries(ms.map((m) => [m.roleId, { rank: m.rank, score: m.score, outlook: m.outlook, atRisk: m.atRisk }])),
+    };
+  });
+}
+
+function viewFrom(state: SessionState, world: World, withScenarios = true): View {
   const radar = radarFor(world);
   const p = state.profile;
   const wt = world.weights;
@@ -187,6 +217,7 @@ function viewFrom(state: SessionState, world: World): View {
   let lasting: RoleMatchView | null = null, bridge: RoleMatchView | null = null;
   let plan: Plan | null = null;
   let stay: StayView | null = null;
+  let scenarios: ScenarioView[] | null = null;
   if (p) {
     const occ = occupationById[p.occupationId];
     const study = p.study !== undefined ? p.study : EDUCATION_RANK[p.education] >= 1 ? occ?.sector : null;
@@ -202,6 +233,10 @@ function viewFrom(state: SessionState, world: World): View {
       why: whyFor(m, p.interests, input.field, wt),
     });
     matches = reachable.map(toView);
+    if (withScenarios) {
+      const weeks = new Map(matches.map((m) => [m.roleId, m.weeks]));
+      scenarios = scenarioMatches(input, world.asOfQuarter, (id) => weeks.get(id) ?? 0);
+    }
     unreachable = all.filter((m) => !m.reachable).map((m) => ({ roleId: m.roleId, title: m.title, weeks: planWeeks(m), sector: m.sector, reason: m.blocked ? "qualification" as const : "time" as const, need: m.blockedBy === "field" ? `Needs a degree in ${SECTOR_NOUN[m.sector]}` : m.blocked ? `Needs a ${EDUCATION_LABEL[m.requires].toLowerCase()}` : `≈ ${m.weeks} weeks` }));
     sectors = SECTORS.map((sec) => {
       const inSec = all.filter((m) => m.sector === sec.id), ok = inSec.filter((m) => m.reachable);
@@ -254,7 +289,7 @@ function viewFrom(state: SessionState, world: World): View {
       whatIfYou[e.id] = { skill: soonest.name, now: at(wt), yes: at(e.whatIf.yes), no: at(e.whatIf.no) };
     }
   }
-  return { world, radar, profileSkills, pace, whatIfYou, matches, unreachable, sectors, chosen, lasting, bridge, stay, plan, pathway: pathwayView(plan, state), sdgSummary, resume, resumeTips, changes: null, data };
+  return { world, radar, profileSkills, pace, whatIfYou, matches, unreachable, sectors, chosen, lasting, bridge, stay, plan, pathway: pathwayView(plan, state), sdgSummary, resume, resumeTips, changes: null, data, scenarios };
 }
 
 const SECTOR_NOUN: Record<SectorId, string> = {
@@ -399,7 +434,7 @@ export function computeView(state: SessionState): View {
     // "Before" is the app just before the release loaded (t1; a session starts with it loaded, so its start). Building
     // it at that moment also avoids replaying the whole session's simulated trades a second time.
     const t1 = state.clock ? Date.parse(state.clock.t1 ?? state.clock.t0) : undefined;
-    const before = viewCore(state, 0, t1);
+    const before = viewCore(state, 0, t1, false);
     v.changes = diffViews(before, v, state);
   }
   return v;

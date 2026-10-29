@@ -2,7 +2,7 @@ import { prevQuarter, series, sourceById } from "./data";
 import { FUTURES, FUTURE_IDS, type FutureId } from "./futures-def";
 import { crowdTilt, futureWeights, type Weights3 } from "./futures";
 import { FORECASTERS, KIND_LABEL, brier, forecasterName, updateWeights, START_BALANCE, type Kind, type MarketRun, type Weights } from "./market";
-import { liveQuestions, replayHistory, updateScores } from "./replay";
+import { liveQuestions, replayHistory, updateScores, type Scores } from "./replay";
 import { epochSettleDay, eventTitle, factFor, isoDay, ladder, LIVE_QUARTER, quarterEnd, quarterPlain, type Question, type Strike } from "./questions";
 import { ETA, INFLUENCE_MAX } from "./market";
 import type { SessionState } from "./state";
@@ -62,7 +62,30 @@ export type World = {
   epochQuarter?: string;
   // Set only while viewing the past (history timeline): the release whose day this view is as of.
   past?: { q: string; day: string; label: string; url: string } | null;
+  // Every way the open questions' main answers could come out, and the forecast weights each would leave. Null while
+  // viewing the past.
+  stakes?: Stakes | null;
 };
+export type Stakes = { questions: { id: string; kind: "dosm" | "epoch" }[]; outcomes: { answers: boolean[]; weights: Weights3 }[] };
+
+// Settle every combination of the open questions' main answers (2^n; 5 questions give 32) and return the forecast
+// weights each would leave once all are in. Questions settle in their release order (settleOrder): each release fades
+// the older scores once, as updateScores does when a real release settles. With every answer in, no crowd tilt is left.
+export function computeStakes(S: Scores, runs: MarketRun[], settleOrder: ("dosm" | "epoch")[]): Stakes {
+  const n = runs.length;
+  const outcomes: Stakes["outcomes"] = [];
+  for (let mask = 0; mask < 1 << n; mask++) {
+    const answers = runs.map((_, i) => ((mask >> i) & 1) === 1);
+    const settled = runs.map((r, i) => ({ ...r, q: { ...r.q, outcome: answers[i] } }));
+    let s = S;
+    for (const kind of settleOrder) {
+      const batch = settled.filter((r) => r.q.kind === kind);
+      if (batch.length) s = updateScores(s, batch);
+    }
+    outcomes.push({ answers, weights: futureWeights(s, { slow: 0, medium: 0, fast: 0 }) });
+  }
+  return { questions: runs.map((r) => ({ id: r.q.id, kind: r.q.kind })), outcomes };
+}
 
 export const YOU = "you";
 const top20 = (w: Weights) => [...FORECASTERS].sort((a, b) => (w[b.id] ?? 1) - (w[a.id] ?? 1)).slice(0, 20).map((f) => f.id);
@@ -139,6 +162,10 @@ export function computeWorld(state: SessionState, nowMs: number = Date.now()): W
     const settle = (o: boolean) => futureWeights(updateScores(S, [{ ...r, q: { ...r.q, outcome: o } }]), rest);
     whatIf[open.events[i].q.id] = { now: weights, yes: settle(true), no: settle(false) };
   });
+
+  // The release whose answers come out first settles first; an unknown release day goes last.
+  const day = (k: "dosm" | "epoch") => (k === "dosm" ? sourceById.dosm?.next : series.market.epoch.open.length ? epochSettleDay(series.market.epoch.open[0]) : null) ?? "9999";
+  const stakes = computeStakes(S, openBase, (["dosm", "epoch"] as const).slice().sort((a, b) => day(a).localeCompare(day(b))));
 
   const t20 = top20(W);
   let netCash = 0, won = 0, buyPoints = 0, pnlSettled = 0, orders = 0, positionValue = 0;
@@ -223,7 +250,7 @@ export function computeWorld(state: SessionState, nowMs: number = Date.now()): W
       id: f.id, name: f.name, blurb: f.blurb, weight: weights[f.id], earned: stored[f.id], tilt: weights[f.id] - stored[f.id],
       capMult: f.capMult, adoptMult: f.adoptMult, drift: f.clericalDriftPp,
     })),
-    weights, scores: S, forecasters, kindSummary,
+    weights, scores: S, forecasters, kindSummary, stakes,
     user: { balance: START_BALANCE + netCash + won, netCash, won, rank, of: Object.keys(roi).length + 1, roi: userRoi, orders, positionValue },
     clericalHistory: series.dosm.quarters.filter((d) => d.q >= "2023Q1" && d.q <= asOfQuarter).map((d) => ({ q: d.q, share: d.clerical_share })),
     replay: { questions: base.stats.questions, brierLmsr: base.stats.brierLmsr, brierWeighted: base.stats.brierWeightedMean, brierUnweighted: base.stats.brierUnweighted, brierCoin: base.stats.brierCoin, brierBaseRate: base.stats.brierBaseRate,

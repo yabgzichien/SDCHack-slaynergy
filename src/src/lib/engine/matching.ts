@@ -45,21 +45,22 @@ export const WEEKS_PER_MONTH = 4.345;
 // DOSM changed what its online job-ad series covers from 2025 Q3, so quarters before that are not comparable.
 // Demand trend = the latest quarter's share of ads against the average share since the change.
 export const DOSM_BREAK = "2025Q3";
-export type Demand = { group: GroupKey; label: string; recent: number; before: number; trend: number; score: number; period: string; latest: string };
-export function demandFor(group: GroupKey, upTo: string): Demand {
+export type Demand = { group: GroupKey; label: string; recent: number; before: number; trend: number; score: number; period: string; latest: string; projectedPp?: number };
+// shiftPp: an AI speed's projection moves the latest share by this many points (a projection, not a DOSM figure).
+export function demandFor(group: GroupKey, upTo: string, shiftPp = 0): Demand {
   const all = series.dosm.quarters.filter((d) => d.q <= upTo);
   const share = (d: (typeof all)[number]) => (d[group] / d.total) * 100;
   const post = all.filter((d) => d.q >= DOSM_BREAK);
   const latest = all[all.length - 1];
   const base = post.length >= 3 ? post.slice(0, -1) : all.slice(-5, -1);
-  const recent = share(latest);
+  const recent = Math.max(0, share(latest) + shiftPp);
   const before = base.reduce((x, d) => x + share(d), 0) / Math.max(1, base.length);
   // Few comparable quarters exist, so the trend is shrunk towards "no change" (n / (n + 2)) to keep one noisy quarter
   // from swinging the ranking. Size counts a little: a group with 20% or more of all ads scores full marks on it.
   const raw = before > 0 ? recent / before - 1 : 0;
   const trend = raw * (base.length / (base.length + 2));
   const score = clamp(0.5 + 1.25 * trend, 0, 1) * 0.75 + clamp(recent / 20, 0, 1) * 0.25;
-  return { group, label: GROUP_LABEL[group], recent, before, trend, score, latest: latest.q, period: `${base[0].q} to ${base[base.length - 1].q}` };
+  return { group, label: GROUP_LABEL[group], recent, before, trend, score, latest: latest.q, period: `${base[0].q} to ${base[base.length - 1].q}`, ...(shiftPp ? { projectedPp: shiftPp } : {}) };
 }
 
 // ---------- courses ----------
@@ -99,7 +100,10 @@ export type RoleMatch = {
   parts: { key: string; label: string; value: number; weight: number }[];
 };
 
-export function matchRoles(input: MatchInput, w: Weights3, upTo: string): RoleMatch[] {
+// AI speed previews project office-admin (clerical) job ads this many quarters ahead with the speed's drift.
+export const PROJECT_QUARTERS = 4;
+// clericalShiftPp: only for AI speed previews; "Our forecast" uses the real DOSM figures (docs/adr/0002).
+export function matchRoles(input: MatchInput, w: Weights3, upTo: string, clericalShiftPp = 0): RoleMatch[] {
   const have = new Set(input.skills);
   const deadlineWeeks = Math.floor(input.months * WEEKS_PER_MONTH - 2);
   const expCache = new Map<string, SkillExpiry>();
@@ -113,7 +117,7 @@ export function matchRoles(input: MatchInput, w: Weights3, upTo: string): RoleMa
     const got = Object.entries(r.skills).reduce((a, [s, imp]) => a + (have.has(s) ? imp : 0), 0);
     const overlap = got / total;
     const outlook = Object.entries(r.skills).reduce((a, [s, imp]) => a + imp * durability(exp(s)), 0) / total;
-    const demand = demandFor(r.group, upTo);
+    const demand = demandFor(r.group, upTo, r.group === "clerical" ? clericalShiftPp : 0);
     const gapIds = Object.keys(r.skills).filter((s) => !have.has(s));
     const picks = coverGaps(gapIds);
     const hours = picks.reduce((a, p) => a + p.hours, 0);
