@@ -5,7 +5,7 @@ handoff.md
 # Local tooling
 .claude/
 .taste-skill/
-runway/design-references/
+src/design-references/
 
 # Documents: only README.md is committed unless the owner says otherwise
 *.md
@@ -27,42 +27,42 @@ secrets/
 # PDFs, images and video
 *.pdf
 *.png
-!runway/public/cockatiel-mascot.png
-!runway/public/cockatiel-peeking.png
-!runway/public/cockatiel-statistics-header.png
-!runway/public/cockatiel-cursor.png
-!runway/public/cockatiel-cursor-art.png
-!runway/public/cockatiel-ai-icon.png
-!runway/public/cockatiel-welcome.png
-!runway/public/cockatiel-worried.png
-!runway/public/cockatiel-dejected.png
-!runway/public/cockatiel-spectacles.png
-!runway/public/cockatiel-sunglasses.png
-!runway/public/cockatiel-reading.png
-!runway/public/cockatiel-sdg-blocks.png
-!runway/public/sdg-block-stack.png
-!runway/public/cockatiel-landing.png
-!runway/public/landing-sdg-stack.png
-!runway/public/landing-cockatiel-flight.png
-!runway/public/landing-nature-skyline.png
-!runway/public/cockatiel-thinking.png
-!runway/public/cockatiel-running.png
-!runway/public/cockatiel-cursor-moderate.png
-!runway/public/cockatiel-cursor-jobs-art.png
-!runway/public/cockatiel-ai-icon-v2.png
-!runway/public/cockatiel-walk-step-a.png
-!runway/public/cockatiel-walk-step-b.png
+!src/public/cockatiel-mascot.png
+!src/public/cockatiel-peeking.png
+!src/public/cockatiel-statistics-header.png
+!src/public/cockatiel-cursor.png
+!src/public/cockatiel-cursor-art.png
+!src/public/cockatiel-ai-icon.png
+!src/public/cockatiel-welcome.png
+!src/public/cockatiel-worried.png
+!src/public/cockatiel-dejected.png
+!src/public/cockatiel-spectacles.png
+!src/public/cockatiel-sunglasses.png
+!src/public/cockatiel-reading.png
+!src/public/cockatiel-sdg-blocks.png
+!src/public/sdg-block-stack.png
+!src/public/cockatiel-landing.png
+!src/public/landing-sdg-stack.png
+!src/public/landing-cockatiel-flight.png
+!src/public/landing-nature-skyline.png
+!src/public/cockatiel-thinking.png
+!src/public/cockatiel-running.png
+!src/public/cockatiel-cursor-moderate.png
+!src/public/cockatiel-cursor-jobs-art.png
+!src/public/cockatiel-ai-icon-v2.png
+!src/public/cockatiel-walk-step-a.png
+!src/public/cockatiel-walk-step-b.png
 *.jpg
 *.jpeg
 *.gif
 *.webp
-!runway/public/cockatiel-progress-expressions.webp
-!runway/public/landing-cockatiel.webp
-!runway/public/landing-sdg-blocks.webp
+!src/public/cockatiel-progress-expressions.webp
+!src/public/landing-cockatiel.webp
+!src/public/landing-sdg-blocks.webp
 *.avif
 *.bmp
 *.svg
-!runway/public/career-pattern.svg
+!src/public/career-pattern.svg
 *.ico
 *.mp4
 *.mov
@@ -71,6 +71,22 @@ secrets/
 *.mkv
 *.m4v
 
-# Build caches and editor lock files
-pitch-deck/build/*.whl
+# The Next.js app serves these files directly. Keep every production asset in
+# version control so deployment environments receive the same public folder.
+!src/public/**
+
+# Editor lock files
 .~lock.*#
+
+# Local generated output, including leftovers from previous app folder names
+**/node_modules/
+**/.next/
+**/.data/
+**/test-results/
+**/playwright-report/
+*.log
+*.tsbuildinfo
+next-env.d.ts
+
+# Retired app directory: local caches and reference material only
+/jobbery/

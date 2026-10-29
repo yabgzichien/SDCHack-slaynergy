@@ -1,0 +1,11 @@
+# Replit configuration for Jobbery (Next.js). Verify these settings in the Replit UI after importing the repo.
+run = "npm run dev -- -p 3000 -H 0.0.0.0"
+modules = ["nodejs-22"]
+
+[deployment]
+build = ["sh", "-c", "npm ci && npm run build"]
+run = ["sh", "-c", "npm run start -- -p 3000 -H 0.0.0.0"]
+
+[[ports]]
+localPort = 3000
+externalPort = 80
