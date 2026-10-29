@@ -58,6 +58,10 @@ export type World = {
   you: YouStats;
   agentRoi: Record<string, number>; // points won per point spent on settled markets, per simulated forecaster
   clericalHistory: { q: string; share: number }[];
+  // The newest Epoch AI quarter in this view. Today it is asOfQuarter; a past view uses the quarter settled by its day.
+  epochQuarter?: string;
+  // Set only while viewing the past (history timeline): the release whose day this view is as of.
+  past?: { q: string; day: string; label: string; url: string } | null;
 };
 
 export const YOU = "you";

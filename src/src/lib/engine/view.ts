@@ -1,7 +1,7 @@
 import { skills, skillById, roles, roleById, occupations, occupationById, series, sdg, sourceById, SECTORS, INTERESTS, EDUCATION_LABEL, EDUCATION_RANK, quarterIndex, prevQuarter, type SectorId } from "./data";
-import { isoDay, LIVE_QUARTER, quarterPlain } from "./questions";
+import { isoDay, ladder, LIVE_QUARTER, makeQuestions, quarterPlain } from "./questions";
 import { computeWorld, type World } from "./world";
-import { expiryFor, durability, fmtYear, NOW, THRESHOLD, type SkillExpiry } from "./expiry";
+import { expiryFor, durability, fmtYear, nowYear, withNow, THRESHOLD, type SkillExpiry } from "./expiry";
 import type { Weights3 } from "./futures";
 import { areaFor } from "./geo";
 import { matchRoles, pickInputs, demandFor, tradeoff, AT_RISK_BELOW, type RoleMatch } from "./matching";
@@ -9,6 +9,9 @@ import { buildPlan, buildReshapePlan, type Plan } from "./plan";
 import { FUTURES, FUTURE_IDS } from "./futures-def";
 import { STAY_ID, type SessionState } from "./state";
 import { mean } from "./math";
+import { dosmQuarterAt, epochQuarterAt, historyStops, scoresAt, settleDay, yearOf, type Stop } from "./history";
+import { futureWeights } from "./futures";
+import { zeroScores } from "./replay";
 import { tailorTips, type ResumeSummary } from "./resume";
 import { achievements, cardById, completionGate, doneMap, gradeQuiz, promptChecklist, type Achievement, type TaskCard } from "./pathway";
 
@@ -136,7 +139,7 @@ function radarFor(w: World): Radar {
       const dem = rs.length ? mean(rs.map((r) => demands[r.id].score)) : 0;
       return { ...toSkill(x), demand: dem, rank: dem * durability(x.e) };
     })
-    .filter((x) => x.durable || x.expectedYear > NOW + 5)
+    .filter((x) => x.durable || x.expectedYear > nowYear() + 5)
     .sort((a, b) => b.rank - a.rank).slice(0, 9)
     .map((x) => { const out: RadarSkill & { demand: number } = { ...x }; delete (out as Record<string, unknown>).rank; return out; });
 
@@ -163,14 +166,16 @@ function radarFor(w: World): Radar {
       { name: "ILO 2025 GenAI exposure (ISCO-08)", detail: "How exposed each occupation's tasks are to generative AI", url: ilo.url, date: `scores ${ilo.latest}; retrieved ${ilo.retrieved}` },
       { name: "Anthropic Economic Index", detail: "Share of an occupation's tasks seen in real AI use", url: aei.url, date: `release ${aei.latest.split(" ")[0]}; retrieved ${aei.retrieved}` },
       { name: "DOSM Job Market Insights", detail: "Online job ads by occupation group (demand)", url: dosm.url, date: w.asOfLabel.replace(/^DOSM /, "") },
-      { name: "Epoch AI benchmarks", detail: "How fast AI capability is growing (anchors the futures)", url: ep.url, date: `to ${w.asOfQuarter.replace("Q", " Q")}; retrieved ${ep.retrieved}` },
+      { name: "Epoch AI benchmarks", detail: "How fast AI capability is growing (anchors the futures)", url: ep.url, date: `to ${(w.epochQuarter ?? w.asOfQuarter).replace("Q", " Q")}; retrieved ${ep.retrieved}` },
     ],
   };
 }
 
 function viewCore(state: SessionState, release: 0 | 1): View {
-  const st = { ...state, release };
-  const world = computeWorld(st);
+  return viewFrom(state, computeWorld({ ...state, release }));
+}
+
+function viewFrom(state: SessionState, world: World): View {
   const radar = radarFor(world);
   const p = state.profile;
   const wt = world.weights;
@@ -230,13 +235,13 @@ function viewCore(state: SessionState, release: 0 | 1): View {
   const data = series.sources.map((s) => ({ name: s.name, detail: s.latest, url: s.url, date: s.retrieved, licence: s.licence }));
   const resume = state.resume ?? null;
   const resumeTips = resume && chosen ? tailorTips(resume.skillIds, roleById[chosen.roleId].skills) : null;
-  const fr = series.epoch.metr.frontier.filter((x) => quarterIndex(x.q) <= quarterIndex(world.asOfQuarter)).slice(-5);
+  const fr = series.epoch.metr.frontier.filter((x) => quarterIndex(x.q) <= quarterIndex(world.epochQuarter ?? world.asOfQuarter)).slice(-5);
   const perQuarter = mean(fr.slice(1).map((x, i) => x.v - fr[i].v));
   const paceFutures: Pace[] = FUTURES.map((f) => ({ id: f.id, doublingMonths: 3 / (f.capMult * perQuarter), clericalPerYear: f.clericalDriftPp * 4, weight: world.weights[f.id] }));
   const pace = {
     futures: paceFutures,
     expectedMonths: 3 / (perQuarter * FUTURES.reduce((a, f) => a + world.weights[f.id] * f.capMult, 0)),
-    asOf: world.asOfQuarter,
+    asOf: world.epochQuarter ?? world.asOfQuarter,
     source: { name: "METR time horizon, via Epoch AI", url: sourceById.epoch.url },
   };
   const whatIfYou: View["whatIfYou"] = {};
@@ -348,34 +353,41 @@ function diffViews(a: View, b: View, state: SessionState): Change[] {
     kind: "forecasters", text: `The computer-made ${moved.k}s' vote changed the most (${moved.d > 0 ? "up" : "down"} ${Math.abs(moved.d).toFixed(2)}× on average).`,
     why: "Players whose predictions were closer to the real answers got a bigger vote.", source: epochSrc,
   });
-  if (state.profile) {
-    const shifts = b.profileSkills.map((s) => {
-      const before = a.profileSkills.find((z) => z.skillId === s.skillId)!;
-      return { name: s.name, m: monthsBetween(before.expiry.expectedYear, s.expiry.expectedYear), from: before.expiry.expected, to: s.expiry.expected, dur: s.expiry.durable };
-    }).filter((s) => s.m !== 0 && !s.dur).sort((x, y) => Math.abs(y.m) - Math.abs(x.m)).slice(0, 4);
-    for (const s of shifts) {
-      out.push({
-        kind: "skills", text: `${s.name}: AI could take it over by ${s.to} (was ${s.from}, ${Math.abs(s.m)} months ${s.m > 0 ? "later" : "sooner"}).`,
-        why: "Our prediction of how fast AI is moving changed, so the date moved.", source: { name: "ILO 2025 exposure + Anthropic Economic Index + futures", url: sourceById.ilo.url, date: `weights as of ${live.replace("Q", " Q")}` },
-      });
-    }
-    if (!shifts.length) out.push({ kind: "skills", text: "None of your skill dates moved by a month or more.", why: "Our prediction of how fast AI is moving changed too little to move any date.", source: epochSrc });
-    const ra = new Map(a.matches.map((m) => [m.roleId, m.rank]));
-    const moves = b.matches.map((m) => ({ t: m.title, from: ra.get(m.roleId), to: m.rank })).filter((m) => m.from !== m.to).slice(0, 5);
-    for (const m of moves) {
-      out.push({ kind: "jobs", text: `${m.t}: now number ${m.to} on your list (was ${m.from ?? "not listed"}).`, why: "We rechecked each job with the new job-ad numbers and our new prediction of how fast AI is moving.", source: dosmSrc });
-    }
-    if (!moves.length) out.push({ kind: "jobs", text: "The job ranking did not change.", why: "The new numbers changed the scores a little, but not enough to change the order.", source: dosmSrc });
-    if (a.plan && b.plan && (a.plan.roleId !== b.plan.roleId || a.plan.totalWeeks !== b.plan.totalWeeks)) {
-      out.push({ kind: "plan", text: a.plan.roleId !== b.plan.roleId ? `Top plan changed: ${a.plan.title} → ${b.plan.title}.` : `Plan length: ${a.plan.totalWeeks} → ${b.plan.totalWeeks} weeks.`, why: "Your plan follows the job at the top of your list.", source: dosmSrc });
-    } else if (b.plan) out.push({ kind: "plan", text: `Plan unchanged: ${b.plan.title}, ${b.plan.totalWeeks} weeks.`, why: "The job at the top of your list stayed the same.", source: dosmSrc });
-  }
+  out.push(...profileChanges(a, b, state, { jobs: dosmSrc, skills: { name: "ILO 2025 exposure + Anthropic Economic Index + futures", url: sourceById.ilo.url, date: `weights as of ${live.replace("Q", " Q")}` }, unchanged: epochSrc }));
   const q = series.dosm.quarters;
   const q1 = q.find((d) => d.q === prevQuarter(live))!, q2 = q.find((d) => d.q === live)!;
   out.push({
     kind: "demand", text: `Office admin jobs: ${q1.clerical_share.toFixed(1)} → ${q2.clerical_share.toFixed(1)} in every 100 job ads. All job ads ${q2.total >= q1.total ? "up" : "down"} ${Math.abs(((q2.total / q1.total) - 1) * 100).toFixed(1)}%.`,
     why: `Real government (DOSM) numbers for ${quarterPlain(live)}.`, source: dosmSrc,
   });
+  return out;
+}
+
+// What moved for this person between two views: their skill dates, their job list and their plan.
+type Src = { name: string; url: string; date: string };
+function profileChanges(a: View, b: View, state: SessionState, src: { jobs: Src; skills: Src; unchanged: Src }, why = { skills: "Our prediction of how fast AI is moving changed, so the date moved." }): Change[] {
+  const out: Change[] = [];
+  if (!state.profile) return out;
+  const shifts = b.profileSkills.map((s) => {
+    const before = a.profileSkills.find((z) => z.skillId === s.skillId)!;
+    return { name: s.name, m: monthsBetween(before.expiry.expectedYear, s.expiry.expectedYear), from: before.expiry.expected, to: s.expiry.expected, dur: s.expiry.durable };
+  }).filter((s) => s.m !== 0 && !s.dur && s.from !== s.to).sort((x, y) => Math.abs(y.m) - Math.abs(x.m)).slice(0, 4);
+  for (const s of shifts) {
+    out.push({
+      kind: "skills", text: `${s.name}: AI could take it over by ${s.to} (was ${s.from}, ${Math.abs(s.m)} ${Math.abs(s.m) === 1 ? "month" : "months"} ${s.m > 0 ? "later" : "sooner"}).`,
+      why: why.skills, source: src.skills,
+    });
+  }
+  if (!shifts.length) out.push({ kind: "skills", text: "None of your skill dates moved by a month or more.", why: "Our prediction of how fast AI is moving changed too little to move any date.", source: src.unchanged });
+  const ra = new Map(a.matches.map((m) => [m.roleId, m.rank]));
+  const moves = b.matches.map((m) => ({ t: m.title, from: ra.get(m.roleId), to: m.rank })).filter((m) => m.from !== m.to).slice(0, 5);
+  for (const m of moves) {
+    out.push({ kind: "jobs", text: `${m.t}: now number ${m.to} on your list (was ${m.from ?? "not listed"}).`, why: "We rechecked each job with the new job-ad numbers and our new prediction of how fast AI is moving.", source: src.jobs });
+  }
+  if (!moves.length) out.push({ kind: "jobs", text: "The job ranking did not change.", why: "The new numbers changed the scores a little, but not enough to change the order.", source: src.jobs });
+  if (a.plan && b.plan && (a.plan.roleId !== b.plan.roleId || a.plan.totalWeeks !== b.plan.totalWeeks)) {
+    out.push({ kind: "plan", text: a.plan.roleId !== b.plan.roleId ? `Top plan changed: ${a.plan.title} → ${b.plan.title}.` : `Plan length: ${a.plan.totalWeeks} → ${b.plan.totalWeeks} weeks.`, why: "Your plan follows the job at the top of your list.", source: src.jobs });
+  } else if (b.plan) out.push({ kind: "plan", text: `Plan unchanged: ${b.plan.title}, ${b.plan.totalWeeks} weeks.`, why: "The job at the top of your list stayed the same.", source: src.jobs });
   return out;
 }
 
@@ -388,3 +400,86 @@ export function computeView(state: SessionState): View {
   return v;
 }
 export { roleById, occupationById, THRESHOLD };
+
+// ---------- history timeline: the app as it stood on a past release's day ----------
+// Read-only by construction: these functions only read the session and the loaded data, and return new objects.
+function pastWorld(stop: Stop): World {
+  const day = stop.day;
+  const S = scoresAt(day), w = futureWeights(S, zeroScores());
+  const q = dosmQuarterAt(day)!;
+  return {
+    release: 1, asOfQuarter: q, asOfLabel: `DOSM ${q.replace("Q", " Q")} (published ${isoDay(day)})`, latestLabel: quarterPlain(q),
+    // The day of the release after it is left out: it came out after this view's day.
+    nextAnswers: { dosm: null, epoch: null },
+    events: [], settledEvents: [],
+    futures: FUTURES.map((f) => ({ id: f.id, name: f.name, blurb: f.blurb, weight: w[f.id], earned: w[f.id], tilt: 0, capMult: f.capMult, adoptMult: f.adoptMult, drift: f.clericalDriftPp })),
+    weights: w, scores: S, forecasters: [], kindSummary: [],
+    user: { balance: 0, netCash: 0, won: 0, rank: null, of: 0, roi: null, orders: 0, positionValue: 0 },
+    replay: { questions: 0, brierLmsr: 0, brierWeighted: 0, brierUnweighted: 0, brierCoin: 0, brierBaseRate: 0, brierBestFuture: 0, bestFuture: "" },
+    you: { forecasts: [], brier: null, scored: 0, traded: 0, influenceBefore: 1, influence: 1, maxOrder: 0 },
+    agentRoi: {},
+    clericalHistory: series.dosm.quarters.filter((d) => d.q >= "2023Q1" && d.q <= q).map((d) => ({ q: d.q, share: d.clerical_share })),
+    epochQuarter: epochQuarterAt(day) ?? q,
+    past: { q: stop.q, day, label: stop.label, url: stop.url },
+  };
+}
+
+// The view as of a past stop: DOSM figures published by its day, Epoch AI results settled by it, forecast weights from
+// the answers public by it, and skill dates counted from it. Today's ILO and Anthropic Economic Index scores are used.
+export function viewAsOf(state: SessionState, q: string): View {
+  const stop = historyStops().find((s) => s.q === q);
+  if (!stop || stop.today) throw new Error(`No past release ${q}`);
+  return withNow(yearOf(stop.day), () => viewFrom(state, pastWorld(stop)));
+}
+
+// "What this release changed": the view at a stop against the view at the stop before it. Every before and after
+// number is read from those two views, so the log always agrees with what the pages show at each stop.
+export function historyChanges(state: SessionState, q: string, views: { at: (q: string) => View }): Change[] {
+  const stops = historyStops();
+  const i = stops.findIndex((s) => s.q === q);
+  if (i < 0) throw new Error(`No release ${q}`);
+  const stop = stops[i], prev = i > 0 ? stops[i - 1] : null;
+  const b = views.at(stop.q), a = prev ? views.at(prev.q) : null;
+  const out: Change[] = [];
+  const release = { name: `DOSM Job Market Insights, ${stop.q.replace("Q", " Q")} release`, url: stop.url, date: isoDay(stop.day) };
+  const epochSrc = { name: "Epoch AI benchmarking data", url: sourceById.epoch.url, date: `retrieved ${sourceById.epoch.retrieved}` };
+
+  const qb = b.world.asOfQuarter, cur = series.dosm.quarters.find((d) => d.q === qb)!;
+  const before = series.dosm.quarters.find((d) => d.q === prevQuarter(qb));
+  out.push(prev && before
+    ? { kind: "demand", text: `Office admin jobs: ${before.clerical_share.toFixed(1)} → ${cur.clerical_share.toFixed(1)} in every 100 job ads. All job ads ${cur.total >= before.total ? "up" : "down"} ${Math.abs(((cur.total / before.total) - 1) * 100).toFixed(1)}%.`, why: `Real government (DOSM) numbers for ${quarterPlain(qb)}, published ${isoDay(stop.day)}.`, source: release }
+    : { kind: "demand", text: `Office admin jobs: ${cur.clerical_share.toFixed(1)} in every 100 job ads.`, why: `The first quarter DOSM counted job ads its new way, so it is not compared with the quarter before.`, source: release });
+
+  // Answers that became public after the stop before and by this one (the first stop: those published that day).
+  const answered = makeQuestions().filter((x) => {
+    if (x.phase === "next") return false;
+    const d = settleDay(x);
+    return d !== null && d <= stop.day && (prev ? d > prev.day : d === stop.day);
+  });
+  if (answered.length) out.push({ kind: "market", text: `${answered.length} ${answered.length === 1 ? "question" : "questions"} answered${prev ? ` since ${isoDay(prev.day)}` : ` on ${isoDay(stop.day)}`}.`, why: "Each answer updates how likely each AI speed is.", source: release });
+  for (const x of answered) {
+    const o = x.phase === "live" ? ladder(x)[1].outcome : x.outcome;
+    out.push({ kind: "market", text: `Answered: ${x.text} ${o ? "Yes" : "No"}.`, why: `Published ${isoDay(settleDay(x)!)}.`, source: x.kind === "dosm" ? release : epochSrc });
+  }
+
+  const forecastSrc = { name: "Settled market questions", url: sourceById.epoch.url, date: isoDay(stop.day) };
+  for (const f of FUTURES) {
+    const y = b.world.weights[f.id];
+    if (!a) { out.push({ kind: "futures", text: `${f.name}: ${pct(y)} likely`, why: "Worked out from every answer public that day.", source: forecastSrc }); continue; }
+    const x = a.world.weights[f.id], d = Math.round((y - x) * 100);
+    out.push({
+      kind: "futures", text: `${f.name}: ${pct(x)} → ${pct(y)} likely${d === 0 ? " (no change)" : ""}`,
+      why: stop.today ? "Today's forecast also counts the open questions' current predictions, most of them from computer-made players." : "Worked out again from every answer public that day.",
+      source: forecastSrc,
+    });
+  }
+
+  if (state.profile) {
+    if (a) {
+      const skillsSrc = { name: "ILO 2025 exposure + Anthropic Economic Index + futures", url: sourceById.ilo.url, date: `as of ${isoDay(stop.day)}` };
+      out.push(...profileChanges(a, b, state, { jobs: release, skills: skillsSrc, unchanged: skillsSrc }, { skills: "Dates are counted from each release's own day, with the forecast as it stood then." }));
+    } else if (b.chosen) out.push({ kind: "plan", text: `Your top job then: ${b.chosen.title}.`, why: "Your plan follows the job at the top of your list.", source: release });
+  }
+  return out;
+}
+export type { Stop };
