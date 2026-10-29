@@ -150,7 +150,7 @@ All data is public or synthetic. Every source is a **dated snapshot** saved in t
 |---|---|---|
 | **DOSM Job Market Insights** (2026 Q2 release, 18 Aug 2026) | Online job ads by occupation group, each quarter | Job demand; settles market questions |
 | **Epoch AI benchmarking data** (retrieved 20 Oct 2026, CC-BY) | Best AI test scores over time | How fast AI is improving; settles market questions; history replay |
-| **Anthropic Economic Index** (release 2025-02-10, CC-BY) | Share of each occupation's tasks seen in real AI use | How fast AI is being adopted for each skill |
+| **Anthropic Economic Index** (release 2026-06-26, Claude.ai usage Apr–May 2026, CC-BY; reviewed and re-pinned 29 Oct 2026) | Share of each occupation's tasks seen in real AI use, matched to our job codes with O\*NET 30.0 task lists and O\*NET's 2010-to-2019 code crosswalk | How fast AI is being adopted for each skill |
 | **ILO 2025 GenAI exposure scores** (CC BY 4.0) | Exposure of each occupation (ISCO-08) to generative AI | How much of a skill AI could do |
 | **O\*NET** (CC BY 4.0) | Occupation codes and task lists | Role IDs for 89 roles; task cards |
 | **OpenDOSM** | Employment by industry and state, unemployment (2026 Q2), median wages (2025) | The job map |
@@ -202,7 +202,7 @@ When someone uses the app and the last check is old enough, the server checks fo
 - **How often:** daily, and hourly around DOSM's release day.
 - **Updated automatically:** DOSM Job Market Insights, Epoch AI benchmark results, and OpenDOSM's state labour force and wages.
 - **Checked first:** new numbers must pass checks against the numbers they replace. If a check fails, the last good data stays and nothing settles.
-- **Pinned, alert only:** the ILO exposure scores, the Anthropic Economic Index and DOSM's yearly Labour Force Survey tables. A new edition changes how they are measured, so the Sources page flags it for a person to review.
+- **Pinned, alert only:** the ILO exposure scores, the Anthropic Economic Index and DOSM's yearly Labour Force Survey tables. A new edition changes how they are measured, so the Sources page flags it for a person to review. Once reviewed, `npm run data:repin-aei` rebuilds the index into the starting data, and the server then saves one new, logged snapshot with only that source swapped. Nothing settles. The index was re-pinned this way to its 2026-06-26 release on 29 Oct 2026.
 
 When new data goes live:
 - Open questions whose answers are in settle, and settlements are final.

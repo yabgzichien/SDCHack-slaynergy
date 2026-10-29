@@ -6,7 +6,8 @@
 //   3. re-derive the market calendar (engine/calendar.ts), which settles questions whose answers are now in;
 //   4. if anything changed, save a new snapshot and write its hash, the settlements and any revisions to the log.
 // ILO, the Anthropic Economic Index and the DOSM annual Labour Force Survey report are pinned: a weekly check only
-// raises an alert on the Sources page when a newer version appears.
+// raises an alert on the Sources page when a newer version appears. Once a person has reviewed a new version and rebuilt
+// data/series.json with it, applyPins() carries it into the live snapshots (a new, logged snapshot; nothing settles).
 import seriesJson from "../../../data/series.json";
 import statesJson from "../../../data/states.json";
 import { prevQuarter, series, setSeries, withSeries, type Series } from "../engine/data";
@@ -33,8 +34,8 @@ const HOUR = 3600_000, DAY = 24 * HOUR;
 const LOCK_MS = 10 * 60_000;
 const STATUS_KEY = "data_status", LOCK_KEY = "data_refresh_lock";
 
-const g = globalThis as unknown as { __jobberyData?: { loaded: number | null; lastPeek: number; running: boolean } };
-const mem = (g.__jobberyData ??= { loaded: null, lastPeek: 0, running: false });
+const g = globalThis as unknown as { __jobberyData?: { loaded: number | null; lastPeek: number; running: boolean; pinsOk: number | null } };
+const mem = (g.__jobberyData ??= { loaded: null, lastPeek: 0, running: false, pinsOk: null });
 
 const stringify = (s: Series, st: StatesFile) => ({ series: JSON.stringify(s), states: JSON.stringify(st) });
 const hashOf = (series: string, states: string) => sha256(`${series}\n${states}`);
@@ -47,7 +48,47 @@ export async function ensureData(now: number = Date.now()): Promise<void> {
   let id = await latestSnapshotId();
   if (id === null) id = await seed();
   if (mem.loaded !== id) await load(id);
+  if (mem.pinsOk !== mem.loaded) await applyPins(now);
   if (!refreshDisabled()) void maybeRefresh(now);
+}
+
+// The pinned sources (ILO exposure scores, the Anthropic Economic Index) live in the bundled data/series.json. The live
+// snapshots copy them forward, so a reviewed re-pin only reaches them here: when the bundled version of a pinned source
+// differs from the loaded snapshot's, save a new snapshot with just that source swapped and log it. Nothing settles.
+export const PINNED_SOURCES = ["ilo", "aei"] as const;
+const pinKey = (s: Series, id: (typeof PINNED_SOURCES)[number]) => JSON.stringify(s.sources.find((x) => x.id === id) ?? null);
+export function withBundledPins(cur: Series, bundled: Series): { next: Series; changed: string[] } {
+  const changed = PINNED_SOURCES.filter((id) => pinKey(cur, id) !== pinKey(bundled, id));
+  if (!changed.length) return { next: cur, changed: [] };
+  const next: Series = { ...cur, sources: cur.sources.map((s) => (changed as string[]).includes(s.id) ? bundled.sources.find((b) => b.id === s.id) ?? s : s) };
+  for (const id of changed) (next as Record<string, unknown>)[id] = bundled[id];
+  const name = (s: Series, id: string) => s.sources.find((x) => x.id === id)?.latest ?? "none";
+  return { next, changed: changed.map((id) => `${bundled.sources.find((x) => x.id === id)?.name ?? id}: re-pinned after review (${name(cur, id)} → ${name(bundled, id)})`) };
+}
+
+async function applyPins(now: number) {
+  const { changed } = withBundledPins(series, seriesJson as unknown as Series);
+  if (!changed.length) { mem.pinsOk = mem.loaded; return; }
+  const nowIso = new Date(now).toISOString();
+  if (!(await setKvIf(LOCK_KEY, new Date(now + LOCK_MS).toISOString(), nowIso))) return; // a refresh is running; try again next request
+  try {
+    const id = (await latestSnapshotId()) ?? 0;
+    if (mem.loaded !== id) await load(id);
+    const r = withBundledPins(series, seriesJson as unknown as Series);
+    if (r.changed.length) {
+      const snapshot = id + 1;
+      const body = stringify(r.next, geo);
+      const hash = hashOf(body.series, body.states);
+      await insertSnapshot({ id: snapshot, createdAt: nowIso, hash, ...body });
+      await logSystem("data_snapshot", { snapshot, hash, changed: r.changed });
+      await load(snapshot);
+      // The stored "newer version" alerts were about the old pins: drop them and re-check on the next refresh.
+      const st = await readStatus();
+      await setKv(STATUS_KEY, JSON.stringify({ ...st, alerts: [], alertsCheckedAt: null }));
+    }
+    mem.pinsOk = mem.loaded;
+  } catch (e) { console.error("pinned-source update failed", e); }
+  finally { await setKv(LOCK_KEY, new Date(0).toISOString()); }
 }
 
 async function seed(): Promise<number> {

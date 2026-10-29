@@ -72,7 +72,7 @@ export async function fetchEpoch(cutoff: string): Promise<{ epoch: Record<string
 
 // ---------- pinned sources: only look for a newer version, never apply it ----------
 export type Alert = { id: string; name: string; found: string; url: string };
-export const PINNED = { aeiRelease: "release_2025_02_10", iloRetrieved: "2026-10-20", lfsYear: 2024 };
+export const PINNED = { aeiRelease: "release_2026_06_26", iloRetrieved: "2026-10-20", lfsYear: 2024 };
 
 export async function checkPinned(): Promise<{ alerts: Alert[]; errors: string[] }> {
   const alerts: Alert[] = [], errors: string[] = [];

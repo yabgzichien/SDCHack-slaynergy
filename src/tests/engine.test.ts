@@ -3,6 +3,7 @@ import { occupations, personas, roles, skills, courses, sdg, series, skillById }
 import { matchRoles, pickInputs } from "@/lib/engine/matching";
 import { computeWorld, MAX_ORDER } from "@/lib/engine/world";
 import { computeView } from "@/lib/engine/view";
+import { suggestedJobs } from "@/lib/suggested";
 import { initialState, STAY_ID, type SessionState } from "@/lib/engine/state";
 import { futureWeights } from "@/lib/engine/futures";
 import { liveQuestions, replayHistory } from "@/lib/engine/replay";
@@ -216,7 +217,10 @@ describe("new data never pushes a worker back into a fading job", () => {
       const o = occupations.find((x) => x.id === p.occupation)!;
       const st: SessionState = { ...initialState(), profile: { name: p.name, occupationId: o.id, education: p.education, years: p.years, skills: o.skills, interests: p.interests, months: p.months, hoursPerWeek: p.hoursPerWeek, budget: "free", synthetic: true } };
       const before = computeView(st), after = computeView({ ...st, release: 1, clock: { t0: T0, t1: T1 } });
-      expect(after.matches[0].atRisk, p.id).toBe(false);
+      // What the worker is shown as their best job (Jobs page) and plans towards: the best lasting job, ahead of a
+      // higher-ranked one whose skills are at risk (lib/suggested.ts). The raw ranking may still list an at-risk job first.
+      expect(suggestedJobs(after)[0].atRisk, p.id).toBe(false);
+      expect(after.chosen?.atRisk, p.id).toBe(false);
       const r0 = new Map(before.matches.map((m) => [m.roleId, m.rank]));
       for (const m of after.matches) if (r0.has(m.roleId)) expect(Math.abs(r0.get(m.roleId)! - m.rank), `${p.id} ${m.title}`).toBeLessThanOrEqual(8);
     }
