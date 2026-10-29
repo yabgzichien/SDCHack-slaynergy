@@ -385,6 +385,16 @@ expiry year     = the first year readiness reaches 0.45
 
 The date shown is the average of the three futures, weighted by how likely each one is. Skills that stay below the threshold in every future are marked **lasting**, e.g. people skills.
 
+### Previewing an AI speed
+
+One **AI speed** picker on Skills, Jobs, each job's page and Plan offers **Our forecast** (the default: the three futures, weighted) or **Slow**, **Medium** or **Fast** taken as certain. Picking a speed:
+
+- **Re-ranks the jobs.** The same reachable jobs are scored with that future's adoption speed, which moves skill dates and each job's outlook. That future's office-admin drift also moves the job-demand part of the score: the latest DOSM share is projected four quarters ahead and labelled "projection, not a DOSM figure". Our forecast always uses the real DOSM figures.
+- **Shows what moved.** Jobs shows the best job under that speed ("If AI is Fast, your best job would be ESG and sustainability reporting assistant, instead of Procurement officer"), and each card shows "▲ up 4 under Fast". Each job's page shows its rank and score under that speed.
+- **Never changes the plan by itself.** Plan lists the best job under each speed with a "Plan for … instead" button. The pick is kept in the browser only and never saves the forecast's weights.
+
+AI benchmark pace is a stated part of each future too. It drives the Skills page's "twice as capable every N months" and the prediction market's questions, but not the job ranking. A test checks that Slow and Fast change the suggested job or the top five for at least three of the four demo profiles.
+
 ### The prediction market
 
 ![Prediction market in the webapp](src/public/screenshots/market.jpg)
