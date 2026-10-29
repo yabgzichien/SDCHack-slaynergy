@@ -8,6 +8,7 @@ import { useApp } from "./AppProvider";
 import { useT } from "./I18nProvider";
 import { StepBar, currentStep } from "./Journey";
 import { SiteHeader } from "./SiteHeader";
+import { HistoryPanel, PastBanner } from "./History";
 import { series } from "@/lib/engine/data";
 
 // The latest real figures are always loaded (the server refreshes them by itself); the next ones come out below.
@@ -18,7 +19,7 @@ function ReleaseNotice() {
   const { view } = useApp();
   const { t } = useT();
   if (!view) return null;
-  const q = view.world.asOfQuarter, pub = series.dosm.publishedAt[q], next = view.world.nextAnswers.dosm;
+  const q = view.world.asOfQuarter, pub = view.world.past?.day ?? series.dosm.publishedAt[q], next = view.world.nextAnswers.dosm;
   const upTo = `${FULL_MONTHS[Number(q[5]) * 3 - 1]} ${q.slice(0, 4)}`;
   // Plain English: the page translator fills the blanks and localises the dates in them.
   const line = `${pub ? `Job figures up to ${upTo} (DOSM, published ${dayOf(pub)}).` : `Job figures up to ${upTo} (DOSM).`} ${next ? `Next: ${dayOf(next)}.` : "Next: DOSM's next release."}`;
@@ -44,6 +45,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className={`landing-page public-shell${isPublicLayout ? "" : " app-page-shell"}`}>
       <SiteHeader />
+      <HistoryPanel />
+      <PastBanner />
       {isPublicLayout ? (
         <main id="main" className={home ? "public-home" : "public-start"}>{children}</main>
       ) : (

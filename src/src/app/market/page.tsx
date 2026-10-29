@@ -10,6 +10,7 @@ import { MarketTabs } from "@/components/MarketTabs";
 import { ForecastNav } from "@/components/ForecastNav";
 import "./market.css";
 import { nextAnswersLine } from "@/components/ui";
+import { PastForecast } from "@/components/History";
 
 const HOW = [
   { icon: Vote, title: "Choose a question", text: "Explore the questions below. Pick an answer, then forecast Yes or No." },
@@ -19,9 +20,10 @@ const HOW = [
 
 // One question: what can I forecast right now? Layout from the home-page branch; the cards keep the LIVE / Answered styling.
 export default function MarketPage() {
-  const { view, refresh } = useApp();
+  const { view, refresh, history } = useApp();
   useEffect(() => { const id = window.setInterval(() => { if (document.visibilityState === "visible") refresh(); }, 8000); return () => window.clearInterval(id); }, [refresh]);
   if (!view) return <Skeleton lines={5} />;
+  if (history.past) return <PastForecast />;
   const w = view.world;
   const released = w.release === 1;
   const showResults = released && w.settledEvents.length > 0;

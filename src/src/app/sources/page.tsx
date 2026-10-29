@@ -41,7 +41,8 @@ const daysUntil = (iso: string) => Math.ceil((new Date(`${iso.slice(0, 10)}T00:0
 
 // One question: where do the answers to the prediction questions come from, and can I check them myself?
 export default function SourcesPage() {
-  const { view, dataVersion } = useApp();
+  // Sources describe the live data feed, so they stay on today while viewing the past.
+  const { todayView: view, dataVersion } = useApp();
   const [info, setInfo] = useState<{ snapshot: number; status: DataStatus; disabled: boolean } | null>(null);
   useEffect(() => {
     let on = true;

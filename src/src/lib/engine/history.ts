@@ -107,11 +107,9 @@ export function openQuestionsAt(day: string): OpenThen[] {
       if (q.kind === "dosm") { const p = settleDay({ kind: "dosm", quarter: prevQuarter(q.quarter) }); return p !== null && p <= day; }
       return quarterStart(q.quarter) <= day;
     })
-    .map((q) => {
-      const s = settleDay(q);
-      return {
-        id: q.id, title: eventTitle(q), text: q.text, source: q.source,
-        settles: q.kind === "dosm" ? `DOSM numbers for ${quarterPlain(q.quarter)}${s ? ` (published ${isoDay(s)})` : ""}` : `Epoch AI results for ${quarterPlain(q.quarter)}, checked from ${isoDay(epochSettleDay(q.quarter))}`,
-      };
-    });
+    // DOSM's release day is left out: it was not public on that day. Epoch AI's check day follows a fixed rule.
+    .map((q) => ({
+      id: q.id, title: eventTitle(q), text: q.text, source: q.source,
+      settles: q.kind === "dosm" ? `DOSM numbers for ${quarterPlain(q.quarter)}` : `Epoch AI results for ${quarterPlain(q.quarter)}, checked from ${isoDay(epochSettleDay(q.quarter))}`,
+    }));
 }

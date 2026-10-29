@@ -232,7 +232,9 @@ function viewFrom(state: SessionState, world: World): View {
   const targets = new Set<string>();
   if (plan) { plan.summary.layer1.forEach((t) => targets.add(t)); if (chosen) targets.add(chosen.sdgTarget); }
   const sdgSummary = [...targets].map((t) => ({ target: t, goal: sdg[t].goal, text: sdg[t].text }));
-  const data = series.sources.map((s) => ({ name: s.name, detail: s.latest, url: s.url, date: s.retrieved, licence: s.licence }));
+  // While viewing the past, DOSM and Epoch AI say what was public that day instead of today's latest.
+  const pastDetail = (id: string) => !world.past ? null : id === "dosm" ? `${world.asOfQuarter} (published ${world.past.day})` : id === "epoch" ? `results to ${(world.epochQuarter ?? world.asOfQuarter).replace("Q", " Q")}` : null;
+  const data = series.sources.map((s) => ({ name: s.name, detail: pastDetail(s.id) ?? s.latest, url: s.url, date: s.retrieved, licence: s.licence }));
   const resume = state.resume ?? null;
   const resumeTips = resume && chosen ? tailorTips(resume.skillIds, roleById[chosen.roleId].skills) : null;
   const fr = series.epoch.metr.frontier.filter((x) => quarterIndex(x.q) <= quarterIndex(world.epochQuarter ?? world.asOfQuarter)).slice(-5);

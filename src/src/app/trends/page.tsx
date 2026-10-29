@@ -61,7 +61,7 @@ export default function TrendsPage() {
       </header>
 
       <div className="mt-4 statistics-reveal"><JobGroupShares asOfQuarter={w.asOfQuarter} /></div>
-      <div className="mt-4 statistics-reveal"><AiCapability asOfQuarter={w.asOfQuarter} /></div>
+      <div className="mt-4 statistics-reveal"><AiCapability asOfQuarter={w.epochQuarter ?? w.asOfQuarter} /></div>
 
       <div className="mt-4 grid gap-y-4 gap-x-8 lg:grid-cols-2">
         <Card className="statistics-opportunities statistics-reveal">

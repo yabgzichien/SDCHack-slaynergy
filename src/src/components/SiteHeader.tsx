@@ -10,6 +10,7 @@ import { useT } from "./I18nProvider";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { removeStored } from "@/lib/legacy";
 import { forgetProgress } from "./Journey";
+import { HistoryButton } from "./History";
 
 export function SiteHeader() {
   const path = usePathname();
@@ -31,7 +32,7 @@ export function SiteHeader() {
   return (
     <header className={`landing-header${compact ? " is-compact" : ""}`}>
       <Link href="/" className="landing-brand" aria-label={t("Jobbery home")}><Image src="/cockatiel-ai-icon-v2.png" alt="" width={48} height={48} /><span>Jobbery</span></Link>
-      <nav aria-label={t("Main navigation")} className="landing-nav"><Link href="/trends" aria-current={path === "/trends" ? "page" : undefined}>{t("Statistics")}</Link><Link href="/market" aria-current={path === "/market" ? "page" : undefined}>{t("Forecast")}</Link><Link href="/courses" aria-current={path === "/courses" ? "page" : undefined}>{t("Courses")}</Link></nav>
+      <nav aria-label={t("Main navigation")} className="landing-nav"><Link href="/trends" aria-current={path === "/trends" ? "page" : undefined}>{t("Statistics")}</Link><Link href="/market" aria-current={path === "/market" ? "page" : undefined}>{t("Forecast")}</Link><Link href="/courses" aria-current={path === "/courses" ? "page" : undefined}>{t("Courses")}</Link><HistoryButton /></nav>
       <div className="landing-header-end">
         {state?.profile
           ? <Link href="/" className="landing-nav-cta">{t("Continue")}</Link>
@@ -45,7 +46,7 @@ export function SiteHeader() {
           <Link href="/counsellor" aria-current={path === "/counsellor" ? "page" : undefined}>{t("Advisor view")}</Link>
           {state?.profile && <><hr className="landing-dropdown-rule" /><button disabled={busy || !view} onClick={async () => { try { removeStored(sessionStorage, "jobbery-onboarding-v2"); } catch { /* ignore */ } forgetProgress(); await act("reset"); router.push("/"); }}>{t("Start over")}</button></>}
         </div></details>
-        <details className="landing-mobile-menu"><summary aria-label={t("Open navigation menu")}><Menu size={23} aria-hidden /></summary><nav aria-label={t("Mobile navigation")} className="landing-dropdown"><Link href="/trends" aria-current={path === "/trends" ? "page" : undefined}>{t("Statistics")}</Link><Link href="/market" aria-current={path === "/market" ? "page" : undefined}>{t("Forecast")}</Link><Link href="/courses" aria-current={path === "/courses" ? "page" : undefined}>{t("Courses")}</Link><Link href="/trust" aria-current={path === "/trust" ? "page" : undefined}>{t("Our approach")}</Link></nav></details>
+        <details className="landing-mobile-menu"><summary aria-label={t("Open navigation menu")}><Menu size={23} aria-hidden /></summary><nav aria-label={t("Mobile navigation")} className="landing-dropdown"><Link href="/trends" aria-current={path === "/trends" ? "page" : undefined}>{t("Statistics")}</Link><Link href="/market" aria-current={path === "/market" ? "page" : undefined}>{t("Forecast")}</Link><Link href="/courses" aria-current={path === "/courses" ? "page" : undefined}>{t("Courses")}</Link><Link href="/trust" aria-current={path === "/trust" ? "page" : undefined}>{t("Our approach")}</Link><HistoryButton menu /></nav></details>
       </div>
     </header>
   );
