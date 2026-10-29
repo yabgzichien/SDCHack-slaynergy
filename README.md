@@ -154,6 +154,7 @@ All data is public or synthetic. Every source is a **dated snapshot** saved in t
 | **ILO 2025 GenAI exposure scores** (CC BY 4.0) | Exposure of each occupation (ISCO-08) to generative AI | How much of a skill AI could do |
 | **O\*NET** (CC BY 4.0) | Occupation codes and task lists | Role IDs for 89 roles; task cards |
 | **OpenDOSM** | Employment by industry and state, unemployment (2026 Q2), median wages (2025) | The job map |
+| **DOSM Household Expenditure Survey 2024** (released 8 Oct 2025, Table 1.4) | Median monthly spending per person, by state | Living costs on the job map ("left after typical spending") |
 | **geoBoundaries** (OpenStreetMap, ODbL) | State boundaries | Drawing the map |
 | **UN SDG target text** (sdgs.un.org) | Official wording of each target | SDG tags |
 | **Course list** (97 hand-checked courses, each with a checked date and link status) | Khan Academy, Microsoft Learn, Coursera, Kaggle, freeCodeCamp, HRD Corp, PERKESO and others | The reskilling plan |
@@ -203,6 +204,7 @@ When someone uses the app and the last check is old enough, the server checks fo
 - **Updated automatically:** DOSM Job Market Insights, Epoch AI benchmark results, and OpenDOSM's state labour force and wages.
 - **Checked first:** new numbers must pass checks against the numbers they replace. If a check fails, the last good data stays and nothing settles.
 - **Pinned, alert only:** the ILO exposure scores, the Anthropic Economic Index and DOSM's yearly Labour Force Survey tables. A new edition changes how they are measured, so the Sources page flags it for a person to review. Once reviewed, `npm run data:repin-aei` rebuilds the index into the starting data, and the server then saves one new, logged snapshot with only that source swapped. Nothing settles. The index was re-pinned this way to its 2026-06-26 release on 29 Oct 2026.
+- **Pinned, no alert:** DOSM's spending per person by state (Household Expenditure Survey 2024). It is published only as a spreadsheet on dosm.gov.my, not on OpenDOSM, so the server cannot check it. It stays at the 2024 edition until someone downloads the next one and runs `npm run data:build`.
 
 When new data goes live:
 - Open questions whose answers are in settle, and settlements are final.
@@ -420,9 +422,15 @@ The **Map** page shows, state by state, where jobs like the one the user picked 
 - **The map comes first.** Above it, a compact row of job pills: the user's **suggested** jobs, **their current job** (labelled), and **Other jobs**, a searchable list where every job is marked *Not suggested* (or *Not in reach yet*, preview only). The selected job is highlighted amber and a short "Showing … · Selected" line pulses when it changes.
 - **Colour the map by:** jobs like this · unemployment rate · median pay.
 - **All 16 states as a table** is always shown under the map.
-- **Each state's figures:** an estimated number of jobs like this, median monthly pay, unemployment rate.
-- **"Would you move for work?"** Pick your state, then any other state to compare: "*Selangor has 5.3× as many jobs like this as Kedah*", pay RM X higher or lower a month, unemployment Y points higher or lower.
+- **Each state's figures:** an estimated number of jobs like this, median monthly pay, unemployment rate, and **what is left after typical living costs**: median pay minus DOSM's median monthly spending per person, for example "≈ RM 1,730 a month" in Selangor (RM 3,547 − RM 1,820). The table adds a "Spending per person" column.
+- **"Would you move for work?"** Pick your state, then any other state to compare: "*Selangor has 5.3× as many jobs like this as Kedah*", pay RM X higher or lower a month, about RM X more or less left a month after typical spending, unemployment Y points higher or lower.
 - **A note on cost of living:** higher pay often comes with higher rent. The page suggests talking a move through with an advisor. Jobbery shows the figures; it doesn't tell anyone where to live.
+- **Limits of the living-cost figure** (also shown on the page):
+  - **Children count too.** "Spending per person" is a household's spending shared across everyone in it, children included. One adult living alone usually spends more, so "left after typical spending" flatters a single person's budget.
+  - **Different years.** Pay is the 2025 median; spending is from the 2024 survey.
+  - **All jobs, not this job.** Pay is the state median across all jobs, not pay for the selected job. Spending is a median for the whole state, so city and rural costs are mixed.
+  - **No automatic updates.** The figure is not on OpenDOSM, so it is pinned (see "Does it update?").
+  - Leftover amounts are rounded to RM 10 and labelled "estimate". It is a rough guide, not a budget.
 - **Matching:** your home state alone never changes your matches (a test checks this). Only if you say you won't move do jobs that are scarce in your area move down the ranking. They are never hidden.
 
 Malaysia publishes no open data on job ads by state and occupation. So "jobs like this" is an estimate from DOSM employment by industry and state, scaled to 2026 Q2, and it's labelled as one.
