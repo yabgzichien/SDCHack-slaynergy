@@ -214,14 +214,14 @@ When new data goes live:
 
 The next releases are **DOSM Jul–Sep 2026 (17 Nov 2026)** and **Epoch AI Oct–Dec 2026 (checked from 30 Jan 2027)**. Details: [src/README.md](src/README.md#data-and-updating).
 
-### History: see the app as it stood on any past release
+### History: see the data as it stood on any past release
 
-**History** in the header opens a timeline with one stop per real DOSM Job Market Insights release: 2025 Q3 (published 28 Apr 2026), 2025 Q4 (25 May 2026), 2026 Q1 (25 Jun 2026) and today's 2026 Q2 (18 Aug 2026), with 2026 Q3 (17 Nov 2026) greyed out as not published yet. Each date was read from that edition's own page on dosm.gov.my.
+On **Statistics** (above the job lists) and **The Forecast** (above the questions), a small picker offers one stop per real DOSM Job Market Insights release: 2025 Q3 (published 28 Apr 2026), 2025 Q4 (25 May 2026), 2026 Q1 (25 Jun 2026) and Today (2026 Q2, 18 Aug 2026). The next release, 17 Nov 2026, is named beside it. Each date was read from that edition's own page on dosm.gov.my.
 
-- **Picking an earlier release redraws the app as of that day.** The radar, skill dates, job ranking, plan and forecast weights all use only what was public by then: DOSM quarters published by that day, Epoch AI results settled by it, and forecast weights replayed from the answers public by it. Skill dates are counted from that day. Today's ILO and Anthropic Economic Index scores are used, and DOSM figures are as DOSM publishes them today. A banner says so on every page, with **Back to today**.
-- **What this release changed:** each stop lists what its figures changed against the stop before, with each line's source and date.
-- **How the forecast has learned:** Slow / Medium / Fast bands above the stops show the forecast at each release (also as a table).
-- **Read-only.** The timeline never settles, saves or changes anything. The picked release lives in the browser tab's memory only, so a reload returns to today. Predicting and profile changes are turned off while viewing the past. Engine: `src/src/lib/engine/history.ts` and `viewAsOf` in `view.ts`; API: `GET /api/history`; tests: `src/tests/history.test.ts`.
+- **Statistics:** the job and skill lists change to what the data said on that day: DOSM quarters published by then, Epoch AI results settled by then, forecast weights replayed from the answers public by then, and skill dates counted from that day. Today's ILO and Anthropic Economic Index scores are used, and DOSM figures are as DOSM publishes them today.
+- **The Forecast:** shows the questions that were open on that day, in the usual answered-card style, labelled as a past release whose questions have since settled with the real figures, and the AI outlook as it stood then.
+- **What this release changed:** a folded list under the picker gives each change against the release before, with its source and date.
+- **Read-only.** Nothing is settled, saved or changed. The picked release lives in the browser tab's memory; any other page, a reload or a new tab shows today. Engine: `src/src/lib/engine/history.ts` and `viewAsOf` in `view.ts`; API: `GET /api/history`; tests: `src/tests/history.test.ts`.
 
 ---
 
