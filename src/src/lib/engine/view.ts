@@ -171,8 +171,8 @@ function radarFor(w: World): Radar {
   };
 }
 
-function viewCore(state: SessionState, release: 0 | 1): View {
-  return viewFrom(state, computeWorld({ ...state, release }));
+function viewCore(state: SessionState, release: 0 | 1, nowMs?: number): View {
+  return viewFrom(state, computeWorld({ ...state, release }, nowMs));
 }
 
 function viewFrom(state: SessionState, world: World): View {
@@ -396,7 +396,10 @@ function profileChanges(a: View, b: View, state: SessionState, src: { jobs: Src;
 export function computeView(state: SessionState): View {
   const v = viewCore(state, state.release);
   if (state.release === 1) {
-    const before = viewCore(state, 0);
+    // "Before" is the app just before the release loaded (t1; a session starts with it loaded, so its start). Building
+    // it at that moment also avoids replaying the whole session's simulated trades a second time.
+    const t1 = state.clock ? Date.parse(state.clock.t1 ?? state.clock.t0) : undefined;
+    const before = viewCore(state, 0, t1);
     v.changes = diffViews(before, v, state);
   }
   return v;
