@@ -126,7 +126,7 @@ flowchart TD
     ADV -.->|advice note| I
 
     T[Trends: how AI is changing jobs] -.-> G
-    MK[Market: guess on upcoming data releases] -.->|re-weights the futures| G
+    MK[Market: predict upcoming data releases] -.->|re-weights the futures| G
 ```
 
 **Who uses it**
@@ -136,7 +136,7 @@ flowchart TD
 | **Fresh graduates** entering the workforce | To understand their skills, explore reachable first jobs and build a weekly learning plan |
 | **Everyone in the workforce**, including employed people, career changers, jobseekers and people returning to work | To keep skills relevant, explore growing roles and plan their next career step around their own deadline |
 | **Secondary: advisor**, for example an employment officer | To meet each user once (a mock interview, advice, or anything else they ask), seeing their profile and plan |
-| **Forecasters** (simulated now, real people later) | To make checkable guesses about upcoming data and build a track record |
+| **Forecasters** (simulated now, real people later) | To make checkable predictions about upcoming data and build a track record |
 
 ---
 
@@ -213,6 +213,15 @@ When new data goes live:
 - The snapshot's hash goes into the tamper-evident log.
 
 The next releases are **DOSM Jul–Sep 2026 (17 Nov 2026)** and **Epoch AI Oct–Dec 2026 (checked from 30 Jan 2027)**. Details: [src/README.md](src/README.md#data-and-updating).
+
+### History: see the app as it stood on any past release
+
+**History** in the header opens a timeline with one stop per real DOSM Job Market Insights release: 2025 Q3 (published 28 Apr 2026), 2025 Q4 (25 May 2026), 2026 Q1 (25 Jun 2026) and today's 2026 Q2 (18 Aug 2026), with 2026 Q3 (17 Nov 2026) greyed out as not published yet. Each date was read from that edition's own page on dosm.gov.my.
+
+- **Picking an earlier release redraws the app as of that day.** The radar, skill dates, job ranking, plan and forecast weights all use only what was public by then: DOSM quarters published by that day, Epoch AI results settled by it, and forecast weights replayed from the answers public by it. Skill dates are counted from that day. Today's ILO and Anthropic Economic Index scores are used, and DOSM figures are as DOSM publishes them today. A banner says so on every page, with **Back to today**.
+- **What this release changed:** each stop lists what its figures changed against the stop before, with each line's source and date.
+- **How the forecast has learned:** Slow / Medium / Fast bands above the stops show the forecast at each release (also as a table).
+- **Read-only.** The timeline never settles, saves or changes anything. The picked release lives in the browser tab's memory only, so a reload returns to today. Predicting and profile changes are turned off while viewing the past. Engine: `src/src/lib/engine/history.ts` and `viewAsOf` in `view.ts`; API: `GET /api/history`; tests: `src/tests/history.test.ts`.
 
 ---
 
@@ -385,13 +394,13 @@ The date shown is the average of the three futures, weighted by how likely each 
 3. The app keeps three possible **AI futures**—slow, medium, and fast—and adjusts how much weight it gives each one.
 4. **No future drops below 5%**, so no future is ever ruled out.
 5. **Forecasters are scored with the Brier score.** Influence moves to the most accurate ones.
-6. **About 200 simulated forecasters** (always labelled) earned track records by replaying real past releases. Judges and users can make guesses too, and each question shows what a Yes or No would change ("If Yes: data entry expires around Nov 2029").
+6. **About 200 simulated forecasters** (always labelled) earned track records by replaying real past releases. Judges and users can make predictions too, and each question shows what a Yes or No would change ("If Yes: data entry expires around Nov 2029").
 
 ### Being honest about it
 
 - In the replay of real past releases, the market only just beats a coin flip (Brier 0.242 vs 0.25). One quarter's change is hard to call. The market's main job is to **score the futures in public against official numbers**.
 - The crowd's forecasts for open questions are **hashed into the repo before the data comes out** (`src/anchors/`), so nobody, including us, can change them afterwards.
-- Every screen shows "these are estimates, not certainties", and the user can switch between slow, medium and fast to see their dates under each. To disagree with the chances, they guess on an open question, and that guess is scored like everyone else's.
+- Every screen shows "these are estimates, not certainties", and the user can switch between slow, medium and fast to see their dates under each. To disagree with the chances, they make a prediction on an open question, and that prediction is scored like everyone else's.
 - **Points only, never money.** Gambling law, Muslim users and financially vulnerable users all rule out real money.
 
 ---
@@ -489,7 +498,7 @@ The hash log records "advice given", the advisor's ID and a **hash of the note, 
 - **Age, gender and background are never inputs.** Matching accepts only a whitelisted input type (`pickInputs`): skills, months, hours, interests, goals, qualification, field and area.
 - **A test proves it.** The same skills with a different age or gender give exactly the same matches. Another test checks that the user's home state alone never changes their matches.
 - **The check runs live** on the **Trust** page (`/trust`, via `/api/fairness`), along with hash-chain verification and the full list of data sources.
-- **Tamper-evident log.** Every guess, settlement, advice note and badge is added to a hash-chained log. Its fingerprint is committed to this repo (`npm run anchor`).
+- **Tamper-evident log.** Every prediction, settlement, advice note and badge is added to a hash-chained log. Its fingerprint is committed to this repo (`npm run anchor`).
 - **Labelled simulations.** Simulated forecasters and demo personas are always marked as made up. No real CVs or personal data are used.
 
 ![Trust page listing public data sources and labelled synthetic data](src/public/screenshots/fairness-sources.jpg)
