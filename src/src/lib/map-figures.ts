@@ -4,6 +4,10 @@ import type { GroupKey, SectorId } from "@/lib/engine/data";
 import { rampFor, type MapValue, type Measure } from "@/lib/map-scale";
 
 export const rm = (x: number) => `RM ${Math.round(x).toLocaleString()}`;
+// estimates built from two medians: round to the nearest RM 10 so they don't look more exact than they are
+export const rmAbout = (x: number) => rm(Math.round(x / 10) * 10);
+// what is left in a typical month after typical spending, or how far short it falls
+export const leftText = (x: number) => (x >= 0 ? `≈ ${rmAbout(x)} a month` : `≈ ${rmAbout(-x)} short a month`);
 // figures are in thousands; show whole people, rounded to the nearest hundred
 export const people = (thousands: number) => (Math.round(thousands * 10) * 100).toLocaleString();
 const compactPeople = (t: number) => (t >= 10 ? `${Math.round(t)}k` : t >= 1 ? `${t.toFixed(1)}k` : `${Math.round(t * 1000)}`);

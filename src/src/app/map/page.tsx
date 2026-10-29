@@ -10,8 +10,8 @@ import { currentJob, suggestedJobs } from "@/lib/suggested";
 import { MalaysiaMap, MapLegend } from "@/components/MalaysiaMap";
 import { Btn, Card, Chip, More, NextRow, PageTitle, Select, Skeleton, SourceChip } from "@/components/ui";
 import { colourFor, type Measure } from "@/lib/map-scale";
-import { mapFigures, metricOf, people, rm, times } from "@/lib/map-figures";
-import { STATES, compareMove, geo, kindOfWork, occupationOf } from "@/lib/engine/geo";
+import { leftText, mapFigures, metricOf, people, rm, rmAbout, times } from "@/lib/map-figures";
+import { SPENDING, STATES, compareMove, geo, kindOfWork, occupationOf } from "@/lib/engine/geo";
 import { roleById, type GroupKey, type SectorId } from "@/lib/engine/data";
 
 const MEASURES: { id: Measure; label: string; icon: typeof Users }[] = [
@@ -146,12 +146,25 @@ export default function MapPage() {
               <div key={k} className="rounded-2xl bg-raised p-3"><dt className="text-xs text-muted">{k}</dt><dd className="mt-1 text-base sm:text-lg">{v}</dd></div>
             ))}
           </dl>
+          {selRow.leftAfter !== null && selRow.spending !== null ? (
+            <div className="mt-2 rounded-2xl bg-raised p-3">
+              <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
+                <div>
+                  <p className="text-xs text-muted">Left after typical spending (estimate)</p>
+                  <p className="num mt-1 text-base font-medium sm:text-lg">{leftText(selRow.leftAfter)}</p>
+                </div>
+                <p className="num text-xs text-muted">{`${rm(selRow.medianWage)} median pay − ${rm(selRow.spending)} spending per person`}</p>
+              </div>
+              <p className="mt-2 border-t border-line pt-2 text-xs text-muted">{`Spending per person includes children, so one adult living alone usually spends more. Pay: ${STATES[0].wages.year}, all jobs. Spending: ${SPENDING!.year}.`}</p>
+            </div>
+          ) : <p className="mt-2 rounded-2xl bg-raised p-3 text-sm text-muted">Living costs are not included yet.</p>}
           {cmp.from && sel !== home ? (
             <div className="mt-4 text-sm">
               <p className="font-medium">If you moved here from {cmp.from.short}</p>
               <ul className="mt-1.5 space-y-1">
                 <li>{cmp.times! >= 1 ? `${times(cmp.times!)} as many jobs like this` : `${Math.round(cmp.times! * 100)}% as many jobs like this`}</li>
                 <li>Pay {cmp.wageGap! >= 0 ? `${rm(cmp.wageGap!)} higher` : `${rm(-cmp.wageGap!)} lower`} a month</li>
+                {cmp.leftGap !== null && <li>{Math.abs(cmp.leftGap) < 10 ? "About the same left a month after typical spending" : `About ${rmAbout(Math.abs(cmp.leftGap))} ${cmp.leftGap > 0 ? "more" : "less"} left a month after typical spending`}</li>}
                 <li>Unemployment {Math.abs(cmp.uGap!) < 0.05 ? "about the same" : cmp.uGap! < 0 ? `${(-cmp.uGap!).toFixed(1)} points lower` : `${cmp.uGap!.toFixed(1)} points higher`}</li>
               </ul>
               <p className="mt-2 text-xs text-muted">Higher pay often comes with higher rent. Talk a move through with an <Link href="/advisor" className="underline decoration-control underline-offset-2 hover:text-ink">advisor</Link>; Jobbery does not advise on where to live.</p>
@@ -167,24 +180,26 @@ export default function MapPage() {
               <caption className="sr-only">States ranked by the estimated number of people in this kind of work</caption>
               <thead>
                 <tr className="text-left text-xs text-muted">
-                  <th className="py-2 pr-2 font-normal">State</th>
+                  <th className="sticky left-0 z-10 bg-surface py-2 pr-2 font-normal">State</th>
                   <th className="py-2 pr-2 text-right font-normal">Jobs like this</th>
                   <th className="py-2 pr-2 text-right font-normal">Unemployment</th>
-                  <th className="py-2 text-right font-normal">Median pay</th>
+                  <th className="py-2 pr-2 text-right font-normal">Median pay</th>
+                  <th className="py-2 text-right font-normal">Spending per person</th>
                 </tr>
               </thead>
               <tbody>
                 {(showMove ? ranked : ranked.filter((r) => r.id === home)).map((r) => (
                   <tr key={r.id} className={`border-t border-line ${r.id === sel ? "bg-accentsoft" : ""}`}>
-                    <td className="py-2 pr-2">
+                    <td className={`sticky left-0 z-10 py-2 pr-2 ${r.id === sel ? "bg-accentsoft" : "bg-surface"}`}>
                       <button onClick={() => setPicked(r.id)} className="inline-flex min-h-9 items-center gap-2 text-left">
                         <span className="inline-block h-3 w-3 shrink-0 rounded-sm" style={{ background: colourFor(metricOf(r, measure), fig.bins, fig.ramp) }} aria-hidden />
                         {r.short}{r.id === home ? <span className="text-xs text-muted">(you)</span> : null}
                       </button>
                     </td>
-                    <td className="num py-2 pr-2 text-right">≈ {people(r.workers)}</td>
-                    <td className="num py-2 pr-2 text-right">{r.uRate.toFixed(1)}%</td>
-                    <td className="num py-2 text-right">{rm(r.medianWage)}</td>
+                    <td className="num whitespace-nowrap py-2 pr-2 text-right">≈ {people(r.workers)}</td>
+                    <td className="num whitespace-nowrap py-2 pr-2 text-right">{r.uRate.toFixed(1)}%</td>
+                    <td className="num whitespace-nowrap py-2 pr-2 text-right">{rm(r.medianWage)}</td>
+                    <td className="num whitespace-nowrap py-2 text-right">{r.spending === null ? "–" : rm(r.spending)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -193,7 +208,8 @@ export default function MapPage() {
         <More summary="Where these figures come from">
           <p>Malaysia publishes no state figures for single jobs. So &quot;jobs like this&quot; is an estimate: the people working in the industries this job belongs to ({kindOfWork(sector)}){group ? <>, times the share of each state&apos;s workers who are {occupationOf(group).toLowerCase()}</> : null}. Both come from DOSM&apos;s Labour Force Survey {geo.industryYear} tables by state, scaled to each state&apos;s employment in {STATES[0].lfs.quarter.replace("Q", " Q")}. It shows where the work is, not a count of open vacancies.</p>
           <p>Sabah, Sarawak and Labuan are drawn closer to the peninsula than they really are, so every state fits at a readable size. State boundaries: geoBoundaries (OpenStreetMap contributors, ODbL).</p>
-          <div className="flex flex-col gap-1">{geo.sources.map((s) => <SourceChip key={s.id} name={s.name} date={`${s.latest}; ${s.licence}`} url={s.url} />)}</div>
+          {SPENDING ? <p>{`"Spending per person" is DOSM's median monthly household spending per person in ${SPENDING.year}: what a household spends on goods and services, shared across everyone in it, children included. It comes from DOSM's own spreadsheet, not OpenDOSM, so it does not update by itself; it stays at the ${SPENDING.year} edition until the next survey is added. "Left after typical spending" is median pay for all jobs in the state minus that figure. It is a rough guide, not a budget for this job.`}</p> : <p>Living costs are not included yet.</p>}
+          <div className="flex flex-col gap-1">{[...geo.sources, ...(SPENDING ? [SPENDING.source] : [])].map((s) => <SourceChip key={s.id} name={s.name} date={`${s.latest}; ${s.licence}`} url={s.url} />)}</div>
         </More>
       </Card>
       <NextRow back="/jobs" next="/plan" nextLabel="Next: your plan" />
