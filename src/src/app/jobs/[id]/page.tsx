@@ -6,7 +6,7 @@ import { useSpeed } from "@/components/useSpeed";
 import { useSelectJob } from "@/components/useSelectJob";
 import { BriefWhy, Score, WhyThisJob } from "@/components/JobBits";
 import { JobBadge } from "@/components/JobIcon";
-import { GROUP_LABEL, GROUP_PAY, GROUP_PAY_SOURCE, roleById } from "@/lib/engine/data";
+import { GROUP_LABEL, GROUP_PAY, GROUP_PAY_SOURCE, roleById, sourceById } from "@/lib/engine/data";
 import { stateJobs } from "@/lib/engine/geo";
 import { areaName } from "@/lib/engine/geo";
 import { Bar, Btn, Card, Chip, Estimate, H, More, PageTitle, SdgTag, Skeleton, SourceChip } from "@/components/ui";
@@ -78,7 +78,7 @@ export default function JobDetailPage() {
             <p>Job demand: {m.demand.label.toLowerCase()} were {m.demand.recent.toFixed(1)}% of online job ads in {m.demand.latest.replace("Q", " Q")}, against their average for {m.demand.period.replace(/Q/g, " Q")}, adjusted for the few quarters available.</p>
             <p>Job code: O*NET-SOC {m.onet}{m.closest ? " (closest match to this title)" : ""}, as listed in the Anthropic Economic Index.</p>
           </More>
-          <div className="mt-1"><SourceChip name="DOSM Job Market Insights" date={`to ${view.world.asOfQuarter.replace("Q", " Q")}`} url="https://www.dosm.gov.my/portal-main/release-content/big-data-analytics-job-market-insights-q22026" /></div>
+          <div className="mt-1"><SourceChip name="DOSM Job Market Insights" date={`to ${view.world.asOfQuarter.replace("Q", " Q")}`} url={view.world.past?.url ?? sourceById.dosm.url} /></div>
         </Card>
 
         <Card>

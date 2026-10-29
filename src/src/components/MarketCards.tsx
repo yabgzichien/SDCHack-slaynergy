@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Briefcase, Bug, Check, ChevronLeft, ChevronRight, GraduationCap, Lock, Terminal, Timer, X, type LucideIcon } from "lucide-react";
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { EventView, StrikeView } from "@/lib/engine/world";
+import { sourceById } from "@/lib/engine/data";
+import { epochSettleDay } from "@/lib/engine/questions";
 import { Chip } from "./ui";
 
 // Market cards: each question is one event with three answers (easier to harder), each with its own
@@ -48,11 +50,17 @@ function OptionRow({ s, i, compact }: { s: StrikeView; i: number; compact?: bool
   );
 }
 
-// A pulsing green dot: this question is still open for predictions.
-export function LiveBadge() {
+// "Open · answer in N days": this question is still open, and when its answer comes out. No pulsing "live" signal:
+// the other players are computer-made, so nothing here is live activity.
+const MY_DAY = () => new Date(Date.now() + 8 * 3600_000).toISOString().slice(0, 10); // Malaysian calendar day
+export const answerDay = (e: Pick<EventView, "id" | "quarter">): string | null => (e.id.startsWith("dosm") ? sourceById.dosm?.next ?? null : epochSettleDay(e.quarter));
+export function OpenBadge({ event }: { event?: Pick<EventView, "id" | "quarter"> }) {
+  const day = event ? answerDay(event) : null;
+  const n = day ? Math.max(0, Math.round((Date.parse(day) - Date.parse(MY_DAY())) / 864e5)) : null;
+  const text = n === null ? "Open" : n === 0 ? "Open · answer today" : n === 1 ? "Open · answer in 1 day" : `Open · answer in ${n} days`;
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-risesoft px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-rise">
-      <span className="relative flex size-2" aria-hidden><span className="absolute inline-flex size-full rounded-full bg-rise opacity-60 motion-safe:animate-ping" /><span className="relative inline-flex size-2 rounded-full bg-rise" /></span>Live
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-risesoft px-2.5 py-0.5 text-xs font-bold text-rise">
+      <span className="inline-flex size-2 rounded-full bg-rise" aria-hidden />{text}
     </span>
   );
 }
@@ -69,7 +77,7 @@ export function AnswerStamp({ yes, big }: { yes: boolean; big?: boolean }) {
   );
 }
 
-// One card per question. Open ones are bright with a LIVE badge (amber ring if you have not predicted yet);
+// One card per question. Open ones are bright with an "Open · answer in N days" badge (amber ring if you have not predicted yet);
 // answered ones are grey with the result stamped on, so nobody reads a settled 0% as a live market.
 export function MarketCard({ e }: { e: EventView }) {
   const held = e.strikes.some((s) => s.position.yes > 1e-6 || s.position.no > 1e-6);
@@ -94,7 +102,7 @@ export function MarketCard({ e }: { e: EventView }) {
   return (
     <Link href={href} className={`press flex h-full flex-col rounded-[22px] bg-raised p-5 shadow-[0_1px_3px_rgb(0_0_0/0.06)] hover:bg-surface ${held ? "border border-line" : "ring-2 ring-cue"}`}>
       <div className="flex items-center justify-between gap-2">
-        <LiveBadge />
+        <OpenBadge event={e} />
         {held ? <span className="text-xs font-medium text-rise">You predicted here</span> : <span className="rounded-full bg-cuesoft px-2 py-0.5 text-xs font-semibold text-cueink">Not predicted yet</span>}
       </div>
       <div className="mt-3 flex items-start gap-3">
