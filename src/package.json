@@ -9,7 +9,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:layout": "node node_modules/@playwright/test/cli.js test tests/layout-overflow.spec.ts",
-    "data:build": "tsx scripts/build-series.ts && tsx scripts/build-geo.ts",
+    "data:build": "tsx scripts/build-series.ts && tsx scripts/build-geo.ts && tsx scripts/build-spending.ts",
     "anchor": "node scripts/anchor-log.mjs",
     "anchor:forecasts": "tsx scripts/anchor-forecasts.ts",
     "typecheck": "tsc --noEmit",

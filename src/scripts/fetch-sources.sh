@@ -34,4 +34,9 @@ curl -fsSL https://storage.dosm.gov.my/labour/lfs_annual_2024.pdf -o data/raw/do
 for p in 251 256 257 258; do pdftotext -layout -f $p -l $p data/raw/dosm/lfs_annual_2024.pdf data/raw/dosm/lfs_annual_2024_p$p.txt; done
 node scripts/extract-state-occupation.mjs
 
+# DOSM Household Expenditure Survey Report 2024 (Malaysia & States), released 2025-10-08. "Table 1: Main Statistics"
+# (xlsx); scripts/build-spending.ts reads Table 1.4, median monthly spending per person by state. On dosm.gov.my only,
+# not OpenDOSM, so it is pinned: the server does not refresh it.
+curl -fsSL "https://www.dosm.gov.my/portal-main/release-document-log?release_document_id=17240" -o data/raw/dosm/hes2024_table1.xlsx
+
 echo "Done. Now run: npm run data:build"
