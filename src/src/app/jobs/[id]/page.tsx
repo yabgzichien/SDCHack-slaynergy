@@ -9,8 +9,9 @@ import { JobBadge } from "@/components/JobIcon";
 import { GROUP_LABEL, GROUP_PAY, GROUP_PAY_SOURCE, roleById, sourceById } from "@/lib/engine/data";
 import { stateJobs } from "@/lib/engine/geo";
 import { areaName } from "@/lib/engine/geo";
-import { Bar, Btn, Card, Chip, Estimate, FUTURE_NAME, H, More, PageTitle, SdgTag, Skeleton, SourceChip } from "@/components/ui";
+import { Btn, Card, Chip, Estimate, FUTURE_NAME, H, More, PageTitle, SdgTag, Skeleton, SourceChip } from "@/components/ui";
 import { SpeedBar } from "@/components/SpeedBar";
+import { ScoreBreakdown } from "@/components/ScoreBreakdown";
 
 // One question: why does this job score what it does, and what am I missing?
 export default function JobDetailPage() {
@@ -72,21 +73,11 @@ export default function JobDetailPage() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <H sub="Each part is out of 100. Longer bars help more.">Why this score</H>
-          <ul className="space-y-3">
-            {m.parts.map((p) => (
-              <li key={p.key}>
-                <div className="flex justify-between text-sm"><span>{p.label}</span><span className="num">{Math.round(p.value * 100)}</span></div>
-                <div className="mt-1"><Bar value={p.value} label={`${p.label} ${Math.round(p.value * 100)} out of 100`} /></div>
-              </li>
-            ))}
-          </ul>
-          {m.penalty > 0.001 && <p className="num mt-3 text-sm">Minus {Math.round(m.penalty * 100)} because AI may take over some of its skills soon.</p>}
-          {m.localPenalty > 0.001 && where && <p className="num mt-1 text-sm">Minus {Math.round(m.localPenalty * 100)} because jobs like this are {Math.round((1 - (m.localLq ?? 1)) * 100)}% less common in {where} than across Malaysia (an estimate from DOSM state figures). <Link href="/map" className="underline decoration-control underline-offset-2">See the job map</Link></p>}
-          {m.sdgMatch && <p className="num mt-1 text-sm">Plus 12 because it serves a goal you picked.</p>}
+          <ScoreBreakdown roleId={m.roleId} speed={speed} version={`${Math.round(m.score * 1000)}:${state.profile?.hoursPerWeek}:${state.profile?.skills.length}`} />
+          {m.localPenalty > 0.001 && where && <p className="num mt-3 text-sm">Few jobs like this nearby: they are {Math.round((1 - (m.localLq ?? 1)) * 100)}% less common in {where} than across Malaysia (an estimate from DOSM state figures). <Link href="/map" className="underline decoration-control underline-offset-2">See the job map</Link></p>}
           <p className="mt-3 text-sm">Job ads for work like this are {Math.abs(m.demand.trend) < 0.03 ? "steady" : m.demand.trend > 0 ? `up ${Math.abs(m.demand.trend * 100).toFixed(0)}%` : `down ${Math.abs(m.demand.trend * 100).toFixed(0)}%`} compared with earlier in the year.</p>
           <More>
-            <p>The score adds up the parts above, weighted: {m.parts.map((p) => `${p.label.toLowerCase()} ${Math.round(p.weight * 100)}%`).join(", ")}.</p>
+            <p>Each part is scored out of 100, then weighted: {m.parts.map((p) => `${p.label.toLowerCase()} ${Math.round(p.weight * 100)}%`).join(", ")}. The points above are those weighted parts.</p>
             <p>Job demand: {m.demand.label.toLowerCase()} were {m.demand.recent.toFixed(1)}% of online job ads in {m.demand.latest.replace("Q", " Q")}, against their average for {m.demand.period.replace(/Q/g, " Q")}, adjusted for the few quarters available.</p>
             <p>Job code: O*NET-SOC {m.onet}{m.closest ? " (closest match to this title)" : ""}, as listed in the Anthropic Economic Index.</p>
           </More>

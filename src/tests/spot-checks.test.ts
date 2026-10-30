@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { courses, personas, roles } from "@/lib/engine/data";
-import { computeView } from "@/lib/engine/view";
+import { computeView, raiseView } from "@/lib/engine/view";
 import { personaState } from "@/lib/engine/review";
 import { pathContribution, HRD_NOTE } from "@/lib/engine/plan";
 import { roundToTotal } from "@/lib/engine/math";
@@ -72,5 +72,55 @@ describe("path contribution (T10)", () => {
       return;
     }
     throw new Error("no persona has a swappable course with different hours");
+  });
+});
+
+describe("what would raise this score (T8)", () => {
+  it("shows the score as points that add up exactly to the score shown, under Our forecast and every AI speed", () => {
+    for (const p of personas) {
+      const st = { ...personaState(p.id)!, clock: now() };
+      const v = computeView(st);
+      for (const m of v.matches.slice(0, 5)) {
+        const r = raiseView(st, m.roleId)!;
+        expect(r.forecast.total).toBe(Math.round(m.score * 100));
+        expect(r.forecast.lines.reduce((a, l) => a + l.points, 0)).toBe(r.forecast.total);
+        for (const s of v.scenarios!) expect(r[s.id].total).toBe(Math.round(s.roles[m.roleId].score * 100));
+      }
+    }
+  });
+
+  it("predicts exactly the score you get after learning the top skill or adding hours", () => {
+    const st = { ...personaState("hafiz")!, clock: now() };
+    const v = computeView(st);
+    const m = v.chosen!;
+    const r = raiseView(st, m.roleId)!.forecast;
+    const skill = r.raisers.find((x) => x.kind === "skill")!;
+    expect(skill.points).toBeGreaterThan(0);
+    const learnt = computeView({ ...st, profile: { ...st.profile!, skills: [...st.profile!.skills, skill.skillId!] } });
+    expect(Math.round(learnt.matches.find((x) => x.roleId === m.roleId)!.score * 100)).toBe(r.total + skill.points);
+    const hours = r.raisers.find((x) => x.kind === "hours");
+    if (hours) {
+      const more = computeView({ ...st, profile: { ...st.profile!, hoursPerWeek: hours.hoursPerWeek! } });
+      expect(Math.round(more.matches.find((x) => x.roleId === m.roleId)!.score * 100)).toBe(r.total + hours.points);
+    }
+    // Ordered biggest first, and every raiser adds something.
+    expect(r.raisers.every((x, i) => x.points > 0 && (i === 0 || r.raisers[i - 1].points >= x.points))).toBe(true);
+  });
+});
+
+describe("score raisers only move the parts a change touches", () => {
+  it("learning a skill never changes the interest or outlook parts, and the part changes add up to the points", () => {
+    for (const p of personas) {
+      const st = { ...personaState(p.id)!, clock: now() };
+      const v = computeView(st);
+      for (const m of v.matches.slice(0, 5)) {
+        for (const r of raiseView(st, m.roleId)!.forecast.raisers) {
+          expect(Object.values(r.parts).reduce((a, b) => a + b, 0)).toBe(r.points);
+          expect(r.parts.interest ?? 0).toBe(0);
+          expect(r.parts.outlook ?? 0).toBe(0);
+          if (r.kind === "hours") expect(Object.keys(r.parts).every((k) => k === "reach")).toBe(true);
+        }
+      }
+    }
   });
 });

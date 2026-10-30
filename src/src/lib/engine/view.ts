@@ -4,7 +4,7 @@ import { computeWorld, type World } from "./world";
 import { expiryFor, durability, fmtYear, nowYear, withNow, THRESHOLD, type SkillExpiry } from "./expiry";
 import type { Weights3 } from "./futures";
 import { areaFor } from "./geo";
-import { matchRoles, pickInputs, demandFor, tradeoff, AT_RISK_BELOW, PROJECT_QUARTERS, type MatchInput, type RoleMatch } from "./matching";
+import { matchRoles, pickInputs, demandFor, tradeoff, raisersFor, AT_RISK_BELOW, PROJECT_QUARTERS, type MatchInput, type RoleMatch } from "./matching";
 import { buildPlan, buildReshapePlan, LEARNING_TARGET, type Plan } from "./plan";
 import { FUTURES, FUTURE_IDS, type FutureId } from "./futures-def";
 import { FORECAST } from "../speed";
@@ -210,6 +210,32 @@ export function scenarioMatches(input: MatchInput, asOf: string, weeksOf: (roleI
   });
 }
 
+// The matching inputs for a session's profile: the same everywhere a job is scored (views, score raisers).
+export function matchInputFor(state: SessionState): MatchInput | null {
+  const p = state.profile;
+  if (!p) return null;
+  const occ = occupationById[p.occupationId];
+  const study = p.study !== undefined ? p.study : EDUCATION_RANK[p.education] >= 1 ? occ?.sector : null;
+  return pickInputs({ skills: p.skills, months: p.months, hoursPerWeek: p.hoursPerWeek, interests: p.interests, goals: state.goals, education: p.education, field: occ?.sector, study, area: areaFor(p.state, p.move, p.moveTo) });
+}
+
+// Why a job scores what it does and what would raise it, under Our forecast and under each AI speed taken as certain
+// (the same weights and office-admin projection as scenarioMatches), so the job page follows the speed picker.
+export function raiseView(state: SessionState, roleId: string, nowMs?: number): Record<string, NonNullable<ReturnType<typeof raisersFor>>> | null {
+  const input = matchInputFor(state);
+  if (!input) return null;
+  const world = computeWorld(state, nowMs);
+  const out: Record<string, NonNullable<ReturnType<typeof raisersFor>>> = {};
+  const f = raisersFor(input, world.weights, world.asOfQuarter, roleId);
+  if (!f) return null;
+  out[FORECAST] = f;
+  for (const s of FUTURES) {
+    const r = raisersFor(input, { slow: 0, medium: 0, fast: 0, [s.id]: 1 } as Weights3, world.asOfQuarter, roleId, s.clericalDriftPp * PROJECT_QUARTERS);
+    if (r) out[s.id] = r;
+  }
+  return out;
+}
+
 function viewFrom(state: SessionState, world: World, withScenarios = true): View {
   const radar = radarFor(world);
   const p = state.profile;
@@ -225,8 +251,7 @@ function viewFrom(state: SessionState, world: World, withScenarios = true): View
   let scenarios: ScenarioView[] | null = null;
   if (p) {
     const occ = occupationById[p.occupationId];
-    const study = p.study !== undefined ? p.study : EDUCATION_RANK[p.education] >= 1 ? occ?.sector : null;
-    const input = pickInputs({ skills: p.skills, months: p.months, hoursPerWeek: p.hoursPerWeek, interests: p.interests, goals: state.goals, education: p.education, field: occ?.sector, study, area: areaFor(p.state, p.move, p.moveTo) });
+    const input = matchInputFor(state)!;
     const all = matchRoles(input, wt, world.asOfQuarter);
     const reachable = all.filter((m) => m.reachable);
     // Show the length of the plan the person would actually follow, so the Jobs page and the Plan page agree.
