@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { courses, personas, roles } from "@/lib/engine/data";
-import { computeView, raiseView } from "@/lib/engine/view";
+import { computeView, raiseView, viewAsOf } from "@/lib/engine/view";
+import { historyStops } from "@/lib/engine/history";
 import { personaState } from "@/lib/engine/review";
 import { pathContribution, HRD_NOTE } from "@/lib/engine/plan";
 import { roundToTotal } from "@/lib/engine/math";
@@ -122,5 +123,30 @@ describe("score raisers only move the parts a change touches", () => {
         }
       }
     }
+  });
+});
+
+describe("Future Skills Radar (T11)", () => {
+  it("follows the release picker: the lists change across releases, and each row's numbers change one release back", () => {
+    const st = { ...personaState("hafiz")!, clock: now() };
+    const today = computeView(st).radar;
+    const pastStops = historyStops().filter((s) => !s.today);
+    const radars = pastStops.map((s) => viewAsOf(st, s.q).radar);
+    const ids = (xs: { roleId?: string; occupationId?: string }[]) => xs.map((x) => x.roleId ?? x.occupationId).join();
+    // Some past release has a different good-jobs list and a different at-risk list from today.
+    expect(radars.some((r) => ids(r.risingJobs) !== ids(today.risingJobs))).toBe(true);
+    expect(radars.some((r) => ids(r.decliningJobs) !== ids(today.decliningJobs))).toBe(true);
+    // One release back, the same jobs can stay on the lists, but the DOSM figures on their rows move.
+    const before = radars.at(-1)!;
+    expect(before.cite.dosm).not.toBe(today.cite.dosm);
+    expect(before.decliningJobs.map((j) => j.trend).join()).not.toBe(today.decliningJobs.map((j) => j.trend).join());
+  });
+
+  it("ranks at-risk jobs mostly by AI exposure, and every row carries its numbers", () => {
+    const r = computeView({ ...personaState("hafiz")!, clock: now() }).radar;
+    expect(r.decliningJobs).toHaveLength(6);
+    expect(r.decliningJobs[0].exposure).toBeGreaterThan(0.4);
+    for (const j of r.decliningJobs) expect(j.exposure).toBeGreaterThan(0);
+    expect(r.cite).toEqual({ dosm: expect.stringMatching(/^DOSM \d{4} Q\d$/), ilo: "ILO 2025", aei: expect.stringMatching(/^AEI \d{4}-\d{2}-\d{2}$/) });
   });
 });

@@ -9,6 +9,12 @@ import { Card, H, SdgTag, Skeleton, SourceChip } from "@/components/ui";
 import { SourceDisclosure } from "@/components/SourceDisclosure";
 import { ReleasePicker } from "@/components/History";
 
+// Each row's number and where it came from, so every line of the Future Skills Radar carries its source and date.
+function Cite({ children }: { children: string }) {
+  return <span className="num mt-0.5 block text-[11px] leading-snug text-muted">{children}</span>;
+}
+const ads = (trend: number) => (Math.abs(trend) < 0.03 ? "steady" : `${trend > 0 ? "▲" : "▼"}${Math.round(Math.abs(trend) * 100)}%`);
+
 // One question: what is changing in the job market? Written for someone who has never read a chart like this.
 export default function TrendsPage() {
   const { view, history } = useApp();
@@ -51,6 +57,7 @@ export default function TrendsPage() {
   return (
     <div className="statistics-page" ref={pageRef}>
       <header className="statistics-hero statistics-reveal">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-accentink">Future Skills Radar</p>
         <h1 className="statistics-hero-title"><span className="statistics-headline-highlight">How AI is changing jobs in Malaysia</span></h1>
         <div className="statistics-hero-banner">
           <span className="statistics-hero-icon" aria-hidden="true"><ChartNoAxesColumnIncreasing size={30} strokeWidth={3} /></span>
@@ -75,7 +82,7 @@ export default function TrendsPage() {
           <ul className="space-y-1.5">
             {r.risingJobs.slice(0, 6).map((j) => (
               <li key={j.roleId} className="flex items-center justify-between gap-2 rounded-2xl bg-raised px-4 py-2.5">
-                <div className="min-w-0"><p className="text-sm font-medium">{j.title}</p><p className="num text-xs text-muted">Job type: {j.group}</p></div>
+                <div className="min-w-0"><p className="text-sm font-medium">{j.title}</p><p className="num text-xs text-muted">Job type: {j.group}</p><Cite>{`Ads ${ads(j.trend)} · ${r.cite.dosm}`}</Cite></div>
                 <SdgTag target={j.sdgTarget} />
               </li>
             ))}
@@ -89,7 +96,7 @@ export default function TrendsPage() {
           <ul className="space-y-1.5">
             {r.decliningJobs.map((j) => (
               <li key={j.occupationId} className="flex items-center justify-between gap-2 rounded-2xl bg-raised px-4 py-2.5">
-                <div className="min-w-0"><p className="text-sm font-medium">{j.title}</p><p className="num text-xs text-muted">AI can do {j.exposure >= 0.45 ? "a lot" : j.exposure >= 0.3 ? "some" : "a little"} of this job</p></div>
+                <div className="min-w-0"><p className="text-sm font-medium">{j.title}</p><p className="num text-xs text-muted">AI can do {j.exposure >= 0.45 ? "a lot" : j.exposure >= 0.3 ? "some" : "a little"} of this job</p><Cite>{`AI exposure ${j.exposure.toFixed(2)} · ${r.cite.ilo}${j.trend !== null ? ` · ads ${ads(j.trend)} · ${r.cite.dosm}` : ""}`}</Cite></div>
                 <p className="num shrink-0 text-xs text-fall">starts changing {j.earliest}</p>
               </li>
             ))}
@@ -100,14 +107,14 @@ export default function TrendsPage() {
             <H sub="Employers want these and AI cannot easily do them.">Skills worth learning</H>
             <Image src="/cockatiel-reading.png" alt="" width={96} height={96} className="statistics-opportunities-bird" />
           </div>
-          <ul className="space-y-1 text-sm">{r.rising.map((s) => <li key={s.skillId} className="flex justify-between gap-2"><span>{s.name}</span><SdgTag target={s.sdgTarget} /></li>)}</ul>
+          <ul className="space-y-1.5 text-sm">{r.rising.map((s) => <li key={s.skillId} className="flex items-start justify-between gap-2"><span className="min-w-0">{s.name}<Cite>{`${s.durable ? "Safe past 2040" : `AI could do most of it by ${s.byFuture[speed]}`} · ${r.cite.ilo}, ${r.cite.aei} · ${r.cite.dosm}`}</Cite></span><SdgTag target={s.sdgTarget} /></li>)}</ul>
         </Card>
         <Card className="statistics-reveal">
           <div className="statistics-opportunities-heading statistics-fading-heading">
             <H sub="The date AI is expected to do most of this work.">Skills AI will take over first</H>
             <Image src="/cockatiel-sunglasses.png" alt="" width={96} height={96} className="statistics-opportunities-bird" />
           </div>
-          <ul className="space-y-1 text-sm">{r.declining.map((s) => <li key={s.skillId} className="flex justify-between gap-2"><span>{s.name}</span><span className="num text-fall">{s.byFuture[speed]}</span></li>)}</ul>
+          <ul className="space-y-1.5 text-sm">{r.declining.map((s) => <li key={s.skillId} className="flex items-start justify-between gap-2"><span className="min-w-0">{s.name}<Cite>{`${r.cite.ilo}, ${r.cite.aei}`}</Cite></span><span className="num shrink-0 text-fall">{s.byFuture[speed]}</span></li>)}</ul>
         </Card>
       </div>
       <div className="statistics-reveal"><SourceDisclosure>{r.sources.map((s) => <SourceChip key={s.name} name={s.name} date={s.date} url={s.url} />)}</SourceDisclosure></div>

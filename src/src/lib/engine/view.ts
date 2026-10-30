@@ -1,4 +1,4 @@
-import { skills, skillById, roles, roleById, occupations, occupationById, series, sdg, sourceById, SECTORS, INTERESTS, EDUCATION_LABEL, EDUCATION_RANK, quarterIndex, prevQuarter, type SectorId } from "./data";
+import { skills, skillById, roles, roleById, occupations, occupationById, series, sdg, sourceById, SECTORS, INTERESTS, EDUCATION_LABEL, EDUCATION_RANK, quarterIndex, prevQuarter, type SectorId, type GroupKey } from "./data";
 import { isoDay, ladder, LIVE_QUARTER, makeQuestions, quarterPlain } from "./questions";
 import { computeWorld, type World } from "./world";
 import { expiryFor, durability, fmtYear, nowYear, withNow, THRESHOLD, type SkillExpiry } from "./expiry";
@@ -9,7 +9,7 @@ import { buildPlan, buildReshapePlan, LEARNING_TARGET, type Plan } from "./plan"
 import { FUTURES, FUTURE_IDS, type FutureId } from "./futures-def";
 import { FORECAST } from "../speed";
 import { STAY_ID, type SessionState } from "./state";
-import { mean } from "./math";
+import { clamp, mean } from "./math";
 import { dosmQuarterAt, epochQuarterAt, historyStops, scoresAt, settleDay, yearOf, type Stop } from "./history";
 import { futureWeights } from "./futures";
 import { zeroScores } from "./replay";
@@ -23,8 +23,11 @@ export type RadarSkill = {
 export type RadarJob = { roleId: string; title: string; trend: number; share: number; group: string; outlook: number; sdgTarget: string };
 export type Radar = {
   declining: RadarSkill[]; rising: (RadarSkill & { demand: number })[];
-  risingJobs: RadarJob[]; decliningJobs: { occupationId: string; title: string; exposure: number; gradient: string | null; earliest: string }[];
+  // trend: the job group's DOSM ads trend (null for groups DOSM does not split out).
+  risingJobs: RadarJob[]; decliningJobs: { occupationId: string; title: string; exposure: number; gradient: string | null; earliest: string; trend: number | null }[];
   sources: { name: string; detail: string; url: string; date: string }[];
+  // Short source labels for each row's chip (Future Skills Radar: every row shows its source and date).
+  cite: { dosm: string; ilo: string; aei: string };
 };
 export type Change = { kind: "futures" | "market" | "skills" | "jobs" | "plan" | "demand" | "forecasters"; text: string; why: string; source: { name: string; url: string; date: string } };
 
@@ -134,6 +137,10 @@ const eview = (e: SkillExpiry): SkillExpiryView => ({
   byFuture: dates(e), byFutureYear: years(e),
 });
 
+// ISCO-08 major group (first digit) to DOSM's job-ad groups; groups DOSM does not split out have no ads trend.
+const ISCO_GROUP: Record<string, GroupKey> = { "1": "managers", "2": "professionals", "3": "technicians", "4": "clerical", "5": "service", "7": "craft", "8": "operators" };
+export const AT_RISK_EXPOSURE = 0.7;
+
 function radarFor(w: World): Radar {
   const wt = w.weights;
   const all = skills.map((s) => {
@@ -168,17 +175,25 @@ function radarFor(w: World): Radar {
     })
     .sort((a, b) => b.k - a.k).slice(0, 8).map((x) => ({ roleId: x.roleId, title: x.title, trend: x.trend, share: x.share, group: x.group, outlook: x.outlook, sdgTarget: x.sdgTarget }));
 
+  // Jobs most at risk: mostly how much of the work AI can do (ILO), plus whether job ads for the group are falling (DOSM),
+  // so the list moves with each release (docs/adr/0003). The ads part uses the same 0.5-is-steady scale as job demand.
+  const exposures = occupations.map((o) => series.ilo[o.isco]?.score ?? 0);
+  const maxExposure = Math.max(...exposures, 1e-9);
   const decliningJobs = occupations
-    .map((o) => {
+    .map((o, i) => {
       const ilo = series.ilo[o.isco];
       const earliest = Math.min(...o.skills.map((s) => expiryFor(s, wt).expected));
-      return { occupationId: o.id, title: o.title, exposure: ilo?.score ?? 0, gradient: ilo?.gradient ?? null, earliest: fmtYear(earliest), e: earliest };
+      const group = ISCO_GROUP[o.isco[0]];
+      const trend = group ? demandFor(group, w.asOfQuarter).trend : null;
+      const falling = trend === null ? 0.5 : clamp(0.5 - 1.25 * trend, 0, 1);
+      return { occupationId: o.id, title: o.title, exposure: ilo?.score ?? 0, gradient: ilo?.gradient ?? null, earliest: fmtYear(earliest), trend, k: AT_RISK_EXPOSURE * (exposures[i] / maxExposure) + (1 - AT_RISK_EXPOSURE) * falling };
     })
-    .sort((a, b) => b.exposure - a.exposure).slice(0, 6).map((x) => ({ occupationId: x.occupationId, title: x.title, exposure: x.exposure, gradient: x.gradient, earliest: x.earliest }));
+    .sort((a, b) => b.k - a.k || a.occupationId.localeCompare(b.occupationId)).slice(0, 6).map((x) => ({ occupationId: x.occupationId, title: x.title, exposure: x.exposure, gradient: x.gradient, earliest: x.earliest, trend: x.trend }));
 
   const dosm = sourceById.dosm, ilo = sourceById.ilo, aei = sourceById.aei, ep = sourceById.epoch;
   return {
     declining, rising, risingJobs, decliningJobs,
+    cite: { dosm: `DOSM ${w.asOfQuarter.replace("Q", " Q")}`, ilo: `ILO ${ilo.latest.split(" ")[0]}`, aei: `AEI ${aei.latest.split(" ")[0]}` },
     sources: [
       { name: "ILO 2025 GenAI exposure (ISCO-08)", detail: "How exposed each occupation's tasks are to generative AI", url: ilo.url, date: `scores ${ilo.latest}; retrieved ${ilo.retrieved}` },
       { name: "Anthropic Economic Index", detail: "Share of an occupation's tasks seen in real AI use", url: aei.url, date: `release ${aei.latest.split(" ")[0]}; retrieved ${aei.retrieved}` },
