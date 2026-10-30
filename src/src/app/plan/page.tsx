@@ -6,8 +6,9 @@ import { Btn, Card, Chip, FUTURE_COLOR, FUTURE_NAME, H, PageTitle, SdgTag, Skele
 import { useSpeed } from "@/components/useSpeed";
 import { useSelectJob } from "@/components/useSelectJob";
 import type { View } from "@/lib/engine/view";
+import type { Plan } from "@/lib/engine/plan";
 import { SdgIcon } from "@/components/SdgIcon";
-import { roleById, sdg as SDG_TARGETS } from "@/lib/engine/data";
+import { sdg as SDG_TARGETS } from "@/lib/engine/data";
 import { activityHref, BadgePanel, BadgeShelf, Portfolio } from "@/components/Pathway";
 import { AdvisorCard } from "@/components/Meetings";
 import { STRAND_STYLE } from "@/components/strands";
@@ -23,9 +24,6 @@ export default function PlanPage() {
   const prog = view.pathway.done;
   const next = plan.steps.find((s) => !prog[s.id]) ?? null;
   const done = plan.steps.filter((s) => prog[s.id]).length;
-  // The plan's goals plus the new job's own goal, so every goal the plan serves gets a tile.
-  const jobTarget = roleById[plan.roleId]?.sdg.target;
-  const targets = [...new Set([...(jobTarget ? [jobTarget] : []), ...plan.summary.layer1])];
 
   return (
     <div className="plan-page">
@@ -129,33 +127,71 @@ export default function PlanPage() {
           <BadgePanel />
         </Card>
         <Card className="lg:col-span-4" tone="accent">
-          <H>How this plan helps the UN goals</H>
-          <ul className="space-y-3">
-            {[...new Set(targets.map((t) => t.split(".")[0]))].map((g) => (
-              <li key={g} className="rounded-2xl bg-raised p-4">
-                <div className="flex items-center gap-4">
-                  <SdgIcon goal={Number(g)} size={76} />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-lg font-bold leading-tight">UN goal {g}: {sdgName(`${g}.1`)}</p>
-                    <details className="group mt-2">
-                      <summary className="press inline-flex min-h-9 cursor-pointer list-none items-center gap-1.5 rounded-full bg-cuesoft px-3 py-1 text-sm font-semibold text-cueink hover:bg-primary [&::-webkit-details-marker]:hidden">
-                        <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden className="transition-transform group-open:rotate-90"><path d="M5 3.5 8.5 7 5 10.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                        See why
-                      </summary>
-                      <div className="mt-3 space-y-2 text-sm text-muted">
-                        {targets.filter((t) => t.split(".")[0] === g).map((t) => <p key={t}><span className="num font-semibold text-ink">Target {t}.</span> {SDG_TARGETS[t]?.text}</p>)}
-                      </div>
-                    </details>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-2"><SourceChip name="UN SDG targets" date="official text" url="https://sdgs.un.org/goals" /></div>
+          <SdgPath plan={plan} />
         </Card>
       </div>
 
     </div>
+  );
+}
+
+// The plan's hours added up by the UN target of each skill it teaches, plus the target the new job serves
+// (docs/adr/0003). Every number here adds up to the plan's total hours.
+function SdgPath({ plan }: { plan: Plan }) {
+  const p = plan.summary.path;
+  const goals = [...new Set([...(p.jobTarget ? [p.jobTarget] : []), ...p.byTarget.map((x) => x.target)].map((t) => t.split(".")[0]))];
+  const goalHours = (g: string) => p.byTarget.filter((x) => x.target.split(".")[0] === g).reduce((a, x) => a + x.hours, 0);
+  goals.sort((a, b) => goalHours(b) - goalHours(a));
+  const free = p.courseHours ? Math.round((p.freeCourseHours / p.courseHours) * 100) : null;
+  const learnGoal = p.learningTarget.split(".")[0];
+  return (
+    <>
+      <H sub={`${p.total} hours in your plan, counted by the UN target each skill serves.`}>How this plan helps the UN goals</H>
+      {free !== null && <p className="num mb-3 text-sm font-medium">{free}% of the course hours are free ({Math.round(p.freeCourseHours)} of {Math.round(p.courseHours)} hours).</p>}
+      <ul className="space-y-3">
+        {p.learningHours > 0 && !goals.includes(learnGoal) && (
+          <li className="rounded-2xl bg-raised p-4">
+            <div className="flex items-center gap-4">
+              <SdgIcon goal={Number(learnGoal)} size={76} />
+              <div className="min-w-0 flex-1">
+                <p className="text-lg font-bold leading-tight">UN goal {learnGoal}: {sdgName(p.learningTarget)}</p>
+                <p className="num mt-1 text-sm">{p.learningHours} hours of learning count toward target {p.learningTarget}, skills for work.</p>
+                <p className="mt-1 text-xs text-muted">Counted separately: these are the same hours as below, seen as learning.</p>
+              </div>
+            </div>
+          </li>
+        )}
+        {goals.map((g) => {
+          const ts = p.byTarget.filter((x) => x.target.split(".")[0] === g);
+          const job = p.jobTarget?.split(".")[0] === g ? p.jobTarget : null;
+          return (
+            <li key={g} className="rounded-2xl bg-raised p-4">
+              <div className="flex items-center gap-4">
+                <SdgIcon goal={Number(g)} size={76} />
+                <div className="min-w-0 flex-1">
+                  <p className="text-lg font-bold leading-tight">UN goal {g}: {sdgName(`${g}.1`)}</p>
+                  <p className="num mt-1 text-sm">{goalHours(g) ? `${goalHours(g)} hours of your plan` : "Served by your new job"}{goalHours(g) && job ? " · and your new job" : ""}</p>
+                  {g === learnGoal && p.learningHours > 0 && <p className="num mt-1 text-sm">{p.learningHours} hours of learning count toward target {p.learningTarget}, skills for work.</p>}
+                  <details className="group mt-2">
+                    <summary className="press inline-flex min-h-9 cursor-pointer list-none items-center gap-1.5 rounded-full bg-cuesoft px-3 py-1 text-sm font-semibold text-cueink hover:bg-primary [&::-webkit-details-marker]:hidden">
+                      <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden className="transition-transform group-open:rotate-90"><path d="M5 3.5 8.5 7 5 10.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                      See why
+                    </summary>
+                    <div className="mt-3 space-y-2 text-sm text-muted">
+                      {ts.map((x) => <p key={x.target}><span className="num font-semibold text-ink">Target {x.target}, {x.hours} hours.</span> {SDG_TARGETS[x.target]?.text}</p>)}
+                      {job && !ts.some((x) => x.target === job) && <p><span className="num font-semibold text-ink">Target {job}, your new job.</span> {SDG_TARGETS[job]?.text}</p>}
+                    </div>
+                  </details>
+                </div>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+      {p.untagged > 0 && <p className="num mt-3 text-sm text-muted">{p.untagged} hours of work on the job are not tied to one target.</p>}
+      <p className="mt-2 text-xs text-muted">A step that teaches several skills splits its hours evenly between them.</p>
+      <div className="mt-2"><SourceChip name="UN SDG targets" date="official text" url="https://sdgs.un.org/goals" /></div>
+    </>
   );
 }
 

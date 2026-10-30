@@ -5,7 +5,7 @@ import { expiryFor, durability, fmtYear, nowYear, withNow, THRESHOLD, type Skill
 import type { Weights3 } from "./futures";
 import { areaFor } from "./geo";
 import { matchRoles, pickInputs, demandFor, tradeoff, AT_RISK_BELOW, PROJECT_QUARTERS, type MatchInput, type RoleMatch } from "./matching";
-import { buildPlan, buildReshapePlan, type Plan } from "./plan";
+import { buildPlan, buildReshapePlan, LEARNING_TARGET, type Plan } from "./plan";
 import { FUTURES, FUTURE_IDS, type FutureId } from "./futures-def";
 import { FORECAST } from "../speed";
 import { STAY_ID, type SessionState } from "./state";
@@ -270,7 +270,7 @@ function viewFrom(state: SessionState, world: World, withScenarios = true): View
     }
   }
   const targets = new Set<string>();
-  if (plan) { plan.summary.layer1.forEach((t) => targets.add(t)); if (chosen) targets.add(chosen.sdgTarget); }
+  if (plan) { if (plan.summary.path.learningHours) targets.add(LEARNING_TARGET); plan.summary.path.byTarget.forEach((x) => targets.add(x.target)); if (chosen) targets.add(chosen.sdgTarget); }
   const sdgSummary = [...targets].map((t) => ({ target: t, goal: sdg[t].goal, text: sdg[t].text }));
   // While viewing the past, DOSM and Epoch AI say what was public that day instead of today's latest.
   const pastDetail = (id: string) => !world.past ? null : id === "dosm" ? `${world.asOfQuarter} (published ${world.past.day})` : id === "epoch" ? `results to ${(world.epochQuarter ?? world.asOfQuarter).replace("Q", " Q")}` : null;
