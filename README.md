@@ -157,7 +157,7 @@ All data is public or synthetic. Every source is a **dated snapshot** saved in t
 | **DOSM Household Expenditure Survey 2024** (released 8 Oct 2025, Table 1.4) | Median monthly spending per person, by state | Living costs on the job map ("left after typical spending") |
 | **geoBoundaries** (OpenStreetMap, ODbL) | State boundaries | Drawing the map |
 | **UN SDG target text** (sdgs.un.org) | Official wording of each target | SDG tags |
-| **Course list** (97 hand-checked courses, each with a checked date and link status) | Khan Academy, Microsoft Learn, Coursera, Kaggle, freeCodeCamp, HRD Corp, PERKESO and others | The reskilling plan |
+| **Course list** (96 courses, every link opened in a browser on 30 Oct 2026, each with a checked date and link status) | Khan Academy, Microsoft Learn, Coursera, Kaggle, freeCodeCamp, HRD Corp, PERKESO and others | The reskilling plan |
 | **Synthetic** | Demo personas and about 200 simulated forecasters | Demo only, always labelled |
 
 ### How it gets into the app
@@ -186,6 +186,8 @@ This is the part that tracks AI progress and turns it into skill and job signals
 | **Adoption:** how much AI is actually used for a task | Anthropic Economic Index task coverage | Feeds each skill's expiry date |
 | **Exposure:** how much of an occupation's work AI could do | ILO 2025 exposure scores | Bands: "AI can do a lot / some / little of this work" |
 | **Hiring:** which job groups are hired more or less | DOSM online job ads, by quarter | Office admin share of ads; demand per job group |
+
+On **Statistics**, these lists form the **Future Skills Radar**: good jobs to aim for, jobs most at risk, skills worth learning and skills AI will take over first. Every row shows its number with its source and date, for example "AI exposure 0.70 · ILO 2025 · ads ▼4% · DOSM 2026 Q2". Jobs most at risk are sorted 70% by AI exposure (ILO) and 30% by falling job ads for their group (DOSM), so the list follows the release picker. If an automatic check of DOSM, Epoch AI or OpenDOSM fails, Statistics and Sources say which one and name the last good figures being shown.
 
 These four signals combine into a **skill expiry date**: the year AI is expected to do most of the work behind a skill *and* be in common use for it (see [section 8](#8-handling-uncertainty-how-the-forecasting-works)).
 
@@ -252,6 +254,8 @@ Adjustments:
 - **Few jobs nearby:** if the user says where they can work, a role that is scarce there loses up to 6 points. It is moved down, never hidden.
 - **SDG goal bonus:** +12 points if the role serves a goal the user picked.
 
+**Why this score, and what would raise it.** The job page shows each part as points out of its weight (for example "Skill overlap 13 of 25"), then the adjustments, rounded so the lines add up exactly to the score shown. Below, **What would raise it** lists each missing skill and two more hours a week, with the points each would add, for example "Learn procurement and vendor management: +12 points · Alison, 4 hours". The engine works each one out again, so learning that skill gives exactly the predicted score (tested). The points follow the AI speed picker and say which speed they assume. Pointing at a raiser draws its points as a faint striped extension on the bars it would move.
+
 ### Which roles are ranked
 
 - **Only reachable roles are ranked.** Reachable means the plan's weeks fit within the user's deadline (months × 4.345, minus 2 weeks of slack).
@@ -298,10 +302,12 @@ The plan is built from the chosen role's skills gap, the user's **hours per week
 
 1. Take the missing skills.
 2. Pick the hand-checked free course that covers the most missing skills per hour.
-3. Repeat until every skill is covered. A skill with no checked course gets a 20-hour HRD Corp e-LATiH placeholder, clearly marked. Jobbery never invents a course.
+3. Repeat until every skill is covered. A skill with no checked course would get a 20-hour HRD Corp e-LATiH placeholder, clearly marked; today every skill has a real course, and a test fails if one ever does not. Jobbery never invents a course.
 4. **Weeks for a step = course hours ÷ hours per week**, rounded up. Steps run one after another, so the plan shows real calendar weeks.
 
 The user can **swap a course** for another one that covers the same skills, where one exists.
+
+**HRD Corp.** Only employers that pay the HRD Corp levy can claim training, so plans for people who keep a job (*bridge* and *reshape*) say: "If your company pays the HRD Corp levy, ask your employer to claim approved training for you." Laid-off workers get the PERKESO note instead.
 
 ### Three strands
 
@@ -344,9 +350,7 @@ The quiz result, prompt and sheet become a **portfolio** the user can show an em
 - **A goal picker re-ranks jobs.** The user picks the goals they care about. Matching roles get a bonus, and the trade-off is shown, e.g. "+3 weeks of training, but this role fights financial crime (SDG 16.4)".
 - **Every plan step shows its SDG**, taken from the skill it teaches.
 - **The Plan page shows each goal as an official-colour UN SDG tile** with its target numbers and the official target text, nothing hidden, including the new job's own goal.
-- **A two-layer summary shows how the career path contributes:**
-  - *By reskilling, you advance* **4.4** (relevant skills for decent jobs) and **8.5** (full employment).
-  - *Your new job serves* the role's own target, e.g. **12.6**.
+- **The path contribution is added up from the plan itself.** The plan's hours are totalled by the SDG target of each skill they teach; a step that teaches several skills splits its hours evenly, so the totals add up to the plan's hours. For Hafiz: 58 hours toward **8.2** and 39 toward **8.5**. Every hour of learning (courses and practice) also counts, separately, toward **4.4** (skills for work): 74 hours. The card also says what share of course hours is free, and which target the new job serves.
 
 Jobbery itself works toward **4.3, 4.4, 8.5, 8.6** (youth not in employment), **1.3** (social protection) and **10.2** (inclusion).
 
@@ -887,9 +891,10 @@ Jobbery uses AI in two ways: one GenAI model that reads resumes, and a forecasti
 | **Must-have it serves** | Skills profile intake |
 | **Switch** | "Also let AI read it" checkbox on the resume page (on by default) |
 
-**What it does.** After the rule-based scan, the model reads the resume and returns JSON with two things:
+**What it does.** After the rule-based scan, the model reads the resume and returns JSON with three things:
 1. **Extra skills** the keyword rules missed. They can only come from Jobbery's own list of 80 skills, and each one must quote the resume line it is based on.
-2. **Better wording** for up to 5 weak lines (for example "Responsible for processing loan applications" becomes "Processed [how many] loan applications and verified supporting documents").
+2. **Skills outside the list** (for example *SAP FICO* or *Tally ERP*). These are only shown, never used in matching: "We also saw these on your resume. They are not in our skills list yet, so they are not used in matching." The name must appear in the resume as a whole word, with a quote.
+3. **Better wording** for up to 5 weak lines (for example "Responsible for processing loan applications" becomes "Processed [how many] loan applications and verified supporting documents").
 
 **The user stays in control.** AI skills appear as chips marked "· AI", unticked, with their quoted evidence. Each rewrite has Accept and Reject buttons. An accepted line can be edited, then copied into the user's own resume. Nothing changes unless the user chooses it. The resume score always comes from the rules, never from the AI.
 
@@ -902,7 +907,7 @@ The prompt also tells the model not to add purposes or overstate the role ("help
 
 **Privacy.** The text is read in memory for that request and never stored or logged. If AI is on, it is sent once to Groq to be read. Only counts (how many AI skills and rewrites) go in the event log.
 
-**Fallback.** With no `GROQ_API_KEY`, a Groq error, or a timeout (30 s), the rule scan runs alone and the page says so. Groq's free tier allows about 1,000 output tokens a minute (about two scans). After a rate-limit reply, the server waits once if the wait is short, and otherwise falls back to the rules.
+**Fallback.** With no `GROQ_API_KEY`, a Groq error, or a timeout (30 s), the rule scan runs alone and the page says so. With AI switched off, the page says it only recognises skills from the list. Groq's free tier allows about 1,000 output tokens a minute (about two scans). After a rate-limit reply, the server waits once if the wait is short, and otherwise falls back to the rules.
 
 ### 18.2 A forecast that learns
 
