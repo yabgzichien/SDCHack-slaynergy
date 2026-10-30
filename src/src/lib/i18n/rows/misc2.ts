@@ -59,4 +59,8 @@ export const MISC2: Row[] = [
   ["Finish {#n} more steps.", "Selesaikan {n} lagi langkah.", "再完成 {n} 步。", "இன்னும் {n} படிகளை முடியுங்கள்."],
   ["{#n} things changed.", "{n} perkara berubah.", "有 {n} 处发生了变化。", "{n} விஷயங்கள் மாறின."],
   ["Ask a question", "Tanya soalan", "提问", "கேள்வி கேளுங்கள்"],
+  ["We also saw these on your resume. They are not in our skills list yet, so they are not used in matching.", "Kami juga nampak perkara ini dalam resume anda. Ia belum ada dalam senarai kemahiran kami, jadi ia tidak digunakan dalam pemadanan.", "我们还在你的简历中看到了这些。它们还不在我们的技能列表中，所以不会用于匹配。", "உங்கள் சுயவிவரத்தில் இவற்றையும் பார்த்தோம். இவை இன்னும் எங்கள் திறன் பட்டியலில் இல்லை, எனவே பொருத்தத்தில் பயன்படுத்தப்படவில்லை."],
+  ["With the AI reader off, we only recognise skills from our list.", "Dengan pembaca AI dimatikan, kami hanya mengenal pasti kemahiran daripada senarai kami.", "关闭 AI 阅读器时，我们只能识别列表中的技能。", "AI வாசிப்பான் அணைக்கப்பட்டிருக்கும்போது, எங்கள் பட்டியலில் உள்ள திறன்களை மட்டுமே அடையாளம் காண்கிறோம்."],
+  ["The AI reader is not available here, so this uses the rule scan only, which recognises skills from our list.", "Pembaca AI tidak tersedia di sini, jadi ini hanya menggunakan imbasan peraturan, yang mengenal pasti kemahiran daripada senarai kami.", "此处无法使用 AI 阅读器，因此只使用规则扫描，它能识别我们列表中的技能。", "AI வாசிப்பான் இங்கே கிடைக்கவில்லை, எனவே இது விதி ஸ்கேனை மட்டும் பயன்படுத்துகிறது; அது எங்கள் பட்டியலில் உள்ள திறன்களை அடையாளம் காணும்."],
+  ["We could not check {s} on {d}, so we are showing the last good figures: {f}.", "Kami tidak dapat menyemak {s} pada {d}, jadi kami menunjukkan angka baik terakhir: {f}.", "我们无法在 {d} 检查{s}，因此显示最近一次有效的数据：{f}。", "{d} அன்று {s}-ஐச் சரிபார்க்க முடியவில்லை, எனவே கடைசியாகச் சரியாக இருந்த எண்ணிக்கைகளைக் காட்டுகிறோம்: {f}."],
 ];

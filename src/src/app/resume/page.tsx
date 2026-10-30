@@ -174,6 +174,14 @@ function Result({ analysis: a, ai, aiStatus, fileName, onAgain }: { analysis: Re
         </div>
         {aiSkills.length > 0 && <p className="mt-2 text-sm text-muted">Skills marked “AI” were found by the AI reader. Each one points to a line in your resume (see Skills found). Tick them only if they are true.</p>}
         {inferredOnly.length > 0 && <p className="mt-2 text-sm text-muted">The last {inferredOnly.length} are common for your job but not on your resume. Tick them only if you have them.</p>}
+        {ai && ai.unlisted?.length > 0 && (
+          <div className="mt-2 text-sm text-muted">
+            <p>We also saw these on your resume. They are not in our skills list yet, so they are not used in matching.</p>
+            <ul className="mt-1.5 flex flex-wrap gap-1.5">{ai.unlisted.map((u) => <li key={u.name} data-no-translate title={`“${u.evidence}”`} className="rounded-full border border-line px-3 py-1 text-xs">{u.name}</li>)}</ul>
+          </div>
+        )}
+        {aiStatus === "off" && <p className="mt-2 text-sm text-muted">With the AI reader off, we only recognise skills from our list.</p>}
+        {aiStatus === "unavailable" && <p className="mt-2 text-sm text-muted">The AI reader is not available here, so this uses the rule scan only, which recognises skills from our list.</p>}
         <div className="mt-5"><Btn onClick={build} disabled={busy || chosen.length === 0} className="min-h-12 px-6 text-base">{state?.profile ? "Add these to my profile" : "Continue with these"}</Btn></div>
       </Card>
 

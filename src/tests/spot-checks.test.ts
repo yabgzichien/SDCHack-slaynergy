@@ -5,6 +5,7 @@ import { historyStops } from "@/lib/engine/history";
 import { personaState } from "@/lib/engine/review";
 import { pathContribution, HRD_NOTE } from "@/lib/engine/plan";
 import { roundToTotal } from "@/lib/engine/math";
+import { lastGood } from "@/lib/last-good";
 
 const now = () => ({ t0: new Date().toISOString() });
 const viewOf = (id: string, extra: object = {}) => computeView({ ...personaState(id)!, clock: now(), ...extra });
@@ -148,5 +149,33 @@ describe("Future Skills Radar (T11)", () => {
     expect(r.decliningJobs[0].exposure).toBeGreaterThan(0.4);
     for (const j of r.decliningJobs) expect(j.exposure).toBeGreaterThan(0);
     expect(r.cite).toEqual({ dosm: expect.stringMatching(/^DOSM \d{4} Q\d$/), ilo: "ILO 2025", aei: expect.stringMatching(/^AEI \d{4}-\d{2}-\d{2}$/) });
+  });
+});
+
+describe("intake and robustness (T12)", () => {
+  it("a thin profile (1 skill, 1 month, 2 hours a week) still builds a view the Jobs and Plan pages can show", () => {
+    const base = personaState("hafiz")!;
+    const st = { ...base, clock: now(), chosenRoleId: null, profile: { ...base.profile!, skills: [base.profile!.skills[0]], months: 1, hoursPerWeek: 2 } };
+    const v = computeView(st);
+    // No new job fits in a month at 2 hours a week, so Jobs shows its empty state and lists the longer paths.
+    expect(v.matches).toEqual([]);
+    expect(v.unreachable.length).toBeGreaterThan(0);
+    expect(v.unreachable.every((u) => u.reason === "qualification" || u.weeks > 0)).toBe(true);
+    // Plan either keeps the person in their job (a plan to stay) or asks them to choose a job: never a broken plan.
+    if (v.plan) expect(v.plan.steps.length).toBeGreaterThan(0);
+  });
+
+  it("editing one skill or the weekly hours visibly reorders the jobs", () => {
+    const base = { ...personaState("aina")!, clock: now() };
+    const order = (s: typeof base) => computeView(s).matches.map((m) => `${m.roleId}:${Math.round(m.score * 100)}`).join();
+    const p = base.profile!;
+    expect(order({ ...base, profile: { ...p, hoursPerWeek: p.hoursPerWeek + 10 } })).not.toBe(order(base));
+    expect(order({ ...base, profile: { ...p, skills: p.skills.slice(1) } })).not.toBe(order(base));
+  });
+
+  it("names the last good figures when a source check fails", () => {
+    expect(lastGood("dosm")).toMatch(/^\d{4} Q\d, published \d{1,2} [A-Z][a-z]{2} \d{4}$/);
+    expect(lastGood("epoch")).toMatch(/^models to \d{4}-\d{2}-\d{2}$/);
+    expect(lastGood("opendosm", "2026-10-20T03:00:00Z")).toBe("loaded 20 Oct 2026");
   });
 });

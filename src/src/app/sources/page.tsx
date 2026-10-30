@@ -10,6 +10,7 @@ import { series, sourceById } from "@/lib/engine/data";
 import type { EventView } from "@/lib/engine/world";
 import { quarterEnd as quarterEndDay } from "@/lib/engine/questions";
 import type { DataStatus } from "@/lib/server/refresh";
+import { SourceDownNote } from "@/components/SourceDown";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const day = (iso: string) => { const [y, m, d] = iso.slice(0, 10).split("-").map(Number); return `${d} ${MONTHS[m - 1]} ${y}`; };
@@ -195,6 +196,7 @@ function UpdatesCard({ info }: { info: { snapshot: number; status: DataStatus; d
           );
         })}
       </ul>
+      <SourceDownNote status={status} className="mt-2" />
       <p className="mt-3 text-sm text-muted">The ILO&apos;s AI exposure scores, the Anthropic Economic Index and DOSM&apos;s yearly Labour Force Survey tables are kept as they are, because a new edition changes how they are measured. Once a week the app looks for a new edition and lists it here for a person to review.</p>
       <p className="mt-2 text-sm text-muted">DOSM&apos;s spending per person by state (Household Expenditure Survey 2024), used for living costs on the job map, is also kept as it is. It is published only as a spreadsheet on dosm.gov.my, not on OpenDOSM, so the app cannot check it for a new edition.</p>
       {status.alerts.length > 0 && (

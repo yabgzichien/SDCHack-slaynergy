@@ -8,6 +8,7 @@ import { AiCapability, JobGroupShares } from "@/components/AiTrendCharts";
 import { Card, H, SdgTag, Skeleton, SourceChip } from "@/components/ui";
 import { SourceDisclosure } from "@/components/SourceDisclosure";
 import { ReleasePicker } from "@/components/History";
+import { SourceDownNote } from "@/components/SourceDown";
 
 // Each row's number and where it came from, so every line of the Future Skills Radar carries its source and date.
 function Cite({ children }: { children: string }) {
@@ -64,6 +65,7 @@ export default function TrendsPage() {
           <p>Which jobs are being hired more, which are being hired less, and how quickly AI is getting better. All numbers come from public government and research data. Each one says where it came from.</p>
         </div>
         <p className="mt-4 text-sm text-muted">We automatically check for new releases and update these figures when new data is available.</p>
+        <SourceDownNote className="mt-1" />
         <div className="statistics-hero-art" aria-hidden="true">
           <Image src="/cockatiel-statistics-header.png" alt="" width={420} height={315} className="statistics-hero-mascot" priority />
         </div>
