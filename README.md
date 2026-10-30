@@ -898,6 +898,8 @@ Jobbery uses AI in two ways: one GenAI model that reads resumes, and a forecasti
 
 **The user stays in control.** AI skills appear as chips marked "· AI", unticked, with their quoted evidence. Each rewrite has Accept and Reject buttons. An accepted line can be edited, then copied into the user's own resume. Nothing changes unless the user chooses it. The resume score always comes from the rules, never from the AI.
 
+**How the resume score is worked out, on screen.** The score is seven rule-based parts that add up to 100: clear sections (15), contact details (8), results with numbers (22), strong action words (15), length and clarity (10), skills a recruiter can find (12) and readiness for AI-era jobs (18). Under each bar the page shows the rule with the resume's own counts, for example "1 of 4 bullets have a number. 22 × (1 ÷ 4 ÷ 50%), at most 22." A last line adds the parts up: "15 + 8 + 11 + 13.5 + 4 + 12 + 10.8 = 74.3 → 74".
+
 **Checks so it cannot make things up.** The server drops anything the resume does not support (`checkAiRead`, tested in `src/tests/ai-resume.test.ts`):
 - a skill ID that is not on Jobbery's list, or whose quote is not in the resume
 - a rewrite of a line that is not in the resume
