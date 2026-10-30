@@ -4,11 +4,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
-  Award, BookOpen, BriefcaseBusiness, Calculator, CalendarClock, Clock, Eye, FileText, FlaskConical, GraduationCap, Hammer, HeartPulse,
-  Laptop, Leaf, Library, MapPin, Microscope, Presentation, Scale, ScrollText, Sparkles, Users, UserRound, Wrench, X, type LucideIcon,
+  Award, BookOpen, BriefcaseBusiness, Calculator, CalendarClock, Clock, Eye, FlaskConical, GraduationCap, Hammer, HeartPulse,
+  Laptop, Leaf, Library, Microscope, Presentation, Scale, ScrollText, Sparkles, Users, Wrench, X, type LucideIcon,
 } from "lucide-react";
 import { useApp, type Catalog } from "@/components/AppProvider";
 import { StepBar } from "@/components/Journey";
+import type { Profile } from "@/lib/engine/state";
+import { AnswersSummary } from "./summary";
+import { HAS_FIELD, STEPS, STEP_ICON, STEP_LABEL, type Step } from "./steps";
 import { readStored, removeStored } from "@/lib/legacy";
 import { Btn, Skeleton } from "@/components/ui";
 import { SAMPLE_RESUME } from "@/lib/sample-resume";
@@ -18,6 +21,8 @@ import { occupationById, personas } from "@/lib/engine/data";
 
 // Onboarding: eight short screens. After the name, the resume comes first because it fills in most of the rest.
 // Nothing is saved until the last screen; the draft lives in this tab only.
+// Once there is a profile, this page opens on a summary of its answers instead. Each answer has an Edit that opens its
+// question (every question reachable), and nothing changes until the edits are saved.
 type Draft = {
   name: string; status: "" | "working" | "studying"; age: string; state: string; move: Reach | ""; moveTo: string[]; occupationId: string; education: string; study: string; years: number; skills: string[];
   months: number; hours: number; interests: string[];
@@ -25,18 +30,12 @@ type Draft = {
   touched: { education?: boolean; study?: boolean; skills?: boolean };
 };
 const KEY = "jobbery-onboarding-v4";
-const STEPS = ["name", "resume", "job", "education", "skills", "time", "interests", "where"] as const;
-type Step = (typeof STEPS)[number];
-const STEP_LABEL: Record<Step, string> = { name: "You", resume: "Resume", job: "Last job", education: "Qualification", skills: "Skills", time: "Time", interests: "Interests", where: "Where" };
-const STEP_ICON: Record<Step, LucideIcon> = { name: UserRound, resume: FileText, job: BriefcaseBusiness, education: GraduationCap, skills: Sparkles, time: CalendarClock, interests: HeartPulse, where: MapPin };
 
 const EDU_ICON: Record<string, LucideIcon> = { spm: BookOpen, skm: Wrench, stpm: Library, diploma: ScrollText, degree: GraduationCap, master: Award, phd: Microscope };
 const EDU_SUB: Record<string, string> = {
   spm: "Sijil Pelajaran Malaysia", skm: "Sijil Kemahiran Malaysia, levels 1 to 3", stpm: "Or A-Levels, Asasi", diploma: "Including advanced diplomas",
   degree: "Bachelor's or professional degree", master: "Including MBA", phd: "Doctorate",
 };
-// Levels that have a field of study. Below these (SPM, SKM, STPM) the study question is not asked.
-const HAS_FIELD = ["diploma", "degree", "master", "phd"];
 const INTEREST_ICON: Record<string, LucideIcon> = {
   numbers: Calculator, people: Users, technology: Laptop, sustainability: Leaf, health: HeartPulse, justice: Scale, teaching: Presentation, building: Hammer, science: FlaskConical,
 };
@@ -54,43 +53,65 @@ const sampleDraft = (cat: Catalog): Draft | null => {
   return { ...blank(cat), name: p.name, status: "working", age: String(p.age), state: p.state ?? "", move: p.state ? "region" : "", occupationId: o.id, education: p.education, study: o.sector, years: p.years, skills: o.skills, months: p.months, hours: p.hoursPerWeek, interests: p.interests, touched: { education: true, study: true, skills: true } };
 };
 
+// The saved profile as a draft, to change one answer and save the lot again. Sessions saved before the relocation question
+// have a state but no answer, which means anywhere in Malaysia (see Profile.move).
+const draftFromProfile = (cat: Catalog, p: Profile): Draft => ({
+  ...blank(cat), name: p.name === "You" ? "" : p.name, status: p.status ?? "working", moveTo: p.moveTo ?? [], age: p.age ? String(p.age) : "", state: p.state ?? "", move: p.move ?? (p.state ? "anywhere" : ""),
+  occupationId: p.occupationId, education: p.education, study: p.study ?? "", years: p.years, skills: p.skills, months: p.months, hours: p.hoursPerWeek, interests: p.interests,
+  touched: { education: true, study: !!p.study, skills: true },
+});
+
 export default function StartPage() {
   const { catalog, state } = useApp();
   if (!catalog || !state) return <Skeleton lines={3} />;
-  return <Wizard cat={catalog} />;
+  return <Start cat={catalog} />;
 }
 
-function Wizard({ cat }: { cat: Catalog }) {
+// Which screen of step 1 is showing: the summary of saved answers, one of them open for editing, or the questions from the start.
+type View = { kind: "summary"; saved?: boolean } | { kind: "edit"; at: number } | { kind: "new" };
+
+function Start({ cat }: { cat: Catalog }) {
+  const { state } = useApp();
+  const router = useRouter();
+  // The sample link always starts the questions again with Hafiz's answers filled in, whatever was saved.
+  const [view, setView] = useState<View>(() => (!wantsSample() && state?.profile ? { kind: "summary" } : { kind: "new" }));
+  const toSummary = (saved?: boolean) => { setView({ kind: "summary", saved }); window.scrollTo({ top: 0 }); };
+  if (view.kind === "summary" && state?.profile) {
+    return <AnswersSummary cat={cat} saved={!!view.saved}
+      onEdit={(s) => { setView({ kind: "edit", at: STEPS.indexOf(s) }); window.scrollTo({ top: 0 }); }}
+      // The saved answers stay until the new ones are finished; Cancel comes back here.
+      onStartOver={() => { try { removeStored(sessionStorage, KEY); } catch { /* ignore */ } setView({ kind: "new" }); window.scrollTo({ top: 0 }); }}
+      onContinue={() => router.push("/skills")} />;
+  }
+  return <Wizard key={view.kind === "edit" ? `edit-${view.at}` : "new"} cat={cat} edit={view.kind === "edit"} at={view.kind === "edit" ? view.at : 0} onExit={toSummary} />;
+}
+
+function Wizard({ cat, edit, at, onExit }: { cat: Catalog; edit: boolean; at: number; onExit: (saved?: boolean) => void }) {
   const { act, busy, error, state } = useApp();
   const router = useRouter();
   // The wizard mounts only in the browser (after the catalog loads), so the saved draft can be read synchronously.
-  // A half-finished draft only matters before the first save; once there is a profile, the profile wins.
   const [sample] = useState(() => wantsSample());
-  // A real saved profile. The made-up sample worker (synthetic) does not count: "Start now" begins blank, and the sample
-  // always opens on its first question with every answer filled in.
-  const own = !!state?.profile && !state.profile.personaId && !state.profile.synthetic;
-  // A draft saved while trying the sample belongs to the sample: "Start now" must begin blank, not on Hafiz's answers.
+  const prof = state?.profile ?? null;
+  // A half-finished draft of the questions from the start. Editing saved answers never uses one.
   const [saved] = useState<{ d: Draft; i: number } | null>(() => {
-    if (sample) return null;
-    if (own) return null;
+    if (sample || edit) return null;
     try {
       const raw = readStored(sessionStorage, KEY);
       const r = raw ? (JSON.parse(raw) as { d: Draft; i: number; sample?: boolean }) : null;
       return r && !r.sample ? r : null;
     } catch { return null; }
   });
-  // Someone who already answered comes back to change an answer: open on the last screen with every question reachable.
-  const answered = own && !sample;
-  const [i, setI] = useState(() => answered ? STEPS.length - 1 : Math.min(saved?.i ?? 0, STEPS.length - 1));
-  const [seen, setSeen] = useState(() => answered ? STEPS.length - 1 : Math.min(saved?.i ?? 0, STEPS.length - 1));
+  const first = edit ? Math.min(at, STEPS.length - 1) : Math.min(saved?.i ?? 0, STEPS.length - 1);
+  const [i, setI] = useState(first);
+  // Editing: every question is open, so the bar jumps to any of them.
+  const [seen, setSeen] = useState(edit ? STEPS.length - 1 : first);
   const [d, setD] = useState<Draft>(() => {
+    if (edit && prof) return draftFromProfile(cat, prof);
     if (sample) { const s = sampleDraft(cat); if (s) return s; }
     if (saved) return { ...blank(cat), ...saved.d };
-    const p = state?.profile;
-    if (own && p) return { ...blank(cat), name: p.name === "You" ? "" : p.name, status: p.status ?? "working", moveTo: p.moveTo ?? [], age: p.age ? String(p.age) : "", state: p.state ?? "", move: p.move ?? "", occupationId: p.occupationId, education: p.education, study: p.study ?? "", years: p.years, skills: p.skills, months: p.months, hours: p.hoursPerWeek, interests: p.interests, touched: { education: true, study: !!p.study, skills: true } };
     return blank(cat);
   });
-  useEffect(() => { try { sessionStorage.setItem(KEY, JSON.stringify({ d, i, sample })); } catch { /* ignore */ } }, [d, i, sample]);
+  useEffect(() => { if (edit) return; try { sessionStorage.setItem(KEY, JSON.stringify({ d, i, sample })); } catch { /* ignore */ } }, [d, i, sample, edit]);
 
   const step: Step = STEPS[i];
   const occ = cat.occupations.find((o) => o.id === d.occupationId);
@@ -117,14 +138,19 @@ function Wizard({ cat }: { cat: Catalog }) {
     window.scrollTo({ top: 0 });
   };
   const next = () => { if (canGo[step]) go(i + 1); };
+  // Saving edits needs every question to still have a valid answer.
+  const canSave = STEPS.every((x) => canGo[x]);
   const finish = async () => {
-    const r = await act("setProfile", { profile: { name: d.name.trim() || "You", age: d.age ? Number(d.age) : null, status: d.status || "working", state: d.state || null, move: d.state && d.move ? d.move : null, moveTo: d.move === "pick" ? d.moveTo : [], occupationId: occ ? d.occupationId : "", education: d.education, study, years: occ ? d.years : 0, skills: d.skills, interests: d.interests, months: d.months, hoursPerWeek: d.hours, budget: "free", synthetic: sample || !!d.resume?.sample || (answered && !!state?.profile?.synthetic) } });
-    if (r) { try { removeStored(sessionStorage, KEY); sessionStorage.setItem("jobbery-results-arrival", "1"); } catch { /* ignore */ } router.push("/skills"); }
+    const r = await act("setProfile", { profile: { name: d.name.trim() || "You", age: d.age ? Number(d.age) : null, status: d.status || "working", state: d.state || null, move: d.state && d.move ? d.move : null, moveTo: d.move === "pick" ? d.moveTo : [], occupationId: occ ? d.occupationId : "", education: d.education, study, years: occ ? d.years : 0, skills: d.skills, interests: d.interests, months: d.months, hoursPerWeek: d.hours, budget: "free", synthetic: edit ? !!prof?.synthetic : sample || !!d.resume?.sample, ...(edit && prof?.personaId ? { personaId: prof.personaId } : {}) } });
+    if (!r) return;
+    if (edit) { onExit(true); return; }
+    try { removeStored(sessionStorage, KEY); sessionStorage.setItem("jobbery-results-arrival", "1"); } catch { /* ignore */ }
+    router.push("/skills");
   };
 
   // Enter continues from anywhere on the question, not only from inside a text field.
   const enter = useRef<() => void>(() => {});
-  useEffect(() => { enter.current = () => { if (step === "where") { if (canGo.where && !busy) finish(); } else if (step !== "resume") next(); }; });
+  useEffect(() => { enter.current = () => { if (edit) { if (canSave && !busy) finish(); } else if (step === "where") { if (canGo.where && !busy) finish(); } else if (step !== "resume") next(); }; });
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement;
@@ -145,7 +171,7 @@ function Wizard({ cat }: { cat: Catalog }) {
       onPick: go,
     }} />
     <div className="mx-auto max-w-2xl">
-      <form onSubmit={(e) => { e.preventDefault(); if (step === "where") finish(); else next(); }}>
+      <form onSubmit={(e) => { e.preventDefault(); if (edit) { if (canSave && !busy) finish(); } else if (step === "where") finish(); else next(); }}>
         {step === "name" && (
           <Q title="First, a little about you" help="Your name is optional. We use it to greet you and on your plan, never to choose or rank jobs.">
             <label className="block">
@@ -252,8 +278,8 @@ function Wizard({ cat }: { cat: Catalog }) {
           </Q>
         )}
         {step === "where" && (
-          <Q title={state?.profile && !state.profile.personaId ? "Your answers are saved." : "Last one: where do you live now?"}
-            help={state?.profile && !state.profile.personaId ? "Tap any question in the bar above to change it." : "Then tell us if you would move. Jobs that are scarce where you can work move down a little. None are hidden."}>
+          <Q title={edit ? "Where do you live now?" : "Last one: where do you live now?"}
+            help="Then tell us if you would move. Jobs that are scarce where you can work move down a little. None are hidden.">
             <label className="block">
               <span className="mb-2 block text-sm text-muted">State you live in</span>
               <select value={d.state} onChange={(e) => set({ state: e.target.value, move: e.target.value ? d.move : "", moveTo: d.moveTo.filter((x) => x !== e.target.value) })} className="min-h-14 w-full rounded-2xl border border-control bg-raised px-4 text-base">
@@ -295,12 +321,23 @@ function Wizard({ cat }: { cat: Catalog }) {
           </Q>
         )}
 
-        <div className="mt-10 flex items-center justify-between gap-3">
-          {i > 0 ? <Btn variant="quiet" onClick={() => go(i - 1)}>Back</Btn> : <Link href="/" className="text-sm underline decoration-control underline-offset-2">Cancel</Link>}
-          <div className="flex items-center gap-2">
-            {step === "where"
-              ? <Btn type="submit" disabled={busy || !canGo.where} className="min-h-12 px-6 text-base">{state?.profile && !state.profile.personaId ? "Save and see results" : "Show my results"}</Btn>
-              : step !== "resume" && <Btn type="submit" disabled={!canGo[step]} className="min-h-12 px-6 text-base">Continue</Btn>}
+        <div className="mt-10">
+          {edit && (
+            <div className="mb-4 space-y-1 text-sm text-muted">
+              <p>Nothing changes until you save. Use the bar above to jump to another question.</p>
+              {state?.chosenRoleId && <p>Saving clears the job you chose and the plan steps you ticked, because they were based on your old answers.</p>}
+            </div>
+          )}
+          <div className="flex items-center justify-between gap-3">
+            {edit || (prof && i === 0) ? <Btn variant="quiet" onClick={() => onExit()}>Cancel</Btn>
+              : i > 0 ? <Btn variant="quiet" onClick={() => go(i - 1)}>Back</Btn> : <Link href="/" className="text-sm underline decoration-control underline-offset-2">Cancel</Link>}
+            <div className="flex items-center gap-2">
+              {edit
+                ? <Btn type="submit" disabled={busy || !canSave} className="min-h-12 px-6 text-base">Save changes</Btn>
+                : step === "where"
+                  ? <Btn type="submit" disabled={busy || !canGo.where} className="min-h-12 px-6 text-base">Show my results</Btn>
+                  : step !== "resume" && <Btn type="submit" disabled={!canGo[step]} className="min-h-12 px-6 text-base">Continue</Btn>}
+            </div>
           </div>
         </div>
       </form>
