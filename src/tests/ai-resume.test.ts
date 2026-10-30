@@ -8,6 +8,19 @@ Skills
 Microsoft Excel, CCRIS`;
 
 describe("AI resume reader guards", () => {
+  it("reports skills outside the list only when their name and quote are in the resume", () => {
+    const r = checkAiRead({ unlisted: [
+      { name: "CCRIS", evidence: "Microsoft Excel, CCRIS" },
+      { name: "SAP FICO", evidence: "Microsoft Excel, CCRIS" },
+      { name: "ccris", evidence: "CCRIS" },
+      { name: "Spreadsheets (Excel or Sheets)", evidence: "Microsoft Excel" },
+      { name: "Tally", evidence: "used Tally daily" },
+      "nonsense",
+    ] }, RESUME);
+    expect(r.unlisted).toEqual([{ name: "CCRIS", evidence: "Microsoft Excel, CCRIS" }]);
+    expect(checkAiRead(null, RESUME).unlisted).toEqual([]);
+  });
+
   it("keeps only known skill ids whose evidence is in the resume", () => {
     const r = checkAiRead({ skills: [
       { id: "spreadsheets", evidence: "Microsoft Excel" },

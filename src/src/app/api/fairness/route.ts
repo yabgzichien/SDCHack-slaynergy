@@ -6,6 +6,8 @@ import { initialState } from "@/lib/engine/state";
 import { ensureData } from "@/lib/server/refresh";
 
 export const dynamic = "force-dynamic";
+// A background data refresh (run with after()) can take up to a minute: each source fetch has a 60 s timeout.
+export const maxDuration = 60;
 
 // Runs matching on profile pairs that differ ONLY in age/gender and checks that the results are identical.
 export async function GET() {

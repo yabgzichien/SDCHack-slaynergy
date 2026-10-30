@@ -2,7 +2,7 @@
 # Re-creates data/raw/ (git-ignored) from the public sources. Then run: npm run data:build
 set -euo pipefail
 cd "$(dirname "$0")/.."
-mkdir -p data/raw/{dosm,epoch,ilo,aei_2025_02_10,opendosm,geo}
+mkdir -p data/raw/{dosm,epoch,ilo,aei_2026_06_26,opendosm,geo}
 
 # DOSM Job Market Insights, 2026 Q2 release (published 2026-08-18)
 curl -fsSL "https://www.dosm.gov.my/portal-main/release-document-log?release_document_id=20742" -o data/raw/dosm/jmi_q2_2026.xlsx
@@ -14,10 +14,14 @@ unzip -oq /tmp/epoch_benchmarks.zip -d data/raw/epoch
 # ILO 2025 GenAI exposure scores (CC BY 4.0)
 curl -fsSL "https://github.com/pgmyrek/2025_GenAI_scores_ISCO08/raw/main/Final_Scores_ISCO08_Gmyrek_et_al_2025.xlsx" -o data/raw/ilo/ilo.xlsx
 
-# Anthropic Economic Index, release 2025-02-10 (CC-BY)
-for f in onet_task_mappings.csv onet_task_statements.csv SOC_Structure.csv automation_vs_augmentation.csv README.md; do
-  curl -fsSL "https://huggingface.co/datasets/Anthropic/EconomicIndex/resolve/main/release_2025_02_10/$f" -o "data/raw/aei_2025_02_10/$f"
-done
+# Anthropic Economic Index, release 2026-06-26 (CC-BY): Claude.ai usage by O*NET task (about 220 MB), plus the O*NET 30.0
+# task statements and titles (CC BY 4.0) and O*NET's 2010-to-2019 code crosswalk, used to match tasks to the app's codes.
+A=data/raw/aei_2026_06_26
+curl -fsSL "https://huggingface.co/datasets/Anthropic/EconomicIndex/resolve/main/release_2026_06_26/data/aei_claude_ai_2026-06-26.csv" -o $A/aei_claude_ai_2026-06-26.csv
+curl -fsSL "https://huggingface.co/datasets/Anthropic/EconomicIndex/resolve/main/release_2026_06_26/data_documentation.md" -o $A/data_documentation.md
+curl -fsSL "https://www.onetcenter.org/dl_files/database/db_30_0_text/Task%20Statements.txt" -o $A/onet_30_0_task_statements.txt
+curl -fsSL "https://www.onetcenter.org/dl_files/database/db_30_0_text/Occupation%20Data.txt" -o $A/onet_30_0_occupation_data.txt
+curl -fsSL "https://www.onetcenter.org/taxonomy/2019/walk/2010_to_2019_Crosswalk.csv?fmt=csv" -o $A/onet_2010_to_2019_crosswalk.csv
 # State-level labour market (job map): OpenDOSM (CC BY 4.0), DOSM via data.gov.my (CC BY), geoBoundaries (ODbL 1.0)
 curl -fsSL https://storage.dosm.gov.my/labour/lfs_qtr_state.csv -o data/raw/opendosm/lfs_qtr_state.csv
 curl -fsSL https://storage.dosm.gov.my/labour/wages_state.csv -o data/raw/opendosm/wages_state.csv
@@ -29,5 +33,10 @@ curl -fsSL https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbO
 curl -fsSL https://storage.dosm.gov.my/labour/lfs_annual_2024.pdf -o data/raw/dosm/lfs_annual_2024.pdf
 for p in 251 256 257 258; do pdftotext -layout -f $p -l $p data/raw/dosm/lfs_annual_2024.pdf data/raw/dosm/lfs_annual_2024_p$p.txt; done
 node scripts/extract-state-occupation.mjs
+
+# DOSM Household Expenditure Survey Report 2024 (Malaysia & States), released 2025-10-08. "Table 1: Main Statistics"
+# (xlsx); scripts/build-spending.ts reads Table 1.4, median monthly spending per person by state. On dosm.gov.my only,
+# not OpenDOSM, so it is pinned: the server does not refresh it.
+curl -fsSL "https://www.dosm.gov.my/portal-main/release-document-log?release_document_id=17240" -o data/raw/dosm/hes2024_table1.xlsx
 
 echo "Done. Now run: npm run data:build"

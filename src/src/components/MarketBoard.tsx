@@ -5,7 +5,7 @@ import type { EventView } from "@/lib/engine/world";
 import { MAX_MOVE, MAX_MOVE_WINDOW, MAX_PER_ANSWER, MOVE_WINDOW_S, moveAllowance, quoteBuy, quoteSell } from "@/lib/market-math";
 import { useApp } from "./AppProvider";
 import { Btn, Card, DemoLabel, FUTURE_COLOR, FUTURE_NAME, SourceChip, pct as fpct } from "./ui";
-import { AnsweredBadge, AnswerStamp, LiveBadge, STRIKE_COLORS } from "./MarketCards";
+import { AnsweredBadge, AnswerStamp, OpenBadge, STRIKE_COLORS } from "./MarketCards";
 import { Lock } from "lucide-react";
 
 type Execution = { orderId: string; t: number; side: "yes" | "no"; action: "buy" | "sell"; shares: number; points: number; avg: number; priceBefore: number; priceAfter: number };
@@ -102,7 +102,7 @@ export function MarketBoard({ event }: { event: EventView }) {
         <Card tone="raised" className={settled ? "!bg-[#eef1f5] border-[#cfd6df]" : ""}>
           <div className="flex flex-wrap items-start justify-between gap-2">
             <p className="flex items-center gap-2 text-sm text-muted"><span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: settled ? "#7b8696" : STRIKE_COLORS[sel] }} aria-hidden />{cur.label}{sel === 1 ? " · main question" : ""}</p>
-            {settled ? <AnsweredBadge /> : <LiveBadge />}
+            {settled ? <AnsweredBadge /> : <OpenBadge event={event} />}
           </div>
           {settled ? (
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">

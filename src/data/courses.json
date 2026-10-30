@@ -1,30 +1,30 @@
 [
  {
   "id": "excel",
-  "title": "Excel video training",
-  "provider": "Microsoft Support",
-  "url": "https://support.microsoft.com/en-us/office/excel-video-training-9bc05390-e94c-46af-a5b3-d7c22f6990bb",
+  "title": "Excel: Foundations",
+  "provider": "GCFGlobal LearnFree",
+  "url": "https://www.learnfree.org/series/excel-foundations",
   "hours": 6,
   "cost": "Free",
   "funding": "Free",
   "skills": [
    "spreadsheets"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
   "id": "pbi_start",
-  "title": "Get started with Power BI",
+  "title": "Get started with Microsoft data analytics",
   "provider": "Microsoft Learn",
-  "url": "https://learn.microsoft.com/en-us/training/paths/get-started-power-bi/",
+  "url": "https://learn.microsoft.com/en-us/training/paths/data-analytics-microsoft/",
   "hours": 4,
   "cost": "Free",
   "funding": "Free",
   "skills": [
    "bi_dashboards"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -39,7 +39,7 @@
    "bi_dashboards",
    "statistics"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -53,21 +53,21 @@
   "skills": [
    "ai_tools"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
   "id": "azure_ai",
-  "title": "Introduction to AI on Azure",
+  "title": "Get started with AI applications and agents on Azure",
   "provider": "Microsoft Learn",
-  "url": "https://learn.microsoft.com/en-us/training/paths/introduction-to-ai-on-azure/",
+  "url": "https://learn.microsoft.com/en-us/training/paths/get-started-ai-apps-agents/",
   "hours": 4,
   "cost": "Free",
   "funding": "Free",
   "skills": [
    "ai_tools"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -81,7 +81,7 @@
   "skills": [
    "ai_tools"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -95,7 +95,7 @@
   "skills": [
    "sql"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -109,7 +109,7 @@
   "skills": [
    "sql"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -123,7 +123,7 @@
   "skills": [
    "sql"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -138,7 +138,7 @@
    "sql",
    "infosec"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -152,7 +152,7 @@
   "skills": [
    "python"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -167,7 +167,7 @@
    "python",
    "statistics"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -181,7 +181,7 @@
   "skills": [
    "bi_dashboards"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -196,7 +196,7 @@
    "python",
    "data_entry"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -211,7 +211,7 @@
    "python",
    "statistics"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -225,7 +225,7 @@
   "skills": [
    "python"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -240,7 +240,7 @@
    "statistics",
    "market_research"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -256,7 +256,7 @@
    "budgeting",
    "credit_analysis"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -272,7 +272,7 @@
    "audit",
    "bookkeeping"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -287,7 +287,7 @@
    "fin_analysis",
    "underwriting"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -301,7 +301,7 @@
   "skills": [
    "fin_inclusion"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -316,7 +316,7 @@
    "fin_analysis",
    "credit_analysis"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -331,7 +331,7 @@
    "esg",
    "regulatory"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -345,8 +345,8 @@
   "skills": [
    "esg"
   ],
-  "checked": "2026-10-20",
-  "linkStatus": "403 to automated checks; open it manually to confirm"
+  "checked": "2026-10-30",
+  "linkStatus": "200"
  },
  {
   "id": "cc_learn",
@@ -359,7 +359,7 @@
   "skills": [
    "esg"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -375,8 +375,8 @@
    "regulatory",
    "audit"
   ],
-  "checked": "2026-10-20",
-  "linkStatus": "403 to automated checks; open it manually to confirm"
+  "checked": "2026-10-30",
+  "linkStatus": "200"
  },
  {
   "id": "icd",
@@ -390,7 +390,7 @@
    "health_records",
    "claims"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -405,49 +405,35 @@
    "fin_inclusion",
    "loan_docs"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
   "id": "cisco_cyber",
   "title": "Introduction to Cybersecurity",
   "provider": "Cisco Networking Academy",
-  "url": "https://www.netacad.com/courses/cybersecurity/introduction-cybersecurity",
+  "url": "https://www.netacad.com/courses/introduction-to-cybersecurity",
   "hours": 6,
   "cost": "Free",
   "funding": "Free",
   "skills": [
    "infosec"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
   "id": "cisco_it",
   "title": "IT Essentials",
   "provider": "Cisco Networking Academy",
-  "url": "https://www.netacad.com/courses/os-it/ita-it-essentials",
+  "url": "https://www.netacad.com/courses/it-essentials",
   "hours": 40,
   "cost": "Free",
   "funding": "Free",
   "skills": [
    "it_support"
   ],
-  "checked": "2026-10-20",
-  "linkStatus": "200"
- },
- {
-  "id": "digital_garage",
-  "title": "Fundamentals of digital marketing",
-  "provider": "Google Digital Garage",
-  "url": "https://learndigital.withgoogle.com/digitalgarage",
-  "hours": 40,
-  "cost": "Free",
-  "funding": "Free",
-  "skills": [
-   "market_research"
-  ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -461,7 +447,7 @@
   "skills": [
    "tax"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -475,7 +461,7 @@
   "skills": [
    "web_dev"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -490,7 +476,7 @@
    "web_dev",
    "programming"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -504,7 +490,7 @@
   "skills": [
    "web_dev"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -519,7 +505,7 @@
    "web_dev",
    "programming"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -533,7 +519,7 @@
   "skills": [
    "programming"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -547,7 +533,7 @@
   "skills": [
    "software_testing"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -561,28 +547,28 @@
   "skills": [
    "software_testing"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
   "id": "azure_fund",
-  "title": "Azure fundamentals learning path",
+  "title": "Introduction to cloud infrastructure: describe cloud concepts",
   "provider": "Microsoft Learn",
-  "url": "https://learn.microsoft.com/en-us/training/paths/azure-fundamentals/",
+  "url": "https://learn.microsoft.com/en-us/training/paths/microsoft-azure-fundamentals-describe-cloud-concepts/",
   "hours": 12,
   "cost": "Free",
   "funding": "Free",
   "skills": [
    "cloud_devops"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
   "id": "linux_journey",
   "title": "Linux Journey",
-  "provider": "Linux Journey",
-  "url": "https://linuxjourney.com/",
+  "provider": "Linux Journey (hosted by LabEx)",
+  "url": "https://labex.io/linuxjourney",
   "hours": 20,
   "cost": "Free",
   "funding": "Free",
@@ -590,21 +576,21 @@
    "cloud_devops",
    "networking"
   ],
-  "checked": "2026-10-20",
-  "linkStatus": "403 to automated checks; open it manually to confirm"
+  "checked": "2026-10-30",
+  "linkStatus": "200"
  },
  {
   "id": "cisco_net",
   "title": "Networking Essentials",
   "provider": "Cisco Networking Academy",
-  "url": "https://www.netacad.com/courses/networking/networking-essentials",
+  "url": "https://www.netacad.com/courses/networking-essentials",
   "hours": 30,
   "cost": "Free",
   "funding": "Free",
   "skills": [
    "networking"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -618,7 +604,7 @@
   "skills": [
    "machine_learning"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -632,7 +618,7 @@
   "skills": [
    "machine_learning"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -646,7 +632,7 @@
   "skills": [
    "project_coordination"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -660,7 +646,7 @@
   "skills": [
    "project_coordination"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -674,7 +660,7 @@
   "skills": [
    "tech_writing"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -688,7 +674,7 @@
   "skills": [
    "cad_design"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -702,7 +688,7 @@
   "skills": [
    "mechanical_eng"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -717,7 +703,7 @@
    "electronics",
    "electrical_eng"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -731,7 +717,7 @@
   "skills": [
    "analytical_chemistry"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -745,7 +731,7 @@
   "skills": [
    "microbiology"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -762,7 +748,7 @@
    "environmental_assessment",
    "construction_mgmt"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -777,7 +763,7 @@
    "mechanical_eng",
    "lean_manufacturing"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -792,7 +778,7 @@
    "electrical_eng",
    "electronics"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -807,7 +793,7 @@
    "analytical_chemistry",
    "lab_techniques"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -823,7 +809,7 @@
    "lab_diagnostics",
    "lab_techniques"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -838,14 +824,14 @@
    "analytical_chemistry",
    "lab_techniques"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
   "id": "openstax_env",
   "title": "Environmental Science (textbook)",
-  "provider": "OpenStax",
-  "url": "https://openstax.org/details/books/environmental-science",
+  "provider": "LibreTexts",
+  "url": "https://bio.libretexts.org/Bookshelves/Ecology/Environmental_Science_(Ha_and_Schleiger)",
   "hours": 30,
   "cost": "Free",
   "funding": "Free",
@@ -853,7 +839,7 @@
    "environmental_assessment",
    "esg"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -868,8 +854,8 @@
    "quality_systems",
    "lean_manufacturing"
   ],
-  "checked": "2026-10-20",
-  "linkStatus": "403 to automated checks; open it manually to confirm"
+  "checked": "2026-10-30",
+  "linkStatus": "200"
  },
  {
   "id": "osha",
@@ -882,8 +868,8 @@
   "skills": [
    "hse_safety"
   ],
-  "checked": "2026-10-20",
-  "linkStatus": "403 to automated checks; open it manually to confirm. US rules differ from Malaysia's OSHA 1994; use it for concepts."
+  "checked": "2026-10-30",
+  "linkStatus": "200"
  },
  {
   "id": "openwho",
@@ -900,7 +886,7 @@
    "pharmacy_support",
    "food_science"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -916,7 +902,7 @@
    "communications_pr",
    "market_research"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -935,7 +921,7 @@
    "dispatch_planning",
    "instruction_support"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -950,7 +936,7 @@
    "food_science",
    "food_service"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -965,21 +951,21 @@
    "instruction_support",
    "training_design"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
   "id": "khan_ap_env",
-  "title": "AP Environmental Science",
+  "title": "AP/College Environmental Science",
   "provider": "Khan Academy",
-  "url": "https://www.khanacademy.org/science/ap-environmental-science",
+  "url": "https://www.khanacademy.org/science/ap-college-environmental-science",
   "hours": 30,
   "cost": "Free",
   "funding": "Free",
   "skills": [
    "environmental_assessment"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -994,7 +980,7 @@
    "patient_support",
    "health_education"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -1009,7 +995,7 @@
    "programming",
    "web_dev"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -1026,7 +1012,7 @@
    "electrical_eng"
   ],
   "checked": "2026-10-20",
-  "linkStatus": "403 to automated checks; open it manually to confirm"
+  "linkStatus": "Behind a Cloudflare bot check on 2026-10-30; open it manually to confirm"
  },
  {
   "id": "alison_payroll",
@@ -1039,7 +1025,7 @@
   "skills": [
    "payroll"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -1054,7 +1040,7 @@
    "billing",
    "collections"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -1068,7 +1054,7 @@
   "skills": [
    "collections"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -1082,7 +1068,7 @@
   "skills": [
    "office_admin"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -1096,7 +1082,7 @@
   "skills": [
    "customer_service"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -1110,7 +1096,7 @@
   "skills": [
    "counter_service"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -1124,7 +1110,7 @@
   "skills": [
    "procurement"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -1138,7 +1124,7 @@
   "skills": [
    "legal_admin"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -1152,7 +1138,7 @@
   "skills": [
    "hvac"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -1166,7 +1152,7 @@
   "skills": [
    "machining_welding"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -1180,7 +1166,7 @@
   "skills": [
    "machining_welding"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -1194,7 +1180,7 @@
   "skills": [
    "industrial_maintenance"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -1209,7 +1195,7 @@
    "industrial_maintenance",
    "process_analysis"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -1223,7 +1209,7 @@
   "skills": [
    "communication"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -1237,7 +1223,7 @@
   "skills": [
    "supply_chain"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -1251,7 +1237,7 @@
   "skills": [
    "hr_admin"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -1265,7 +1251,7 @@
   "skills": [
    "comp_benefits"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -1279,7 +1265,7 @@
   "skills": [
    "research_methods"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -1293,7 +1279,7 @@
   "skills": [
    "process_analysis"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -1307,7 +1293,7 @@
   "skills": [
    "process_eng"
   ],
-  "checked": "2026-10-20",
+  "checked": "2026-10-30",
   "linkStatus": "200"
  },
  {
@@ -1321,7 +1307,7 @@
   "skills": [
    "ai_tools"
   ],
-  "checked": "2026-10-21",
+  "checked": "2026-10-30",
   "linkStatus": "200",
   "strand": "ai"
  },
@@ -1336,7 +1322,7 @@
   "skills": [
    "ai_tools"
   ],
-  "checked": "2026-10-21",
+  "checked": "2026-10-30",
   "linkStatus": "200",
   "strand": "ai"
  },
@@ -1351,7 +1337,7 @@
   "skills": [
    "communication"
   ],
-  "checked": "2026-10-21",
+  "checked": "2026-10-30",
   "linkStatus": "200",
   "strand": "people"
  },
@@ -1366,7 +1352,7 @@
   "skills": [
    "communication"
   ],
-  "checked": "2026-10-21",
+  "checked": "2026-10-30",
   "linkStatus": "200",
   "strand": "people"
  },
@@ -1379,10 +1365,10 @@
   "cost": "Free courses available (others RM30 to RM1,750)",
   "funding": "HRD Corp",
   "skills": [],
-  "checked": "2026-10-21",
+  "checked": "2026-10-30",
   "linkStatus": "200",
   "catalogOnly": true,
-  "note": "Malaysia's government learning platform with free and paid courses in digital technology, finance, leadership, languages and more. Filter for free courses after you sign up. Ask your counsellor or employer which paid courses HRD Corp funding can cover."
+  "note": "Malaysia's government learning platform with free and paid courses in digital technology, finance, leadership, languages and more. Filter for free courses after you sign up. Ask your advisor or employer which paid courses HRD Corp funding can cover."
  },
  {
   "id": "perkeso_eis",
@@ -1393,10 +1379,10 @@
   "cost": "Free for eligible workers",
   "funding": "PERKESO",
   "skills": [],
-  "checked": "2026-10-21",
+  "checked": "2026-10-30",
   "linkStatus": "200",
   "catalogOnly": true,
-  "note": "Workers insured under the Employment Insurance System (EIS) who lose their job can apply for upskilling and reskilling programmes, career counselling and job matching through MYFutureJobs. Confirm your eligibility with your counsellor or PERKESO."
+  "note": "Workers insured under the Employment Insurance System (EIS) who lose their job can apply for upskilling and reskilling programmes, career counselling and job matching through MYFutureJobs. Confirm your eligibility with your advisor or PERKESO."
  },
  {
   "id": "rakyat_digital",
@@ -1407,7 +1393,7 @@
   "cost": "Free",
   "funding": "Free",
   "skills": [],
-  "checked": "2026-10-21",
+  "checked": "2026-10-30",
   "linkStatus": "200",
   "catalogOnly": true,
   "note": "The government's free digital literacy courses: online banking and e-wallets, spotting scams and false news, staying safe on social media, and AI basics including generative AI and AI safety. A good first step before the job courses if you are new to digital tools."

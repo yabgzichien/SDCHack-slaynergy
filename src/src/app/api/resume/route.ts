@@ -7,6 +7,8 @@ import { loadState, logEvent, saveState } from "@/lib/server/store";
 import { ensureData } from "@/lib/server/refresh";
 
 export const dynamic = "force-dynamic";
+// A background data refresh (run with after()) can take up to a minute: each source fetch has a 60 s timeout.
+export const maxDuration = 60;
 export const runtime = "nodejs";
 
 const MAX_BYTES = 3 * 1024 * 1024;
@@ -65,7 +67,7 @@ export async function POST(req: Request) {
   const aiStatus = !useAi ? "off" : !process.env.GROQ_API_KEY ? "unavailable" : ai ? "used" : "failed";
   const summary = summarise(analysis);
   await saveState(sid, { ...state, resume: summary });
-  await logEvent("resume_scan", sid, { score: summary.score, skills: summary.skillIds.length, ai: aiStatus, aiSkills: ai?.skills.length ?? 0, aiRewrites: ai?.rewrites.length ?? 0 });
+  await logEvent("resume_scan", sid, { score: summary.score, skills: summary.skillIds.length, ai: aiStatus, aiSkills: ai?.skills.length ?? 0, aiUnlisted: ai?.unlisted.length ?? 0, aiRewrites: ai?.rewrites.length ?? 0 });
   // Return the extracted text to this tab so the worker can preview what we read.
   // It is not written to the session, database or logs.
   return NextResponse.json({ analysis, summary, ai, aiStatus, previewText: text });

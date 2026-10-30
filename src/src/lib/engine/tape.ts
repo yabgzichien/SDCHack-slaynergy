@@ -7,13 +7,17 @@ import { moveAllowance, moveLimit } from "../market-math";
 
 // A market's "tape": every trade in time order, so the chart can move in real time.
 //  - history (t < 0): the ~200 simulated forecasters' opening trades, spread over the last 6 hours
-//  - live (t >= 0): simulated forecasters keep re-trading as they update their views, about one trade every 6 seconds
+//  - live (t >= 0): simulated forecasters keep re-trading as they update their views: about one trade every 6 seconds in
+//    the session's first hour, then they calm down (see liveGap), so an old session stays fast to compute
 //  - your orders are merged in at the moment you placed them, and move the price for everyone
 // Everything is a deterministic function of (question, influence weights, your orders, now): no hidden randomness.
 
 export const HISTORY_SECONDS = 6 * 3600;
 const LIVE_EVENTS = 700; // generated up front; more are added on demand as the session clock runs (see extendLive)
-const MEAN_GAP = 6; // seconds between simulated live trades
+const MEAN_GAP = 6; // seconds between simulated live trades in the session's first hour
+// The crowd calms down as the session ages: every request replays the tape from the start, and at one trade every 6 s
+// a week-old session replayed ~100k trades per line and took 13 s (docs/adr/0001).
+export const liveGap = (t: number) => (t < 3600 ? MEAN_GAP : t < 24 * 3600 ? 10 * MEAN_GAP : 100 * MEAN_GAP);
 const LIVE_LIMIT_S = 7 * 24 * 3600; // simulated players keep trading for a week of session time
 export const TAPE_LIQUIDITY = 200; // depth of the live market: a 25-point order moves a mid-priced contract by about 6 cents
 const HIST_PULL = 0.06; // opening trades move the price 6% of the way to each forecaster's view
@@ -63,7 +67,7 @@ function prepare(q: Question, w: Weights, wkey: string): Prepared {
   let t = 0;
   // The same seeded stream continues past the first batch, so the tape stays deterministic however long it runs.
   const next = (): LiveEvent => {
-    t += -Math.log(Math.max(rng(), 1e-9)) * MEAN_GAP;
+    t += -Math.log(Math.max(rng(), 1e-9)) * liveGap(t);
     const f = FORECASTERS[Math.floor(rng() * FORECASTERS.length)];
     const target = clamp(sigmoid(logit(run.beliefs[f.id]) + 0.8 * gaussian(rng)), 0.03, 0.97);
     return { t, agent: f.id, target, budget: 8 * (w[f.id] ?? 1) };

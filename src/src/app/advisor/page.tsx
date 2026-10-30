@@ -1,6 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
-import { Btn, Card, Chip, H, PageTitle, Skeleton } from "@/components/ui";
+import { ArrowLeft } from "lucide-react";
+import { Btn, Card, Chip, H, NextRow, PageTitle, Skeleton } from "@/components/ui";
 import { MeetingItem, useMeetings } from "@/components/Meetings";
 import { dayLabel, MAX_QUESTION, myDay, myTime, TOPICS, upcoming, weekday, windowDays, type Slot, type TopicId } from "@/lib/engine/meetings";
 
@@ -35,6 +36,7 @@ export default function AdvisorPage() {
 
   return (
     <div>
+      <Btn href="/plan" variant="quiet" className="mb-3 -ml-1"><ArrowLeft size={16} aria-hidden />Back to your plan</Btn>
       <PageTitle title="Meet an advisor">
         Jobbery suggests and you decide. If you want a second opinion, book 30 minutes with an advisor, such as an employment officer. They see your profile, the jobs Jobbery suggested and why, and your plan, so you can start from there. Booking is your choice; nothing waits on it.
       </PageTitle>
@@ -122,6 +124,7 @@ export default function AdvisorPage() {
           )}
         </>
       )}
+      <NextRow back="/plan" />
     </div>
   );
 }

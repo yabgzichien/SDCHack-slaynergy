@@ -54,10 +54,10 @@ export function MeetingItem({ m, now, onCancel, onDemo, busy }: { m: Meeting; no
           <p className="mt-2 text-xs text-muted">A suggestion, not a decision. You choose what to do with it.</p>
         </div>
       )}
-      {(onCancel || onDemo) && upcoming(m, now) && (
+      {((onCancel && upcoming(m, now)) || onDemo) && m.status === "booked" && (
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          {onCancel && m.status === "booked" && <Btn variant="quiet" onClick={onCancel} disabled={busy}>Cancel this meeting</Btn>}
-          {onDemo && m.status === "booked" && <button onClick={onDemo} disabled={busy} className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-dashed border-cue px-3 text-xs font-medium text-cueink hover:bg-cuesoft">Demo: skip to after the meeting (sample advice)</button>}
+          {onCancel && upcoming(m, now) && <Btn variant="quiet" onClick={onCancel} disabled={busy}>Cancel this meeting</Btn>}
+          {onDemo && <button onClick={onDemo} disabled={busy} className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-dashed border-cue px-3 text-xs font-medium text-cueink hover:bg-cuesoft">Demo: mark this meeting as finished (sample advice)</button>}
         </div>
       )}
     </div>

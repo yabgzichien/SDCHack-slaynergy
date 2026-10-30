@@ -94,7 +94,7 @@ export type Series = {
   sources: Source[];
   dosm: { publishedAt: Record<string, string>; quarters: DosmQuarter[] };
   epoch: Record<string, EpochSeries>;
-  aei: Record<string, { title: string; tasks: number; coverage: number; usage: number }>;
+  aei: Record<string, { title: string; tasks: number; coverage: number; usage: number; soc2019?: string[] }>;
   ilo: Record<string, { title: string; score: number; gradient: string | null }>;
   market: MarketCalendar;
 };

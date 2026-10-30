@@ -8,6 +8,8 @@ import { anonymise, insertMeeting, listMeetings, loadState, saveState, updateMee
 import { ensureData } from "@/lib/server/refresh";
 
 export const dynamic = "force-dynamic";
+// A background data refresh (run with after()) can take up to a minute: each source fetch has a 60 s timeout.
+export const maxDuration = 60;
 
 const bad = (message: string, status = 400) => NextResponse.json({ error: message }, { status });
 

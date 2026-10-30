@@ -63,4 +63,14 @@ export const UPDATES: Row[] = [
   ["Epoch AI results for {q}, checked from {d}, once late benchmark results are in", "Keputusan Epoch AI untuk {q}, disemak mulai {d}, setelah keputusan penanda aras yang lewat masuk", "Epoch AI {q} 的结果，从 {d} 起核对，届时迟到的基准测试结果已到齐", "Epoch AI முடிவுகள்: {q}; தாமதமான அளவுகோல் முடிவுகள் வந்த பிறகு {d} முதல் சரிபார்க்கப்படும்"],
   ["Your predictions here are practice: the numbers were already out when you made them, so they are not scored.", "Ramalan anda di sini hanyalah latihan: angkanya sudah keluar ketika anda membuatnya, jadi ia tidak dinilai.", "你在这里的预测只是练习：你做预测时数字已经公布，所以不计分。", "இங்கே உங்கள் ஊகங்கள் பயிற்சி மட்டுமே: நீங்கள் அவற்றைச் செய்தபோது எண்கள் ஏற்கெனவே வெளியாகிவிட்டன, அதனால் அவை மதிப்பிடப்படாது."],
   ["New predictions on this question closed on {d}. It settles once the late results are in.", "Ramalan baharu untuk soalan ini ditutup pada {d}. Ia diselesaikan setelah keputusan yang lewat masuk.", "此问题已于 {d} 停止接受新预测。迟到的结果到齐后即揭晓。", "இந்தக் கேள்விக்கான புதிய ஊகங்கள் {d} அன்று மூடப்பட்டன. தாமதமான முடிவுகள் வந்தவுடன் இது தீர்க்கப்படும்."],
+  ["Future Skills Radar", "Radar Kemahiran Masa Depan", "未来技能雷达", "எதிர்காலத் திறன் ரேடார்"],
+  ["Ads {a} · {d}", "Iklan {a} · {d}", "招聘广告 {a} · {d}", "விளம்பரங்கள் {a} · {d}"],
+  ["Ads steady · {d}", "Iklan stabil · {d}", "招聘广告平稳 · {d}", "விளம்பரங்கள் நிலையாக · {d}"],
+  ["AI exposure {#e} · {i}", "Pendedahan AI {e} · {i}", "AI 暴露度 {e} · {i}", "AI வெளிப்பாடு {e} · {i}"],
+  ["AI exposure {#e} · {i} · ads {a} · {d}", "Pendedahan AI {e} · {i} · iklan {a} · {d}", "AI 暴露度 {e} · {i} · 招聘广告 {a} · {d}", "AI வெளிப்பாடு {e} · {i} · விளம்பரங்கள் {a} · {d}"],
+  ["AI exposure {#e} · {i} · ads steady · {d}", "Pendedahan AI {e} · {i} · iklan stabil · {d}", "AI 暴露度 {e} · {i} · 招聘广告平稳 · {d}", "AI வெளிப்பாடு {e} · {i} · விளம்பரங்கள் நிலையாக · {d}"],
+
+
+  ["Safe past 2040 · {i}, {a} · {d}", "Selamat melepasi 2040 · {i}, {a} · {d}", "2040 年后仍安全 · {i}，{a} · {d}", "2040-க்குப் பிறகும் பாதுகாப்பானது · {i}, {a} · {d}"],
+  ["AI could do most of it by {y} · {i}, {a} · {d}", "AI boleh melakukan kebanyakannya menjelang {y} · {i}, {a} · {d}", "到 {y}，AI 可能完成其中大部分 · {i}，{a} · {d}", "{y}-க்குள் AI இதன் பெரும்பகுதியைச் செய்யக்கூடும் · {i}, {a} · {d}"],
 ];

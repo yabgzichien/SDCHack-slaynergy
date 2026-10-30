@@ -2,6 +2,7 @@ import { courseById, courses, skillById, type Course, type SectorId } from "./da
 import { cardForSector } from "./pathway";
 import { durability, type SkillExpiry } from "./expiry";
 import { coverGaps, type Pick, type RoleMatch } from "./matching";
+import { roundToTotal } from "./math";
 
 // HRD Corp's free e-learning hub, open to all Malaysians. Used only when no checked course covers a skill.
 export const ELATIH_URL = "https://elatih.hrdcorp.gov.my/";
@@ -27,9 +28,38 @@ export type PlanKind = "switch" | "reshape" | "bridge";
 export type Plan = {
   kind: PlanKind; stayIn?: string;
   roleId: string; title: string; totalWeeks: number; deadlineWeeks: number; hours: number;
-  steps: PlanStep[]; summary: { layer1: string[]; layer2: string };
+  steps: PlanStep[]; summary: { path: PathContribution; layer2: string };
   note: string;
 };
+// The plan's hours added up by the UN SDG target of each skill it teaches. A step with several skills splits its hours
+// evenly, so the targets plus the untagged hours add up to the plan's total (docs/adr/0003). Every hour of learning
+// (courses and practice) also serves target 4.4, skills for work: a second, separate count, never added to the first.
+export const LEARNING_TARGET = "4.4";
+export type PathContribution = {
+  byTarget: { target: string; hours: number }[]; untagged: number; total: number;
+  learningHours: number; learningTarget: string; courseHours: number; freeCourseHours: number; jobTarget: string | null;
+};
+const isLearning = (st: PlanStep) => st.kind === "course" || st.kind === "programme" || (st.kind === "practice" && st.activity !== "resume" && st.activity !== "meeting");
+export function pathContribution(steps: PlanStep[], jobTarget: string | null): PathContribution {
+  const by = new Map<string, number>();
+  let untagged = 0;
+  for (const st of steps) {
+    if (!st.skills.length) { untagged += st.hours; continue; }
+    for (const k of st.skills) by.set(k.sdgTarget, (by.get(k.sdgTarget) ?? 0) + st.hours / st.skills.length);
+  }
+  const keys = [...by.keys()];
+  const rounded = roundToTotal([...keys.map((k) => by.get(k)!), untagged]);
+  const learning = steps.filter((st) => st.kind === "course" || st.kind === "programme");
+  return {
+    byTarget: keys.map((target, i) => ({ target, hours: rounded[i] })).filter((x) => x.hours > 0).sort((a, b) => b.hours - a.hours || a.target.localeCompare(b.target, undefined, { numeric: true })),
+    untagged: rounded[keys.length], total: rounded.reduce((a, b) => a + b, 0),
+    learningTarget: LEARNING_TARGET,
+    learningHours: Math.round(steps.filter(isLearning).reduce((a, st) => a + st.hours, 0)),
+    courseHours: learning.reduce((a, st) => a + st.hours, 0),
+    freeCourseHours: learning.filter((st) => st.cost.startsWith("Free")).reduce((a, st) => a + st.hours, 0),
+    jobTarget,
+  };
+}
 
 export const skillKey = (ids: string[]) => [...ids].sort().join("+");
 // A course may replace a step only if it is a real course (not a portal) and teaches every skill the step covers.
@@ -57,10 +87,10 @@ function courseSteps(gaps: { skillId: string; expiry: SkillExpiry }[], picksIn: 
     steps.push({
       id: `s${i + 1}`, kind: p.course ? "course" : "programme",
       weekStart: week, weekEnd: week + w - 1,
-      title: p.course ? p.course.title : `Find a free course for ${sk.map((x) => x.name).join(", ")} on e-LATiH, with your counsellor`,
+      title: p.course ? p.course.title : `Find a free course for ${sk.map((x) => x.name).join(", ")} on e-LATiH, with your advisor`,
       provider: p.course?.provider ?? "HRD Corp e-LATiH", url: p.course?.url ?? ELATIH_URL, hours: p.hours, skills: sk, shortLived: short,
       shortLivedNote: short ? "This skill is expected to be automated soon. Learn it for the job, but do not rely on it for the long run." : undefined,
-      funding: p.course ? p.course.funding : "PERKESO training support (to confirm with your counsellor)",
+      funding: p.course ? p.course.funding : "PERKESO training support (to confirm with your advisor)",
       cost: p.course ? p.course.cost : "To be confirmed", course: p.course ?? undefined, checked: p.course?.checked,
       strand: "job", skillKey: skillKey(p.skillIds), swapped: "swapped" in p ? true : undefined,
       alternatives: courses.filter((c) => c.id !== p.course?.id && canSwap(c, skillKey(p.skillIds))).length,
@@ -139,6 +169,9 @@ const notAiOnly = (st: PlanStep) => !(st.skills.length && st.skills.every((k) =>
 
 const aiSkill = () => ({ id: "ai_tools", name: skillById.ai_tools.name, sdgTarget: skillById.ai_tools.sdg.target, sdgWhy: skillById.ai_tools.sdg.why });
 
+// Only employers that pay the HRD Corp levy can claim training, so this is for plans where the person keeps a job.
+export const HRD_NOTE = "If your company pays the HRD Corp levy, ask your employer to claim approved training for you.";
+
 export function buildPlan(m: RoleMatch, hoursPerWeek: number, stayIn?: string, swaps?: Swaps): Plan {
   const { steps: gapSteps } = courseSteps(m.gaps, m.picks, hoursPerWeek, swaps);
   const jobSteps = relayout(gapSteps.filter(notAiOnly), hoursPerWeek);
@@ -162,17 +195,15 @@ export function buildPlan(m: RoleMatch, hoursPerWeek: number, stayIn?: string, s
     hours: apply * hoursPerWeek, skills: [people("communication")], shortLived: false, funding: "Free", cost: "Free",
   });
   week += apply;
-  const layer1 = ["4.4", "8.5"];
-  if (steps.some((s) => s.kind === "course" && s.cost.startsWith("Free"))) layer1.push("4.3");
   return {
     kind: stayIn ? "bridge" : "switch", stayIn,
     roleId: m.roleId, title: m.title, totalWeeks: week - 1, deadlineWeeks: m.deadlineWeeks, hours: m.hours,
     steps,
     summary: {
-      layer1,
+      path: pathContribution(steps, m.sdgTarget),
       layer2: `Your new job as ${m.title} serves UN goal ${m.sdgTarget.split(".")[0]} (target ${m.sdgTarget}): ${m.sdgWhy}`,
     },
-    note: `${stayIn ? `Keep working as ${stayIn.toLowerCase()} for income while you train. ` : ""}A plan is a suggestion. You choose; book an advisor if you want a second opinion.`,
+    note: `${stayIn ? `Keep working as ${stayIn.toLowerCase()} for income while you train. ${HRD_NOTE} ` : ""}A plan is a suggestion. You choose; book an advisor if you want a second opinion.`,
   };
 }
 
@@ -192,13 +223,11 @@ export function buildReshapePlan(job: string, growing: { skillId: string; expiry
   steps.push({ id: "adapt", kind: "adapt", strand: "job", weekStart: week, weekEnd: week + ADAPT_WEEKS - 1, hours: ADAPT_WEEKS * hoursPerWeek, skills: [], shortLived: false, funding: "Free", cost: "Free",
     title: `Take on more work that uses ${names[0] ?? "AI review and checking"} in your job, and show your manager what you learned` });
   week += ADAPT_WEEKS;
-  const layer1 = ["4.4", "8.2"];
-  if (steps.some((s) => s.kind === "course" && s.cost.startsWith("Free"))) layer1.push("4.3");
   return {
     kind: "reshape", roleId: "stay", title: `staying in your job as ${job.toLowerCase()}`,
     totalWeeks: week - 1, deadlineWeeks, hours: picks.reduce((a, p) => a + p.hours, 0) + 2 * ADAPT_WEEKS * hoursPerWeek,
     steps,
-    summary: { layer1, layer2: "Keeping your skills up to date as AI changes your job supports decent work and productivity through upgrading skills (target 8.2)." },
-    note: "A plan is a suggestion. You choose; book an advisor if you want a second opinion.",
+    summary: { path: pathContribution(steps, null), layer2: "Keeping your skills up to date as AI changes your job supports decent work and productivity through upgrading skills (target 8.2)." },
+    note: `${HRD_NOTE} A plan is a suggestion. You choose; book an advisor if you want a second opinion.`,
   };
 }

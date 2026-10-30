@@ -16,13 +16,13 @@ export const isXlsx = (bytes: Uint8Array) => {
   try { const z = unzipSync(bytes, { filter: (f) => f.name === "xl/worksheets/sheet1.xml" }); return !!z["xl/worksheets/sheet1.xml"]; } catch { return false; }
 };
 
-export function readSheet(bytes: Uint8Array): Record<number, Record<string, string>> {
+export function readSheet(bytes: Uint8Array, sheet = "sheet1"): Record<number, Record<string, string>> {
   const z = unzipSync(bytes);
   const sst = z["xl/sharedStrings.xml"] ? strFromU8(z["xl/sharedStrings.xml"]) : "";
   const strings = [...sst.matchAll(/<si>([\s\S]*?)<\/si>/g)].map((m) => m[1].replace(/<[^>]+>/g, ""));
-  const sheet = strFromU8(z["xl/worksheets/sheet1.xml"]);
+  const xml = strFromU8(z[`xl/worksheets/${sheet}.xml`]);
   const rows: Record<number, Record<string, string>> = {};
-  for (const r of sheet.matchAll(/<row r="(\d+)"[^>]*>([\s\S]*?)<\/row>/g)) {
+  for (const r of xml.matchAll(/<row r="(\d+)"[^>]*>([\s\S]*?)<\/row>/g)) {
     const cells: Record<string, string> = {};
     for (const c of r[2].matchAll(/<c r="([A-Z]+)\d+"([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)) {
       const v = (c[3] || "").match(/<v>([\s\S]*?)<\/v>/);
@@ -230,4 +230,32 @@ export function buildStateLabour(lfsCsv: string, wagesCsv: string): { byState: R
     };
   }
   return { byState, lfsQuarter: quarterOfDate(lfsLatest), wagesYear: wagesLatest.slice(0, 4) };
+}
+
+// ---------- DOSM Household Expenditure Survey: monthly spending per person by state ----------
+// HES 2024 "Table 1: Main Statistics" (xlsx) has one sheet per table. Table 1.4 is the median and mean monthly
+// per capita household consumption expenditure by state, 2022 and 2024: household spending divided by everyone
+// in the household, children included. Found by its title, read by its header row, so a reordered workbook still parses.
+export type StateSpending = { median: number; mean: number };
+export function buildHesPerCapita(bytes: Uint8Array): { year: number; byState: Record<string, StateSpending> } {
+  const sheets = Object.keys(unzipSync(bytes, { filter: (f) => /^xl\/worksheets\/sheet\d+\.xml$/.test(f.name) }))
+    .map((f) => f.slice("xl/worksheets/".length, -".xml".length));
+  for (const sheet of sheets) {
+    const rows = readSheet(bytes, sheet);
+    const title = Object.values(rows).map((r) => r.A ?? "").join(" ");
+    if (!/Table 1\.4:/.test(title) || !/per capita/i.test(title)) continue;
+    // The year row reads 2022 | 2024 | 2022 – 2024 under Median (B..D) and again under Mean (F..H).
+    const yearRow = Object.values(rows).find((r) => /^\d{4}$/.test((r.B ?? "").trim()) && /^\d{4}$/.test((r.C ?? "").trim()));
+    if (!yearRow) throw new Error("HES Table 1.4: year row not found");
+    const year = Number(yearRow.C.trim());
+    if (Number(yearRow.G?.trim()) !== year) throw new Error("HES Table 1.4: median and mean columns are not the same year");
+    const byState: Record<string, StateSpending> = {};
+    for (const [id, name] of MY_STATES) {
+      const r = Object.values(rows).find((x) => (x.A ?? "").trim() === name);
+      if (!r) throw new Error(`HES Table 1.4: no row for ${name}`);
+      byState[id] = { median: Math.round(num(r.C)), mean: Math.round(num(r.G)) };
+    }
+    return { year, byState };
+  }
+  throw new Error("HES Table 1.4 (per capita spending by state) not found in the workbook");
 }

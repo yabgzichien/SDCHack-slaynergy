@@ -126,7 +126,7 @@ flowchart TD
     ADV -.->|advice note| I
 
     T[Trends: how AI is changing jobs] -.-> G
-    MK[Market: guess on upcoming data releases] -.->|re-weights the futures| G
+    MK[Market: predict upcoming data releases] -.->|re-weights the futures| G
 ```
 
 **Who uses it**
@@ -136,7 +136,7 @@ flowchart TD
 | **Fresh graduates** entering the workforce | To understand their skills, explore reachable first jobs and build a weekly learning plan |
 | **Everyone in the workforce**, including employed people, career changers, jobseekers and people returning to work | To keep skills relevant, explore growing roles and plan their next career step around their own deadline |
 | **Secondary: advisor**, for example an employment officer | To meet each user once (a mock interview, advice, or anything else they ask), seeing their profile and plan |
-| **Forecasters** (simulated now, real people later) | To make checkable guesses about upcoming data and build a track record |
+| **Forecasters** (simulated now, real people later) | To make checkable predictions about upcoming data and build a track record |
 
 ---
 
@@ -150,13 +150,14 @@ All data is public or synthetic. Every source is a **dated snapshot** saved in t
 |---|---|---|
 | **DOSM Job Market Insights** (2026 Q2 release, 18 Aug 2026) | Online job ads by occupation group, each quarter | Job demand; settles market questions |
 | **Epoch AI benchmarking data** (retrieved 20 Oct 2026, CC-BY) | Best AI test scores over time | How fast AI is improving; settles market questions; history replay |
-| **Anthropic Economic Index** (release 2025-02-10, CC-BY) | Share of each occupation's tasks seen in real AI use | How fast AI is being adopted for each skill |
+| **Anthropic Economic Index** (release 2026-06-26, Claude.ai usage Apr–May 2026, CC-BY; reviewed and re-pinned 29 Oct 2026) | Share of each occupation's tasks seen in real AI use, matched to our job codes with O\*NET 30.0 task lists and O\*NET's 2010-to-2019 code crosswalk | How fast AI is being adopted for each skill |
 | **ILO 2025 GenAI exposure scores** (CC BY 4.0) | Exposure of each occupation (ISCO-08) to generative AI | How much of a skill AI could do |
 | **O\*NET** (CC BY 4.0) | Occupation codes and task lists | Role IDs for 89 roles; task cards |
 | **OpenDOSM** | Employment by industry and state, unemployment (2026 Q2), median wages (2025) | The job map |
+| **DOSM Household Expenditure Survey 2024** (released 8 Oct 2025, Table 1.4) | Median monthly spending per person, by state | Living costs on the job map ("left after typical spending") |
 | **geoBoundaries** (OpenStreetMap, ODbL) | State boundaries | Drawing the map |
 | **UN SDG target text** (sdgs.un.org) | Official wording of each target | SDG tags |
-| **Course list** (97 hand-checked courses, each with a checked date and link status) | Khan Academy, Microsoft Learn, Coursera, Kaggle, freeCodeCamp, HRD Corp, PERKESO and others | The reskilling plan |
+| **Course list** (96 courses, every link opened in a browser on 30 Oct 2026, each with a checked date and link status) | Khan Academy, Microsoft Learn, Coursera, Kaggle, freeCodeCamp, HRD Corp, PERKESO and others | The reskilling plan |
 | **Synthetic** | Demo personas and about 200 simulated forecasters | Demo only, always labelled |
 
 ### How it gets into the app
@@ -186,6 +187,8 @@ This is the part that tracks AI progress and turns it into skill and job signals
 | **Exposure:** how much of an occupation's work AI could do | ILO 2025 exposure scores | Bands: "AI can do a lot / some / little of this work" |
 | **Hiring:** which job groups are hired more or less | DOSM online job ads, by quarter | Office admin share of ads; demand per job group |
 
+On **Statistics**, these lists form the **Future Skills Radar**: good jobs to aim for, jobs most at risk, skills worth learning and skills AI will take over first. Every row shows its number with its source and date, for example "AI exposure 0.70 · ILO 2025 · ads ▼4% · DOSM 2026 Q2". Jobs most at risk are sorted 70% by AI exposure (ILO) and 30% by falling job ads for their group (DOSM), so the list follows the release picker. If an automatic check of DOSM, Epoch AI or OpenDOSM fails, Statistics and Sources say which one and name the last good figures being shown.
+
 These four signals combine into a **skill expiry date**: the year AI is expected to do most of the work behind a skill *and* be in common use for it (see [section 8](#8-handling-uncertainty-how-the-forecasting-works)).
 
 ### Does it update? Yes, automatically.
@@ -202,7 +205,8 @@ When someone uses the app and the last check is old enough, the server checks fo
 - **How often:** daily, and hourly around DOSM's release day.
 - **Updated automatically:** DOSM Job Market Insights, Epoch AI benchmark results, and OpenDOSM's state labour force and wages.
 - **Checked first:** new numbers must pass checks against the numbers they replace. If a check fails, the last good data stays and nothing settles.
-- **Pinned, alert only:** the ILO exposure scores, the Anthropic Economic Index and DOSM's yearly Labour Force Survey tables. A new edition changes how they are measured, so the Sources page flags it for a person to review.
+- **Pinned, alert only:** the ILO exposure scores, the Anthropic Economic Index and DOSM's yearly Labour Force Survey tables. A new edition changes how they are measured, so the Sources page flags it for a person to review. Once reviewed, `npm run data:repin-aei` rebuilds the index into the starting data, and the server then saves one new, logged snapshot with only that source swapped. Nothing settles. The index was re-pinned this way to its 2026-06-26 release on 29 Oct 2026.
+- **Pinned, no alert:** DOSM's spending per person by state (Household Expenditure Survey 2024). It is published only as a spreadsheet on dosm.gov.my, not on OpenDOSM, so the server cannot check it. It stays at the 2024 edition until someone downloads the next one and runs `npm run data:build`.
 
 When new data goes live:
 - Open questions whose answers are in settle, and settlements are final.
@@ -213,6 +217,15 @@ When new data goes live:
 - The snapshot's hash goes into the tamper-evident log.
 
 The next releases are **DOSM Jul–Sep 2026 (17 Nov 2026)** and **Epoch AI Oct–Dec 2026 (checked from 30 Jan 2027)**. Details: [src/README.md](src/README.md#data-and-updating).
+
+### History: see the data as it stood on any past release
+
+On **Statistics** (above the job lists) and **The Forecast** (above the questions), a small picker offers one stop per real DOSM Job Market Insights release: 2025 Q3 (published 28 Apr 2026), 2025 Q4 (25 May 2026), 2026 Q1 (25 Jun 2026) and Today (2026 Q2, 18 Aug 2026). The next release, 17 Nov 2026, is named beside it. Each date was read from that edition's own page on dosm.gov.my.
+
+- **Statistics:** the job and skill lists change to what the data said on that day: DOSM quarters published by then, Epoch AI results settled by then, forecast weights replayed from the answers public by then, and skill dates counted from that day. Today's ILO and Anthropic Economic Index scores are used, and DOSM figures are as DOSM publishes them today.
+- **The Forecast:** shows the questions that were open on that day, in the usual answered-card style, labelled as a past release whose questions have since settled with the real figures, and the AI outlook as it stood then.
+- **What this release changed:** a folded list under the picker gives each change against the release before, with its source and date.
+- **Read-only.** Nothing is settled, saved or changed. The picked release lives in the browser tab's memory; any other page, a reload or a new tab shows today. Engine: `src/src/lib/engine/history.ts` and `viewAsOf` in `view.ts`; API: `GET /api/history`; tests: `src/tests/history.test.ts`.
 
 ---
 
@@ -240,6 +253,8 @@ Adjustments:
 - **Skills at risk:** a role whose skills mostly expire soon loses up to 8 points.
 - **Few jobs nearby:** if the user says where they can work, a role that is scarce there loses up to 6 points. It is moved down, never hidden.
 - **SDG goal bonus:** +12 points if the role serves a goal the user picked.
+
+**Why this score, and what would raise it.** The job page shows each part as points out of its weight (for example "Skill overlap 13 of 25"), then the adjustments, rounded so the lines add up exactly to the score shown. Below, **What would raise it** lists each missing skill and two more hours a week, with the points each would add, for example "Learn procurement and vendor management: +12 points · Alison, 4 hours". The engine works each one out again, so learning that skill gives exactly the predicted score (tested). The points follow the AI speed picker and say which speed they assume. Pointing at a raiser draws its points as a faint striped extension on the bars it would move.
 
 ### Which roles are ranked
 
@@ -287,10 +302,12 @@ The plan is built from the chosen role's skills gap, the user's **hours per week
 
 1. Take the missing skills.
 2. Pick the hand-checked free course that covers the most missing skills per hour.
-3. Repeat until every skill is covered. A skill with no checked course gets a 20-hour HRD Corp e-LATiH placeholder, clearly marked. Jobbery never invents a course.
+3. Repeat until every skill is covered. A skill with no checked course would get a 20-hour HRD Corp e-LATiH placeholder, clearly marked; today every skill has a real course, and a test fails if one ever does not. Jobbery never invents a course.
 4. **Weeks for a step = course hours ÷ hours per week**, rounded up. Steps run one after another, so the plan shows real calendar weeks.
 
 The user can **swap a course** for another one that covers the same skills, where one exists.
+
+**HRD Corp.** Only employers that pay the HRD Corp levy can claim training, so plans for people who keep a job (*bridge* and *reshape*) say: "If your company pays the HRD Corp levy, ask your employer to claim approved training for you." Laid-off workers get the PERKESO note instead.
 
 ### Three strands
 
@@ -333,9 +350,7 @@ The quiz result, prompt and sheet become a **portfolio** the user can show an em
 - **A goal picker re-ranks jobs.** The user picks the goals they care about. Matching roles get a bonus, and the trade-off is shown, e.g. "+3 weeks of training, but this role fights financial crime (SDG 16.4)".
 - **Every plan step shows its SDG**, taken from the skill it teaches.
 - **The Plan page shows each goal as an official-colour UN SDG tile** with its target numbers and the official target text, nothing hidden, including the new job's own goal.
-- **A two-layer summary shows how the career path contributes:**
-  - *By reskilling, you advance* **4.4** (relevant skills for decent jobs) and **8.5** (full employment).
-  - *Your new job serves* the role's own target, e.g. **12.6**.
+- **The path contribution is added up from the plan itself.** The plan's hours are totalled by the SDG target of each skill they teach; a step that teaches several skills splits its hours evenly, so the totals add up to the plan's hours. For Hafiz: 58 hours toward **8.2** and 39 toward **8.5**. Every hour of learning (courses and practice) also counts, separately, toward **4.4** (skills for work): 74 hours. The card also says what share of course hours is free, and which target the new job serves.
 
 Jobbery itself works toward **4.3, 4.4, 8.5, 8.6** (youth not in employment), **1.3** (social protection) and **10.2** (inclusion).
 
@@ -374,6 +389,16 @@ expiry year     = the first year readiness reaches 0.45
 
 The date shown is the average of the three futures, weighted by how likely each one is. Skills that stay below the threshold in every future are marked **lasting**, e.g. people skills.
 
+### Previewing an AI speed
+
+One **AI speed** picker on Skills, Jobs, each job's page and Plan offers **Our forecast** (the default: the three futures, weighted) or **Slow**, **Medium** or **Fast** taken as certain. Picking a speed:
+
+- **Re-ranks the jobs.** The same reachable jobs are scored with that future's adoption speed, which moves skill dates and each job's outlook. That future's office-admin drift also moves the job-demand part of the score: the latest DOSM share is projected four quarters ahead and labelled "projection, not a DOSM figure". Our forecast always uses the real DOSM figures.
+- **Shows what moved.** Jobs shows the best job under that speed ("If AI is Fast, your best job would be ESG and sustainability reporting assistant, instead of Procurement officer"), and each card shows "▲ up 4 under Fast". Each job's page shows its rank and score under that speed.
+- **Never changes the plan by itself.** Plan lists the best job under each speed with a "Plan for … instead" button. The pick is kept in the browser only and never saves the forecast's weights.
+
+AI benchmark pace is a stated part of each future too. It drives the Skills page's "twice as capable every N months" and the prediction market's questions, but not the job ranking. A test checks that Slow and Fast change the suggested job or the top five for at least three of the four demo profiles.
+
 ### The prediction market
 
 ![Prediction market in the webapp](src/public/screenshots/market.jpg)
@@ -385,13 +410,13 @@ The date shown is the average of the three futures, weighted by how likely each 
 3. The app keeps three possible **AI futures**—slow, medium, and fast—and adjusts how much weight it gives each one.
 4. **No future drops below 5%**, so no future is ever ruled out.
 5. **Forecasters are scored with the Brier score.** Influence moves to the most accurate ones.
-6. **About 200 simulated forecasters** (always labelled) earned track records by replaying real past releases. Judges and users can make guesses too, and each question shows what a Yes or No would change ("If Yes: data entry expires around Nov 2029").
+6. **About 200 simulated forecasters** (always labelled) earned track records by replaying real past releases. Judges and users can make predictions too, and each question shows what a Yes or No would change ("If Yes: data entry expires around Nov 2029").
 
 ### Being honest about it
 
 - In the replay of real past releases, the market only just beats a coin flip (Brier 0.242 vs 0.25). One quarter's change is hard to call. The market's main job is to **score the futures in public against official numbers**.
 - The crowd's forecasts for open questions are **hashed into the repo before the data comes out** (`src/anchors/`), so nobody, including us, can change them afterwards.
-- Every screen shows "these are estimates, not certainties", and the user can switch between slow, medium and fast to see their dates under each. To disagree with the chances, they guess on an open question, and that guess is scored like everyone else's.
+- Every screen shows "these are estimates, not certainties", and the user can switch between slow, medium and fast to see their dates under each. To disagree with the chances, they make a prediction on an open question, and that prediction is scored like everyone else's.
 - **Points only, never money.** Gambling law, Muslim users and financially vulnerable users all rule out real money.
 
 ---
@@ -411,9 +436,15 @@ The **Map** page shows, state by state, where jobs like the one the user picked 
 - **The map comes first.** Above it, a compact row of job pills: the user's **suggested** jobs, **their current job** (labelled), and **Other jobs**, a searchable list where every job is marked *Not suggested* (or *Not in reach yet*, preview only). The selected job is highlighted amber and a short "Showing … · Selected" line pulses when it changes.
 - **Colour the map by:** jobs like this · unemployment rate · median pay.
 - **All 16 states as a table** is always shown under the map.
-- **Each state's figures:** an estimated number of jobs like this, median monthly pay, unemployment rate.
-- **"Would you move for work?"** Pick your state, then any other state to compare: "*Selangor has 5.3× as many jobs like this as Kedah*", pay RM X higher or lower a month, unemployment Y points higher or lower.
+- **Each state's figures:** an estimated number of jobs like this, median monthly pay, unemployment rate, and **what is left after typical living costs**: median pay minus DOSM's median monthly spending per person, for example "≈ RM 1,730 a month" in Selangor (RM 3,547 − RM 1,820). The table adds a "Spending per person" column.
+- **"Would you move for work?"** Pick your state, then any other state to compare: "*Selangor has 5.3× as many jobs like this as Kedah*", pay RM X higher or lower a month, about RM X more or less left a month after typical spending, unemployment Y points higher or lower.
 - **A note on cost of living:** higher pay often comes with higher rent. The page suggests talking a move through with an advisor. Jobbery shows the figures; it doesn't tell anyone where to live.
+- **Limits of the living-cost figure** (also shown on the page):
+  - **Children count too.** "Spending per person" is a household's spending shared across everyone in it, children included. One adult living alone usually spends more, so "left after typical spending" flatters a single person's budget.
+  - **Different years.** Pay is the 2025 median; spending is from the 2024 survey.
+  - **All jobs, not this job.** Pay is the state median across all jobs, not pay for the selected job. Spending is a median for the whole state, so city and rural costs are mixed.
+  - **No automatic updates.** The figure is not on OpenDOSM, so it is pinned (see "Does it update?").
+  - Leftover amounts are rounded to RM 10 and labelled "estimate". It is a rough guide, not a budget.
 - **Matching:** your home state alone never changes your matches (a test checks this). Only if you say you won't move do jobs that are scarce in your area move down the ranking. They are never hidden.
 
 Malaysia publishes no open data on job ads by state and occupation. So "jobs like this" is an estimate from DOSM employment by industry and state, scaled to 2026 Q2, and it's labelled as one.
@@ -489,7 +520,7 @@ The hash log records "advice given", the advisor's ID and a **hash of the note, 
 - **Age, gender and background are never inputs.** Matching accepts only a whitelisted input type (`pickInputs`): skills, months, hours, interests, goals, qualification, field and area.
 - **A test proves it.** The same skills with a different age or gender give exactly the same matches. Another test checks that the user's home state alone never changes their matches.
 - **The check runs live** on the **Trust** page (`/trust`, via `/api/fairness`), along with hash-chain verification and the full list of data sources.
-- **Tamper-evident log.** Every guess, settlement, advice note and badge is added to a hash-chained log. Its fingerprint is committed to this repo (`npm run anchor`).
+- **Tamper-evident log.** Every prediction, settlement, advice note and badge is added to a hash-chained log. Its fingerprint is committed to this repo (`npm run anchor`).
 - **Labelled simulations.** Simulated forecasters and demo personas are always marked as made up. No real CVs or personal data are used.
 
 ![Trust page listing public data sources and labelled synthetic data](src/public/screenshots/fairness-sources.jpg)
@@ -860,11 +891,14 @@ Jobbery uses AI in two ways: one GenAI model that reads resumes, and a forecasti
 | **Must-have it serves** | Skills profile intake |
 | **Switch** | "Also let AI read it" checkbox on the resume page (on by default) |
 
-**What it does.** After the rule-based scan, the model reads the resume and returns JSON with two things:
+**What it does.** After the rule-based scan, the model reads the resume and returns JSON with three things:
 1. **Extra skills** the keyword rules missed. They can only come from Jobbery's own list of 80 skills, and each one must quote the resume line it is based on.
-2. **Better wording** for up to 5 weak lines (for example "Responsible for processing loan applications" becomes "Processed [how many] loan applications and verified supporting documents").
+2. **Skills outside the list** (for example *SAP FICO* or *Tally ERP*). These are only shown, never used in matching: "We also saw these on your resume. They are not in our skills list yet, so they are not used in matching." The name must appear in the resume as a whole word, with a quote.
+3. **Better wording** for up to 5 weak lines (for example "Responsible for processing loan applications" becomes "Processed [how many] loan applications and verified supporting documents").
 
 **The user stays in control.** AI skills appear as chips marked "· AI", unticked, with their quoted evidence. Each rewrite has Accept and Reject buttons. An accepted line can be edited, then copied into the user's own resume. Nothing changes unless the user chooses it. The resume score always comes from the rules, never from the AI.
+
+**How the resume score is worked out, on screen.** The score is seven rule-based parts that add up to 100: clear sections (15), contact details (8), results with numbers (22), strong action words (15), length and clarity (10), skills a recruiter can find (12) and readiness for AI-era jobs (18). Under each bar the page shows the rule with the resume's own counts, for example "1 of 4 bullets have a number. 22 × (1 ÷ 4 ÷ 50%), at most 22." A last line adds the parts up: "15 + 8 + 11 + 13.5 + 4 + 12 + 10.8 = 74.3 → 74".
 
 **Checks so it cannot make things up.** The server drops anything the resume does not support (`checkAiRead`, tested in `src/tests/ai-resume.test.ts`):
 - a skill ID that is not on Jobbery's list, or whose quote is not in the resume
@@ -875,7 +909,7 @@ The prompt also tells the model not to add purposes or overstate the role ("help
 
 **Privacy.** The text is read in memory for that request and never stored or logged. If AI is on, it is sent once to Groq to be read. Only counts (how many AI skills and rewrites) go in the event log.
 
-**Fallback.** With no `GROQ_API_KEY`, a Groq error, or a timeout (30 s), the rule scan runs alone and the page says so. Groq's free tier allows about 1,000 output tokens a minute (about two scans). After a rate-limit reply, the server waits once if the wait is short, and otherwise falls back to the rules.
+**Fallback.** With no `GROQ_API_KEY`, a Groq error, or a timeout (30 s), the rule scan runs alone and the page says so. With AI switched off, the page says it only recognises skills from the list. Groq's free tier allows about 1,000 output tokens a minute (about two scans). After a rate-limit reply, the server waits once if the wait is short, and otherwise falls back to the rules.
 
 ### 18.2 A forecast that learns
 

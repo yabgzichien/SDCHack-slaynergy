@@ -16,7 +16,8 @@ export type Finding = {
 export type DetectedSkill = { id: string; name: string; hits: string[]; shelf: "fading" | "lasting" | "mid"; expires: number };
 export type ResumeAnalysis = {
   score: number; band: "strong" | "good" | "needs work"; headline: string;
-  parts: { key: string; label: string; got: number; of: number }[];
+  // calc: the worked sum for this part, with the resume's own counts (shown under each bar).
+  parts: { key: string; label: string; got: number; of: number; calc: string }[];
   words: number; sections: string[]; contact: { email: boolean; phone: boolean; linkedin: boolean };
   occupation: { id: string; title: string; confident: boolean } | null; years: number | null; education: Education | null;
   skills: DetectedSkill[]; inferred: { id: string; name: string }[];
@@ -195,12 +196,12 @@ export function analyseResume(raw: string, weights: Weights3): ResumeAnalysis {
   const parts: ResumeAnalysis["parts"] = [];
   const findings: Finding[] = [];
   const add = (f: Omit<Finding, "points">, got: number, of: number) => findings.push({ ...f, points: { got: Math.round(got * 10) / 10, of } });
-  const part = (key: string, label: string, got: number, of: number) => parts.push({ key, label, got: Math.round(got * 10) / 10, of });
+  const part = (key: string, label: string, got: number, of: number, calc: string) => parts.push({ key, label, got: Math.round(got * 10) / 10, of, calc });
 
   // structure 15
   const hasExp = sections.includes("experience"), hasEdu = sections.includes("education"), hasSk = sections.includes("skills"), hasSum = sections.includes("summary");
   const structure = (hasExp ? 6 : 0) + (hasEdu ? 3 : 0) + (hasSk ? 3 : 0) + (hasSum ? 3 : 0);
-  part("structure", "Clear sections", structure, 15);
+  part("structure", "Clear sections", structure, 15, `Work experience ${hasExp ? 6 : 0} + Education ${hasEdu ? 3 : 0} + Skills ${hasSk ? 3 : 0} + Summary ${hasSum ? 3 : 0}`);
   const missing = [!hasExp && "Work experience", !hasEdu && "Education", !hasSk && "Skills", !hasSum && "Summary"].filter(Boolean) as string[];
   add({ id: "structure", area: "Structure", severity: missing.length >= 2 || !hasExp ? "fix" : missing.length ? "improve" : "good",
     title: missing.length ? `Add clear section headings: ${missing.join(", ")}` : "Your sections are easy to find",
@@ -209,7 +210,7 @@ export function analyseResume(raw: string, weights: Weights3): ResumeAnalysis {
 
   // contact 8
   const cs = (contact.email ? 4 : 0) + (contact.phone ? 4 : 0);
-  part("contact", "Contact details", cs, 8);
+  part("contact", "Contact details", cs, 8, `Email ${contact.email ? 4 : 0} + Phone ${contact.phone ? 4 : 0}`);
   add({ id: "contact", area: "Contact", severity: cs < 8 ? "fix" : "good",
     title: cs < 8 ? `Add your ${[!contact.email && "email", !contact.phone && "phone number"].filter(Boolean).join(" and ")}` : "Email and phone are present",
     why: "If an employer cannot reach you in one step, they move on.", fix: "Put your email and a phone number you answer at the top, in plain text (not inside an image)." }, cs, 8);
@@ -217,7 +218,7 @@ export function analyseResume(raw: string, weights: Weights3): ResumeAnalysis {
   // impact 22
   const fracQ = quantified / nb;
   const impact = bullets.length ? 22 * Math.min(1, fracQ / 0.5) : 0;
-  part("impact", "Results with numbers", impact, 22);
+  part("impact", "Results with numbers", impact, 22, `${quantified} of ${bullets.length} bullets have a number. 22 × (${quantified} ÷ ${bullets.length} ÷ 50%), at most 22.`);
   add({ id: "impact", area: "Impact", severity: fracQ < 0.25 ? "fix" : fracQ < 0.5 ? "improve" : "good",
     title: bullets.length === 0 ? "Describe your work in short bullet points" : fracQ >= 0.5 ? "Many bullets show results with numbers" : `Only ${quantified} of ${bullets.length} bullets include a number`,
     why: "Numbers show scale and make your work easy to compare. 'Processed invoices' says little; '120 invoices a week' says a lot.",
@@ -228,7 +229,7 @@ export function analyseResume(raw: string, weights: Weights3): ResumeAnalysis {
   // verbs 15
   const fracS = strong / nb;
   const verbs = bullets.length ? Math.max(0, 15 * Math.min(1, fracS / 0.6) - 1.5 * weakLines.length) : 0;
-  part("verbs", "Strong action words", verbs, 15);
+  part("verbs", "Strong action words", verbs, 15, `${strong} of ${bullets.length} bullets start with an action word, ${weakLines.length} with a weak phrase. 15 × (${strong} ÷ ${bullets.length} ÷ 60%), at most 15, minus 1.5 × ${weakLines.length}.`);
   const w0 = weakLines[0];
   const wBody = w0 ? stripBullet(w0.text) : "";
   const gm = wBody.match(/(responsible for|in charge of|tasked with|involved in|assisted (?:with|in)|helped (?:with|to)|worked on|duties (?:included|include))\s+(\w+ing)\b\s*(.*)/i);
@@ -245,7 +246,7 @@ export function analyseResume(raw: string, weights: Weights3): ResumeAnalysis {
   const lenOk = words >= 250 && words <= 700 ? 6 : words >= 150 && words <= 900 ? 3 : 0;
   const shortFrac = 1 - longCount / nb;
   const concise = lenOk + 4 * (bullets.length ? shortFrac : 0);
-  part("concise", "Length and clarity", concise, 10);
+  part("concise", "Length and clarity", concise, 10, `${words} words gives ${lenOk} (6 for 250 to 700 words, 3 for 150 to 900). Plus 4 × ${bullets.length - longCount} of ${bullets.length} bullets under 28 words.`);
   add({ id: "concise", area: "Length", severity: words < 150 || words > 900 ? "fix" : words < 250 || words > 700 || longCount > 2 ? "improve" : "good",
     title: words < 250 ? `Your resume is short (${words} words)` : words > 700 ? `Your resume is long (${words} words)` : longCount > 2 ? `${longCount} bullets are longer than 28 words` : `Good length (${words} words)`,
     why: "Most hiring managers skim for under a minute. One page (about 250 to 700 words) is enough for under ten years of experience.",
@@ -254,7 +255,7 @@ export function analyseResume(raw: string, weights: Weights3): ResumeAnalysis {
 
   // skills 12
   const skillPts = Math.min(1, detected.length / 6) * 8 + (hasSk ? 4 : 0);
-  part("skills", "Skills a recruiter can find", skillPts, 12);
+  part("skills", "Skills a recruiter can find", skillPts, 12, `${detected.length} skills found: 8 × (${detected.length} ÷ 6), at most 8. Plus ${hasSk ? 4 : 0} for a Skills section (4 if you have one).`);
   add({ id: "skills", area: "Skills", severity: detected.length < 3 || !hasSk ? "fix" : detected.length < 6 ? "improve" : "good",
     title: !hasSk ? "Add a Skills section" : detected.length < 6 ? `We could find ${detected.length} skills; name more tools and methods` : `We found ${detected.length} skills`,
     why: "Employers search for exact words such as 'Excel', 'SQL', 'reconciliation' or 'AutoCount'. If a skill is not written, it does not exist for the search.",
@@ -263,7 +264,7 @@ export function analyseResume(raw: string, weights: Weights3): ResumeAnalysis {
   // future readiness 18
   const dur = detected.length ? lasting / detected.length : 0;
   const future = 18 * (0.6 * Math.min(1, dur / 0.4) + 0.4 * (hasAi ? 1 : 0));
-  part("future", "Ready for AI-era jobs", future, 18);
+  part("future", "Ready for AI-era jobs", future, 18, `${lasting} of ${detected.length} skills should last: 10.8 × (${lasting} ÷ ${detected.length} ÷ 40%), at most 10.8. Plus ${hasAi ? 7.2 : 0} for working with AI tools (7.2 if shown).`);
   const fadeNames = detected.filter((d) => d.shelf === "fading").map((d) => d.name);
   add({ id: "future", area: "Future-readiness", severity: !hasAi && dur < 0.25 ? "fix" : !hasAi || dur < 0.4 ? "improve" : "good",
     title: !hasAi ? "Show that you can work alongside AI tools" : dur < 0.4 ? "Your resume leans on skills that AI is expected to take over first" : "Your resume shows skills that should last",
@@ -298,7 +299,7 @@ export function analyseResume(raw: string, weights: Weights3): ResumeAnalysis {
 export function summarise(a: ResumeAnalysis): ResumeSummary {
   return {
     score: a.score, band: a.band, scannedAt: new Date().toISOString(), occupationId: a.occupation?.id ?? null, years: a.years,
-    skillIds: a.skills.map((s) => s.id), parts: a.parts,
+    skillIds: a.skills.map((s) => s.id), parts: a.parts.map((p) => ({ key: p.key, label: p.label, got: p.got, of: p.of })),
     findings: a.findings.filter((f) => f.severity !== "good").map((f) => ({ id: f.id, severity: f.severity, title: f.title, fix: f.fix })),
     fadingShare: a.skills.length ? a.futureReadiness.fading / a.skills.length : 0, hasAiTools: a.futureReadiness.hasAiTools,
   };

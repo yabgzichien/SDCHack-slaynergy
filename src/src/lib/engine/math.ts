@@ -10,6 +10,15 @@ export const std = (xs: number[]) => {
   const m = mean(xs);
   return Math.sqrt(xs.reduce((a, b) => a + (b - m) ** 2, 0) / (xs.length - 1));
 };
+// Whole numbers that add up exactly to the rounded total (largest remainder), so a list a judge adds up by hand
+// always matches the total shown next to it. Works for negative values too.
+export function roundToTotal(xs: number[]): number[] {
+  const target = Math.round(xs.reduce((a, b) => a + b, 0) + 1e-9);
+  const out = xs.map((x) => Math.floor(x + 1e-9));
+  let left = target - out.reduce((a, b) => a + b, 0);
+  [...xs.keys()].sort((a, b) => (xs[b] - Math.floor(xs[b] + 1e-9)) - (xs[a] - Math.floor(xs[a] + 1e-9)) || a - b).forEach((i) => { if (left > 0) { out[i] += 1; left -= 1; } });
+  return out;
+}
 export const median = (xs: number[]) => {
   if (!xs.length) return 0;
   const s = [...xs].sort((a, b) => a - b);

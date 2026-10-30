@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { EventView } from "@/lib/engine/world";
-import { LiveBadge } from "./MarketCards";
+import { OpenBadge } from "./MarketCards";
 
 type Feed = { event: string; nowT: number; clockStart: number; strikes: { id: string; label: string; price: number; change1h: number; trades: number; series: [number, number, number][] }[] };
 const clock = (ms: number) => new Date(ms).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
@@ -44,8 +44,8 @@ export function LandingLiveMarket({ event }: { event: EventView }) {
   return (
     <article className="landing-chart-card landing-reveal">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="landing-card-index">LIVE MARKET</span>
-        <LiveBadge />
+        <span className="landing-card-index">THE FORECAST · SIMULATED PLAYERS</span>
+        <OpenBadge event={event} />
       </div>
       <h3 className="mt-2">Will office admin job ads shrink?</h3>
       <p className="mt-1 text-sm text-[var(--muted)]">{main?.label ?? "Drops at all"} in Malaysia&apos;s job ads, {event.title.split(", ").pop()}</p>
@@ -54,7 +54,7 @@ export function LandingLiveMarket({ event }: { event: EventView }) {
         <p className="pb-1 text-sm text-[var(--muted)]">think Yes</p>
         <p className={`num pb-1 text-sm font-semibold ${change > 0 ? "text-[#3f8a52]" : change < 0 ? "text-[#b86a2c]" : "text-[var(--muted)]"}`}>{change === 0 ? "no change" : `${change > 0 ? "▲" : "▼"} ${Math.abs(change)}%`} in the last hour</p>
       </div>
-      <div className="mt-4 h-48" role="img" aria-label={`Live chart of how many players think Yes over the last hour, now ${main ? Math.round(main.price * 100) : 0}%`}>
+      <div className="mt-4 h-48" role="img" aria-label={`Chart of how many simulated players think Yes over the last hour, now ${main ? Math.round(main.price * 100) : 0}%`}>
         {data.length > 1 ? (
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data} margin={{ left: 0, right: 0, top: 6, bottom: 0 }}>

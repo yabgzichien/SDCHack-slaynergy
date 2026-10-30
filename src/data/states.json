@@ -889,5 +889,82 @@
     "elementary": 2.1
    }
   }
- ]
+ ],
+ "spending": {
+  "source": {
+   "id": "spending_state",
+   "name": "DOSM Household Expenditure Survey Report 2024, Table 1.4: Monthly per capita household consumption expenditure by state",
+   "url": "https://www.dosm.gov.my/portal-main/release-content/household-expenditure-survey-report--malaysia--states",
+   "latest": "2024 (released 2025-10-08)",
+   "licence": "DOSM publication"
+  },
+  "year": 2024,
+  "released": "2025-10-08",
+  "byState": {
+   "MY-01": {
+    "median": 1583,
+    "mean": 1957
+   },
+   "MY-02": {
+    "median": 1037,
+    "mean": 1242
+   },
+   "MY-03": {
+    "median": 978,
+    "mean": 1158
+   },
+   "MY-04": {
+    "median": 1568,
+    "mean": 1925
+   },
+   "MY-05": {
+    "median": 1441,
+    "mean": 1695
+   },
+   "MY-06": {
+    "median": 1259,
+    "mean": 1467
+   },
+   "MY-07": {
+    "median": 1775,
+    "mean": 2213
+   },
+   "MY-08": {
+    "median": 1254,
+    "mean": 1493
+   },
+   "MY-09": {
+    "median": 1065,
+    "mean": 1263
+   },
+   "MY-10": {
+    "median": 1820,
+    "mean": 2348
+   },
+   "MY-11": {
+    "median": 1169,
+    "mean": 1339
+   },
+   "MY-12": {
+    "median": 838,
+    "mean": 1129
+   },
+   "MY-13": {
+    "median": 1206,
+    "mean": 1429
+   },
+   "MY-14": {
+    "median": 2378,
+    "mean": 3242
+   },
+   "MY-15": {
+    "median": 1088,
+    "mean": 1343
+   },
+   "MY-16": {
+    "median": 2288,
+    "mean": 2846
+   }
+  }
+ }
 }

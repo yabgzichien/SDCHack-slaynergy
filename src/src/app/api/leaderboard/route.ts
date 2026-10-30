@@ -5,6 +5,8 @@ import { loadState } from "@/lib/server/store";
 import { ensureData } from "@/lib/server/refresh";
 
 export const dynamic = "force-dynamic";
+// A background data refresh (run with after()) can take up to a minute: each source fetch has a 60 s timeout.
+export const maxDuration = 60;
 
 // Every forecaster ranked by accuracy (Brier score), with the influence the Hedge rule gave them.
 export async function GET() {

@@ -324,7 +324,7 @@ function MeetingView({ data, now, act, busy }: { data: Worker & { meeting: Meeti
 // What Jobbery showed the worker: profile, the futures behind the advice, the top jobs and the plan.
 function WorkerDetails({ data }: { data: Worker }) {
   const { state, view, catalog } = data;
-  const { speed } = useSpeed(view);
+  const { speed } = useSpeed();
   const p = state.profile, plan = view.plan;
   if (!p) return <Card><p className="text-sm">This worker has not told Jobbery about themselves yet.</p></Card>;
   const top3 = view.matches.slice(0, 3);

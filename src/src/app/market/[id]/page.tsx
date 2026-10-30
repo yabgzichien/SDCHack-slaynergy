@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useApp } from "@/components/AppProvider";
 import { MarketBoard } from "@/components/MarketBoard";
-import { AnsweredBadge, EventIcon, LiveBadge, topicOf } from "@/components/MarketCards";
+import { AnsweredBadge, EventIcon, OpenBadge, topicOf } from "@/components/MarketCards";
 import { Btn, PageTitle, Skeleton } from "@/components/ui";
 
 // One question: should I buy Yes or No on this release?
@@ -38,7 +38,7 @@ export default function MarketEventPage() {
         </div>
       ) : (
         <div className="-mt-4 mb-5 flex flex-wrap items-center gap-3 rounded-2xl bg-risesoft px-4 py-3 text-sm">
-          <LiveBadge />
+          <OpenBadge event={ev} />
           <span>{ev.closesAt && today() > ev.closesAt ? `Closed for new predictions on ${day(ev.closesAt)}.` : ev.closesAt ? `Open for predictions until ${day(ev.closesAt)}.` : "Open for predictions."} The answer comes from the {ev.settles}.</span>
         </div>
       )}

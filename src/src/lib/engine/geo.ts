@@ -5,6 +5,7 @@ import { GROUP_LABEL, type GroupKey, type SectorId } from "./data";
 //   - workers by state and industry, and by state and occupation group (DOSM Labour Force Survey Report 2024),
 //     scaled to today by each state's employment (OpenDOSM LFS, latest quarter)
 //   - unemployment by state (OpenDOSM LFS, latest quarter) and median monthly wage by state (OpenDOSM, latest year)
+//   - typical spending per person by state (DOSM Household Expenditure Survey 2024, Table 1.4), pinned: see SPENDING
 // DOSM publishes no state figures for single jobs, nor industry and occupation together by state. So "jobs like this" is
 // estimated as the people in a job's industries, times the share of the state's workers in the job's occupation group.
 // The app labels these numbers as estimates.
@@ -17,11 +18,18 @@ export type StateRow = {
   industry: Record<string, number>;
   occupation: Record<string, number>; // employed persons by MASCO major group, thousands
 };
-export type StatesFile = { generatedAt: string; sources: { id: string; name: string; url: string; latest: string; licence: string }[]; industryYear: number; occupationYear: number; nationalIndustry: Record<string, number>; nationalOccupation: Record<string, number>; states: StateRow[] };
+export type SourceRef = { id: string; name: string; url: string; latest: string; licence: string };
+export type Spending = { source: SourceRef; year: number; released: string; byState: Record<StateId, { median: number; mean: number }> };
+export type StatesFile = { generatedAt: string; sources: SourceRef[]; spending?: Spending; industryYear: number; occupationYear: number; nationalIndustry: Record<string, number>; nationalOccupation: Record<string, number>; states: StateRow[] };
 // data/states.json is snapshot 0; newer snapshots swap in through setStates (see setSeries in data.ts).
 export let geo = statesJson as unknown as StatesFile;
 export let STATES = geo.states;
 export let stateById: Record<string, StateRow> = Object.fromEntries(STATES.map((s) => [s.id, s]));
+// Living costs: median monthly spending per person (household spending shared across everyone in it, children included).
+// The table is on dosm.gov.my, not OpenDOSM, so the server never refreshes it and older snapshots do not carry it:
+// it is always read from the bundled data/states.json. A state without a figure shows "not included yet".
+export const SPENDING: Spending | null = (statesJson as unknown as StatesFile).spending ?? null;
+export const spendingOf = (id: StateId): number | null => SPENDING?.byState[id]?.median ?? null;
 export function setStates(next: StatesFile) {
   geo = next;
   STATES = next.states;
@@ -59,6 +67,8 @@ export type StateJobs = {
   share: number;     // share of Malaysia's workers in this kind of work (0..1)
   lq: number;        // concentration: this state's share of its own jobs in this kind of work, against Malaysia's (1 = average)
   uRate: number; medianWage: number; employed: number;
+  spending: number | null;  // median monthly spending per person (RM), or null when not included
+  leftAfter: number | null; // median pay minus that spending: what is left in a typical month (an estimate)
 };
 
 // Workers in a sector's industries, per state, scaled from the report year to the latest labour force quarter.
@@ -78,10 +88,11 @@ export function stateJobs(sector: SectorId, group?: GroupKey): StateJobs[] {
     id: s.id, name: s.name, short: s.short, workers, share: workers / totalWorkers,
     lq: (workers / s.lfs.employed) / (totalWorkers / totalEmployed),
     uRate: s.lfs.uRate, medianWage: s.wages.median, employed: s.lfs.employed,
+    spending: spendingOf(s.id), leftAfter: spendingOf(s.id) === null ? null : s.wages.median - spendingOf(s.id)!,
   }));
 }
 
-export type Move = { to: StateJobs; from: StateJobs | null; times: number | null; wageGap: number | null; uGap: number | null };
+export type Move = { to: StateJobs; from: StateJobs | null; times: number | null; wageGap: number | null; uGap: number | null; leftGap: number | null };
 // What moving from home to another state would mean for one job: how many times as many jobs like it, pay and unemployment.
 export function compareMove(sector: SectorId, home: StateId | null | undefined, to: StateId, group?: GroupKey): Move {
   const all = stateJobs(sector, group);
@@ -92,6 +103,7 @@ export function compareMove(sector: SectorId, home: StateId | null | undefined, 
     times: from && from.workers > 0 ? dest.workers / from.workers : null,
     wageGap: from ? dest.medianWage - from.medianWage : null,
     uGap: from ? dest.uRate - from.uRate : null,
+    leftGap: from && from.leftAfter !== null && dest.leftAfter !== null ? dest.leftAfter - from.leftAfter : null,
   };
 }
 

@@ -6,16 +6,18 @@ import { useSpeed } from "@/components/useSpeed";
 import { useSelectJob } from "@/components/useSelectJob";
 import { BriefWhy, Score, WhyThisJob } from "@/components/JobBits";
 import { JobBadge } from "@/components/JobIcon";
-import { GROUP_LABEL, GROUP_PAY, GROUP_PAY_SOURCE, roleById } from "@/lib/engine/data";
+import { GROUP_LABEL, GROUP_PAY, GROUP_PAY_SOURCE, roleById, sourceById } from "@/lib/engine/data";
 import { stateJobs } from "@/lib/engine/geo";
 import { areaName } from "@/lib/engine/geo";
-import { Bar, Btn, Card, Chip, Estimate, H, More, PageTitle, SdgTag, Skeleton, SourceChip } from "@/components/ui";
+import { Btn, Card, Chip, Estimate, FUTURE_NAME, H, More, PageTitle, SdgTag, Skeleton, SourceChip } from "@/components/ui";
+import { SpeedBar } from "@/components/SpeedBar";
+import { ScoreBreakdown } from "@/components/ScoreBreakdown";
 
 // One question: why does this job score what it does, and what am I missing?
 export default function JobDetailPage() {
   const { view, state, busy } = useApp();
   const { id } = useParams<{ id: string }>();
-  const { speed } = useSpeed(view);
+  const { speed, previewing } = useSpeed();
   const selectJob = useSelectJob();
   if (!view || !state) return <Skeleton lines={6} />;
   const m = view.matches.find((x) => x.roleId === id);
@@ -34,6 +36,7 @@ export default function JobDetailPage() {
   const where = state.profile?.state && state.profile.move && state.profile.move !== "anywhere" ? areaName(state.profile.state, state.profile.move, state.profile.moveTo) : null;
   // Selecting moves on to the next step, the job map, which then shows this job.
   const choose = () => selectJob(m.roleId);
+  const under = previewing ? view.scenarios?.find((s) => s.id === speed)?.roles[m.roleId] : undefined;
   return (
     <div>
       <Link href="/jobs" className="mb-4 inline-block text-sm text-muted underline decoration-control underline-offset-2 hover:text-ink">Jobs</Link>
@@ -51,6 +54,16 @@ export default function JobDetailPage() {
         <Btn onClick={choose} disabled={busy} className="min-h-12 px-6 text-base">{chosen ? "Selected: see it on the job map" : "Select job and see the job map"}</Btn>
       </div>
 
+      <div className="mb-4">
+        <SpeedBar view={view}>
+          {under && (
+            <p className="num mt-2 text-sm font-medium" aria-live="polite">
+              {`If AI is ${FUTURE_NAME[speed]}: number ${under.rank} on your list (number ${m.rank} with Our forecast), score ${Math.round(under.score * 100)} (now ${Math.round(m.score * 100)}).${under.atRisk ? " AI may take over its skills soon." : ""}`}
+            </p>
+          )}
+        </SpeedBar>
+      </div>
+
       <Card tone="raised" className="mb-4">
         <H sub="What you care about, what you know, and what AI will and will not do in this job.">Why this job</H>
         <WhyThisJob m={m} speed={speed} />
@@ -60,25 +73,15 @@ export default function JobDetailPage() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <H sub="Each part is out of 100. Longer bars help more.">Why this score</H>
-          <ul className="space-y-3">
-            {m.parts.map((p) => (
-              <li key={p.key}>
-                <div className="flex justify-between text-sm"><span>{p.label}</span><span className="num">{Math.round(p.value * 100)}</span></div>
-                <div className="mt-1"><Bar value={p.value} label={`${p.label} ${Math.round(p.value * 100)} out of 100`} /></div>
-              </li>
-            ))}
-          </ul>
-          {m.penalty > 0.001 && <p className="num mt-3 text-sm">Minus {Math.round(m.penalty * 100)} because AI may take over some of its skills soon.</p>}
-          {m.localPenalty > 0.001 && where && <p className="num mt-1 text-sm">Minus {Math.round(m.localPenalty * 100)} because jobs like this are {Math.round((1 - (m.localLq ?? 1)) * 100)}% less common in {where} than across Malaysia (an estimate from DOSM state figures). <Link href="/map" className="underline decoration-control underline-offset-2">See the job map</Link></p>}
-          {m.sdgMatch && <p className="num mt-1 text-sm">Plus 12 because it serves a goal you picked.</p>}
+          <ScoreBreakdown roleId={m.roleId} speed={speed} version={`${Math.round(m.score * 1000)}:${state.profile?.hoursPerWeek}:${state.profile?.skills.length}`} />
+          {m.localPenalty > 0.001 && where && <p className="num mt-3 text-sm">Few jobs like this nearby: they are {Math.round((1 - (m.localLq ?? 1)) * 100)}% less common in {where} than across Malaysia (an estimate from DOSM state figures). <Link href="/map" className="underline decoration-control underline-offset-2">See the job map</Link></p>}
           <p className="mt-3 text-sm">Job ads for work like this are {Math.abs(m.demand.trend) < 0.03 ? "steady" : m.demand.trend > 0 ? `up ${Math.abs(m.demand.trend * 100).toFixed(0)}%` : `down ${Math.abs(m.demand.trend * 100).toFixed(0)}%`} compared with earlier in the year.</p>
           <More>
-            <p>The score adds up the parts above, weighted: {m.parts.map((p) => `${p.label.toLowerCase()} ${Math.round(p.weight * 100)}%`).join(", ")}.</p>
+            <p>Each part is scored out of 100, then weighted: {m.parts.map((p) => `${p.label.toLowerCase()} ${Math.round(p.weight * 100)}%`).join(", ")}. The points above are those weighted parts.</p>
             <p>Job demand: {m.demand.label.toLowerCase()} were {m.demand.recent.toFixed(1)}% of online job ads in {m.demand.latest.replace("Q", " Q")}, against their average for {m.demand.period.replace(/Q/g, " Q")}, adjusted for the few quarters available.</p>
             <p>Job code: O*NET-SOC {m.onet}{m.closest ? " (closest match to this title)" : ""}, as listed in the Anthropic Economic Index.</p>
           </More>
-          <div className="mt-1"><SourceChip name="DOSM Job Market Insights" date={`to ${view.world.asOfQuarter.replace("Q", " Q")}`} url="https://www.dosm.gov.my/portal-main/release-content/big-data-analytics-job-market-insights-q22026" /></div>
+          <div className="mt-1"><SourceChip name="DOSM Job Market Insights" date={`to ${view.world.asOfQuarter.replace("Q", " Q")}`} url={view.world.past?.url ?? sourceById.dosm.url} /></div>
         </Card>
 
         <Card>

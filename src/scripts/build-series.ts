@@ -3,7 +3,8 @@
 // re-run this only to rebuild the starting snapshot, or after reviewing a new ILO or AEI release.
 import fs from "node:fs";
 import path from "node:path";
-import { buildAei, buildDosm, buildEpoch, buildIlo, EPOCH } from "../src/lib/datasrc/parse";
+import { buildDosm, buildEpoch, buildIlo, EPOCH } from "../src/lib/datasrc/parse";
+import { AEI_PIN, AEI_SOURCE, buildAeiTasks, keepAeiRows } from "../src/lib/datasrc/aei";
 import { deriveCalendar, quarterOfDay } from "../src/lib/engine/calendar";
 import { prevQuarter, type MarketCalendar, type Series } from "../src/lib/engine/data";
 
@@ -20,7 +21,8 @@ const dosm = buildDosm(new Uint8Array(read("dosm", DOSM_FILE)), DOSM_LATEST);
 // Only complete quarters: the last one that had ended when the Epoch data was retrieved.
 const epochFiles = Object.fromEntries(EPOCH.map((e) => [e.file, text("epoch", e.file)]));
 const epoch = buildEpoch(epochFiles, prevQuarter(quarterOfDay(RETRIEVED)));
-const aei = buildAei(text("aei_2025_02_10", "onet_task_mappings.csv"), text("aei_2025_02_10", "onet_task_statements.csv"));
+const aeiText = (f: string) => text(AEI_PIN.dir, f);
+const aei = buildAeiTasks(keepAeiRows(aeiText(AEI_PIN.usage)), aeiText(AEI_PIN.tasks), aeiText(AEI_PIN.occupations), aeiText(AEI_PIN.crosswalk)).occupations;
 const ilo = buildIlo(new Uint8Array(read("ilo", "ilo.xlsx")));
 
 const data: Omit<Series, "market"> = {
@@ -29,7 +31,7 @@ const data: Omit<Series, "market"> = {
     { id: "ilo", name: "ILO Working Paper 140: Generative AI and Jobs, 2025 update (ISCO-08 exposure scores)", url: "https://www.ilo.org/publications/generative-ai-and-jobs-refined-global-index-occupational-exposure", retrieved: RETRIEVED, latest: "2025 scores", licence: "CC BY 4.0 (ILO; Gmyrek et al. 2025)" },
     { id: "dosm", name: "DOSM Big Data Analytics: Job Market Insights (Job Vacancies Advertised Online)", url: "https://www.dosm.gov.my/portal-main/release-content/big-data-analytics-job-market-insights-q22026", retrieved: RETRIEVED, latest: `${DOSM_LATEST} (published ${DOSM_PUBLISHED})`, next: "2026-11-17", licence: "DOSM open statistics; redistribution terms to be confirmed" },
     { id: "epoch", name: "Epoch AI Capabilities & benchmarking data", url: "https://epoch.ai/benchmarks", retrieved: RETRIEVED, latest: "models to 2026-10-15", licence: "CC-BY 4.0 (Epoch AI)" },
-    { id: "aei", name: "Anthropic Economic Index, release 2025-02-10 (O*NET task usage)", url: "https://huggingface.co/datasets/Anthropic/EconomicIndex", retrieved: RETRIEVED, latest: "2025-02-10 (newer releases exist; not yet parsed)", licence: "CC-BY (data)" },
+    AEI_SOURCE,
   ],
   dosm: { publishedAt: { [DOSM_LATEST]: DOSM_PUBLISHED }, quarters: dosm },
   epoch,

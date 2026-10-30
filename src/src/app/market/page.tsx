@@ -4,12 +4,13 @@ import Link from "next/link";
 import { ArrowRight, Coins, Sparkles, Trophy, Vote } from "lucide-react";
 import { useApp } from "@/components/AppProvider";
 import { PageTitle, Skeleton } from "@/components/ui";
-import { AnsweredBadge, LiveBadge, MarketCard } from "@/components/MarketCards";
+import { AnsweredBadge, MarketCard } from "@/components/MarketCards";
 import { ForecastDetails } from "@/components/ForecastDetails";
 import { MarketTabs } from "@/components/MarketTabs";
 import { ForecastNav } from "@/components/ForecastNav";
 import "./market.css";
 import { nextAnswersLine } from "@/components/ui";
+import { PastQuestionCard, ReleasePicker, dayLabel } from "@/components/History";
 
 const HOW = [
   { icon: Vote, title: "Choose a question", text: "Explore the questions below. Pick an answer, then forecast Yes or No." },
@@ -17,21 +18,22 @@ const HOW = [
   { icon: Trophy, title: "See the result", text: "When official figures arrive, correct predictions earn points and a bigger vote in the forecast." },
 ];
 
-// One question: what can I forecast right now? Layout from the home-page branch; the cards keep the LIVE / Answered styling.
+// One question: what can I forecast right now? Layout from the home-page branch; the cards keep the Open / Answered styling.
 export default function MarketPage() {
-  const { view, refresh } = useApp();
+  const { view, refresh, history } = useApp();
   useEffect(() => { const id = window.setInterval(() => { if (document.visibilityState === "visible") refresh(); }, 8000); return () => window.clearInterval(id); }, [refresh]);
   if (!view) return <Skeleton lines={5} />;
   const w = view.world;
   const released = w.release === 1;
-  const showResults = released && w.settledEvents.length > 0;
+  const past = history.past;
+  const showResults = released && w.settledEvents.length > 0 && !past;
   return (
     <div className="forecast-page">
       <MarketTabs />
       <PageTitle title={<span className="statistics-headline-highlight">The Forecast</span>}>
         Free points, never money. The better your predictions, the more your vote counts in Jobbery&apos;s forecast of how fast AI changes jobs.
       </PageTitle>
-      <p className="mb-6 text-sm text-muted">We automatically check for new releases and update these figures when new data is available.</p>
+      <p className="mb-6 text-sm text-muted">We automatically check for new releases and update these figures when new data is available. Open questions move the forecast slightly, based on all players, mostly simulated (computer-made).</p>
 
       <div className="forecast-layout">
         <ForecastNav showResults={showResults} />
@@ -64,12 +66,22 @@ export default function MarketPage() {
 
           <section id="open-questions" className="forecast-section" aria-labelledby="open-questions-title">
             <div className="forecast-section-heading">
-              <h2 id="open-questions-title" className="flex items-center gap-3">Open questions <LiveBadge /></h2>
-              <span className="forecast-demo-badge">Demo mode</span>
+              <h2 id="open-questions-title" className="flex items-center gap-3">{past ? `Questions open on ${dayLabel(past.stop.day)}` : "Open questions"}</h2>
+              <span className="forecast-demo-badge">{past ? "Past release" : "Demo mode"}</span>
             </div>
-            <p className="forecast-section-description">{released ? `Make your prediction before the next release. ${nextAnswersLine(w.nextAnswers)}` : "Choose a question about Malaysian jobs or AI progress and make your prediction."} The ones outlined in amber are waiting for your prediction.</p>
-            <ul className="grid gap-4 md:grid-cols-2">{w.events.map((e) => <li key={e.id}><MarketCard e={e} /></li>)}</ul>
-            <p className="mt-3 text-sm text-muted">About 200 computer-made players predict alongside you, so the % moves while you watch. <Link href="/leaderboard" className="underline decoration-control underline-offset-2 hover:text-ink">See who predicts best</Link>.</p>
+            <ReleasePicker label="Questions as of" />
+            {past ? (
+              <>
+                <p className="forecast-section-description">These were open on the day DOSM published its {past.stop.label.replace(/^DOSM /, "")} figures. The data has changed since, and every one of them is now settled with the real figures. Predicting is turned off for past releases.</p>
+                <ul className="grid gap-4 md:grid-cols-2">{past.open.map((q) => <li key={q.id}><PastQuestionCard q={q} /></li>)}</ul>
+              </>
+            ) : (
+              <>
+                <p className="forecast-section-description">{released ? `Make your prediction before the next release. ${nextAnswersLine(w.nextAnswers)}` : "Choose a question about Malaysian jobs or AI progress and make your prediction."} The ones outlined in amber are waiting for your prediction.</p>
+                <ul className="grid gap-4 md:grid-cols-2">{w.events.map((e) => <li key={e.id}><MarketCard e={e} /></li>)}</ul>
+                <p className="mt-3 text-sm text-muted">About 200 computer-made players predict alongside you, so the % moves while you watch. <Link href="/leaderboard" className="underline decoration-control underline-offset-2 hover:text-ink">See who predicts best</Link>.</p>
+              </>
+            )}
           </section>
 
           {showResults && (

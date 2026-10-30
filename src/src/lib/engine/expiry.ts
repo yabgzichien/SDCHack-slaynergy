@@ -9,6 +9,15 @@ import type { Weights3 } from "./futures";
 //   adoption  = 1 - exp(-rate x speed x years), rate = 0.15 + 0.6 x (Anthropic Economic Index task coverage)
 //   speed     = the future's adoption multiplier (slow 0.6, medium 1.0, fast 1.6)
 export const NOW = 2026.8;
+// The skill-date clock. Today it is NOW; the history timeline moves it to a past release's day while it builds that
+// day's view (history.ts), then puts it back. The engine is synchronous, so the change never reaches another request.
+let clock = NOW;
+export const nowYear = () => clock;
+export function withNow<T>(year: number, f: () => T): T {
+  const before = clock;
+  clock = year;
+  try { return f(); } finally { clock = before; }
+}
 export const THRESHOLD = 0.45;
 export const HORIZON = 2040;
 
@@ -37,7 +46,7 @@ export function expiryFor(skillId: string, w: Weights3): SkillExpiry {
     if (e <= THRESHOLD) byFuture[f.id] = Infinity;
     else {
       const need = THRESHOLD / e; // adoption needed
-      byFuture[f.id] = NOW + Math.log(1 / (1 - need)) / (rate * f.adoptMult);
+      byFuture[f.id] = clock + Math.log(1 / (1 - need)) / (rate * f.adoptMult);
     }
   }
   const expected = FUTURE_IDS.reduce((a, id) => a + w[id] * Math.min(byFuture[id], HORIZON), 0);
@@ -45,7 +54,7 @@ export function expiryFor(skillId: string, w: Weights3): SkillExpiry {
 }
 
 // 0 (expires now) .. 1 (lasts at least 8 more years)
-export const durability = (x: SkillExpiry) => clamp((x.expected - NOW) / 8, 0, 1);
+export const durability = (x: SkillExpiry) => clamp((x.expected - clock) / 8, 0, 1);
 
 export function fmtYear(y: number) {
   if (!Number.isFinite(y) || y >= HORIZON) return `after ${HORIZON}`;

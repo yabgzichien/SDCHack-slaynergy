@@ -3,6 +3,7 @@ import { skills } from "@/lib/engine/data";
 // GenAI resume reader (Qwen3.8 27B on Groq). It only proposes; the worker accepts or rejects each item.
 // Guards so the model cannot invent anything:
 //  - skills must be ids from Jobbery's own list, and the quoted evidence must appear in the resume
+//  - skills outside the list ("unlisted") are only reported, never matched; their name and quote must appear in the resume
 //  - a rewrite must start from a real line, and may not add numbers that line does not have
 // The resume text is sent for this request only. Nothing is stored or logged.
 
@@ -13,7 +14,9 @@ const MAX_CHARS = 12000;
 
 export type AiSkill = { id: string; name: string; evidence: string };
 export type AiRewrite = { before: string; after: string; why: string };
-export type AiRead = { model: string; skills: AiSkill[]; rewrites: AiRewrite[] };
+export type AiUnlisted = { name: string; evidence: string };
+export type AiRead = { model: string; skills: AiSkill[]; unlisted: AiUnlisted[]; rewrites: AiRewrite[] };
+const MAX_UNLISTED = 8;
 
 const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 const nums = (s: string) => s.match(/\d+(?:[.,]\d+)?/g) ?? [];
@@ -21,9 +24,11 @@ const nums = (s: string) => s.match(/\d+(?:[.,]\d+)?/g) ?? [];
 const SYSTEM = `You read resumes for Jobbery, a career-planning app for fresh graduates and everyone in the workforce in Malaysia.
 Return JSON only, in this shape:
 {"skills":[{"id":"<id from the list>","evidence":"<short exact quote from the resume>"}],
+ "unlisted":[{"name":"<skill or tool, written as in the resume>","evidence":"<short exact quote from the resume>"}],
  "rewrites":[{"before":"<one exact line from the resume>","after":"<improved line>","why":"<one short plain sentence>"}]}
 Rules:
 - skills: only ids from the SKILL LIST. Include a skill only if the resume clearly shows it. The evidence must be copied word for word from the resume.
+- unlisted: up to 8 work skills, tools or certifications the resume clearly shows that are NOT in the SKILL LIST (for example a named software package). Write each name exactly as the resume does. Leave out anything a SKILL LIST id already covers, and leave out soft traits such as "hard-working".
 - rewrites: up to 5 of the weakest work-experience lines. Start "after" with a past-tense action verb, keep it under 25 words, keep every fact.
 - Do not add purposes, outcomes or qualities the line does not state (no "to ensure accuracy", "for compliance", "to support decisions"). Do not overstate the role: "helped with" or "assisted" becomes "Supported", never "Led" or "Conducted".
 - Add one placeholder for the missing scale, for example "Processed [how many] loan applications a month".
@@ -74,18 +79,30 @@ export async function aiReadResume(text: string, apiKey = process.env.GROQ_API_K
 
 // Keep only what the resume itself supports. Exported for tests.
 export function checkAiRead(raw: unknown, resume: string): AiRead {
-  const o = (raw ?? {}) as { skills?: unknown; rewrites?: unknown };
+  const o = (raw ?? {}) as { skills?: unknown; unlisted?: unknown; rewrites?: unknown };
   const text = norm(resume);
   const lines = resume.split("\n").map((l) => l.trim()).filter(Boolean);
   const known = new Map(skills.map((s) => [s.id, s.name]));
   const seen = new Set<string>();
-  const out: AiRead = { model: AI_MODEL, skills: [], rewrites: [] };
+  const out: AiRead = { model: AI_MODEL, skills: [], unlisted: [], rewrites: [] };
+  const knownNames = new Set(skills.map((s) => norm(s.name)));
 
   for (const s of Array.isArray(o.skills) ? o.skills : []) {
     const id = String((s as AiSkill)?.id ?? ""), ev = String((s as AiSkill)?.evidence ?? "").trim();
     if (!known.has(id) || seen.has(id) || !ev || norm(ev).length < 3 || !text.includes(norm(ev))) continue;
     seen.add(id);
     out.skills.push({ id, name: known.get(id)!, evidence: ev.slice(0, 120) });
+  }
+
+  // Not used in matching, only shown, so the worker knows we saw them. The name itself must be in the resume.
+  const named = new Set<string>();
+  for (const u of Array.isArray(o.unlisted) ? o.unlisted : []) {
+    const name = String((u as AiUnlisted)?.name ?? "").trim(), ev = String((u as AiUnlisted)?.evidence ?? "").trim();
+    const n = norm(name);
+    if (!n || n.length < 2 || name.length > 40 || named.has(n) || knownNames.has(n) || !` ${text} `.includes(` ${n} `) || !ev || !text.includes(norm(ev))) continue;
+    named.add(n);
+    out.unlisted.push({ name, evidence: ev.slice(0, 120) });
+    if (out.unlisted.length >= MAX_UNLISTED) break;
   }
 
   for (const w of (Array.isArray(o.rewrites) ? o.rewrites : []).slice(0, 5)) {
