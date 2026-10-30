@@ -14,6 +14,11 @@ describe("translations", () => {
     }
   });
 
+  it("translations write blanks plainly ({n}, never {#n} or {~n}), or the number is never filled in", () => {
+    const bad = ROWS.flatMap((r) => r.slice(1).filter((t) => /\{[#~]\w+\}/.test(t)).map(() => r[0]));
+    expect(bad).toEqual([]);
+  });
+
   it("no translation uses a blank its English text does not have", () => {
     const bad: string[] = [];
     for (const r of ROWS) {

@@ -66,9 +66,9 @@ export const UPDATES: Row[] = [
   ["Future Skills Radar", "Radar Kemahiran Masa Depan", "未来技能雷达", "எதிர்காலத் திறன் ரேடார்"],
   ["Ads {a} · {d}", "Iklan {a} · {d}", "招聘广告 {a} · {d}", "விளம்பரங்கள் {a} · {d}"],
   ["Ads steady · {d}", "Iklan stabil · {d}", "招聘广告平稳 · {d}", "விளம்பரங்கள் நிலையாக · {d}"],
-  ["AI exposure {#e} · {i}", "Pendedahan AI {#e} · {i}", "AI 暴露度 {#e} · {i}", "AI வெளிப்பாடு {#e} · {i}"],
-  ["AI exposure {#e} · {i} · ads {a} · {d}", "Pendedahan AI {#e} · {i} · iklan {a} · {d}", "AI 暴露度 {#e} · {i} · 招聘广告 {a} · {d}", "AI வெளிப்பாடு {#e} · {i} · விளம்பரங்கள் {a} · {d}"],
-  ["AI exposure {#e} · {i} · ads steady · {d}", "Pendedahan AI {#e} · {i} · iklan stabil · {d}", "AI 暴露度 {#e} · {i} · 招聘广告平稳 · {d}", "AI வெளிப்பாடு {#e} · {i} · விளம்பரங்கள் நிலையாக · {d}"],
+  ["AI exposure {#e} · {i}", "Pendedahan AI {e} · {i}", "AI 暴露度 {e} · {i}", "AI வெளிப்பாடு {e} · {i}"],
+  ["AI exposure {#e} · {i} · ads {a} · {d}", "Pendedahan AI {e} · {i} · iklan {a} · {d}", "AI 暴露度 {e} · {i} · 招聘广告 {a} · {d}", "AI வெளிப்பாடு {e} · {i} · விளம்பரங்கள் {a} · {d}"],
+  ["AI exposure {#e} · {i} · ads steady · {d}", "Pendedahan AI {e} · {i} · iklan stabil · {d}", "AI 暴露度 {e} · {i} · 招聘广告平稳 · {d}", "AI வெளிப்பாடு {e} · {i} · விளம்பரங்கள் நிலையாக · {d}"],
 
 
   ["Safe past 2040 · {i}, {a} · {d}", "Selamat melepasi 2040 · {i}, {a} · {d}", "2040 年后仍安全 · {i}，{a} · {d}", "2040-க்குப் பிறகும் பாதுகாப்பானது · {i}, {a} · {d}"],
