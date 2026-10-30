@@ -201,15 +201,21 @@ function Fixes({ analysis: a, onJump }: { analysis: ResumeAnalysis; onJump: () =
   return (
     <div className="space-y-6">
       <Card>
-        <H sub="Points for each area. A full bar is the most you can get.">Where your points come from</H>
-        <ul className="space-y-2.5">
+        <H sub="Points for each area, worked out by fixed rules from what is in your resume. A full bar is the most you can get. No AI is used for the score.">Where your points come from</H>
+        <ul className="space-y-3.5">
           {a.parts.map((p) => (
             <li key={p.key}>
               <div className="flex justify-between text-sm"><span>{p.label}</span><span className="num font-semibold">{p.got} / {p.of}</span></div>
               <div className="mt-1 h-2 rounded-full bg-surface2"><div className="bar-fill h-full rounded-full bg-accent" style={{ width: `${(p.got / p.of) * 100}%` }} /></div>
+              {p.calc && <p className="num mt-1 text-xs leading-snug text-muted">{p.calc}</p>}
             </li>
           ))}
         </ul>
+        <div className="mt-4 border-t border-line pt-3">
+          <p className="text-sm font-semibold">Your score</p>
+          <p className="num mt-0.5 text-sm" data-no-translate>{a.parts.map((p) => p.got).join(" + ")} = {Math.round(a.parts.reduce((x, p) => x + p.got, 0) * 10) / 10} → <strong>{a.score}</strong></p>
+          <p className="mt-1 text-xs text-muted">Rounded to a whole number. The parts add up to 100 at most.</p>
+        </div>
       </Card>
       {groups.map((g) => {
         const list = a.findings.filter((f) => f.severity === g);

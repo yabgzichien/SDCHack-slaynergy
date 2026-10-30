@@ -6,6 +6,7 @@ import { personaState } from "@/lib/engine/review";
 import { pathContribution, HRD_NOTE } from "@/lib/engine/plan";
 import { roundToTotal } from "@/lib/engine/math";
 import { lastGood } from "@/lib/last-good";
+import { analyseResume, SAMPLE_RESUME } from "@/lib/engine/resume";
 
 const now = () => ({ t0: new Date().toISOString() });
 const viewOf = (id: string, extra: object = {}) => computeView({ ...personaState(id)!, clock: now(), ...extra });
@@ -177,5 +178,20 @@ describe("intake and robustness (T12)", () => {
     expect(lastGood("dosm")).toMatch(/^\d{4} Q\d, published \d{1,2} [A-Z][a-z]{2} \d{4}$/);
     expect(lastGood("epoch")).toMatch(/^models to \d{4}-\d{2}-\d{2}$/);
     expect(lastGood("opendosm", "2026-10-20T03:00:00Z")).toBe("loaded 20 Oct 2026");
+  });
+});
+
+describe("how the resume score is worked out", () => {
+  it("shows a worked sum for every part, and the parts add up to the score", () => {
+    const a = analyseResume(SAMPLE_RESUME, { slow: 0.3, medium: 0.5, fast: 0.2 });
+    expect(a.parts.map((p) => p.of).reduce((x, y) => x + y, 0)).toBe(100);
+    for (const p of a.parts) {
+      expect(p.calc.length).toBeGreaterThan(10);
+      expect(p.got).toBeLessThanOrEqual(p.of);
+    }
+    expect(Math.round(a.parts.reduce((x, p) => x + p.got, 0))).toBe(a.score);
+    // The sum for the sections part names exactly the points it gives.
+    const st = a.parts.find((p) => p.key === "structure")!;
+    expect(st.calc.match(/\d+/g)!.map(Number).reduce((x, y) => x + y, 0)).toBe(st.got);
   });
 });
