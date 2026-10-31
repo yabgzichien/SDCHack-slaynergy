@@ -14,7 +14,8 @@ const MAX: Record<string, number> = { overlap: 25, outlook: 30, demand: 20, reac
 
 // Why this score, as points that add up exactly to the score shown, and what would raise it (docs/adr/0003). It follows
 // the AI speed picker. Pointing at (or tapping) a raiser shows, faintly on the bars, the points it would add.
-export function ScoreBreakdown({ roleId, speed, version }: { roleId: string; speed: Speed; version: string }) {
+// onBreakdown hands the lines and total to the page, which shows the equation in its own dropdown.
+export function ScoreBreakdown({ roleId, speed, version, onBreakdown }: { roleId: string; speed: Speed; version: string; onBreakdown?: (b: { lines: ScoreLine[]; total: number } | null) => void }) {
   const [all, setAll] = useState<Record<string, Breakdown> | null>(null);
   const [active, setActive] = useState<string | null>(null);
   const reduce = useReducedMotion();
@@ -24,6 +25,7 @@ export function ScoreBreakdown({ roleId, speed, version }: { roleId: string; spe
     return () => { live = false; };
   }, [roleId, version]);
   const b = all?.[speed] ?? null;
+  useEffect(() => { onBreakdown?.(b ? { lines: b.lines, total: b.total } : null); }, [b, onBreakdown]);
   if (!b) return <div className="h-64 animate-pulse rounded-2xl bg-surface2" aria-label="Working out the score" />;
   const key = (r: Raiser) => r.skillId ?? r.kind;
   const on = b.raisers.find((r) => key(r) === active) ?? null;
@@ -67,8 +69,6 @@ export function ScoreBreakdown({ roleId, speed, version }: { roleId: string; spe
       </ul>
 
       <SkillMarks skills={b.skills} raisers={b.raisers} total={b.total} />
-
-      <ScoreEquation lines={b.lines} total={b.total} />
 
       <div className="mt-5">
         <p className="text-sm font-semibold">What would raise it</p>
@@ -123,14 +123,15 @@ const f2 = (x: number) => x.toFixed(2);
 
 // The same score as an equation. Each part is its value (0 to 1) times its weight; the adjustments are added or taken off.
 // Values are the unrounded ones, so the points shown above are these products rounded to add up to the whole score.
-function ScoreEquation({ lines, total }: { lines: ScoreLine[]; total: number }) {
+// Shown inside the job page's "How we worked this out" dropdown, which already names it.
+export function ScoreEquation({ lines, total }: { lines: ScoreLine[]; total: number }) {
   const parts = lines.filter((l) => MAX[l.key]);
   const adj = lines.filter((l) => !MAX[l.key]);
   const sum = lines.reduce((a, l) => a + l.raw, 0);
   const sign = (x: number) => (x < 0 ? "−" : "+");
   return (
-    <div className="mt-6">
-      <H sub="Each part is a value from 0 to 1, times its weight. Then the adjustments are added or taken off.">How the score is worked out</H>
+    <div className="text-ink">
+      <p className="mb-2 text-sm text-muted">Each part is a value from 0 to 1, times its weight. Then the adjustments are added or taken off.</p>
       <div className="overflow-x-auto rounded-2xl bg-surface p-4 sm:p-5">
         <p className="font-serif text-base italic leading-loose sm:text-lg" style={{ fontFamily: "'Times New Roman', Cambria, serif" }}>
           Score <span className="px-1 not-italic">=</span> 100 <span className="not-italic">×</span> (
