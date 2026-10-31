@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useApp } from "@/components/AppProvider";
@@ -13,7 +14,8 @@ import { areaName } from "@/lib/engine/geo";
 import { Btn, Card, Chip, Estimate, FUTURE_NAME, H, More, PageTitle, SdgTag, Skeleton, SourceChip, sdgName, sdgReport } from "@/components/ui";
 import { SdgIcon } from "@/components/SdgIcon";
 import { SpeedBar } from "@/components/SpeedBar";
-import { ScoreBreakdown } from "@/components/ScoreBreakdown";
+import { ScoreBreakdown, ScoreEquation } from "@/components/ScoreBreakdown";
+import type { ScoreLine } from "@/lib/engine/matching";
 
 // One question: why does this job score what it does, and what am I missing?
 export default function JobDetailPage() {
@@ -21,6 +23,8 @@ export default function JobDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { speed, previewing } = useSpeed();
   const selectJob = useSelectJob();
+  // The score card reports its lines and total, so the dropdown below can show them as an equation.
+  const [formula, setFormula] = useState<{ lines: ScoreLine[]; total: number } | null>(null);
   if (!view || !state) return <Skeleton lines={6} />;
   const m = view.matches.find((x) => x.roleId === id);
   const blocked = view.unreachable.find((x) => x.roleId === id);
@@ -77,13 +81,11 @@ export default function JobDetailPage() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <ScoreBreakdown roleId={m.roleId} speed={speed} version={`${Math.round(m.score * 1000)}:${state.profile?.hoursPerWeek}:${state.profile?.skills.length}`} />
+          <ScoreBreakdown roleId={m.roleId} speed={speed} version={`${Math.round(m.score * 1000)}:${state.profile?.hoursPerWeek}:${state.profile?.skills.length}`} onBreakdown={setFormula} />
           {m.localPenalty > 0.001 && where && <p className="num mt-3 text-sm">Few jobs like this nearby: they are {Math.round((1 - (m.localLq ?? 1)) * 100)}% less common in {where} than across Malaysia (an estimate from DOSM state figures). <Link href="/map" className="underline decoration-control underline-offset-2">See the job map</Link></p>}
           <p className="mt-3 text-sm">Job ads for work like this are {Math.abs(m.demand.trend) < 0.03 ? "steady" : m.demand.trend > 0 ? `up ${Math.abs(m.demand.trend * 100).toFixed(0)}%` : `down ${Math.abs(m.demand.trend * 100).toFixed(0)}%`} compared with earlier in the year.</p>
           <More>
-            <p>Each part is scored out of 100, then weighted: {m.parts.map((p) => `${p.label.toLowerCase()} ${Math.round(p.weight * 100)}%`).join(", ")}. The points above are those weighted parts.</p>
-            <p>Job demand: {m.demand.label.toLowerCase()} were {m.demand.recent.toFixed(1)}% of online job ads in {m.demand.latest.replace("Q", " Q")}, against their average for {m.demand.period.replace(/Q/g, " Q")}, adjusted for the few quarters available.</p>
-            <p>Job code: O*NET-SOC {m.onet}{m.closest ? " (closest match to this title)" : ""}, as listed in the Anthropic Economic Index.</p>
+            {formula ? <ScoreEquation lines={formula.lines} total={formula.total} /> : <div className="h-40 animate-pulse rounded-2xl bg-surface2" aria-label="Working out the score" />}
           </More>
           <div className="mt-1"><SourceChip name="DOSM Job Market Insights" date={`to ${view.world.asOfQuarter.replace("Q", " Q")}`} url={view.world.past?.url ?? sourceById.dosm.url} /></div>
         </Card>
