@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   Award, BookOpen, BriefcaseBusiness, Calculator, CalendarClock, Clock, FlaskConical, GraduationCap, Hammer, HeartPulse,
-  Laptop, Leaf, Library, LoaderCircle, Microscope, Presentation, Scale, ScrollText, Sparkles, Users, Wrench, type LucideIcon,
+  Laptop, Leaf, Library, LoaderCircle, Microscope, Presentation, Scale, ScrollText, SkipForward, Sparkles, Users, Wrench, type LucideIcon,
 } from "lucide-react";
 import { useApp, type Catalog } from "@/components/AppProvider";
 import { StepBar } from "@/components/Journey";
@@ -55,6 +55,20 @@ const sampleDraft = (cat: Catalog): Draft | null => {
   const o = p && occupationById[p.occupation];
   if (!p || !o) return null;
   return { ...blank(cat), name: p.name, status: "working", age: String(p.age), state: p.state ?? "", move: p.state ? "region" : "", occupationId: o.id, education: p.education, study: o.sector, years: p.years, skills: o.skills, months: p.months, hours: p.hoursPerWeek, interests: p.interests, touched: { education: true, study: true, skills: true } };
+};
+
+// What a resume scan fills in on the draft: last job, education, years and every skill it found.
+const applyScan = (x: Draft, a: ResumeAnalysis, cat: Catalog, aiSkills: string[], sample: boolean): Draft => {
+  const occ = a.occupation && cat.occupations.find((o) => o.id === a.occupation!.id);
+  return {
+    ...x,
+    occupationId: occ ? occ.id : x.occupationId,
+    education: a.education ?? (occ ? occ.education : x.education),
+    years: a.years !== null ? Math.round(a.years) : x.years,
+    skills: [...new Set([...a.skills.map((s) => s.id), ...aiSkills, ...(occ ? occ.skills : [])])],
+    resume: { score: a.score, band: a.band, occupation: occ ? occ.title : null, found: a.skills.length, fixes: a.findings.filter((f) => f.severity === "fix").slice(0, 2).map((f) => f.title), sample, aiSkills },
+    touched: { ...x.touched, education: a.education ? true : x.touched.education },
+  };
 };
 
 // The saved profile as a draft, to change one answer and save the lot again. Sessions saved before the relocation question
@@ -150,12 +164,32 @@ function Wizard({ cat, edit, at, onExit }: { cat: Catalog; edit: boolean; at: nu
   const next = () => { if (canGo[step]) go(i + 1); };
   // Saving edits needs every question to still have a valid answer.
   const canSave = STEPS.every((x) => canGo[x]);
-  const finish = async () => {
-    const r = await act("setProfile", { profile: { name: d.name.trim() || "You", age: d.age ? Number(d.age) : null, status: d.status || "working", state: d.state || null, move: d.state && d.move ? d.move : null, moveTo: d.move === "pick" ? d.moveTo : [], occupationId: occ ? d.occupationId : "", education: d.education, study, years: occ ? d.years : 0, skills: d.skills, interests: d.interests, months: d.months, hoursPerWeek: d.hours, budget: "free", synthetic: edit ? !!prof?.synthetic : sample || !!d.resume?.sample, ...(edit && prof?.personaId ? { personaId: prof.personaId } : {}) } });
+  // `dd` is the answers to save: the draft on screen, or the demo answers when the demo skip jumps past the questions.
+  const finish = async (dd: Draft = d, demo = false) => {
+    const o = cat.occupations.find((x) => x.id === dd.occupationId);
+    const field = HAS_FIELD.includes(dd.education) ? dd.study || o?.sector || "" : null;
+    const r = await act("setProfile", { profile: { name: dd.name.trim() || "You", age: dd.age ? Number(dd.age) : null, status: dd.status || "working", state: dd.state || null, move: dd.state && dd.move ? dd.move : null, moveTo: dd.move === "pick" ? dd.moveTo : [], occupationId: o ? dd.occupationId : "", education: dd.education, study: field, years: o ? dd.years : 0, skills: dd.skills, interests: dd.interests, months: dd.months, hoursPerWeek: dd.hours, budget: "free", synthetic: edit ? !!prof?.synthetic : demo || sample || !!dd.resume?.sample, ...(edit && prof?.personaId ? { personaId: prof.personaId } : {}) } });
     if (!r) return;
     if (edit) { onExit(true); return; }
     try { removeStored(sessionStorage, KEY); sessionStorage.setItem("jobbery-results-arrival", "1"); } catch { /* ignore */ }
     router.push("/skills");
+  };
+
+  // Demo skip: Hafiz's answers plus a scan of the demo resume (no AI read, so it is quick and the same every time),
+  // saved at once, then straight to the skill analysis.
+  const [skipping, setSkipping] = useState(false);
+  const demoSkip = async () => {
+    const base = sampleDraft(cat);
+    if (!base || busy || skipping) return;
+    setSkipping(true);
+    try {
+      let dd = base;
+      try {
+        const r = await fetch("/api/resume", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text: SAMPLE_RESUME, ai: false }) });
+        if (r.ok) dd = applyScan(base, (await r.json()).analysis as ResumeAnalysis, cat, [], true);
+      } catch { /* Hafiz's own answers are enough to carry on */ }
+      await finish(dd, true);
+    } finally { setSkipping(false); }
   };
 
   // Enter continues from anywhere on the question, not only from inside a text field.
@@ -201,6 +235,16 @@ function Wizard({ cat, edit, at, onExit }: { cat: Catalog; edit: boolean; at: nu
                   { id: "studying", label: "Studying", sub: "Diploma, degree, master's, PhD or postdoc", icon: GraduationCap },
                 ]} />
             </div>
+            {!edit && (
+              <div className="mt-8">
+                <button type="button" onClick={demoSkip} disabled={busy || skipping} aria-busy={skipping}
+                  className="press flex min-h-16 w-full items-center gap-3 rounded-2xl bg-[#f8c982] px-5 text-left text-[#203b2b] shadow-[0_2px_8px_rgb(201_116_26/0.25)] ring-2 ring-cue hover:bg-[#f5bb62] disabled:opacity-50">
+                  {skipping ? <LoaderCircle size={20} className="shrink-0 animate-spin" aria-hidden /> : <SkipForward size={20} aria-hidden className="shrink-0" />}
+                  <span><span className="block text-base font-semibold">{skipping ? "Loading the demo…" : "Demo skip"}</span><span className="block text-sm">Skip the name, questions and resume. Go straight to the skill analysis, using our demo resume.</span></span>
+                </button>
+                {error && <p role="alert" className="mt-3 text-sm text-negative">{error}</p>}
+              </div>
+            )}
           </Q>
         )}
         {step === "resume" && <ResumeStep d={d} setD={setD} cat={cat} report={report} setReport={setReport} onDone={() => go(i + 1)} autoSample={sample} />}
@@ -461,18 +505,7 @@ function ResumeStep({ d, setD, cat, report, setReport, onDone, autoSample }: { d
       const name = source?.name ?? (sample ? "Demo resume" : "Pasted resume");
       setReport({ analysis: a, ai: j.ai ?? null, aiStatus: j.aiStatus ?? "off", fileName: name, preview: sample ? null : { name, text: String(j.previewText ?? ""), html: j.previewHtml, fileUrl: source?.fileUrl, isPdf: source?.isPdf } });
       const aiSkills = ((j.ai as AiRead | null)?.skills ?? []).map((s) => s.id);
-      setD((x) => {
-        const occ = a.occupation && cat.occupations.find((o) => o.id === a.occupation!.id);
-        return {
-          ...x,
-          occupationId: occ ? occ.id : x.occupationId,
-          education: a.education ?? (occ ? occ.education : x.education),
-          years: a.years !== null ? Math.round(a.years) : x.years,
-          skills: [...new Set([...a.skills.map((s) => s.id), ...aiSkills, ...(occ ? occ.skills : [])])],
-          resume: { score: a.score, band: a.band, occupation: occ ? occ.title : null, found: a.skills.length, fixes: a.findings.filter((f) => f.severity === "fix").slice(0, 2).map((f) => f.title), sample, aiSkills },
-          touched: { ...x.touched, education: a.education ? true : x.touched.education },
-        };
-      });
+      setD((x) => applyScan(x, a, cat, aiSkills, sample));
     } catch {
       if (source?.fileUrl) URL.revokeObjectURL(source.fileUrl);
       setErr("Network problem. Please try again.");
