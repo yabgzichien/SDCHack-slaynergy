@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight } from "lucide-react";
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { EventView } from "@/lib/engine/world";
-import { OpenBadge } from "./MarketCards";
+import { OpenBadge, STRIKE_COLORS } from "./MarketCards";
 
 type Feed = { event: string; nowT: number; clockStart: number; strikes: { id: string; label: string; price: number; change1h: number; trades: number; series: [number, number, number][] }[] };
 const clock = (ms: number) => new Date(ms).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
@@ -32,12 +32,23 @@ export function LandingLiveMarket({ event }: { event: EventView }) {
     return () => { on = false; window.clearTimeout(timer); controller.abort(); };
   }, [event.id]);
   const main = feed?.strikes[1] ?? feed?.strikes[0];
-  const data = useMemo(() => {
-    if (!feed || !main) return [];
+  const chart = useMemo(() => {
+    if (!feed || !main) return { lines: [], points: [], from: 0, to: 0 };
     const from = feed.nowT - WINDOW_S;
-    const pts = main.series.filter(([t]) => t >= from).map(([t, p]) => ({ x: feed.clockStart + t * 1000, p: Math.round(p * 1000) / 10 }));
-    const last = pts[pts.length - 1];
-    return last ? [...pts, { x: feed.clockStart + feed.nowT * 1000, p: last.p }] : pts;
+    const lines = feed.strikes.map((strike, i) => {
+      const pts = strike.series.filter(([t]) => t >= from).map(([t, p]) => ({ x: feed.clockStart + t * 1000, p: Math.round(p * 1000) / 10 }));
+      const last = pts[pts.length - 1];
+      return { id: strike.id, key: `p${i}`, label: strike.label, color: STRIKE_COLORS[i], main: strike.id === main.id, data: last ? [...pts, { x: feed.clockStart + feed.nowT * 1000, p: last.p }] : pts };
+    });
+    const points = [...new Set(lines.flatMap((line) => line.data.map((point) => point.x)))].sort((a, b) => a - b).map((x) => {
+      const row: Record<string, number> = { x };
+      lines.forEach((line) => {
+        const point = line.data.find((item) => item.x === x) ?? line.data.filter((item) => item.x < x).at(-1);
+        if (point) row[line.key] = point.p;
+      });
+      return row;
+    });
+    return { lines, points, from: feed.clockStart + from * 1000, to: feed.clockStart + feed.nowT * 1000 };
   }, [feed, main]);
   const change = main ? Math.round(main.change1h * 100) : 0;
 
@@ -54,18 +65,24 @@ export function LandingLiveMarket({ event }: { event: EventView }) {
         <p className="pb-1 text-sm text-[var(--muted)]">think Yes</p>
         <p className={`num pb-1 text-sm font-semibold ${change > 0 ? "text-[#3f8a52]" : change < 0 ? "text-[#b86a2c]" : "text-[var(--muted)]"}`}>{change === 0 ? "no change" : `${change > 0 ? "▲" : "▼"} ${Math.abs(change)}%`} in the last hour</p>
       </div>
-      <div className="mt-4 h-40 sm:h-44" role="img" aria-label={`Chart of how many simulated players think Yes over the last hour, now ${main ? Math.round(main.price * 100) : 0}%`}>
-        {data.length > 1 ? (
+      <div className="mt-4 flex flex-col items-center">
+        <div className="h-52 w-full sm:h-56" role="img" aria-label={`Chart of how many simulated players think Yes over the last hour across all three question versions, now ${main ? Math.round(main.price * 100) : 0}%`}>
+        {chart.points.length > 1 ? (
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ left: 0, right: 0, top: 6, bottom: 0 }}>
+            <AreaChart data={chart.points} margin={{ left: 0, right: 0, top: 6, bottom: 0 }}>
               <defs><linearGradient id="lp-live" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#a855f7" stopOpacity={0.35} /><stop offset="100%" stopColor="#a855f7" stopOpacity={0} /></linearGradient></defs>
-              <XAxis type="number" dataKey="x" domain={["dataMin", "dataMax"]} tickFormatter={clock} tick={{ fontSize: 11, fill: "#61756a" }} tickCount={4} axisLine={false} tickLine={false} />
+              <XAxis type="number" dataKey="x" domain={[chart.from, chart.to]} tickFormatter={clock} tick={{ fontSize: 11, fill: "#61756a" }} tickCount={4} axisLine={false} tickLine={false} />
               <YAxis domain={[0, 100]} ticks={[0, 50, 100]} tickFormatter={(v) => `${v}%`} orientation="right" width={40} tick={{ fontSize: 11, fill: "#61756a" }} axisLine={false} tickLine={false} />
               <Tooltip formatter={(v) => [`${Number(v).toFixed(0)}%`, "Think Yes"]} labelFormatter={(x) => clock(Number(x))} contentStyle={{ background: "#fff", border: "1px solid #d8e4db", borderRadius: 12 }} />
-              <Area type="stepAfter" dataKey="p" stroke="#a855f7" strokeWidth={2.5} fill="url(#lp-live)" isAnimationActive={false} dot={false} />
+              {chart.lines.filter((line) => !line.main).map((line) => <Line key={line.id} type="stepAfter" dataKey={line.key} stroke={line.color} strokeWidth={2} strokeOpacity={0.8} isAnimationActive={false} dot={false} connectNulls />)}
+              {chart.lines.filter((line) => line.main).map((line) => <Area key={line.id} type="stepAfter" dataKey={line.key} stroke={line.color} strokeWidth={3} fill="url(#lp-live)" isAnimationActive={false} dot={false} connectNulls />)}
             </AreaChart>
           </ResponsiveContainer>
         ) : <div className="h-full animate-pulse rounded-2xl bg-[#e8f1e9]" />}
+        </div>
+        <div className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-[var(--muted)]" aria-label="Chart legend">
+          {chart.lines.map((line) => <span key={line.id} className="inline-flex items-center gap-1.5"><i className="h-2 w-2 rounded-full" style={{ background: line.color }} aria-hidden />{line.label}</span>)}
+        </div>
       </div>
       <p className="landing-data-note">The line updates every few seconds. {main ? `${main.trades.toLocaleString()} predictions so far, ` : ""}mostly by computer-made players. Free points, never money.</p>
       <Link href={`/market/${encodeURIComponent(event.id)}`} className="landing-primary landing-forecast-cta">Make a prediction <ArrowRight size={17} aria-hidden /></Link>
