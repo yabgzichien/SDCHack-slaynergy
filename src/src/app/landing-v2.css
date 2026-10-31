@@ -434,7 +434,7 @@
 .landing-stat-hero strong { flex:none; display:inline-flex; align-items:baseline; gap:6px; font-family:var(--serif); font-size:clamp(56px,6vw,84px); font-weight:700; line-height:.9; letter-spacing:-.04em; color:#092e22; }
 .landing-stat-hero strong span { font-family:var(--sans); font-size:18px; font-weight:600; letter-spacing:0; color:var(--body); }
 .landing-stat-hero p { max-width:360px; color:var(--body); font-size:15px; line-height:1.5; }
-.landing-content .landing-ai-chart { min-height:200px; }
+.landing-content #statistics .landing-ai-chart { min-height:170px; }
 
 /* Forecast: the best prediction leads in the wide card; open questions are a plain list. */
 .landing-content .landing-forecast-grid { grid-template-columns:1.5fr 1fr; }

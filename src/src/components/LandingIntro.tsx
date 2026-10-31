@@ -156,7 +156,6 @@ export function LandingIntro() {
                 {view.radar.risingJobs.slice(0, 3).map((j) => <div key={j.roleId} className="landing-insight-row"><span>{j.title}</span><strong className="landing-tag-rise">{t("Growing")}</strong></div>)}
                 <p className="landing-insight-sub">{t("AI can already do a lot of this work")}</p>
                 {view.radar.decliningJobs.slice(0, 3).map((j) => <div key={j.occupationId} className="landing-insight-row"><span>{j.title}</span><strong className="landing-tag-fall">{t("AI-exposed by {year}", { year: j.earliest.slice(-4) })}</strong></div>)}
-                <Link href="/trends" className="landing-text-link">{t("See all statistics")} <ArrowRight size={16} aria-hidden /></Link>
               </article>
             </div>
           )}
