@@ -7,6 +7,7 @@ import { pathContribution, HRD_NOTE } from "@/lib/engine/plan";
 import { roundToTotal } from "@/lib/engine/math";
 import { lastGood } from "@/lib/last-good";
 import { analyseResume, SAMPLE_RESUME } from "@/lib/engine/resume";
+import { layoutResume } from "@/lib/engine/resume-layout";
 
 const now = () => ({ t0: new Date().toISOString() });
 const viewOf = (id: string, extra: object = {}) => computeView({ ...personaState(id)!, clock: now(), ...extra });
@@ -193,5 +194,23 @@ describe("how the resume score is worked out", () => {
     // The sum for the sections part names exactly the points it gives.
     const st = a.parts.find((p) => p.key === "structure")!;
     expect(st.calc.match(/\d+/g)!.map(Number).reduce((x, y) => x + y, 0)).toBe(st.got);
+  });
+});
+
+describe("resume page layout", () => {
+  it("splits the demo resume into a header, a main column and a side column", () => {
+    const r = layoutResume(SAMPLE_RESUME.split("\n"));
+    expect(r.name).toBe("HAFIZ BIN ROSLI");
+    expect(r.title).toBe("Bank Operations Executive");
+    expect(r.contact[0]).toContain("hafiz.rosli@mail.test");
+    expect(r.main.map((b) => b.key)).toEqual(["summary", "experience"]);
+    expect(r.side.map((b) => b.key)).toEqual(["education", "skills", "personal"]);
+    expect(r.main[1].entries[0]).toEqual({ kind: "role", text: "Operations Executive", org: "Example Bank Berhad", date: "Mar 2021 – Nov 2025" });
+    expect(r.side[1].chips).toContain("Microsoft Excel");
+  });
+  it("keeps every line of a resume with no headings", () => {
+    const lines = ["Aminah worked in a bank for years and looked after the branch accounts every month.", "She also trained new staff at the front desk."];
+    const r = layoutResume(lines);
+    expect(r.main.flatMap((b) => b.entries.map((e) => e.text))).toEqual(lines);
   });
 });

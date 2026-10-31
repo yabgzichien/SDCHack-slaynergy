@@ -41,6 +41,11 @@
   --lane-resume-ink: #4b3a8f;
   --gold: #c99a17;
   --gold-soft: #fbf1cc;
+  --gold-ink: #6b5208;
+  /* Priority: red only for "this could change the result a lot". */
+  --urgent: #c8372d;
+  --urgent-soft: #fdebe8;
+  --urgent-ink: #8a1f17;
   /* Cue: "look here next" (current step, best job, selected job). Amber, so it never reads as green "good". */
   --cue: #c9741a;
   --cue-soft: #ffe9c7;
@@ -67,6 +72,10 @@
   --color-risesoft: var(--rise-soft);
   --color-fall: var(--fall);
   --color-fallsoft: var(--fall-soft);
+  --color-goldink: var(--gold-ink);
+  --color-urgent: var(--urgent);
+  --color-urgentsoft: var(--urgent-soft);
+  --color-urgentink: var(--urgent-ink);
   --color-negative: var(--negative);
   --color-demo: var(--demo);
   --color-demosoft: var(--demo-soft);

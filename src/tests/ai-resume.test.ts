@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { aiReadResume, checkAiRead } from "@/lib/server/ai-resume";
+import { aiProviders, aiReadResume, checkAiRead } from "@/lib/server/ai-resume";
 
 const RESUME = `Work Experience
 - Responsible for processing loan applications and checking documents
@@ -51,7 +51,16 @@ describe("AI resume reader guards", () => {
     expect(checkAiRead({ skills: "x", rewrites: [1, null] }, RESUME)).toMatchObject({ skills: [], rewrites: [] });
   });
 
-  it("returns null without an API key, so the rule scan runs alone", async () => {
-    expect(await aiReadResume(RESUME, "")).toBeNull();
+  it("returns null without any API key, so the rule scan runs alone", async () => {
+    expect(await aiReadResume(RESUME, {})).toBeNull();
+  });
+
+  it("tries RunPod first (needs key and endpoint id), then Groq", () => {
+    expect(aiProviders({})).toEqual([]);
+    expect(aiProviders({ RUNPOD_API_KEY: "k" })).toEqual([]);
+    expect(aiProviders({ GROQ_API_KEY: "g" }).map((p) => p.name)).toEqual(["groq"]);
+    const both = aiProviders({ RUNPOD_API_KEY: "k", RUNPOD_ENDPOINT_ID: "abc", GROQ_API_KEY: "g" });
+    expect(both.map((p) => p.name)).toEqual(["runpod", "groq"]);
+    expect(both[0].url).toBe("https://api.runpod.ai/v2/abc/openai/v1/chat/completions");
   });
 });

@@ -17,6 +17,7 @@ export const UPDATES: Row[] = [
   ["OpenDOSM state labour force and wages", "Tenaga buruh dan gaji negeri OpenDOSM", "OpenDOSM 各州劳动力与工资", "OpenDOSM மாநில தொழிலாளர் படை மற்றும் ஊதியம்"],
   ["{q} not published yet", "{q} belum diterbitkan", "{q} 尚未发布", "{q} இன்னும் வெளியிடப்படவில்லை"],
   ["{q} release loaded", "Keluaran {q} dimuatkan", "已载入 {q} 发布的数据", "{q} வெளியீடு ஏற்றப்பட்டது"],
+  ["{q} release loaded, found with the model's help", "Keluaran {q} dimuatkan, ditemui dengan bantuan model", "已载入 {q} 发布的数据（由模型协助找到）", "{q} வெளியீடு ஏற்றப்பட்டது, மாதிரியின் உதவியுடன் கண்டறியப்பட்டது"],
   ["no new results", "tiada keputusan baharu", "没有新结果", "புதிய முடிவுகள் இல்லை"],
   ["new results loaded", "keputusan baharu dimuatkan", "已载入新结果", "புதிய முடிவுகள் ஏற்றப்பட்டன"],
   ["no new figures", "tiada angka baharu", "没有新数字", "புதிய எண்கள் இல்லை"],

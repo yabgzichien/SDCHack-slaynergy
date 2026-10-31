@@ -17,7 +17,8 @@ import { calendarMoved, deriveCalendar, newlySettled, quarterOfDay } from "../en
 import { makeQuestions, pairOf } from "../engine/questions";
 import { computeWorld } from "../engine/world";
 import { initialState } from "../engine/state";
-import { checkDosm, checkEpoch, checkStates } from "../datasrc/validate";
+import { checkEpoch, checkStates } from "../datasrc/validate";
+import { DEFAULT_MODEL, assistConfig, makeAsk, pickDosmPage, readDosmWorkbook } from "./assist";
 import { checkPinned, fetchDosmRelease, fetchEpoch, fetchStateLabour, EPOCH_ZIP, OPENDOSM, type Alert } from "./sources";
 import { getKv, getSnapshot, insertSnapshot, latestSnapshotId, logSystem, setKv, setKvIf, sha256, type SnapshotRow } from "./store";
 
@@ -33,7 +34,7 @@ const EMPTY: DataStatus = { checkedAt: null, alertsCheckedAt: null, sources: {},
 
 const HOUR = 3600_000, DAY = 24 * HOUR;
 const LOCK_MS = 10 * 60_000;
-const STATUS_KEY = "data_status", LOCK_KEY = "data_refresh_lock";
+const STATUS_KEY = "data_status", LOCK_KEY = "data_refresh_lock", LINKS_KEY = "dosm_links_seen";
 
 const g = globalThis as unknown as { __jobberyData?: { loaded: number | null; lastPeek: number; running: boolean; pinsOk: number | null } };
 const mem = (g.__jobberyData ??= { loaded: null, lastPeek: 0, running: false, pinsOk: null });
@@ -46,11 +47,15 @@ export const refreshDisabled = () => process.env.DATA_REFRESH === "off";
 
 // Load the newest snapshot (seeding snapshot 0 on a fresh database), then start a refresh if one is due.
 export async function ensureData(now: number = Date.now()): Promise<void> {
+  await loadLatest(now);
+  if (!refreshDisabled()) runAfterResponse(() => maybeRefresh(now));
+}
+
+async function loadLatest(now: number) {
   let id = await latestSnapshotId();
   if (id === null) id = await seed();
   if (mem.loaded !== id) await load(id);
   if (mem.pinsOk !== mem.loaded) await applyPins(now);
-  if (!refreshDisabled()) runAfterResponse(() => maybeRefresh(now));
 }
 
 // On Vercel, work left running after the response is sent can be frozen, so a background refresh goes through
@@ -130,14 +135,28 @@ export function refreshInterval(now: number, dosmNext: string | undefined): numb
   return DAY;
 }
 
+// Is a check due? slack lets a scheduled tick that lands a few minutes early still count (an hourly cron would
+// otherwise skip every other hour, because the last check was stamped a little after the previous tick began).
+const isDue = (st: DataStatus, now: number, slack = 0) =>
+  !st.checkedAt || now - Date.parse(st.checkedAt) >= refreshInterval(now, series.sources.find((s) => s.id === "dosm")?.next) - slack;
+
 async function maybeRefresh(now: number) {
   if (mem.running || now - mem.lastPeek < 60_000) return; // look at most once a minute per server
   mem.lastPeek = now;
   try {
-    const st = await readStatus();
-    const due = !st.checkedAt || now - Date.parse(st.checkedAt) >= refreshInterval(now, series.sources.find((s) => s.id === "dosm")?.next);
-    if (due) await runRefresh(now);
+    if (isDue(await readStatus(), now)) await runRefresh(now);
   } catch (e) { console.error("data refresh failed", e); }
+}
+
+// The scheduled check (src/app/api/cron/refresh/route.ts). Same rule as a visit, but awaited so the host keeps the
+// function alive until it finishes, and without the once-a-minute throttle. When nothing is due it only reads the
+// stored last-checked time, so an hourly tick costs one small query.
+export async function refreshIfDue(now: number = Date.now()): Promise<{ ran: boolean; reason: string; snapshot: number | null }> {
+  if (refreshDisabled()) return { ran: false, reason: "refresh is off (DATA_REFRESH=off)", snapshot: null };
+  await loadLatest(now);
+  if (!isDue(await readStatus(), now, 5 * 60_000)) return { ran: false, reason: "not due yet", snapshot: null };
+  const r = await runRefresh(now);
+  return { ran: r.ran, reason: r.ran ? "checked" : "another refresh holds the lock", snapshot: r.snapshot };
 }
 
 // One refresh. Returns what happened (also used by `npm run data:refresh`).
@@ -159,20 +178,32 @@ export async function runRefresh(now: number = Date.now(), opts: { force?: boole
     const changed: string[] = [];
     const today = myDay(now);
 
-    // DOSM Job Market Insights: look for the quarter after the latest one.
+    // DOSM Job Market Insights: look for the quarter after the latest one. The plain rules go first; only when they fail
+    // does the model help (src/lib/server/assist.ts), and what it proposes has to pass the same checks.
     let dosm = cur.dosm, dosmSource = cur.sources.find((s) => s.id === "dosm")!;
     const want = cur.market.dosm.next;
+    const ask = makeAsk();
+    const assistLog = async (e: Record<string, unknown>) => { await logSystem("assist", { source: "dosm", model: assistConfig()?.model ?? DEFAULT_MODEL, ...e }); };
     try {
-      const r = await fetchDosmRelease(want);
-      if (!r.found) mark("dosm", true, `${want.replace("Q", " Q")} not published yet`);
-      else {
-        const bad = checkDosm(cur.dosm.quarters, r.quarters);
-        if (bad) { mark("dosm", false, `rejected: ${bad}`); await logSystem("snapshot_rejected", { source: "dosm", reason: bad }); }
-        else {
-          dosm = { publishedAt: { ...cur.dosm.publishedAt, [want]: cur.dosm.publishedAt[want] ?? today }, quarters: r.quarters };
+      const r = await fetchDosmRelease(want, {
+        knownPage: dosmSource.url,
+        seenFp: await getKv(LINKS_KEY),
+        pick: ask ? (links) => pickDosmPage(ask, links, want, cur.dosm.quarters.at(-1)!.q, assistLog) : undefined,
+      });
+      if (!r.found) {
+        mark("dosm", true, `${want.replace("Q", " Q")} not published yet`);
+        if (r.linksFp) await setKv(LINKS_KEY, r.linksFp); // the model has seen this list of releases; ask again only when it changes
+      } else {
+        const read = await readDosmWorkbook(r.bytes, want, cur.dosm.quarters, ask, assistLog);
+        if (!read.ok) {
+          if (read.kind === "error") mark("dosm", false, `fetch failed: ${read.reason}`);
+          else { mark("dosm", false, `rejected: ${read.reason}`); await logSystem("snapshot_rejected", { source: "dosm", reason: read.reason }); }
+        } else {
+          dosm = { publishedAt: { ...cur.dosm.publishedAt, [want]: cur.dosm.publishedAt[want] ?? today }, quarters: read.quarters };
           dosmSource = { ...dosmSource, url: r.page, retrieved: today, latest: `${want} (published ${dosm.publishedAt[want]})`, next: undefined };
-          mark("dosm", true, `${want.replace("Q", " Q")} release loaded`, true);
-          changed.push(`DOSM Job Market Insights ${want}`);
+          const helped = r.via === "model" || read.via === "model";
+          mark("dosm", true, `${want.replace("Q", " Q")} release loaded${helped ? ", found with the model's help" : ""}`, true);
+          changed.push(`DOSM Job Market Insights ${want}${helped ? " (found with the model's help)" : ""}`);
         }
       }
     } catch (e) { mark("dosm", false, `fetch failed: ${(e as Error).message}`); }

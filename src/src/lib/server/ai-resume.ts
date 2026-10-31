@@ -1,6 +1,7 @@
 import { skills } from "@/lib/engine/data";
 
-// GenAI resume reader (Qwen3.8 27B on Groq). It only proposes; the worker accepts or rejects each item.
+// GenAI resume reader. It only proposes; the worker chooses what to use.
+// Runs on RunPod Serverless (Qwen2.5 14B Instruct, vLLM) first; if that is not set up, fails or times out, Groq (Qwen3.8 27B) is the backup.
 // Guards so the model cannot invent anything:
 //  - skills must be ids from Jobbery's own list, and the quoted evidence must appear in the resume
 //  - skills outside the list ("unlisted") are only reported, never matched; their name and quote must appear in the resume
@@ -8,9 +9,27 @@ import { skills } from "@/lib/engine/data";
 // The resume text is sent for this request only. Nothing is stored or logged.
 
 export const AI_MODEL = "qwen/qwen3.8-27b";
-const URL = "https://api.groq.com/openai/v1/chat/completions";
-const TIMEOUT_MS = 30000;
+export const RUNPOD_MODEL = "Qwen/Qwen2.5-14B-Instruct";
+const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+const RUNPOD_TIMEOUT_MS = 25000; // a cold worker can take longer; then Groq answers instead
+const GROQ_TIMEOUT_MS = 30000;
 const MAX_CHARS = 12000;
+
+type Env = Record<string, string | undefined>;
+type Provider = { name: "runpod" | "groq"; url: string; key: string; model: string; timeout: number; tokenParam: "max_tokens" | "max_completion_tokens" };
+
+// RunPod needs both RUNPOD_API_KEY and RUNPOD_ENDPOINT_ID. Groq needs GROQ_API_KEY. Order = order tried.
+export function aiProviders(env: Env = process.env): Provider[] {
+  const out: Provider[] = [];
+  if (env.RUNPOD_API_KEY && env.RUNPOD_ENDPOINT_ID) {
+    out.push({ name: "runpod", url: `https://api.runpod.ai/v2/${encodeURIComponent(env.RUNPOD_ENDPOINT_ID)}/openai/v1/chat/completions`,
+      key: env.RUNPOD_API_KEY, model: env.RUNPOD_MODEL || RUNPOD_MODEL, timeout: RUNPOD_TIMEOUT_MS, tokenParam: "max_tokens" });
+  }
+  if (env.GROQ_API_KEY) {
+    out.push({ name: "groq", url: GROQ_URL, key: env.GROQ_API_KEY, model: AI_MODEL, timeout: GROQ_TIMEOUT_MS, tokenParam: "max_completion_tokens" });
+  }
+  return out;
+}
 
 export type AiSkill = { id: string; name: string; evidence: string };
 export type AiRewrite = { before: string; after: string; why: string };
@@ -40,17 +59,15 @@ function skillList() {
   return skills.map((s) => `${s.id}: ${s.name}`).join("\n");
 }
 
-export async function aiReadResume(text: string, apiKey = process.env.GROQ_API_KEY): Promise<AiRead | null> {
-  if (!apiKey) return null;
-  const resume = text.slice(0, MAX_CHARS);
+async function callProvider(p: Provider, resume: string): Promise<AiRead | null> {
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
+  const timer = setTimeout(() => ctrl.abort(), p.timeout);
   try {
-    const call = () => fetch(URL, {
+    const call = () => fetch(p.url, {
       method: "POST", signal: ctrl.signal,
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      headers: { Authorization: `Bearer ${p.key}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: AI_MODEL, temperature: 0.2, max_completion_tokens: 2000,
+        model: p.model, temperature: 0.2, [p.tokenParam]: 2000,
         response_format: { type: "json_object" },
         messages: [
           { role: "system", content: SYSTEM },
@@ -69,7 +86,7 @@ export async function aiReadResume(text: string, apiKey = process.env.GROQ_API_K
     if (!r.ok) return null;
     const d = (await r.json()) as { choices?: { message?: { content?: string } }[] };
     const content = d.choices?.[0]?.message?.content ?? "";
-    return checkAiRead(JSON.parse(content.replace(/<think>[\s\S]*?<\/think>/g, "").trim()), resume);
+    return checkAiRead(JSON.parse(content.replace(/<think>[\s\S]*?<\/think>/g, "").trim()), resume, p.model);
   } catch {
     return null;
   } finally {
@@ -77,14 +94,24 @@ export async function aiReadResume(text: string, apiKey = process.env.GROQ_API_K
   }
 }
 
+// Tries each configured provider in turn; null means none worked and the rule scan runs alone.
+export async function aiReadResume(text: string, env: Env = process.env): Promise<AiRead | null> {
+  const resume = text.slice(0, MAX_CHARS);
+  for (const p of aiProviders(env)) {
+    const read = await callProvider(p, resume);
+    if (read) return read;
+  }
+  return null;
+}
+
 // Keep only what the resume itself supports. Exported for tests.
-export function checkAiRead(raw: unknown, resume: string): AiRead {
+export function checkAiRead(raw: unknown, resume: string, model = AI_MODEL): AiRead {
   const o = (raw ?? {}) as { skills?: unknown; unlisted?: unknown; rewrites?: unknown };
   const text = norm(resume);
   const lines = resume.split("\n").map((l) => l.trim()).filter(Boolean);
   const known = new Map(skills.map((s) => [s.id, s.name]));
   const seen = new Set<string>();
-  const out: AiRead = { model: AI_MODEL, skills: [], unlisted: [], rewrites: [] };
+  const out: AiRead = { model, skills: [], unlisted: [], rewrites: [] };
   const knownNames = new Set(skills.map((s) => norm(s.name)));
 
   for (const s of Array.isArray(o.skills) ? o.skills : []) {

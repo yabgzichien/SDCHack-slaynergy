@@ -40,13 +40,16 @@ const PARTS: { key: string; label: string; of: number; formula: React.ReactNode;
     text: "r is the number of found skills expected to last (AI is unlikely to take them over soon), so 40% lasting skills earns full marks on that half; g is 1 if the resume shows work with AI tools." },
 ];
 
-export function ResumeScoreExplain({ resume }: { resume: ResumeSummary }) {
+const LINK = "mt-1 text-sm underline decoration-control underline-offset-2 hover:text-ink";
+
+// className restyles the button that opens the explainer; by default it is a small link.
+export function ResumeScoreExplain({ resume, className = LINK }: { resume: Pick<ResumeSummary, "score" | "parts">; className?: string }) {
   const ref = useRef<HTMLDialogElement>(null);
   const got = (key: string) => resume.parts?.find((p) => p.key === key)?.got;
   return (
     <>
       <button type="button" onClick={() => ref.current?.showModal()}
-        className="mt-1 text-sm underline decoration-control underline-offset-2 hover:text-ink">
+        className={className}>
         Learn how it&apos;s scored
       </button>
       <dialog ref={ref} aria-labelledby="resume-score-title" onClick={(e) => { if (e.target === ref.current) ref.current?.close(); }}

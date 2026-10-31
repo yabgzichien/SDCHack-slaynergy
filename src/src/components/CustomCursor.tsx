@@ -22,6 +22,9 @@ export function CustomCursor() {
         hide();
         return;
       }
+      // A modal <dialog> draws above every z-index, so the cursor has to live inside it to stay visible.
+      const host = (target instanceof Element && target.closest("dialog[open]")) || document.body;
+      if (cursor.parentElement !== host) host.appendChild(cursor);
       cursor.style.transform = `translate3d(${event.clientX - 30}px, ${event.clientY - 3}px, 0)`;
       cursor.style.visibility = "visible";
       document.body.classList.add("has-site-cursor");

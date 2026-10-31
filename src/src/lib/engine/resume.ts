@@ -2,6 +2,7 @@ import kw from "../../../data/skill-keywords.json";
 import { occupations, skills, skillById, type Education } from "./data";
 import { expiryFor, NOW } from "./expiry";
 import type { Weights3 } from "./futures";
+import { SECTION_RE, cleanHeading, isBullet, stripBullet, wc } from "./resume-layout";
 
 // Rule-based resume scanner. No AI model, no network, nothing stored: the text lives only in memory for the request.
 // The optional AI reader (src/lib/server/ai-resume.ts) adds suggestions on top; the score always comes from here.
@@ -32,15 +33,6 @@ export type ResumeSummary = {
 };
 
 const KEYWORDS = kw as Record<string, string[]>;
-const SECTION_RE: Record<string, RegExp> = {
-  summary: /^(professional\s+)?(summary|profile|objective|about me|career objective)\b/i,
-  experience: /^(work(ing)?\s+)?(experience|history)|^employment|^career history|^professional experience/i,
-  education: /^(education|qualifications?|academic)/i,
-  skills: /^(technical\s+|key\s+|core\s+)?(skills|competenc)/i,
-  projects: /^projects?\b/i,
-  certifications: /^(certifications?|training|courses|licen[cs]es)/i,
-  other: /^(languages?|references?|referees?|achievements?|awards?|interests?|volunteer)/i,
-};
 const WEAK = /\b(responsible for|duties (included|include)|in charge of|worked on|helped (with|to)|assisted (with|in)|tasked with|involved in|handled various|various tasks)\b/i;
 const STRONG = new Set("processed reconciled reduced increased improved led built created designed automated analysed analyzed prepared managed delivered resolved streamlined trained negotiated audited implemented developed coordinated monitored achieved launched saved cut verified reviewed maintained cleared issued settled investigated recovered approved disbursed onboarded standardised standardized introduced migrated documented compiled tracked supported".split(" "));
 const GERUND: Record<string, string> = {
@@ -75,9 +67,6 @@ const OCC_WORDS: Record<string, string[]> = {
   cs_exec: ["customer service executive", "customer service officer", "call centre", "contact centre"],
 };
 
-const wc = (s: string) => (s.match(/\S+/g) ?? []).length;
-const isBullet = (s: string) => /^([-•*–·▪●◦]|\d+[.)])\s+/.test(s);
-const stripBullet = (s: string) => s.replace(/^([-•*–·▪●◦]|\d+[.)])\s+/, "");
 const clip = (s: string, n = 140) => (s.length > n ? s.slice(0, n - 1) + "…" : s);
 
 function monthsOf(text: string): number | null {
@@ -114,7 +103,7 @@ export function analyseResume(raw: string, weights: Weights3): ResumeAnalysis {
   rawLines.forEach((l) => {
     const short = wc(l) <= 5 && !isBullet(l);
     if (short) {
-      const clean = l.replace(/[:\-–_=*#]+$/g, "").replace(/^[#*\s]+/, "").trim();
+      const clean = cleanHeading(l);
       for (const [k, re] of Object.entries(SECTION_RE)) {
         if (re.test(clean)) { cur = k; if (!sections.includes(k)) sections.push(k); break; }
       }

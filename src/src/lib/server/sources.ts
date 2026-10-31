@@ -1,7 +1,9 @@
 // Fetchers for the public sources the server refreshes by itself, and the version checks for the pinned ones.
 // Every fetcher returns data or throws; refresh.ts turns a throw into "kept the last good data" plus the reason.
-import { buildDosm, buildEpoch, buildStateLabour, EPOCH, isXlsx, parseCsv, unzipCsvs, type StateLabour } from "../datasrc/parse";
-import type { DosmQuarter, EpochSeries } from "../engine/data";
+import { createHash } from "node:crypto";
+import { buildEpoch, buildStateLabour, EPOCH, isXlsx, parseCsv, unzipCsvs, type StateLabour } from "../datasrc/parse";
+import { releaseLinks, type ReleaseLink } from "../datasrc/mapping";
+import type { EpochSeries } from "../engine/data";
 
 const TIMEOUT_MS = 60_000;
 const MAX_BYTES = 40 * 1024 * 1024;
@@ -40,18 +42,52 @@ export async function fetchStateLabour(): Promise<{ byState: Record<string, Stat
 export const dosmPageUrl = (q: string) => `https://www.dosm.gov.my/portal-main/release-content/big-data-analytics-job-market-insights-q${q[5]}${q.slice(0, 4)}`;
 const DOC_URL = "https://www.dosm.gov.my/portal-main/release-document-log?release_document_id=";
 
-export type DosmFetch = { found: false; page: string } | { found: true; page: string; doc: string; quarters: DosmQuarter[] };
-export async function fetchDosmRelease(q: string): Promise<DosmFetch> {
-  const page = dosmPageUrl(q);
+// found: the workbook's bytes, not yet read (src/lib/server/assist.ts reads them, by rules first). via says how the page
+// was found: by the naming pattern above, or, when that fails, by a model choosing from DOSM's own list of releases.
+export type DosmFetch =
+  | { found: false; page: string; linksFp?: string }
+  | { found: true; page: string; doc: string; bytes: Uint8Array; via: "pattern" | "model" };
+export type PagePicker = (links: ReleaseLink[]) => Promise<string | null>;
+
+async function workbookOnPage(page: string): Promise<{ doc: string; bytes: Uint8Array } | null> {
   const html = await textOf(page);
   const ids = [...new Set([...html.matchAll(/release_document_id=(\d+)/g)].map((m) => m[1]))];
   for (const id of ids) {
     let b: Uint8Array;
     try { b = await bytes(DOC_URL + id); } catch { continue; }
-    if (!isXlsx(b)) continue;
-    return { found: true, page, doc: DOC_URL + id, quarters: buildDosm(b, q) };
+    if (isXlsx(b)) return { doc: DOC_URL + id, bytes: b };
   }
-  return { found: false, page };
+  return null;
+}
+
+// A release's archive page lists the other releases in its series; that list is what a model may choose from.
+export const dosmArchiveUrl = (page: string) => page.replace("/release-content/", "/release-archive/");
+
+// opts.pick is the model fallback: it runs only when the guessed page has no workbook, and only when the list of releases
+// differs from the one last seen (opts.seenFp), so a quiet day costs no model call.
+export async function fetchDosmRelease(q: string, opts: { knownPage?: string; seenFp?: string | null; pick?: PagePicker } = {}): Promise<DosmFetch> {
+  const page = dosmPageUrl(q);
+  let guessError: unknown = null;
+  try {
+    const r = await workbookOnPage(page);
+    if (r) return { found: true, page, ...r, via: "pattern" };
+  } catch (e) { guessError = e; }
+  if (!opts.pick || !opts.knownPage) {
+    if (guessError) throw guessError;
+    return { found: false, page };
+  }
+  let links: ReleaseLink[] = [];
+  try { links = releaseLinks(await textOf(dosmArchiveUrl(opts.knownPage)), [opts.knownPage, page]); } catch { /* the archive is only a help */ }
+  const linksFp = createHash("sha256").update(links.map((l) => l.url).join("\n")).digest("hex");
+  if (links.length && linksFp !== opts.seenFp) {
+    const url = await opts.pick(links);
+    if (url) {
+      const r = await workbookOnPage(url);
+      if (r) return { found: true, page: url, ...r, via: "model" };
+    }
+  }
+  if (guessError && !links.length) throw guessError;
+  return { found: false, page, linksFp };
 }
 
 // ---------- Epoch AI benchmarking data ----------

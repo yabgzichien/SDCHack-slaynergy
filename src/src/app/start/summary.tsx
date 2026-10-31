@@ -7,16 +7,12 @@ import { useApp, type Catalog } from "@/components/AppProvider";
 import { StepBar } from "@/components/Journey";
 import { useT } from "@/components/I18nProvider";
 import { Btn } from "@/components/ui";
-import { STATES } from "@/lib/engine/geo";
 import { HAS_FIELD, STEPS, STEP_ICON, STEP_LABEL, type Step } from "./steps";
 
 // A fact with no label sits under a heading that already says what it is.
 type Fact = { label?: string; value: ReactNode; wide?: boolean };
 type Block = { step: Step; title: string; facts: Fact[] };
 
-const RELOCATE: Record<string, string> = {
-  stay: "No, only in my state", region: "Yes, to nearby states", pick: "Yes, to states I choose", anywhere: "Yes, anywhere in Malaysia",
-};
 
 function Chips({ items, empty }: { items: string[]; empty: string }) {
   if (!items.length) return <>{empty}</>;
@@ -39,7 +35,6 @@ export function AnswersSummary({ cat, saved, onEdit, onStartOver, onContinue }: 
   const studying = p.status === "studying";
   const occ = cat.occupations.find((o) => o.id === p.occupationId);
   const sector = (id: string | null | undefined) => (id ? cat.sectors.find((s) => s.id === id)?.label ?? (id === "other" ? "Something else" : id) : "");
-  const stateName = STATES.find((s) => s.id === p.state)?.name;
   const resume = state?.resume;
   // Plain English with the number in it: the page translator matches these against the "{#n} months" style rows.
   const count = (k: number, unit: string) => `${k} ${unit}${k === 1 ? "" : "s"}`;
@@ -70,11 +65,6 @@ export function AnswersSummary({ cat, saved, onEdit, onStartOver, onContinue }: 
     ] },
     { step: "interests", title: STEP_LABEL.interests, facts: [
       { wide: true, value: <Chips items={p.interests.map((id) => cat.interests.find((x) => x.id === id)?.label ?? id)} empty={none} /> },
-    ] },
-    { step: "where", title: STEP_LABEL.where, facts: [
-      { label: "State you live in", value: stateName ?? "Prefer not to say" },
-      ...(stateName ? [{ label: "Would you relocate for a job?", value: RELOCATE[p.move ?? "anywhere"] ?? RELOCATE.anywhere }] : []),
-      ...(stateName && p.move === "pick" && p.moveTo?.length ? [{ label: "States you would move to", wide: true, value: <Chips items={p.moveTo.map((id) => STATES.find((s) => s.id === id)?.name ?? id)} empty={none} /> }] : []),
     ] },
   ];
 
@@ -122,7 +112,7 @@ export function AnswersSummary({ cat, saved, onEdit, onStartOver, onContinue }: 
           </div>
 
           <div className="mt-10 flex flex-wrap items-center justify-between gap-3">
-            <Btn variant="quiet" onClick={onStartOver}>{p.synthetic ? "Answer for myself" : "Answer the questions again"}</Btn>
+            {p.synthetic ? <span /> : <Btn variant="quiet" onClick={onStartOver}>Answer the questions again</Btn>}
             <Btn onClick={onContinue} className="min-h-12 px-6 text-base">Show my results</Btn>
           </div>
         </section>

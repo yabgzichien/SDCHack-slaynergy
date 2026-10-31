@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { analyseResume, summarise } from "@/lib/engine/resume";
-import { aiReadResume } from "@/lib/server/ai-resume";
+import { aiProviders, aiReadResume } from "@/lib/server/ai-resume";
 import { computeWorld } from "@/lib/engine/world";
 import { getSessionId } from "@/lib/server/session";
 import { loadState, logEvent, saveState } from "@/lib/server/store";
@@ -14,30 +14,32 @@ export const runtime = "nodejs";
 const MAX_BYTES = 3 * 1024 * 1024;
 const bad = (message: string, status = 400) => NextResponse.json({ error: message }, { status });
 
-async function extract(file: File): Promise<string> {
+async function extract(file: File): Promise<{ text: string; html?: string }> {
   const name = file.name.toLowerCase();
   const buf = Buffer.from(await file.arrayBuffer());
   if (name.endsWith(".pdf") || file.type === "application/pdf") {
     const { extractText, getDocumentProxy } = await import("unpdf");
     const pdf = await getDocumentProxy(new Uint8Array(buf));
     const { text } = await extractText(pdf, { mergePages: true });
-    return Array.isArray(text) ? text.join("\n") : text;
+    return { text: Array.isArray(text) ? text.join("\n") : text };
   }
   if (name.endsWith(".docx")) {
     const mammoth = await import("mammoth");
-    return (await mammoth.extractRawText({ buffer: buf })).value;
+    const [raw, html] = await Promise.all([mammoth.extractRawText({ buffer: buf }), mammoth.convertToHtml({ buffer: buf })]);
+    return { text: raw.value, html: html.value };
   }
-  if (name.endsWith(".txt") || name.endsWith(".md") || file.type.startsWith("text/")) return buf.toString("utf8");
+  if (name.endsWith(".txt") || name.endsWith(".md") || file.type.startsWith("text/")) return { text: buf.toString("utf8") };
   throw new Error("Please upload a PDF, Word (.docx) or text file, or paste the text.");
 }
 
 // The resume text is processed in memory for this request only (and, if the worker allows it, sent to the
-// Groq API once to read it). It is never stored or logged;
+// AI model once to read it). It is never stored or logged;
 // only the score, the skills you confirm and your findings summary are kept in your session.
 export async function POST(req: Request) {
   await ensureData();
   const sid = (await getSessionId())!;
   let text = "";
+  let previewHtml: string | undefined;
   let useAi = true;
   try {
     const type = req.headers.get("content-type") ?? "";
@@ -47,7 +49,7 @@ export async function POST(req: Request) {
       if (!(file instanceof File)) return bad("No file received.");
       useAi = form.get("ai") !== "0";
       if (file.size > MAX_BYTES) return bad("That file is larger than 3 MB. Please upload a smaller one.", 413);
-      text = await extract(file);
+      ({ text, html: previewHtml } = await extract(file));
     } else {
       const body = (await req.json()) as { text?: string; ai?: boolean };
       text = String(body.text ?? "");
@@ -64,11 +66,11 @@ export async function POST(req: Request) {
   // The rule scan always runs; the AI read is optional and only adds suggestions on top of it.
   const [analysis, read] = [analyseResume(text, world.weights), useAi ? await aiReadResume(text) : null];
   const ai = read && { ...read, skills: read.skills.filter((s) => !analysis.skills.some((d) => d.id === s.id)) };
-  const aiStatus = !useAi ? "off" : !process.env.GROQ_API_KEY ? "unavailable" : ai ? "used" : "failed";
+  const aiStatus = !useAi ? "off" : !aiProviders().length ? "unavailable" : ai ? "used" : "failed";
   const summary = summarise(analysis);
   await saveState(sid, { ...state, resume: summary });
   await logEvent("resume_scan", sid, { score: summary.score, skills: summary.skillIds.length, ai: aiStatus, aiSkills: ai?.skills.length ?? 0, aiUnlisted: ai?.unlisted.length ?? 0, aiRewrites: ai?.rewrites.length ?? 0 });
-  // Return the extracted text to this tab so the worker can preview what we read.
+  // Return the text (and a Word file's formatting) to this tab so the worker sees their own resume in the report.
   // It is not written to the session, database or logs.
-  return NextResponse.json({ analysis, summary, ai, aiStatus, previewText: text });
+  return NextResponse.json({ analysis, summary, ai, aiStatus, previewText: text, previewHtml });
 }

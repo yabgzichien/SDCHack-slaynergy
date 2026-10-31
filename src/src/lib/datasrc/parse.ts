@@ -35,7 +35,7 @@ export function readSheet(bytes: Uint8Array, sheet = "sheet1"): Record<number, R
 }
 
 // ---------- DOSM Job Market Insights: online job ads by occupation group, one row per quarter ----------
-const DOSM_GROUPS = {
+export const DOSM_GROUPS = {
   managers: "Managers",
   professionals: "Professionals",
   technicians: "Technicians and associate professionals",
@@ -46,20 +46,42 @@ const DOSM_GROUPS = {
   elementary: "Elementary Occupations",
 } as const;
 
+// Where the occupation table sits in the workbook. Normally found by its labels (see buildDosm); when DOSM changes the
+// layout, a model may propose one (src/lib/datasrc/mapping.ts), and the same extraction below reads it.
+export type DosmGroupKey = keyof typeof DOSM_GROUPS;
+export type SheetMap = {
+  headerRow: number; // the row whose cells say Q1..Q4 over the quarterly columns
+  labelCol: string; // the column holding the row labels
+  totalLabel: string; // the label of the all-occupations row
+  groups: Record<DosmGroupKey, string>; // the label of each occupation row
+  quarterCols: string[]; // the quarterly columns, oldest first
+};
+
 // latestQuarter labels the last quarterly column; the workbook only says Q1..Q4, so earlier columns count back from it.
-export function buildDosm(bytes: Uint8Array, latestQuarter: string): DosmQuarter[] {
+export function buildDosm(bytes: Uint8Array, latestQuarter: string, map?: SheetMap): DosmQuarter[] {
   const rows = readSheet(bytes);
-  const headerRow = Object.entries(rows).find(([, c]) => c.B === "Occupation");
-  if (!headerRow) throw new Error("DOSM workbook: 'Occupation' header row not found");
-  const hn = Number(headerRow[0]);
-  const header = headerRow[1];
+  const labelCol = map?.labelCol ?? "B";
+  let hn: number, header: Record<string, string>;
+  if (map) {
+    hn = map.headerRow;
+    header = rows[hn];
+    if (!header) throw new Error(`DOSM workbook: no header row ${hn}`);
+  } else {
+    const headerRow = Object.entries(rows).find(([, c]) => c.B === "Occupation");
+    if (!headerRow) throw new Error("DOSM workbook: 'Occupation' header row not found");
+    hn = Number(headerRow[0]);
+    header = headerRow[1];
+  }
+  const span = map ? 30 : 14;
   const find = (label: string) => {
-    for (let r = hn + 1; r < hn + 14; r++) if (rows[r]?.B === label) return rows[r];
+    for (let r = hn + 1; r < hn + span; r++) if (rows[r]?.[labelCol] === label) return rows[r];
     throw new Error(`DOSM workbook: row '${label}' not found`);
   };
-  const total = find("Jumlah");
+  const total = find(map?.totalLabel ?? "Jumlah");
   // the quarterly block ends where the monthly block (month names) starts, so these are exactly the quarter columns
-  const qCols = Object.keys(header)
+  // A heading with no total under it is a quarter not published yet, and is left out, whoever chose the columns.
+  if (map && map.quarterCols.some((c) => !/^Q[1-4]$/.test(header[c] ?? ""))) throw new Error("DOSM workbook: a proposed quarter column is not headed Q1..Q4");
+  const qCols = (map ? [...map.quarterCols] : Object.keys(header))
     .filter((c) => /^Q[1-4]$/.test(header[c]) && total[c] !== undefined)
     .sort((a, b) => colToNum(a) - colToNum(b));
   let y = Number(latestQuarter.slice(0, 4)), q = Number(latestQuarter.slice(5));
@@ -70,7 +92,7 @@ export function buildDosm(bytes: Uint8Array, latestQuarter: string): DosmQuarter
     q--;
     if (q === 0) { q = 4; y--; }
   }
-  const rowsBy = Object.fromEntries(Object.entries(DOSM_GROUPS).map(([k, l]) => [k, find(l)]));
+  const rowsBy = Object.fromEntries(Object.entries(DOSM_GROUPS).map(([k, l]) => [k, find(map?.groups[k as DosmGroupKey] ?? l)]));
   const out: DosmQuarter[] = [];
   qCols.forEach((c, i) => {
     const t = Number(total[c]);

@@ -4,8 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
-  Award, BookOpen, BriefcaseBusiness, Calculator, CalendarClock, Clock, Eye, FlaskConical, GraduationCap, Hammer, HeartPulse,
-  Laptop, Leaf, Library, Microscope, Presentation, Scale, ScrollText, Sparkles, Users, Wrench, X, type LucideIcon,
+  Award, BookOpen, BriefcaseBusiness, Calculator, CalendarClock, Clock, FlaskConical, GraduationCap, Hammer, HeartPulse,
+  Laptop, Leaf, Library, Microscope, Presentation, Scale, ScrollText, Sparkles, Users, Wrench, type LucideIcon,
 } from "lucide-react";
 import { useApp, type Catalog } from "@/components/AppProvider";
 import { StepBar } from "@/components/Journey";
@@ -13,10 +13,14 @@ import type { Profile } from "@/lib/engine/state";
 import { AnswersSummary } from "./summary";
 import { HAS_FIELD, STEPS, STEP_ICON, STEP_LABEL, type Step } from "./steps";
 import { readStored, removeStored } from "@/lib/legacy";
-import { Btn, Skeleton } from "@/components/ui";
+import { Btn, PageTitle, Skeleton } from "@/components/ui";
 import { SAMPLE_RESUME } from "@/lib/sample-resume";
-import { ResumePaper } from "@/components/ResumePaper";
-import { STATES, regionOf, type Reach } from "@/lib/engine/geo";
+import { ResumeGraphic } from "@/components/ResumeGraphic";
+import type { ResumeSource } from "@/components/ResumeOriginal";
+import { ResumeReport, type AiStatus } from "@/components/ResumeReport";
+import type { ResumeAnalysis } from "@/lib/engine/resume";
+import type { AiRead } from "@/lib/server/ai-resume";
+import { type Reach } from "@/lib/engine/geo";
 import { occupationById, personas } from "@/lib/engine/data";
 
 // Onboarding: eight short screens. After the name, the resume comes first because it fills in most of the rest.
@@ -26,7 +30,7 @@ import { occupationById, personas } from "@/lib/engine/data";
 type Draft = {
   name: string; status: "" | "working" | "studying"; age: string; state: string; move: Reach | ""; moveTo: string[]; occupationId: string; education: string; study: string; years: number; skills: string[];
   months: number; hours: number; interests: string[];
-  resume: null | { score: number; band: string; occupation: string | null; found: number; fixes: string[]; sample?: boolean };
+  resume: null | { score: number; band: string; occupation: string | null; found: number; fixes: string[]; sample?: boolean; aiSkills?: string[] };
   touched: { education?: boolean; study?: boolean; skills?: boolean };
 };
 const KEY = "jobbery-onboarding-v4";
@@ -113,7 +117,13 @@ function Wizard({ cat, edit, at, onExit }: { cat: Catalog; edit: boolean; at: nu
   });
   useEffect(() => { if (edit) return; try { sessionStorage.setItem(KEY, JSON.stringify({ d, i, sample })); } catch { /* ignore */ } }, [d, i, sample, edit]);
 
+  // The full report holds resume lines, so it stays in memory: never in the draft, which is kept in sessionStorage.
+  const [report, setReport] = useState<Report | null>(null);
+  const reportFile = report?.preview?.fileUrl;
+  useEffect(() => () => { if (reportFile) URL.revokeObjectURL(reportFile); }, [reportFile]);
+
   const step: Step = STEPS[i];
+  const LAST = STEPS[STEPS.length - 1];
   const occ = cat.occupations.find((o) => o.id === d.occupationId);
   const set = (patch: Partial<Draft>) => setD((x) => ({ ...x, ...patch }));
   const pickJob = (id: string) => {
@@ -130,7 +140,7 @@ function Wizard({ cat, edit, at, onExit }: { cat: Catalog; edit: boolean; at: nu
   const hasField = HAS_FIELD.includes(d.education);
   const study = hasField ? d.study || occ?.sector || "" : null;
   const ready = (studying || !!occ) && d.skills.length > 0;
-  const canGo: Record<Step, boolean> = { name: !!d.status, resume: true, job: studying || !!occ, education: !!d.education && (!hasField || !!study), skills: d.skills.length > 0, time: true, interests: true, where: ready && (!d.state || (!!d.move && (d.move !== "pick" || d.moveTo.length > 0))) };
+  const canGo: Record<Step, boolean> = { name: !!d.status, resume: true, job: studying || !!occ, education: !!d.education && (!hasField || !!study), skills: d.skills.length > 0, time: true, interests: ready };
   const go = (n: number) => {
     const k = Math.max(0, Math.min(STEPS.length - 1, n));
     setI(k);
@@ -150,7 +160,7 @@ function Wizard({ cat, edit, at, onExit }: { cat: Catalog; edit: boolean; at: nu
 
   // Enter continues from anywhere on the question, not only from inside a text field.
   const enter = useRef<() => void>(() => {});
-  useEffect(() => { enter.current = () => { if (edit) { if (canSave && !busy) finish(); } else if (step === "where") { if (canGo.where && !busy) finish(); } else if (step !== "resume") next(); }; });
+  useEffect(() => { enter.current = () => { if (edit) { if (canSave && !busy) finish(); } else if (step === LAST) { if (canGo[step] && !busy) finish(); } else if (step !== "resume") next(); }; });
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement;
@@ -170,8 +180,8 @@ function Wizard({ cat, edit, at, onExit }: { cat: Catalog; edit: boolean; at: nu
       reachable: (k) => k <= seen && STEPS.slice(0, k).every((x) => canGo[x]),
       onPick: go,
     }} />
-    <div className="mx-auto max-w-2xl">
-      <form onSubmit={(e) => { e.preventDefault(); if (edit) { if (canSave && !busy) finish(); } else if (step === "where") finish(); else next(); }}>
+    <div className={`mx-auto ${step === "resume" && report ? "max-w-5xl" : "max-w-2xl"}`}>
+      <form onSubmit={(e) => { e.preventDefault(); if (edit) { if (canSave && !busy) finish(); } else if (step === LAST) finish(); else next(); }}>
         {step === "name" && (
           <Q title="First, a little about you" help="Your name is optional. We use it to greet you and on your plan, never to choose or rank jobs.">
             <label className="block">
@@ -194,7 +204,7 @@ function Wizard({ cat, edit, at, onExit }: { cat: Catalog; edit: boolean; at: nu
             </div>
           </Q>
         )}
-        {step === "resume" && <ResumeStep d={d} setD={setD} cat={cat} onDone={() => go(i + 1)} autoSample={sample} />}
+        {step === "resume" && <ResumeStep d={d} setD={setD} cat={cat} report={report} setReport={setReport} onDone={() => go(i + 1)} autoSample={sample} />}
         {step === "job" && (
           <Q title={studying ? "Any part-time job or internship?" : "What was your last job?"}
             help={d.resume?.occupation ? "We read this from your resume. Change it if it is wrong." : studying ? "Pick the closest one, or choose none. It tells us which skills you probably have." : "Pick the closest one. It tells us which skills you probably have."}>
@@ -237,7 +247,8 @@ function Wizard({ cat, edit, at, onExit }: { cat: Catalog; edit: boolean; at: nu
           <Q title="Which of these skills do you have?" help={occ
             ? `Filled in from ${d.resume ? "your resume and " : ""}your ${studying ? "job" : "last job"} as ${occ.title.toLowerCase()}. Untick any you do not have.`
             : "These are common in jobs in your field of study. Tick the ones you have from your course, projects or work."}>
-            <SkillPicker cat={cat} value={d.skills} suggested={occ?.skills ?? fieldSkills} onChange={(v) => set({ skills: v, touched: { ...d.touched, skills: true } })} />
+            {!!d.resume?.aiSkills?.length && <p className="mb-3 text-sm text-muted">The AI reader also suggested some skills from your resume. They start unticked; tick them only if they are true.</p>}
+            <SkillPicker cat={cat} value={d.skills} suggested={[...(occ?.skills ?? fieldSkills), ...(d.resume?.aiSkills ?? [])]} onChange={(v) => set({ skills: v, touched: { ...d.touched, skills: true } })} />
           </Q>
         )}
         {step === "time" && (
@@ -275,48 +286,6 @@ function Wizard({ cat, edit, at, onExit }: { cat: Catalog; edit: boolean; at: nu
               })}
             </div>
             <p className="mt-3 text-sm text-muted">{d.interests.length} of 3 picked</p>
-          </Q>
-        )}
-        {step === "where" && (
-          <Q title={edit ? "Where do you live now?" : "Last one: where do you live now?"}
-            help="Then tell us if you would move. Jobs that are scarce where you can work move down a little. None are hidden.">
-            <label className="block">
-              <span className="mb-2 block text-sm text-muted">State you live in</span>
-              <select value={d.state} onChange={(e) => set({ state: e.target.value, move: e.target.value ? d.move : "", moveTo: d.moveTo.filter((x) => x !== e.target.value) })} className="min-h-14 w-full rounded-2xl border border-control bg-raised px-4 text-base">
-                <option value="">Prefer not to say</option>
-                {STATES.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-              </select>
-            </label>
-            {d.state ? (
-              <div className="mt-8">
-                <h2 className="text-lg font-medium">Would you relocate for a job?</h2>
-                <p className="mb-3 mt-1 text-sm text-muted">Counted with DOSM figures on how many people work in each kind of job, state by state.</p>
-                <Options value={d.move} onPick={(v) => set({ move: v as Reach })}
-                  options={[
-                    { id: "stay", label: "No, only in my state", sub: STATES.find((s) => s.id === d.state)?.name },
-                    { id: "region", label: "Yes, to nearby states", sub: (() => { const r = regionOf(d.state); return r ? `Anywhere in ${r.name}` : undefined; })() },
-                    { id: "pick", label: "Yes, to states I choose" },
-                    { id: "anywhere", label: "Yes, anywhere in Malaysia" },
-                  ]} />
-                {d.move === "pick" && (
-                  <fieldset className="mt-4">
-                    <legend className="mb-2 text-sm text-muted">Which states? Pick as many as you like.</legend>
-                    <div className="flex flex-wrap gap-2">
-                      {STATES.filter((s) => s.id !== d.state).map((s) => {
-                        const on = d.moveTo.includes(s.id);
-                        return (
-                          <button type="button" key={s.id} aria-pressed={on} onClick={() => set({ moveTo: on ? d.moveTo.filter((x) => x !== s.id) : [...d.moveTo, s.id] })}
-                            className={`press min-h-10 rounded-full px-4 text-sm ${on ? "bg-primary text-primaryink" : "bg-surface hover:bg-surface2"}`}>{s.name}</button>
-                        );
-                      })}
-                    </div>
-                    <p className="mt-2 text-sm text-muted">{d.moveTo.length ? `${d.moveTo.length} picked` : "Pick at least one."}</p>
-                  </fieldset>
-                )}
-              </div>
-            ) : (
-              <p className="mt-3 text-sm text-muted">Without a state, every job is ranked as if you could work anywhere in Malaysia.</p>
-            )}
             {error && <p role="alert" className="mt-3 text-sm text-negative">{error}</p>}
           </Q>
         )}
@@ -334,8 +303,8 @@ function Wizard({ cat, edit, at, onExit }: { cat: Catalog; edit: boolean; at: nu
             <div className="flex items-center gap-2">
               {edit
                 ? <Btn type="submit" disabled={busy || !canSave} className="min-h-12 px-6 text-base">Save changes</Btn>
-                : step === "where"
-                  ? <Btn type="submit" disabled={busy || !canGo.where} className="min-h-12 px-6 text-base">Show my results</Btn>
+                : step === LAST
+                  ? <Btn type="submit" disabled={busy || !canGo[step]} className="min-h-12 px-6 text-base">Show my results</Btn>
                   : step !== "resume" && <Btn type="submit" disabled={!canGo[step]} className="min-h-12 px-6 text-base">Continue</Btn>}
             </div>
           </div>
@@ -469,55 +438,15 @@ function SkillPicker({ cat, value, suggested, onChange }: { cat: Catalog; value:
   );
 }
 
-type Analysis = { score: number; band: string; occupation: { id: string; title: string } | null; years: number | null; education: string | null; skills: { id: string }[]; findings: { severity: string; title: string }[] };
-type ResumePreviewData = { label: string; name: string; text: string; fileUrl?: string; isPdf?: boolean };
-
-function ResumePreview({ resume, onClose }: { resume: ResumePreviewData; onClose: () => void }) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
-
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#14291f]/60 p-3 sm:p-6" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <section role="dialog" aria-modal="true" aria-labelledby="resume-preview-title" className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-[24px] bg-raised shadow-2xl">
-        <header className="flex items-center justify-between gap-4 border-b border-line px-5 py-4">
-          <div className="min-w-0">
-            <h2 id="resume-preview-title" className="font-semibold">Resume preview</h2>
-            <p className="truncate text-sm text-muted">{resume.name}</p>
-          </div>
-          <button type="button" onClick={onClose} autoFocus aria-label="Close resume preview" className="press grid h-11 w-11 shrink-0 place-items-center rounded-full bg-surface hover:bg-surface2">
-            <X size={20} aria-hidden />
-          </button>
-        </header>
-        <div className="min-h-0 flex-1 overflow-auto bg-[#e7eee7] p-3 sm:p-6">
-          {resume.isPdf && resume.fileUrl ? (
-            <iframe title={`${resume.name} preview`} src={resume.fileUrl} className="mx-auto h-[72vh] w-full rounded-xl bg-white shadow-lg" />
-          ) : (
-            <article className="mx-auto min-h-[70vh] max-w-[760px] bg-white px-6 py-8 text-sm leading-relaxed text-[#2b3a31] shadow-lg sm:px-12 sm:py-10">
-              <pre className="whitespace-pre-wrap break-words font-sans">{resume.text}</pre>
-            </article>
-          )}
-        </div>
-      </section>
-    </div>
-  );
-}
-
-function ResumeStep({ d, setD, cat, onDone, autoSample }: { d: Draft; setD: (f: (x: Draft) => Draft) => void; cat: Catalog; onDone: () => void; autoSample?: boolean }) {
+type Report = { analysis: ResumeAnalysis; ai: AiRead | null; aiStatus: AiStatus; fileName: string; preview: ResumeSource | null };
+function ResumeStep({ d, setD, cat, report, setReport, onDone, autoSample }: { d: Draft; setD: (f: (x: Draft) => Draft) => void; cat: Catalog; report: Report | null; setReport: (r: Report | null) => void; onDone: () => void; autoSample?: boolean }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [paste, setPaste] = useState(false);
   const [text, setText] = useState("");
-  const [preview, setPreview] = useState<ResumePreviewData | null>(null);
-  const [previewOpen, setPreviewOpen] = useState(false);
+  const [useAi, setUseAi] = useState(true);
   const fileRef = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    const fileUrl = preview?.fileUrl;
-    return () => { if (fileUrl) URL.revokeObjectURL(fileUrl); };
-  }, [preview?.fileUrl]);
-  const scan = async (init: RequestInit, sample = false, source?: Omit<ResumePreviewData, "text">) => {
+  const scan = async (init: RequestInit, sample = false, source?: Omit<ResumeSource, "text" | "html">) => {
     setBusy(true); setErr(null);
     try {
       const r = await fetch("/api/resume", init);
@@ -527,8 +456,10 @@ function ResumeStep({ d, setD, cat, onDone, autoSample }: { d: Draft; setD: (f: 
         setErr(j.error ?? "We could not read that. Try pasting the text.");
         return;
       }
-      const a = j.analysis as Analysis;
-      setPreview({ label: source?.label ?? (sample ? "Demo resume" : "Pasted resume"), name: source?.name ?? (sample ? "Demo resume" : "Pasted resume"), text: String(j.previewText ?? ""), fileUrl: source?.fileUrl, isPdf: source?.isPdf });
+      const a = j.analysis as ResumeAnalysis;
+      const name = source?.name ?? (sample ? "Demo resume" : "Pasted resume");
+      setReport({ analysis: a, ai: j.ai ?? null, aiStatus: j.aiStatus ?? "off", fileName: name, preview: sample ? null : { name, text: String(j.previewText ?? ""), html: j.previewHtml, fileUrl: source?.fileUrl, isPdf: source?.isPdf } });
+      const aiSkills = ((j.ai as AiRead | null)?.skills ?? []).map((s) => s.id);
       setD((x) => {
         const occ = a.occupation && cat.occupations.find((o) => o.id === a.occupation!.id);
         return {
@@ -537,7 +468,7 @@ function ResumeStep({ d, setD, cat, onDone, autoSample }: { d: Draft; setD: (f: 
           education: a.education ?? (occ ? occ.education : x.education),
           years: a.years !== null ? Math.round(a.years) : x.years,
           skills: [...new Set([...a.skills.map((s) => s.id), ...(occ ? occ.skills : [])])],
-          resume: { score: a.score, band: a.band, occupation: occ ? occ.title : null, found: a.skills.length, fixes: a.findings.filter((f) => f.severity === "fix").slice(0, 2).map((f) => f.title), sample },
+          resume: { score: a.score, band: a.band, occupation: occ ? occ.title : null, found: a.skills.length, fixes: a.findings.filter((f) => f.severity === "fix").slice(0, 2).map((f) => f.title), sample, aiSkills },
           touched: { ...x.touched, education: a.education ? true : x.touched.education },
         };
       });
@@ -550,10 +481,11 @@ function ResumeStep({ d, setD, cat, onDone, autoSample }: { d: Draft; setD: (f: 
   const upload = (f: File) => {
     const fd = new FormData();
     fd.append("file", f);
+    fd.append("ai", useAi ? "1" : "0");
     const fileUrl = URL.createObjectURL(f);
-    scan({ method: "POST", body: fd }, false, { label: "Uploaded resume", name: f.name, fileUrl, isPdf: f.type === "application/pdf" || f.name.toLowerCase().endsWith(".pdf") });
+    scan({ method: "POST", body: fd }, false, { name: f.name, fileUrl, isPdf: f.type === "application/pdf" || f.name.toLowerCase().endsWith(".pdf") });
   };
-  const pasteScan = (t: string, sample = false) => scan({ method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text: t }) }, sample);
+  const pasteScan = (t: string, sample = false) => scan({ method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text: t, ai: useAi }) }, sample);
 
   // Arriving from a demo link: scan the made-up resume once, without asking.
   const autoTried = useRef(false);
@@ -562,46 +494,35 @@ function ResumeStep({ d, setD, cat, onDone, autoSample }: { d: Draft; setD: (f: 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoSample]);
 
+  const again = () => { setReport(null); setD((x) => ({ ...x, resume: null })); };
+  if (report) {
+    return (
+      <section>
+        <PageTitle title="Here is what we found">Your score and your resume. Open Suggested fixes to see what to change.</PageTitle>
+        <ResumeReport analysis={report.analysis} ai={report.ai} aiStatus={report.aiStatus} fileName={report.fileName} source={report.preview} onAgain={again} onContinue={onDone} />
+      </section>
+    );
+  }
+  // Back after a reload: the report is gone with the page, because the resume text is never saved.
   if (d.resume) {
     return (
       <Q title={`Your resume scored ${d.resume.score} out of 100.`} help="We filled in your last job, experience and skills from it. You will check each one next.">
-        {preview && (
-          <section className="mb-4 flex items-center gap-4 rounded-[22px] border border-line bg-raised p-3 shadow-[0_5px_18px_rgb(32_59_43/0.08)]" aria-label={`${preview.label} preview`}>
-            <div className="relative h-20 w-16 shrink-0 overflow-hidden rounded-md border border-line bg-white px-2 py-2 shadow-sm" aria-hidden>
-              <div className="mb-2 h-1.5 w-7 rounded-full bg-ink/75" />
-              <div className="space-y-1">
-                <div className="h-1 w-full rounded-full bg-line" /><div className="h-1 w-10/12 rounded-full bg-line" /><div className="h-1 w-full rounded-full bg-line" />
-                <div className="mt-2 h-1 w-7 rounded-full bg-accent" /><div className="h-1 w-full rounded-full bg-line" /><div className="h-1 w-9/12 rounded-full bg-line" />
-              </div>
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium uppercase tracking-[.08em] text-muted">{preview.label}</p>
-              <p className="mt-1 truncate font-medium">{preview.name}</p>
-              <p className="text-sm text-muted">Ready to preview</p>
-            </div>
-            <button type="button" onClick={() => setPreviewOpen(true)} aria-label={`View ${preview.name}`} className="press flex min-h-11 shrink-0 items-center gap-2 rounded-full bg-primary px-4 font-medium text-primaryink shadow-sm hover:bg-[#f5bb62]">
-              <Eye size={19} aria-hidden />
-              <span className="hidden sm:inline">View</span>
-            </button>
-          </section>
-        )}
         <dl className="divide-y divide-line rounded-[22px] bg-surface px-5">
           <div className="flex min-h-14 items-center justify-between gap-3"><dt className="text-sm text-muted">Last job found</dt><dd className="text-sm">{d.resume.occupation ?? "Not sure; you will pick it"}</dd></div>
           <div className="flex min-h-14 items-center justify-between gap-3"><dt className="text-sm text-muted">Skills found</dt><dd className="num text-sm">{d.resume.found}</dd></div>
           {d.resume.fixes.length > 0 && <div className="py-3"><dt className="text-sm text-muted">Fix first</dt><dd className="mt-1 text-sm"><ul className="list-disc pl-5">{d.resume.fixes.map((f) => <li key={f}>{f}</li>)}</ul></dd></div>}
         </dl>
-        {d.resume.sample && !preview && (
+        {d.resume.sample && (
           <section className="mt-3 rounded-[22px] bg-surface px-5 py-4" aria-labelledby="demo-resume-title">
             <h2 id="demo-resume-title" className="text-sm font-medium">The demo resume we scanned</h2>
-            <div className="mt-3 max-h-[34rem] overflow-y-auto rounded-2xl bg-surface2 p-3 sm:p-5"><ResumePaper text={SAMPLE_RESUME} /></div>
+            <div className="mt-3 max-h-[34rem] overflow-y-auto rounded-2xl bg-surface2 p-3 sm:p-5"><ResumeGraphic lines={SAMPLE_RESUME.split("\n")} /></div>
           </section>
         )}
-        <p className="mt-3 text-sm text-muted">The full report, with before-and-after examples, is on <Link href="/resume" className="underline decoration-control underline-offset-2">Resume report</Link>. Your resume text was not saved.</p>
+        <p className="mt-3 text-sm text-muted">Your resume text was not saved, so scan it again to see the full report.</p>
         <div className="mt-8 flex flex-wrap gap-2">
           <Btn onClick={onDone} autoFocus className="min-h-12 px-6 text-base">Continue</Btn>
-          <Btn variant="ghost" onClick={() => { setPreview(null); setPreviewOpen(false); setD((x) => ({ ...x, resume: null })); }}>Scan a different one</Btn>
+          <Btn variant="ghost" onClick={again}>Scan a different one</Btn>
         </div>
-        {previewOpen && preview && <ResumePreview resume={preview} onClose={() => setPreviewOpen(false)} />}
       </Q>
     );
   }
@@ -635,6 +556,10 @@ function ResumeStep({ d, setD, cat, onDone, autoSample }: { d: Draft; setD: (f: 
           <p className="mt-2 text-sm text-muted">At least about 40 words.</p>
         </div>
       )}
+      <label className="flex cursor-pointer items-start gap-3 mt-3 rounded-2xl px-5 py-3 text-sm">
+        <input type="checkbox" checked={useAi} onChange={(e) => setUseAi(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-[var(--accent)]" />
+        <span><b>Also let AI read it.</b> An AI model suggests extra skills and better wording. Nothing is changed for you; you choose what to use. If you allow AI, the text is sent once to an AI model (Qwen, run by RunPod, or by Groq as a backup) to read it.</span>
+      </label>
       {err && <p role="alert" className="mt-3 text-sm text-negative">{err}</p>}
     </Q>
   );
