@@ -9,8 +9,21 @@ import { lastGood } from "@/lib/last-good";
 import { analyseResume, SAMPLE_RESUME } from "@/lib/engine/resume";
 import { layoutResume } from "@/lib/engine/resume-layout";
 
+import { sdgReport } from "@/components/ui";
+
 const now = () => ({ t0: new Date().toISOString() });
 const viewOf = (id: string, extra: object = {}) => computeView({ ...personaState(id)!, clock: now(), ...extra });
+
+describe("job goal section", () => {
+  it("links every job's UN target to that goal's progress report", () => {
+    for (const r of roles) {
+      const goal = r.sdg.target.split(".")[0];
+      const { url } = sdgReport(r.sdg.target);
+      if (goal === "16") expect(url).toContain("goal-16");
+      else expect(url).toBe(`https://unstats.un.org/sdgs/report/2026/Goal-${goal.padStart(2, "0")}/`);
+    }
+  });
+});
 
 describe("course spot checks (T7)", () => {
   it("every skill a job lists has a real course, so no plan falls back to the e-LATiH placeholder step", () => {
@@ -89,6 +102,25 @@ describe("what would raise this score (T8)", () => {
         expect(r.forecast.total).toBe(Math.round(m.score * 100));
         expect(r.forecast.lines.reduce((a, l) => a + l.points, 0)).toBe(r.forecast.total);
         for (const s of v.scenarios!) expect(r[s.id].total).toBe(Math.round(s.roles[m.roleId].score * 100));
+      }
+    }
+  });
+
+  it("splits the skill points by skill, adding up exactly to the score's own lines", () => {
+    for (const p of personas) {
+      const st = { ...personaState(p.id)!, clock: now() };
+      for (const m of computeView(st).matches.slice(0, 5)) {
+        const all = raiseView(st, m.roleId)!;
+        for (const r of Object.values(all)) {
+          const line = (k: string) => r.lines.find((l) => l.key === k)!.points;
+          expect(r.skills.reduce((a, s) => a + s.overlap, 0)).toBe(line("overlap"));
+          expect(r.skills.reduce((a, s) => a + s.outlook, 0)).toBe(line("outlook"));
+          for (const s of r.skills) {
+            expect(s.overlap).toBeGreaterThanOrEqual(0);
+            expect(s.outlook).toBeGreaterThanOrEqual(0);
+            if (!s.have) expect(s.overlap).toBe(0);
+          }
+        }
       }
     }
   });
