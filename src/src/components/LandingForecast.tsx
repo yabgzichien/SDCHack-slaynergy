@@ -5,10 +5,7 @@ import { useEffect } from "react";
 import { ArrowRight } from "lucide-react";
 import { useApp } from "./AppProvider";
 import { FUTURE_COLOR, FutureBar, pct } from "./ui";
-import dynamic from "next/dynamic";
-
-// The live chart uses Recharts and sits below the fold, so it loads after the page is shown.
-const LandingLiveMarket = dynamic(() => import("./LandingLiveMarket").then((m) => m.LandingLiveMarket), { ssr: false });
+import { LandingLiveMarket } from "./LandingLiveMarket";
 
 // "Humanity's Last Exam: AI on expert-level exam questions, Oct to Dec 2026" -> "AI on expert-level exam questions"
 const plainName = (title: string) => {

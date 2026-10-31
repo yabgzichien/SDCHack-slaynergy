@@ -224,7 +224,7 @@
   position:absolute;
   z-index:-1;
   inset:0;
-  background:url('/landing-nature-skyline.webp') center bottom / cover no-repeat;
+  background:url('/landing-nature-skyline.png') center bottom / cover no-repeat;
 }
 .landing-content .landing-intro-heading {
   position:relative;

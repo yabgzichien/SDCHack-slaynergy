@@ -14,7 +14,7 @@ const sans = Instrument_Sans({ subsets: ["latin"], variable: "--font-instrument-
 export const metadata: Metadata = {
   title: "Jobbery: find a future-proof job before your time runs out",
   description: "Jobbery helps fresh graduates and everyone in the workforce explore growing jobs, develop relevant skills and plan their next career step, using forecasts tested against real data releases.",
-  icons: { icon: "/icon-48.png", apple: "/apple-icon-180.png" },
+  icons: { icon: "/cockatiel-ai-icon-v2.png", apple: "/cockatiel-ai-icon-v2.png" },
 };
 export const viewport: Viewport = { width: "device-width", initialScale: 1, colorScheme: "only light" };
 

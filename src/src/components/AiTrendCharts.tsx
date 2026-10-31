@@ -5,7 +5,6 @@ import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, X
 import { series, sourceById, type DosmQuarter } from "@/lib/engine/data";
 import { Card, H, SourceChip } from "@/components/ui";
 import { SourceDisclosure } from "@/components/SourceDisclosure";
-import { BENCH, aiCapability, qLabel } from "./ai-capability";
 
 // DOSM job groups are ISCO-08 major groups, so each group's exposure is the mean ILO score of its 4-digit occupations.
 const GROUPS: { key: keyof DosmQuarter; label: string; isco: string }[] = [
@@ -25,6 +24,7 @@ const iloGroupMean = (isco: string) => {
 const band = (e: number) => (e >= 0.45 ? { color: "var(--negative)", label: "AI can do a lot of this work" } : e >= 0.3 ? { color: "var(--fall)", label: "AI can do some of this work" } : { color: "var(--accent)", label: "AI can do little of this work" });
 const tick = { fontSize: 11, fill: "var(--muted)" };
 const tooltipStyle = { background: "var(--raised)", border: "1px solid var(--line)", borderRadius: 12 };
+const qLabel = (q: string) => q.replace("Q", " Q");
 
 // Chart 1: each job group's share of Malaysian online job ads, one small chart per group, most AI-exposed first.
 export function JobGroupShares({ asOfQuarter }: { asOfQuarter: string }) {
@@ -74,8 +74,30 @@ export function JobGroupShares({ asOfQuarter }: { asOfQuarter: string }) {
   );
 }
 
-// Chart 2's data lives in ai-capability.ts, so the landing page can use it without Recharts.
-export { aiCapability };
+// Chart 2: the best AI result on three public benchmarks each quarter (Epoch AI). Not split by sector.
+// Three hues that all read on the cream theme: green, amber, deep ink.
+const BENCH = [
+  { id: "swe", color: "var(--accent)", name: "Fixing real software bugs" },
+  { id: "tbench", color: "var(--fall)", name: "Doing tasks on a computer" },
+  { id: "hle", color: "var(--ink)", name: "Very hard expert exam questions" },
+];
+export function aiCapability(asOfQuarter: string) {
+  const qs = [...new Set(BENCH.flatMap((b) => series.epoch[b.id].frontier.map((x) => x.q)))].filter((q) => q >= "2024Q3" && q <= asOfQuarter).sort();
+  const data = qs.map((q) => {
+    const row: Record<string, number | string> = { q: qLabel(q) };
+    for (const b of BENCH) {
+      const v = series.epoch[b.id].frontier.find((x) => x.q === q)?.v;
+      if (v !== undefined) row[b.id] = v;
+    }
+    return row;
+  });
+  const metr = series.epoch.metr.frontier.filter((x) => x.q <= asOfQuarter);
+  const hours = (v: number) => 2 ** v / 60;
+  const mNow = metr[metr.length - 1], mThen = metr.find((x) => x.q === "2024Q3");
+  const summary = mThen ? `In 2024, AI could finish a task that takes a person about ${Math.round(hours(mThen.v) * 60)} minutes. By ${qLabel(mNow.q)}, it could finish tasks that take a person about ${hours(mNow.v).toFixed(0)} hours.` : "";
+  const headline = mThen ? { hoursNow: Math.round(hours(mNow.v)), minutesThen: Math.round(hours(mThen.v) * 60), asOf: qLabel(mNow.q) } : null;
+  return { data, summary, headline };
+}
 
 // The bare chart, shared by the trends page and the landing preview.
 export function AiCapabilityChart({ data, className = "h-56" }: { data: Record<string, number | string>[]; className?: string }) {

@@ -9,11 +9,7 @@ import { useT } from "./I18nProvider";
 import { LandingSdgAnimation } from "./LandingSdgAnimation";
 import { LandingForecast } from "./LandingForecast";
 import { LandingMap } from "./LandingMap";
-import dynamic from "next/dynamic";
-import { aiCapability } from "./ai-capability";
-
-// Recharts is large and the chart sits below the fold, so it loads after the page is shown.
-const AiCapabilityChart = dynamic(() => import("./AiTrendCharts").then((m) => m.AiCapabilityChart), { ssr: false, loading: () => <div className="landing-ai-chart" /> });
+import { AiCapabilityChart, aiCapability } from "./AiTrendCharts";
 import { sourceById } from "@/lib/engine/data";
 
 // The guide follows the step bar inside the app, so a first-time visitor recognises each step later.
@@ -94,8 +90,8 @@ export function LandingIntro() {
 
   return (
     <div ref={rootRef} className={`landing-page landing-content${sceneActive ? "" : " is-scene-active"}`}>
-      {sceneActive && <div key={replayKey} className="intro-overlay"><div className="intro-overlay-inner" aria-hidden="true"><span className="intro-word">Jobbery</span><Image src="/cockatiel-running.png" alt="" width={1254} height={1254} sizes="(max-width: 640px) 190px, 400px" className="intro-mascot" preload /><span className="intro-speed intro-speed-one" /><span className="intro-speed intro-speed-two" /></div><button className="intro-skip" onClick={() => setSceneActive(false)}>{t("Skip intro")} <ArrowRight size={16} /></button></div>}
-      <div ref={birdRef} className="landing-travel-bird" aria-hidden="true"><Image key={replayKey} src="/landing-cockatiel-flight.png" alt="" width={1353} height={1163} sizes="220px" preload /></div>
+      {sceneActive && <div key={replayKey} className="intro-overlay"><div className="intro-overlay-inner" aria-hidden="true"><span className="intro-word">Jobbery</span><Image src="/cockatiel-running.png" alt="" width={1254} height={1254} className="intro-mascot" priority /><span className="intro-speed intro-speed-one" /><span className="intro-speed intro-speed-two" /></div><button className="intro-skip" onClick={() => setSceneActive(false)}>{t("Skip intro")} <ArrowRight size={16} /></button></div>}
+      <div ref={birdRef} className="landing-travel-bird" aria-hidden="true"><Image key={replayKey} src="/landing-cockatiel-flight.png" alt="" width={1353} height={1163} priority /></div>
       <div>
         <section className="landing-intro landing-section-reveal" aria-labelledby="landing-title">
           <div className="landing-hero-landscape" aria-hidden="true" />
