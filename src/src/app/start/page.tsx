@@ -247,16 +247,16 @@ function Wizard({ cat, edit, at, onExit }: { cat: Catalog; edit: boolean; at: nu
           <Q title="Which of these skills do you have?" help={occ
             ? `Filled in from ${d.resume ? "your resume and " : ""}your ${studying ? "job" : "last job"} as ${occ.title.toLowerCase()}. Untick any you do not have.`
             : "These are common in jobs in your field of study. Tick the ones you have from your course, projects or work."}>
-            {!!d.resume?.aiSkills?.length && <p className="mb-3 text-sm text-muted">The AI reader also suggested some skills from your resume. They start unticked; tick them only if they are true.</p>}
+            {!!d.resume?.aiSkills?.length && <p className="mb-3 text-sm text-muted">The AI reader also suggested some skills from your resume. They are ticked too; untick any that are not true.</p>}
             <SkillPicker cat={cat} value={d.skills} suggested={[...(occ?.skills ?? fieldSkills), ...(d.resume?.aiSkills ?? [])]} onChange={(v) => set({ skills: v, touched: { ...d.touched, skills: true } })} />
           </Q>
         )}
         {step === "time" && (
           <Q title="How much time do you have?" help={studying ? "Jobbery only suggests jobs you can get ready for by the time you graduate." : "Jobbery only suggests jobs you can get ready for in this time."}>
             {studying ? (
-              <Group icon={CalendarClock} label="Months until you graduate" note="Pick the closest. More than two years away? Choose 24 and come back later.">
+              <Group icon={CalendarClock} label="Months until you graduate" note="Pick the closest. More than 18 months away? Choose that and come back later.">
                 <Options value={String(d.months)} onPick={(v) => set({ months: Number(v) })} cols={3}
-                  options={[3, 6, 9, 12, 18, 24].map((m) => ({ id: String(m), label: `${m} months` }))} />
+                  options={[3, 6, 9, 12, 18, 24].map((m) => ({ id: String(m), label: m === 24 ? "More than 18 months" : `${m} months` }))} />
               </Group>
             ) : (
               <Group icon={CalendarClock} label="Months to find a new job" note="Job-seeker support usually lasts 3 to 6 months.">
@@ -467,7 +467,7 @@ function ResumeStep({ d, setD, cat, report, setReport, onDone, autoSample }: { d
           occupationId: occ ? occ.id : x.occupationId,
           education: a.education ?? (occ ? occ.education : x.education),
           years: a.years !== null ? Math.round(a.years) : x.years,
-          skills: [...new Set([...a.skills.map((s) => s.id), ...(occ ? occ.skills : [])])],
+          skills: [...new Set([...a.skills.map((s) => s.id), ...aiSkills, ...(occ ? occ.skills : [])])],
           resume: { score: a.score, band: a.band, occupation: occ ? occ.title : null, found: a.skills.length, fixes: a.findings.filter((f) => f.severity === "fix").slice(0, 2).map((f) => f.title), sample, aiSkills },
           touched: { ...x.touched, education: a.education ? true : x.touched.education },
         };
