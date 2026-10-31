@@ -99,10 +99,10 @@ export default function MapPage() {
           </p>
         </div>
         <div className="mb-4 mt-3 flex flex-wrap items-center justify-between gap-3">
-        <div role="tablist" aria-label="What the colours show" className="grid grid-cols-3 gap-1 rounded-full bg-surface2 p-1 sm:inline-grid">
+        <div role="tablist" aria-label="What the colours show" className={`grid grid-cols-3 gap-1 rounded-full p-1 sm:inline-grid ${measure === "wage" ? "bg-[#dbeafe]" : "bg-surface2"}`}>
           {MEASURES.map(({ id, label, icon: Icon }) => (
             <button key={id} role="tab" aria-selected={measure === id} onClick={() => setMeasure(id)}
-              className={`press inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full px-1.5 text-xs sm:px-3 sm:text-sm ${measure === id ? "bg-raised font-medium shadow-[0_1px_3px_rgb(0_0_0/0.12)]" : "text-muted"}`}>
+              className={`press inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full px-1.5 text-xs sm:px-3 sm:text-sm ${measure === id ? id === "wage" ? "bg-[#f8fbff] font-medium text-[#174b7a] shadow-[0_1px_3px_rgb(30_64_175/0.16)]" : "bg-raised font-medium shadow-[0_1px_3px_rgb(0_0_0/0.12)]" : "text-muted"}`}>
               <Icon size={15} aria-hidden className="hidden sm:block" />{label}
             </button>
           ))}

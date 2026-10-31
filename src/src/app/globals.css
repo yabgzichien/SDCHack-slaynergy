@@ -148,6 +148,8 @@ h1, h2, h3 { letter-spacing: -0.01em; }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 8px; }
 h1[tabindex="-1"]:focus, h1[tabindex="-1"]:focus-visible { outline: none; }
 button, a, input, select, textarea { font: inherit; }
+.source-disclosure-mascot { position:relative; padding-right:80px; }
+.source-disclosure-mascot::after { content:""; position:absolute; right:8px; bottom:3px; width:62px; height:62px; background:url("/cockatiel-peeking.png") center / contain no-repeat; pointer-events:none; }
 .num { font-variant-numeric: tabular-nums; }
 .press { transition: transform 120ms cubic-bezier(0.22, 1, 0.36, 1), background-color 150ms ease, color 150ms ease, border-color 150ms ease; }
 .press:active { transform: scale(0.98); }

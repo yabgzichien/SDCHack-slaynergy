@@ -13,6 +13,7 @@ import { activityHref, BadgePanel, BadgeShelf, Portfolio } from "@/components/Pa
 import { AdvisorCard } from "@/components/Meetings";
 import { STRAND_STYLE } from "@/components/strands";
 import { Check } from "lucide-react";
+import { SourceDisclosure } from "@/components/SourceDisclosure";
 
 
 // One question: what do I do next?
@@ -27,10 +28,10 @@ export default function PlanPage() {
 
   return (
     <div className="plan-page">
-      <PageTitle title={next ? (
-        <span className="inline-flex max-w-full flex-wrap items-baseline gap-x-2">
-          <span className="text-[0.48em] font-semibold tracking-normal text-muted">Next:</span>
-          <span className="min-w-0 max-w-full rounded-[0.18em] bg-cuesoft px-[0.18em] py-[0.05em] text-cueink [box-decoration-break:clone] [overflow-wrap:anywhere]">{next.title}</span>
+      <PageTitle wide title={next ? (
+        <span className="block max-w-full">
+          <span className="block text-[0.48em] font-semibold tracking-normal text-muted">Next:</span>
+          <span className="mt-1 block w-fit max-w-full rounded-[0.18em] bg-cuesoft px-[0.18em] py-[0.05em] text-cueink [box-decoration-break:clone] [overflow-wrap:anywhere]">{next.title}</span>
         </span>
       ) : "Every step is done. Well done."}>
         {next ? `${next.weekStart === next.weekEnd ? `Week ${next.weekStart}` : `Weeks ${next.weekStart}–${next.weekEnd}`} of your plan for ${plan.title}, about ${Math.round(next.hours)} hours.` : `You finished the plan for ${plan.title}. Get your badge below.`}
@@ -122,11 +123,11 @@ export default function PlanPage() {
       <Portfolio />
 
       <div className="mt-4 grid gap-4 lg:grid-cols-12">
-        <Card className="lg:col-span-8">
+        <Card className="lg:col-span-7">
           <AdvisorCard />
           <BadgePanel />
         </Card>
-        <Card className="lg:col-span-4" tone="accent">
+        <Card className="lg:col-span-5" tone="accent">
           <div id="sdg-path" className="scroll-mt-24"><SdgPath plan={plan} /></div>
         </Card>
       </div>
@@ -150,11 +151,11 @@ function SdgPath({ plan }: { plan: Plan }) {
       {free !== null && <p className="num mb-3 text-sm font-medium">{free}% of the course hours are free ({Math.round(p.freeCourseHours)} of {Math.round(p.courseHours)} hours).</p>}
       <ul className="space-y-3">
         {p.learningHours > 0 && !goals.includes(learnGoal) && (
-          <li className="rounded-2xl bg-raised p-4">
-            <div className="flex items-center gap-4">
-              <SdgIcon goal={Number(learnGoal)} size={76} />
+          <li className="rounded-2xl bg-raised p-3 sm:p-4">
+            <div className="flex items-center gap-3">
+              <span className="shrink-0"><SdgIcon goal={Number(learnGoal)} size={64} /></span>
               <div className="min-w-0 flex-1">
-                <p className="text-lg font-bold leading-tight">UN goal {learnGoal}: {sdgName(p.learningTarget)}</p>
+                <p className="text-base font-bold leading-tight sm:text-lg">UN goal {learnGoal}: {sdgName(p.learningTarget)}</p>
                 <p className="num mt-1 text-sm">{p.learningHours} hours of learning count toward target {p.learningTarget}, skills for work.</p>
                 <p className="mt-1 text-xs text-muted">Counted separately: these are the same hours as below, seen as learning.</p>
               </div>
@@ -165,11 +166,11 @@ function SdgPath({ plan }: { plan: Plan }) {
           const ts = p.byTarget.filter((x) => x.target.split(".")[0] === g);
           const job = p.jobTarget?.split(".")[0] === g ? p.jobTarget : null;
           return (
-            <li key={g} className="rounded-2xl bg-raised p-4">
-              <div className="flex items-center gap-4">
-                <SdgIcon goal={Number(g)} size={76} />
+            <li key={g} className="rounded-2xl bg-raised p-3 sm:p-4">
+              <div className="flex items-center gap-3">
+                <span className="shrink-0"><SdgIcon goal={Number(g)} size={64} /></span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-lg font-bold leading-tight">UN goal {g}: {sdgName(`${g}.1`)}</p>
+                  <p className="text-base font-bold leading-tight sm:text-lg">UN goal {g}: {sdgName(`${g}.1`)}</p>
                   <p className="num mt-1 text-sm">{goalHours(g) ? `${goalHours(g)} hours of your plan` : "Served by your new job"}{goalHours(g) && job ? " · and your new job" : ""}</p>
                   {g === learnGoal && p.learningHours > 0 && <p className="num mt-1 text-sm">{p.learningHours} hours of learning count toward target {p.learningTarget}, skills for work.</p>}
                   <details className="group mt-2">
@@ -190,7 +191,7 @@ function SdgPath({ plan }: { plan: Plan }) {
       </ul>
       {p.untagged > 0 && <p className="num mt-3 text-sm text-muted">{p.untagged} hours of work on the job are not tied to one target.</p>}
       <p className="mt-2 text-xs text-muted">A step that teaches several skills splits its hours evenly between them.</p>
-      <div className="mt-2"><SourceChip name="UN SDG targets" date="official text" url="https://sdgs.un.org/goals" /></div>
+      <SourceDisclosure mascot><SourceChip name="UN SDG targets" date="official text" url="https://sdgs.un.org/goals" /></SourceDisclosure>
     </>
   );
 }

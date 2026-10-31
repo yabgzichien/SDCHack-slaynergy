@@ -1,5 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
 import { Btn, Card, Chip, H, NextRow, PageTitle, Skeleton } from "@/components/ui";
 import { MeetingItem, useMeetings } from "@/components/Meetings";
@@ -37,7 +38,7 @@ export default function AdvisorPage() {
   return (
     <div>
       <Btn href="/plan" variant="quiet" className="mb-3 -ml-1"><ArrowLeft size={16} aria-hidden />Back to your plan</Btn>
-      <PageTitle title="Meet an advisor">
+      <PageTitle wide title="Meet an advisor" aside={<Image src="/cockatiel-lecturer-professional.png" alt="" width={1254} height={1254} className="hidden h-auto w-32 shrink-0 object-contain sm:block lg:w-44" priority />}>
         Jobbery suggests and you decide. If you want a second opinion, book 30 minutes with an advisor, such as an employment officer. They see your profile, the jobs Jobbery suggested and why, and your plan, so you can start from there. Booking is your choice; nothing waits on it.
       </PageTitle>
 
@@ -57,7 +58,7 @@ export default function AdvisorPage() {
           {!data.hasUpcoming && (
             <div className="grid gap-4 lg:grid-cols-12">
               <Card className="lg:col-span-7" tone="raised">
-                <H sub="Next two weeks, Malaysia time. The number is how many half hours are free that day.">1. Pick a day</H>
+                <H>1. Pick a day</H>
                 <div className="grid grid-cols-7 gap-1.5 text-center" role="grid" aria-label="Next two weeks">
                   {WEEK.map((w) => <div key={w} className="pb-1 text-xs font-medium text-muted" role="columnheader">{w}</div>)}
                   {cells.map((d, i) => {

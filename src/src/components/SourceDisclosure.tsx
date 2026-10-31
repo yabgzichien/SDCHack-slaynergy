@@ -4,7 +4,7 @@ import { useId, useState, type ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
 import { useT } from "@/components/I18nProvider";
 
-export function SourceDisclosure({ children }: { children: ReactNode }) {
+export function SourceDisclosure({ children, mascot = false }: { children: ReactNode; mascot?: boolean }) {
   const [open, setOpen] = useState(false);
   const id = useId();
   const { t } = useT();
@@ -16,7 +16,7 @@ export function SourceDisclosure({ children }: { children: ReactNode }) {
         aria-expanded={open}
         aria-controls={id}
         onClick={() => setOpen(!open)}
-        className="source-disclosure-toggle press inline-flex min-h-11 items-center gap-2 rounded-full border border-line bg-raised px-4 text-sm font-semibold text-accentink hover:bg-accentsoft"
+        className={`source-disclosure-toggle press inline-flex min-h-11 items-center gap-2 rounded-full border border-line bg-raised px-4 text-sm font-semibold text-accentink hover:bg-accentsoft ${mascot ? "source-disclosure-mascot" : ""}`}
       >
         {t(open ? "Hide sources" : "View sources")}
         <ChevronDown size={16} aria-hidden="true" className={open ? "rotate-180" : ""} />
