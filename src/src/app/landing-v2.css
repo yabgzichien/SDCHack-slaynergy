@@ -377,6 +377,21 @@
 .landing-content :is(.landing-sample-badge,.landing-live-badge) { font-size:12px; font-weight:600; }
 .landing-content .landing-chart-legend { font-size:13px; }
 .landing-content .landing-text-link { font-size:15px; font-weight:600; }
+.landing-content .landing-stats-all {
+  min-height:42px;
+  padding:9px 15px;
+  border:1px solid #b9cdbb;
+  border-radius:999px;
+  background:rgba(255,255,255,.78);
+  box-shadow:0 4px 12px rgba(33,60,50,.06);
+  transition:background-color .18s ease,border-color .18s ease,transform .18s ease;
+}
+.landing-content .landing-stats-all:hover {
+  border-color:#6f9a78;
+  background:#fff;
+  color:#21452d;
+  transform:translateY(-1px);
+}
 
 /* Hero: the main action is visible on first load. */
 .landing-hero-actions { display:flex; flex-wrap:wrap; justify-content:center; gap:12px; margin-top:28px; }
@@ -411,6 +426,8 @@
 .landing-content .landing-start-cta { width:min(1060px, calc(100% - 42px)); margin:12px auto 24px; padding:28px 24px; border-radius:24px; background:linear-gradient(135deg, #4c7657, #3e654c); }
 .landing-content #statistics,.landing-content .landing-forecast { padding-bottom:32px; }
 .landing-content .landing-forecast { padding-top:32px; }
+.landing-content #statistics > .landing-data-grid,
+.landing-content .landing-forecast > .landing-data-grid { margin-top:22px; }
 
 /* Statistics: one large figure states the takeaway; the chart backs it up. */
 .landing-stat-hero { display:flex; align-items:baseline; gap:18px; margin-top:18px; padding-bottom:4px; }
