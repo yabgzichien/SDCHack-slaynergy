@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 // A refresh fetches up to three sources with a 60 s timeout each.
 export const maxDuration = 60;
 
-// Called hourly by Vercel Cron (vercel.json). Vercel sends "Authorization: Bearer $CRON_SECRET". With no secret set the
+// Called daily by Vercel Cron (vercel.json; the Hobby plan allows no more often). Vercel sends "Authorization: Bearer $CRON_SECRET". With no secret set the
 // route refuses everything, so a missing setting can never leave it open to the public.
 function allowed(req: Request): boolean {
   const secret = process.env.CRON_SECRET;
