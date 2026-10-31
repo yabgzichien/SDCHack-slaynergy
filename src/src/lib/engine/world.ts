@@ -52,6 +52,8 @@ export type World = {
   futures: { id: FutureId; name: string; blurb: string; weight: number; earned: number; tilt: number; capMult: number; adoptMult: number; drift: number }[];
   weights: Weights3;
   scores: Record<FutureId, number>;
+  // What the open questions' crowd prices add to each future's score before the weights are worked out (futures.ts crowdTilt).
+  crowdTilt: Scores;
   forecasters: ForecasterRow[];
   kindSummary: { kind: string; count: number; influence: number }[];
   user: { balance: number; netCash: number; won: number; rank: number | null; of: number; roi: number | null; orders: number; positionValue: number };
@@ -250,7 +252,7 @@ export function computeWorld(state: SessionState, nowMs: number = Date.now()): W
       id: f.id, name: f.name, blurb: f.blurb, weight: weights[f.id], earned: stored[f.id], tilt: weights[f.id] - stored[f.id],
       capMult: f.capMult, adoptMult: f.adoptMult, drift: f.clericalDriftPp,
     })),
-    weights, scores: S, forecasters, kindSummary, stakes,
+    weights, scores: S, crowdTilt: tilt, forecasters, kindSummary, stakes,
     user: { balance: START_BALANCE + netCash + won, netCash, won, rank, of: Object.keys(roi).length + 1, roi: userRoi, orders, positionValue },
     clericalHistory: series.dosm.quarters.filter((d) => d.q >= "2023Q1" && d.q <= asOfQuarter).map((d) => ({ q: d.q, share: d.clerical_share })),
     replay: { questions: base.stats.questions, brierLmsr: base.stats.brierLmsr, brierWeighted: base.stats.brierWeightedMean, brierUnweighted: base.stats.brierUnweighted, brierCoin: base.stats.brierCoin, brierBaseRate: base.stats.brierBaseRate,

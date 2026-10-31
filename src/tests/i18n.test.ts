@@ -3,6 +3,7 @@ import { DICT, LANGS } from "../src/lib/i18n";
 import { ROWS } from "../src/lib/i18n/rows";
 import { lookup } from "../src/lib/i18n/dom";
 import { roles } from "../src/lib/engine/data";
+import { PT } from "../src/components/pace-text";
 
 const names = (s: string) => new Set([...s.matchAll(/\{[#~]?(\w+)\}/g)].map((m) => m[1]));
 
@@ -75,5 +76,12 @@ describe("the your predictions card", () => {
       expect(out, text).toBeTruthy();
       expect(out, text).not.toContain("{");
     }
+  });
+});
+
+describe("the AI speed explainer", () => {
+  it.each(["ms", "zh", "ta"] as const)("has every sentence translated in %s", (lang) => {
+    const missing = Object.values(PT).filter((s) => lookup(lang, s) === null && !/^[A-Z]?[a-z ]{0,3}$/.test(s));
+    expect(missing).toEqual([]);
   });
 });

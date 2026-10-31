@@ -1,5 +1,5 @@
 import { series, prevQuarter, quarterIndex, sourceById, perSnapshot } from "./data";
-import { FUTURES, type FutureId } from "./futures-def";
+import { DOSM_SIGMA_MIN, FUTURES, P_MAX, P_MIN, type FutureId } from "./futures-def";
 import { clamp, mean, median, normCdf, std } from "./math";
 
 export type Phase = "replay" | "live" | "next";
@@ -174,8 +174,8 @@ export function futureProbs(q: Question, opts: { saturation?: boolean } = {}): R
   const res = {} as Record<FutureId, number>;
   if (q.kind === "dosm") {
     const ch = dosmChanges(prevQuarter(q.quarter)).slice(-8).map((x) => x.d);
-    const sigma = Math.max(std(ch), 0.25);
-    for (const f of FUTURES) res[f.id] = clamp(normCdf((q.threshold - f.clericalDriftPp) / sigma), 0.04, 0.96);
+    const sigma = Math.max(std(ch), DOSM_SIGMA_MIN);
+    for (const f of FUTURES) res[f.id] = clamp(normCdf((q.threshold - f.clericalDriftPp) / sigma), P_MIN, P_MAX);
     return res;
   }
   const gains = epochGains(q.series, prevQuarter(q.quarter)).map((x) => x.g);
@@ -188,7 +188,7 @@ export function futureProbs(q: Question, opts: { saturation?: boolean } = {}): R
     if (avg > 0) gbar *= clamp(now / avg, 0.2, 1.5);
   }
   const sigma = Math.max(std(gains.slice(-8)), 0.5 * Math.abs(gbar), floorOf(q.series));
-  for (const f of FUTURES) res[f.id] = clamp(1 - normCdf((q.threshold - f.capMult * gbar) / sigma), 0.04, 0.96);
+  for (const f of FUTURES) res[f.id] = clamp(1 - normCdf((q.threshold - f.capMult * gbar) / sigma), P_MIN, P_MAX);
   return res;
 }
 

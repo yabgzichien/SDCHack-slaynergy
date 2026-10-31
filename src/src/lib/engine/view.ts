@@ -2,6 +2,8 @@ import { skills, skillById, roles, roleById, occupations, occupationById, series
 import { isoDay, ladder, LIVE_QUARTER, makeQuestions, quarterPlain } from "./questions";
 import { computeWorld, type World } from "./world";
 import { expiryFor, durability, fmtYear, nowYear, withNow, THRESHOLD, type SkillExpiry } from "./expiry";
+import { skillMathFor } from "./skill-math";
+import type { SkillMath } from "./expiry-math";
 import type { Weights3 } from "./futures";
 import { areaFor } from "./geo";
 import { matchRoles, pickInputs, demandFor, tradeoff, raisersFor, AT_RISK_BELOW, PROJECT_QUARTERS, type MatchInput, type RoleMatch } from "./matching";
@@ -35,7 +37,9 @@ export type View = {
   world: World;
   radar: Radar;
   profileSkills: { skillId: string; name: string; expiry: SkillExpiryView }[];
-  pace: { futures: Pace[]; expectedMonths: number; asOf: string; source: { name: string; url: string } };
+  // The working behind each of those skills' dates, for the "How we got this" page (/skills/how); see skill-math.ts.
+  skillMath: SkillMath;
+  pace: { futures: Pace[]; expectedMonths: number; perQuarter: number; points: { q: string; v: number }[]; asOf: string; source: { name: string; url: string } };
   matches: (RoleMatchView)[];
   unreachable: { roleId: string; title: string; weeks: number; sector: SectorId; reason: "qualification" | "time"; need: string }[];
   sectors: { id: SectorId; label: string; blurb: string; reachable: number; total: number; bestScore: number | null; bestTitle: string | null; avgOutlook: number | null }[];
@@ -323,6 +327,8 @@ function viewFrom(state: SessionState, world: World, withScenarios = true): View
   const pace = {
     futures: paceFutures,
     expectedMonths: 3 / (perQuarter * FUTURES.reduce((a, f) => a + world.weights[f.id] * f.capMult, 0)),
+    // The numbers the pace was worked out from, so the page can show its own arithmetic (components/PaceExplain.tsx).
+    perQuarter, points: fr.map((x) => ({ q: x.q, v: x.v })),
     asOf: world.epochQuarter ?? world.asOfQuarter,
     source: { name: "METR time horizon, via Epoch AI", url: sourceById.epoch.url },
   };
@@ -334,7 +340,8 @@ function viewFrom(state: SessionState, world: World, withScenarios = true): View
       whatIfYou[e.id] = { skill: soonest.name, now: at(wt), yes: at(e.whatIf.yes), no: at(e.whatIf.no) };
     }
   }
-  return { world, radar, profileSkills, pace, whatIfYou, matches, unreachable, sectors, chosen, lasting, bridge, stay, plan, pathway: pathwayView(plan, state), sdgSummary, resume, resumeTips, changes: null, data, scenarios };
+  const skillMath = skillMathFor(profileSkills, wt);
+  return { world, radar, profileSkills, skillMath, pace, whatIfYou, matches, unreachable, sectors, chosen, lasting, bridge, stay, plan, pathway: pathwayView(plan, state), sdgSummary, resume, resumeTips, changes: null, data, scenarios };
 }
 
 const SECTOR_NOUN: Record<SectorId, string> = {
@@ -498,7 +505,7 @@ function pastWorld(stop: Stop): World {
     nextAnswers: { dosm: null, epoch: null },
     events: [], settledEvents: [],
     futures: FUTURES.map((f) => ({ id: f.id, name: f.name, blurb: f.blurb, weight: w[f.id], earned: w[f.id], tilt: 0, capMult: f.capMult, adoptMult: f.adoptMult, drift: f.clericalDriftPp })),
-    weights: w, scores: S, forecasters: [], kindSummary: [],
+    weights: w, scores: S, crowdTilt: zeroScores(), forecasters: [], kindSummary: [],
     user: { balance: 0, netCash: 0, won: 0, rank: null, of: 0, roi: null, orders: 0, positionValue: 0 },
     replay: { questions: 0, brierLmsr: 0, brierWeighted: 0, brierUnweighted: 0, brierCoin: 0, brierBaseRate: 0, brierBestFuture: 0, bestFuture: "" },
     you: { forecasts: [], brier: null, scored: 0, traded: 0, influenceBefore: 1, influence: 1, maxOrder: 0 },

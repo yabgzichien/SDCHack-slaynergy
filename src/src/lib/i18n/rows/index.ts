@@ -18,5 +18,7 @@ import { UPDATES } from "./updates";
 import { HISTORY } from "./history";
 import { SPEED } from "./speed";
 import { RESUME_SCORE } from "./resumescore";
+import { PACE } from "./pace";
+import { SKILL_MATH } from "./skillmath";
 
-export const ROWS: Row[] = [...ROLES, ...SKILLS, ...SDG, ...MISC, ...SKILLS_PAGE, ...JOBS, ...MAP, ...PLAN, ...FORECAST, ...START, ...TRUST, ...TASKCARD, ...MISC2, ...HUMAN_EDGE, ...SOURCES, ...UPDATES, ...HISTORY, ...SPEED, ...RESUME_SCORE];
+export const ROWS: Row[] = [...ROLES, ...SKILLS, ...SDG, ...MISC, ...SKILLS_PAGE, ...JOBS, ...MAP, ...PLAN, ...FORECAST, ...START, ...TRUST, ...TASKCARD, ...MISC2, ...HUMAN_EDGE, ...SOURCES, ...UPDATES, ...HISTORY, ...SPEED, ...RESUME_SCORE, ...PACE, ...SKILL_MATH];

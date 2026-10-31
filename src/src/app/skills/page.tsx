@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { Gauge, Layers, Rabbit, Snail } from "lucide-react";
+import { Calculator, Gauge, Layers, Rabbit, Snail } from "lucide-react";
 import { FORECAST, type Speed } from "@/lib/speed";
 import { useApp } from "@/components/AppProvider";
 import { useT } from "@/components/I18nProvider";
@@ -10,6 +10,7 @@ import { Btn, Card, Chip, Estimate, FUTURE_COLOR, More, NextRow, PageTitle, Skel
 import { SdgFocus } from "@/components/SdgFocus";
 import { ReleaseInfo } from "@/components/ReleaseInfo";
 import { SourceDisclosure } from "@/components/SourceDisclosure";
+import { PaceExplain } from "@/components/PaceExplain";
 import { SdgIcon, sdgColor, sdgUrl } from "@/components/SdgIcon";
 import { sdg as SDG_TARGETS } from "@/lib/engine/data";
 import { focusGoals, goalOf, goalTint, orderByGoals, targetsByGoal, toggleGoal } from "@/lib/sdgFocus";
@@ -67,6 +68,7 @@ export default function SkillsPage() {
       <PageTitle title={<span className="skills-title">{fading.length
         ? (lang === "en" ? <>AI could do most of <mark>{fading.length} of your {mine.length} skills</mark> before 2031.</> : `AI could do most of ${fading.length} of your ${mine.length} skills before 2031.`)
         : (lang === "en" ? <>AI is unlikely to take over <mark>any of your {mine.length} skills</mark> before 2031.</> : `AI is unlikely to take over any of your ${mine.length} skills before 2031.`)}</span>}
+        aside={<Btn href="/skills/how" variant="ghost"><Calculator size={16} aria-hidden />How we worked this out</Btn>}
         titleAction={<ReleaseInfo label="About these skill dates">Each date below is roughly when AI could do most of the work for that skill{previewing ? `, if AI improves ${SPEED[speed].name.toLowerCase()}` : ""}. After that date, the skill alone is less likely to get you hired.</ReleaseInfo>}>
         {lasting.length ? <>Your safest skills: {lasting.slice(0, 2).map((s, i) => <span key={s.skillId}>{i > 0 && " and "}<mark className="skills-safe-highlight">{s.name}</mark></span>)}.</> : null}
       </PageTitle>
@@ -99,6 +101,7 @@ export default function SkillsPage() {
         <More summary="Where do these numbers come from?">
           <p>The speeds come from a test by the research group METR (data from Epoch AI). Over the last year, the length of task AI can finish on its own doubled about every {months(pace.futures.find((f) => f.id === "medium")!.doublingMonths)} months. &quot;Slow&quot; assumes 60% of that pace, &quot;Fast&quot; 160%. Faster AI also means companies start using it sooner and office admin job ads shrink faster ({pace.futures.map((f) => `${SPEED[f.id].name.toLowerCase()}: ${Math.abs(f.clericalPerYear).toFixed(1)} fewer in every 100 ads each year`).join(", ")}).</p>
           <p>How likely each speed is comes from real published numbers and from a prediction game where players predict the next numbers; players who predict well count more. <Link href="/market" className="underline decoration-control underline-offset-2 hover:text-ink">Try the prediction game</Link>.</p>
+          <PaceExplain pace={pace} />
         </More>
       </Card>
 

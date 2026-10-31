@@ -11,7 +11,7 @@ const staticRoutes = [
   "/", "/about", "/advisor", "/changes", "/counsellor", "/courses",
   "/forecast", "/futures", "/goals", "/jobs", "/jobs/all", "/leaderboard",
   "/map", "/market", "/plan", "/plan/resume", "/plan/task", "/profile",
-  "/radar", "/resume", "/skills", "/sources", "/start", "/trends", "/trust",
+  "/radar", "/resume", "/skills", "/skills/how", "/sources", "/start", "/trends", "/trust",
 ] as const;
 
 type AppSeed = { jobId: string; marketId: string };

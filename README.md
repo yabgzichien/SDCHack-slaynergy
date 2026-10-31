@@ -390,6 +390,8 @@ expiry year     = the first year readiness reaches 0.45
 
 The date shown is the average of the three futures, weighted by how likely each one is. Skills that stay below the threshold in every future are marked **lasting**, e.g. people skills.
 
+On the **Skills** page, the button **How we worked this out** opens `/skills/how`, which shows the working behind the headline "AI could do most of N of your M skills before 2031": your own skills in one table (exposure, coverage, the date under each speed, whether it is counted), then each step with a labelled formula and your numbers filled in (exposure, coverage, adoption rate, adoption curve, readiness, the date, Our forecast, the count and the likelihood of each speed), a readiness chart for any skill you pick, and what the numbers do not mean. The formulas are MathML and every number comes from the engine (`skillMath` in the view, built by `src/src/lib/engine/skill-math.ts` from `expiry-math.ts`, the same functions that make the dates). `src/tests/skill-math.test.ts` works the formulas out again by hand from the raw data and checks that the engine agrees, and that every sentence on the page is translated.
+
 ### Previewing an AI speed
 
 One **AI speed** picker on Skills, Jobs, each job's page and Plan offers **Our forecast** (the default: the three futures, weighted) or **Slow**, **Medium** or **Fast** taken as certain. Picking a speed:
@@ -730,6 +732,8 @@ For the advisor passcode and a judge's walkthrough, see [`src/README.md`](src/RE
 │   │   │   ├── resume/
 │   │   │   │   └── page.tsx
 │   │   │   ├── skills/
+│   │   │   │   ├── how/
+│   │   │   │   │   └── page.tsx
 │   │   │   │   └── page.tsx
 │   │   │   ├── sources/
 │   │   │   │   └── page.tsx
@@ -766,6 +770,7 @@ For the advisor passcode and a judge's walkthrough, see [`src/README.md`](src/RE
 │   │   │   ├── MarketBoard.tsx
 │   │   │   ├── MarketCards.tsx
 │   │   │   ├── MarketTabs.tsx
+│   │   │   ├── mathml.tsx
 │   │   │   ├── Meetings.tsx
 │   │   │   ├── PageTransition.tsx
 │   │   │   ├── Pathway.tsx
@@ -776,6 +781,8 @@ For the advisor passcode and a judge's walkthrough, see [`src/README.md`](src/RE
 │   │   │   ├── SdgIcon.tsx
 │   │   │   ├── Segmented.tsx
 │   │   │   ├── SiteHeader.tsx
+│   │   │   ├── SkillMathExplain.tsx
+│   │   │   ├── skill-math-text.ts
 │   │   │   ├── SkipLink.tsx
 │   │   │   ├── SourceDisclosure.tsx
 │   │   │   ├── StepNav.tsx
@@ -799,6 +806,7 @@ For the advisor passcode and a judge's walkthrough, see [`src/README.md`](src/RE
 │   │       ├── engine/  # Forecasting, matching, learning plans and market logic
 │   │       │   ├── calendar.ts
 │   │       │   ├── data.ts
+│   │       │   ├── expiry-math.ts
 │   │       │   ├── expiry.ts
 │   │       │   ├── futures-def.ts
 │   │       │   ├── futures.ts
@@ -814,6 +822,7 @@ For the advisor passcode and a judge's walkthrough, see [`src/README.md`](src/RE
 │   │       │   ├── replay.ts
 │   │       │   ├── resume.ts
 │   │       │   ├── review.ts
+│   │       │   ├── skill-math.ts
 │   │       │   ├── state.ts
 │   │       │   ├── tape.ts
 │   │       │   ├── view.ts
@@ -858,7 +867,8 @@ For the advisor passcode and a judge's walkthrough, see [`src/README.md`](src/RE
 │       ├── engine.test.ts
 │       ├── i18n.test.ts
 │       ├── layout-overflow.spec.ts
-│       └── rename.test.ts
+│       ├── rename.test.ts
+│       └── skill-math.test.ts
 └── submission/  # Submission documents and pitch deck
     ├── Jobbery pitch deck.pdf
     ├── Jobbery pitch deck.pptx
