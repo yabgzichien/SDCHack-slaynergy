@@ -57,7 +57,8 @@ export const PT = {
   c5c: "Formula 5c: likelihood of a speed",
   s5f: "The chance p that a speed gives to a question comes from the recent gain and its spread.",
   c5d: "Formula 5d: chance a speed gives to Yes",
-  l5d: "T is the threshold of the question, g-bar is the average gain of the last four quarters, σ is the spread of past gains, and Φ is the normal curve. p is kept between 0.04 and 0.96.",
+  l5d: "T is the threshold of the question, g-bar is the average gain of the last four quarters, σ is the spread of past gains, and Φ is the normal curve.",
+  l5e: "p is kept between 0.04 and 0.96.",
   s5g: "For office admin job ad questions, the drift of the speed in the table takes the place of m times g-bar.",
 
   h6: "6. What the speed changes on your screen",
@@ -74,4 +75,33 @@ export const PT = {
   k2: "The METR time horizon is a fitted estimate from the METR own task suites, mostly software and AI research tasks. It is not a measure of every job.",
   k3: "The 0.6 and 1.6 multipliers are scenarios. The likelihoods come from our model and the prediction game, not from a published probability.",
   k4: "These are estimates, not certainties.",
+
+  b1a: "The 50% time horizon and the exponential trend come from the METR studies, and the numbers come from the METR data that Epoch AI republishes.",
+  b1b: "A 2026 statistical review of the same data warns that equal jumps on this scale are not equally hard: going from 3 to 30 minutes is easier than going from 30 minutes to 5 hours.",
+  b2a: "Formula 2 is the drift method from forecasting textbooks: the average past change, which equals the line through the first and last points.",
+  b2b: "The four-quarter window is our choice, while METR fits a trend across its full history.",
+  b3a: "No study gives the 0.6 and 1.6 multipliers.",
+  b3b: "To compare with the table below, METR reports a doubling about every 7 months since 2019, possibly speeding up to about every 4 months in 2024.",
+  b3c: "Those figures come from a fitted trend over a longer period, so they will not match our months exactly.",
+  b4a: "Weighting several forecasts into one is an established method, known as the linear opinion pool and as forecast combination.",
+  b4b: "Bayesian model averaging likewise weights each model by how likely it is.",
+  b4c: "Our own choice is to average the pace multipliers first and then work out the months.",
+  b5a: "Formula 5a uses the logarithmic score, a standard strictly proper scoring rule.",
+  b5b: "The 15% fade has the same form as the forgetting factor in dynamic model averaging, where the usual fade is far smaller, about 1% per step.",
+  b5c: "Turning scores into likelihoods with a softmax is the exponentially weighted average forecaster.",
+  b5d: "The 5% floor has the same form as the Fixed Share method with a 10% share, although we apply it only to the final likelihoods.",
+  b5e: "Formula 5b is the expected logarithmic score under the price, and reading prices as predictions follows research on prediction markets.",
+  b5f: "That research studies real markets, while the crowd in our game includes simulated players.",
+  b5g: "Formula 5d assumes normally distributed errors around a drift, a common assumption in forecasting.",
+  b5h: "No study gives our values 0.85, 0.5, 0.25 and 0.05, or the limits on p.",
+  b6a: "The adoption curve is the Bass diffusion model with its imitation term set to zero.",
+  b6b: "The full Bass model adds imitation and gives an S-shaped curve, so ours is a simplification.",
+  b6c: "E comes from the ILO index of occupational exposure, and K comes from the Anthropic Economic Index.",
+  b6d: "Anthropic’s observed exposure measure also combines what AI could do with what people really use it for, although with a different formula.",
+  b6e: "No study gives the 0.15 + 0.6K rate or the 0.45 line.",
+
+  h8: "References",
 } as const;
+
+// The panel's reference list, in citation order. The citations are in studies.ts.
+export const PACE_ORDER = ["kwa", "metr", "epoch", "nguyen", "hyndman", "metrDomains", "stone", "bates", "hoeting", "good", "gneiting", "raftery", "cesa", "herbster", "wolfers", "bass", "observed", "gmyrek", "handa", "aei"] as const;

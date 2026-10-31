@@ -8,7 +8,9 @@ import { useT } from "@/components/I18nProvider";
 import { useSpeed } from "@/components/useSpeed";
 import { Btn, Card, Chip, Estimate, More, NextRow, PageTitle, Skeleton, SourceChip } from "@/components/ui";
 import { M, bar, frac, fn, gap, n, o, sub, sum, sup, txt, v } from "@/components/mathml";
-import { SM } from "@/components/skill-math-text";
+import { SM, SM_ORDER } from "@/components/skill-math-text";
+import { Basis as RefBasis, RefList } from "@/components/References";
+import type { StudyId } from "@/components/studies";
 import { fmtYear, isCounted, readiness } from "@/lib/engine/expiry-math";
 import type { SkillMath, SkillMathRow } from "@/lib/engine/expiry-math";
 import type { FutureId } from "@/lib/engine/futures-def";
@@ -41,6 +43,9 @@ function Step({ title, children }: { title: string; children: ReactNode }) {
     </Card>
   );
 }
+
+const Basis = ({ items }: { items: [string, ...StudyId[]][] }) => <RefBasis order={SM_ORDER} items={items} />;
+
 const th = "px-2 py-1.5 text-left font-medium";
 const td = "px-2 py-1.5";
 
@@ -219,6 +224,7 @@ export function SkillMathExplain() {
             <p>{t(row.exposure.basis === "none" ? SM.n1none : SM.n1missing, { x: E })}</p>
           </>
         )}
+        <Basis items={[[t(SM.b1a), "gmyrek"], [t(SM.b1b), "gmyrek"], [t(SM.b1c), "gmyrek"], [t(SM.b1d)]]} />
       </Step>
 
       <Step title={t(SM.h2)}>
@@ -247,6 +253,7 @@ export function SkillMathExplain() {
             <p>{t(SM.n2none, { x: K })}</p>
           </>
         )}
+        <Basis items={[[t(SM.b2a), "primitives", "handa", "aei"], [t(SM.b2b)]]} />
       </Step>
 
       <Step title={t(SM.h3)}>
@@ -256,6 +263,7 @@ export function SkillMathExplain() {
         <Legend>{t(SM.l3, { a: c.rateBase, b: c.ratePerCoverage })}</Legend>
         <p>{t(SM.withNumbers)}</p>
         <M><mrow>{v("r")}{o("=")}{n(c.rateBase)}{o("+")}{n(c.ratePerCoverage)}{o("×")}{n(trim(K, 4))}{o("=")}{n(f4(r))}</mrow></M>
+        <Basis items={[[t(SM.b3a), "griliches"], [t(SM.b3b)], [t(SM.b3c, { a: c.rateBase, b: c.ratePerCoverage })]]} />
       </Step>
 
       <Step title={t(SM.h4)}>
@@ -269,6 +277,7 @@ export function SkillMathExplain() {
         {sm.futures.map((f) => (
           <M key={f.id}><mrow>{sub(v("A"), txt(f.id))}{o("(")}{v("t")}{o(")")}{o("=")}{n(1)}{o("−")}{sup(v("e"), <>{o("−")}{n(f4(r))}{o("×")}{n(f.mult)}{o("×")}{v("t")}</>)}</mrow></M>
         ))}
+        <Basis items={[[t(SM.b4a), "bass"], [t(SM.b4b), "bass"], [t(SM.b4c), "bick"], [t(SM.b4d)], [t(SM.b4e)]]} />
       </Step>
 
       <Step title={t(SM.h5, { x: c.threshold })}>
@@ -281,6 +290,7 @@ export function SkillMathExplain() {
         <p>{t(SM.chartCap, { y: c.headlineYear })}</p>
         <ReadinessChart row={row} sm={sm} speedName={(id) => t(speedName(id))} />
         {!flagged && <p>{t(SM.chartNever)}</p>}
+        <Basis items={[[t(SM.b5a), "observed"], [t(SM.b5b)], [t(SM.b5c), "gmyrek"], [t(SM.b5d, { x: c.threshold })], [t(SM.b5e), "gmyrek"]]} />
       </Step>
 
       <Step title={t(SM.h6)}>
@@ -323,6 +333,7 @@ export function SkillMathExplain() {
             <p>{t(SM.noDate)}</p>
           </>
         )}
+        <Basis items={[[t(SM.b6)]]} />
       </Step>
 
       <Step title={t(SM.h7)}>
@@ -358,6 +369,7 @@ export function SkillMathExplain() {
         {row.forecast !== null ? (
           <M><mrow>{v("T")}{o("=")}{sm.futures.map((f, i) => <Fragment key={f.id}>{i > 0 && o("+")}{n(f4(f.weight))}{o("×")}{n(yr(Math.min(row.dates[f.id]!, c.horizon)))}</Fragment>)}{o("=")}{n(yr(row.forecast))}{o("→")}{txt(fmtYear(row.forecast))}</mrow></M>
         ) : <p>{t(SM.noDate)}</p>}
+        <Basis items={[[t(SM.b7a), "stone", "bates"], [t(SM.b7b), "hoeting"], [t(SM.b7c, { x: c.horizon })]]} />
       </Step>
 
       <Step title={t(SM.h8)}>
@@ -417,6 +429,7 @@ export function SkillMathExplain() {
           <M><mrow>{sub(v("p"), v("f"))}{o("=")}{v("Φ")}{o("(")}{frac(<>{v("T")}{o("−")}{sub(v("δ"), v("f"))}</>, v("σ"))}{o(")")}</mrow></M>
           <Legend>{t(SM.l9e, { a: world.futures[0].drift, b: world.futures[1].drift, c: world.futures[2].drift, s: c.dosmSigmaMin, lo: c.pMin, hi: c.pMax })}</Legend>
         </More>
+        <Basis items={[[t(SM.b9a), "good", "gneiting"], [t(SM.b9b), "raftery"], [t(SM.b9c), "cesa"], [t(SM.b9d), "herbster"], [t(SM.b9e), "gneiting", "wolfers"], [t(SM.b9f)], [t(SM.b9g), "hyndman"], [t(SM.b9h)]]} />
       </Step>
 
       <Step title={t(SM.h10)}>
@@ -435,6 +448,10 @@ export function SkillMathExplain() {
           {view.radar.sources.slice(0, 2).map((x) => <SourceChip key={x.name} name={x.name} date={x.date} url={x.url} />)}
         </div>
         <Estimate />
+      </Step>
+
+      <Step title={t(SM.refsH)}>
+        <RefList order={SM_ORDER} />
       </Step>
 
       <NextRow back="/skills" />

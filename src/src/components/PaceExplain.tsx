@@ -4,7 +4,9 @@ import { X } from "lucide-react";
 import { FUTURES } from "@/lib/engine/futures-def";
 import { useT } from "@/components/I18nProvider";
 import { Btn } from "@/components/ui";
-import { PT } from "@/components/pace-text";
+import { PACE_ORDER, PT } from "@/components/pace-text";
+import { Basis as RefBasis, RefList } from "@/components/References";
+import type { StudyId } from "@/components/studies";
 import type { View } from "@/lib/engine/view";
 
 // How the "AI gets twice as capable every N months" numbers are worked out (engine/view.ts `pace`, futures-def.ts, futures.ts,
@@ -46,6 +48,8 @@ function Step({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
+const Basis = ({ items }: { items: [string, ...StudyId[]][] }) => <RefBasis order={PACE_ORDER} items={items} />;
+
 export function PaceExplain({ pace }: { pace: View["pace"] }) {
   const { t } = useT();
   const ref = useRef<HTMLDialogElement>(null);
@@ -85,6 +89,7 @@ export function PaceExplain({ pace }: { pace: View["pace"] }) {
               {pts.map((p) => <tr key={p.q} className="border-t border-black/5"><td className="px-2 py-1">{quarter(p.q)}</td><td className="px-2 py-1">{f2(p.v)}</td><td className="px-2 py-1">{task(p.v)}</td></tr>)}
             </tbody>
           </table>
+          <Basis items={[[PT.b1a, "kwa", "metr", "epoch"], [PT.b1b, "nguyen"]]} />
         </Step>
 
         <Step title={PT.h2}>
@@ -95,6 +100,7 @@ export function PaceExplain({ pace }: { pace: View["pace"] }) {
           <p>{PT.withNumbers}</p>
           <M><mrow>{v("g")}{o("=")}{frac(<>{n(f4(last.v))}{o("−")}{n(f4(first.v))}</>, n(4))}{o("=")}{n(f4(g))}</mrow></M>
           <p>{PT.s2c}</p>
+          <Basis items={[[PT.b2a, "hyndman"], [PT.b2b, "kwa"]]} />
         </Step>
 
         <Step title={PT.h3}>
@@ -104,6 +110,7 @@ export function PaceExplain({ pace }: { pace: View["pace"] }) {
           <Caption>{PT.c3}</Caption>
           <M><mrow>{sub(v("D"), v("f"))}{o("=")}{frac(n(3), <>{sub(v("m"), v("f"))}{o("×")}{v("g")}</>)}</mrow></M>
           <Legend>{PT.l3}</Legend>
+          <Basis items={[[PT.b3a], [PT.b3b, "kwa", "metrDomains"], [PT.b3c]]} />
         </Step>
 
         <Step title={PT.h4}>
@@ -135,6 +142,7 @@ export function PaceExplain({ pace }: { pace: View["pace"] }) {
             </table>
           </div>
           <p>{PT.s4c}</p>
+          <Basis items={[[PT.b4a, "stone", "bates"], [PT.b4b, "hoeting"], [PT.b4c]]} />
         </Step>
 
         <Step title={PT.h5}>
@@ -155,7 +163,9 @@ export function PaceExplain({ pace }: { pace: View["pace"] }) {
           <Caption>{PT.c5d}</Caption>
           <M><mrow>{sub(v("p"), v("f"))}{o("=")}{n(1)}{o("−")}{v("Φ")}{o("(")}{frac(<>{v("T")}{o("−")}{sub(v("m"), v("f"))}{o("×")}{gbar}</>, v("σ"))}{o(")")}</mrow></M>
           <Legend>{PT.l5d}</Legend>
+          <Legend>{PT.l5e}</Legend>
           <p>{PT.s5g}</p>
+          <Basis items={[[PT.b5a, "good", "gneiting"], [PT.b5b, "raftery"], [PT.b5c, "cesa"], [PT.b5d, "herbster"], [PT.b5e, "gneiting", "wolfers"], [PT.b5f], [PT.b5g, "hyndman"], [PT.b5h]]} />
         </Step>
 
         <Step title={PT.h6}>
@@ -168,6 +178,7 @@ export function PaceExplain({ pace }: { pace: View["pace"] }) {
           <p>{PT.s6c}</p>
           <p>{PT.s6d}</p>
           <p>{PT.s6e}</p>
+          <Basis items={[[PT.b6a, "bass"], [PT.b6b, "bass"], [PT.b6c, "gmyrek", "handa", "aei"], [PT.b6d, "observed"], [PT.b6e]]} />
         </Step>
 
         <Step title={PT.h7}>
@@ -177,6 +188,10 @@ export function PaceExplain({ pace }: { pace: View["pace"] }) {
             <li>{PT.k3}</li>
             <li>{PT.k4}</li>
           </ul>
+        </Step>
+
+        <Step title={PT.h8}>
+          <RefList order={PACE_ORDER} />
         </Step>
       </dialog>
     </>
