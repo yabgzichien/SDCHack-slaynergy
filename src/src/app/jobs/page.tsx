@@ -8,7 +8,7 @@ import { useSelectJob } from "@/components/useSelectJob";
 import { BriefWhy, ScoreBadge } from "@/components/JobBits";
 import { JobBadge } from "@/components/JobIcon";
 import { JobsNav } from "@/components/JobsNav";
-import { ArrowDown, ChevronRight, HandHeart, MapPin, TrendingDown, TrendingUp } from "lucide-react";
+import { ArrowDown, ChevronRight, MapPin, TrendingDown, TrendingUp } from "lucide-react";
 const MalaysiaMap = dynamic(() => import("@/components/MalaysiaMap").then((m) => m.MalaysiaMap), { ssr: false, loading: () => <div className="h-40 animate-pulse rounded-2xl bg-surface2" aria-hidden /> });
 import { mapFigures, times } from "@/lib/map-figures";
 import { stateById } from "@/lib/engine/geo";
@@ -16,9 +16,10 @@ import { roleById, type GroupKey, type SectorId } from "@/lib/engine/data";
 import type { StayView, RoleMatchView } from "@/lib/engine/view";
 import { STAY_ID } from "@/lib/engine/state";
 import { rankMove, suggestedJobs } from "@/lib/suggested";
+import { GoalsPicker } from "@/components/GoalsPicker";
 import { SpeedBar } from "@/components/SpeedBar";
 import { FUTURE_NAME } from "@/components/ui";
-import { Btn, Card, Chip, LinkRow, More, NextRow, PageTitle, SdgTag, Skeleton, Stop, sdgName } from "@/components/ui";
+import { Btn, Card, Chip, More, NextRow, PageTitle, SdgTag, Skeleton, Stop, sdgName } from "@/components/ui";
 import "./jobs.css";
 
 const LOWERCASE_TITLE_WORDS = new Set(["a", "an", "and", "as", "at", "but", "by", "for", "in", "nor", "of", "on", "or", "per", "the", "to", "via"]);
@@ -48,7 +49,6 @@ export default function JobsPage() {
   const select = (id: string) => selectJob(id);
   const selectedId = state.chosenRoleId && state.chosenRoleId !== STAY_ID ? state.chosenRoleId : null;
   const mapJob = (selectedId && view.matches.find((m) => m.roleId === selectedId)) || best;
-  const goals = [...new Set(state.goals.map(sdgName))].join(", ");
   const jobTitle = (title: string) => lang === "en" ? titleCaseJob(title) : t(title);
 
   const stayCard = view.stay && <StayCard stay={view.stay} speed={speed} bridge={bridge} chosen={state.chosenRoleId === STAY_ID} busy={busy} onChoose={() => select(STAY_ID)} />;
@@ -86,7 +86,15 @@ export default function JobsPage() {
               : `If AI is ${FUTURE_NAME[speed]}, your best job would be ${best.title}, instead of ${forecastBest.title}.`)}
           </p>
         </SpeedBar>
-        <Stop n={1} id="best-job" title="Your best job" current>
+        <Stop n={1} id="goals" title="Causes you care about" sub="Pick the UN goals that matter to you. Jobs that help with them move up your list. You can pick none.">
+          <div className="mb-4 rounded-2xl bg-surface p-4">
+            <h3 className="text-sm font-semibold">Why SDGs matter</h3>
+            <p className="mt-1 text-sm text-muted">The Sustainable Development Goals (SDGs) are important because they provide a shared global framework for addressing the most pressing challenges humanity faces, from poverty and climate change to inequality and lack of access to education. <a href="https://waitro.org/blog/why-are-the-sustainable-development-goals-important/" target="_blank" rel="noopener noreferrer" className="underline decoration-control underline-offset-2 hover:text-ink">Read more</a></p>
+          </div>
+          <GoalsPicker />
+        </Stop>
+
+        <Stop n={2} id="best-job" title="Your best job" current>
           <Card tone="raised" className="ring-2 ring-cue">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
               <div className="min-w-0">
@@ -121,7 +129,7 @@ export default function JobsPage() {
         </Stop>
 
         {others.length > 0 && (
-          <Stop n={2} id="others" title="Other good matches" sub="Same three reasons, so you can compare them with your best job.">
+          <Stop n={3} id="others" title="Other good matches" sub="Same three reasons, so you can compare them with your best job.">
             <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {others.map((m) => (
                 <li key={m.roleId} className={`flex h-full flex-col rounded-[22px] bg-surface p-4 ${selectedId === m.roleId ? "ring-2 ring-cue" : ""}`}>
@@ -149,27 +157,12 @@ export default function JobsPage() {
           </Stop>
         )}
 
-        <Stop n={others.length > 0 ? 3 : 2} id="where" title="Where in Malaysia" sub={`Select a job to see where it is. Showing: ${mapJob.title}.`}>
+        <Stop n={others.length > 0 ? 4 : 3} id="where" title="Where in Malaysia" sub={`Select a job to see where it is. Showing: ${mapJob.title}.`}>
           <MapTeaser roleTitle={mapJob.title} sector={mapJob.sector as SectorId} group={roleById[mapJob.roleId]?.group} home={p.state ?? null} />
         </Stop>
 
-        <section id="keep-job">
-          <h2 className="text-xl font-bold sm:text-2xl">Not ready to change jobs yet?</h2>
-          <p className="mb-4 mt-1 text-sm text-muted">Keep your current job for now, or shape your future recommendations around what matters to you.</p>
+        <section id="keep-job" className="scroll-mt-24">
           {stayCard}
-          <div className={`mt-4 grid gap-4 ${bridge && view.stay?.status !== "fast" ? "md:grid-cols-2" : ""}`}>
-            {bridge && view.stay?.status !== "fast" && (
-              <Card>
-                <h3 className="text-base font-semibold">Need income sooner?</h3>
-                <p className="mt-1 text-sm"><b className="font-medium">{bridge.title}</b> needs about {bridge.weeks} weeks. AI may take over its skills sooner, so use it to earn money while you train for {best.title.toLowerCase()}.</p>
-                <Link href={`/jobs/${bridge.roleId}`} className="mt-2 inline-block text-sm underline decoration-control underline-offset-2 hover:text-ink">See this short-term job</Link>
-              </Card>
-            )}
-            <LinkRow href="/goals" aside={<ChevronRight size={18} className="text-muted" aria-hidden />}>
-              <p className="flex items-center gap-2 font-semibold"><HandHeart size={18} strokeWidth={1.8} aria-hidden />Choose causes you care about</p>
-              <p className="text-sm text-muted">{goals ? goals : "We’ll move jobs that support those causes higher in your recommendations."}</p>
-            </LinkRow>
-          </div>
         </section>
         </div>
       </div>

@@ -312,7 +312,7 @@ export const HUMAN_EDGE: Row[] = [
   ["Put it to work", "Mempraktikkannya", "学以致用", "செயலில் பயன்படுத்தினீர்கள்"],
   ["Demo: mark this meeting as finished (sample advice)", "Demo: tandakan mesyuarat ini sebagai selesai (nasihat contoh)", "演示：将此会面标记为已完成（示例建议）", "டெமோ: இந்தச் சந்திப்பை முடிந்ததாகக் குறி (மாதிரி ஆலோசனை)"],
   ["Show the prompt and checklist", "Tunjukkan arahan dan senarai semak", "显示提示词和检查清单", "அறிவுறுத்தலையும் சரிபார்ப்புப் பட்டியலையும் காட்டு"],
-  ["30 minutes with an employment officer. Optional; your plan never waits on it.", "30 minit bersama pegawai pekerjaan. Pilihan; pelan anda tidak menunggunya.", "与就业官员交谈 30 分钟。可选；你的计划不会因此等待。", "வேலைவாய்ப்பு அலுவலருடன் 30 நிமிடங்கள். விருப்பத்தேர்வு; உங்கள் திட்டம் இதற்காகக் காத்திருக்காது."],
+  ["30 minutes with an employment officer.", "30 minit bersama pegawai pekerjaan.", "与就业官员交谈 30 分钟。", "வேலைவாய்ப்பு அலுவலருடன் 30 நிமிடங்கள்."],
   ["Advice from {a}", "Nasihat daripada {a}", "来自{a}的建议", "{a} வழங்கிய ஆலோசனை"],
   ["Meeting {a}", "Bertemu {a}", "与{a}会面", "{a} உடன் சந்திப்பு"],
   ["Met {a}", "Telah bertemu {a}", "已与{a}会面", "{a} உடன் சந்தித்தீர்கள்"],

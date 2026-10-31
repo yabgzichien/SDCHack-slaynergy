@@ -4,10 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 
 export function JobsNav({ showOthers }: { showOthers: boolean }) {
   const sections = useMemo(() => [
+    { id: "goals", label: "Causes you care about" },
     { id: "best-job", label: "Your best job" },
     ...(showOthers ? [{ id: "others", label: "Other good matches" }] : []),
     { id: "where", label: "Where in Malaysia" },
-    { id: "keep-job", label: "Not ready to change jobs?" },
   ], [showOthers]);
   const [active, setActive] = useState(sections[0].id);
 
