@@ -55,7 +55,7 @@ export function LandingLiveMarket({ event }: { event: EventView }) {
   return (
     <article className="landing-chart-card landing-reveal">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="landing-card-index">THE FORECAST · SIMULATED PLAYERS</span>
+        <span className="landing-card-index">THE FORECAST</span>
         <OpenBadge event={event} />
       </div>
       <h3 className="mt-2">Will office admin job ads shrink?</h3>
