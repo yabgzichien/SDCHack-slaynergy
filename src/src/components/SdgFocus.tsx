@@ -6,8 +6,8 @@ import { SDG_SHORT } from "@/components/ui";
 
 const ALL_GOALS = Array.from({ length: 17 }, (_, i) => i + 1);
 
-// A row of tiles for the UN goals that some job or skill in Jobbery serves (the rest have nothing to reorder, so they are left out).
-// A tile turns a whole goal on or off. serving counts what each tile stands for: "yours" is the person's own skills, "page" is
+// A row of tiles for the UN goals that something on the page serves (a goal with a count of zero has nothing to reorder, so it is
+// left out, unless it is chosen, so it can still be switched off). A tile turns a whole goal on or off. serving counts what each tile stands for: "yours" is the person's own skills, "page" is
 // the jobs and skills listed on the page. showPlan adds the link to the plan's contribution (only useful with a profile).
 export function SdgFocus({ chosen, available, serving, busy, onToggle, onClear, count = "yours", showPlan = true }: {
   chosen: Set<number>; available: Set<number>; serving: Map<number, number>; busy: boolean; onToggle: (goal: number) => void; onClear: () => void;
@@ -18,7 +18,7 @@ export function SdgFocus({ chosen, available, serving, busy, onToggle, onClear, 
   return (
     <div>
       <div role="group" aria-label="UN goals to build your working life around" className="flex flex-wrap gap-2">
-        {ALL_GOALS.filter((g) => available.has(g)).map((g) => {
+        {ALL_GOALS.filter((g) => available.has(g) && ((serving.get(g) ?? 0) > 0 || chosen.has(g))).map((g) => {
           const on = chosen.has(g);
           const n = serving.get(g) ?? 0;
           const name = t(SDG_SHORT[String(g)]);
