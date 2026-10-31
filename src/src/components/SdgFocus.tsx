@@ -4,11 +4,11 @@ import { SdgIcon } from "@/components/SdgIcon";
 import { useT } from "@/components/I18nProvider";
 import { SDG_SHORT } from "@/components/ui";
 
-const GOALS = Array.from({ length: 17 }, (_, i) => i + 1);
+const ALL_GOALS = Array.from({ length: 17 }, (_, i) => i + 1);
 
-// The 17 UN goals as a row of tiles. A tile turns a whole goal on or off; goals nothing in Jobbery serves yet cannot be picked.
-// serving counts what each tile stands for: "yours" is the person's own skills, "page" is the jobs and skills listed on the page.
-// A goal that is not chosen still shows its tile; showPlan adds the link to the plan's contribution (only useful with a profile).
+// A row of tiles for the UN goals that some job or skill in Jobbery serves (the rest have nothing to reorder, so they are left out).
+// A tile turns a whole goal on or off. serving counts what each tile stands for: "yours" is the person's own skills, "page" is
+// the jobs and skills listed on the page. showPlan adds the link to the plan's contribution (only useful with a profile).
 export function SdgFocus({ chosen, available, serving, busy, onToggle, onClear, count = "yours", showPlan = true }: {
   chosen: Set<number>; available: Set<number>; serving: Map<number, number>; busy: boolean; onToggle: (goal: number) => void; onClear: () => void;
   count?: "yours" | "page"; showPlan?: boolean;
@@ -18,18 +18,16 @@ export function SdgFocus({ chosen, available, serving, busy, onToggle, onClear, 
   return (
     <div>
       <div role="group" aria-label="UN goals to build your working life around" className="flex flex-wrap gap-2">
-        {GOALS.map((g) => {
+        {ALL_GOALS.filter((g) => available.has(g)).map((g) => {
           const on = chosen.has(g);
-          const can = available.has(g);
           const n = serving.get(g) ?? 0;
           const name = t(SDG_SHORT[String(g)]);
-          const tip = !can ? t("No job or skill in Jobbery serves this goal yet")
-            : count === "page" ? (n === 1 ? t("1 job or skill listed on this page serves this goal") : n ? t("{n} jobs and skills listed on this page serve this goal", { n }) : t("Nothing listed on this page serves this goal"))
+          const tip = count === "page" ? (n === 1 ? t("1 job or skill listed on this page serves this goal") : n ? t("{n} jobs and skills listed on this page serve this goal", { n }) : t("Nothing listed on this page serves this goal"))
             : n === 1 ? t("1 of your skills serves this goal") : n ? t("{n} of your skills serve this goal", { n }) : t("None of your skills serve this goal yet");
           return (
-            <button key={g} type="button" aria-pressed={on} disabled={!can || busy} onClick={() => onToggle(g)}
+            <button key={g} type="button" aria-pressed={on} disabled={busy} onClick={() => onToggle(g)}
               title={`${t("UN goal {goal}: {name}", { goal: g, name })}. ${tip}`} aria-label={`${t("UN goal {goal}: {name}", { goal: g, name })}. ${tip}`}
-              className={`press relative rounded-xl p-0.5 transition ${on ? "ring-2 ring-ink ring-offset-2" : ""} ${can ? (chosen.size && !on ? "opacity-60 hover:opacity-100" : "") : "cursor-not-allowed opacity-30"}`}>
+              className={`press relative rounded-xl p-0.5 transition ${on ? "ring-2 ring-ink ring-offset-2" : ""} ${chosen.size && !on ? "opacity-60 hover:opacity-100" : ""}`}>
               <SdgIcon goal={g} size={52} />
               {n > 0 && <span aria-hidden className="num absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-ink px-1 text-[11px] font-semibold text-white">{n}</span>}
             </button>
@@ -45,8 +43,8 @@ export function SdgFocus({ chosen, available, serving, busy, onToggle, onClear, 
           </>
         ) : (
           <p className="text-muted">{count === "page"
-            ? "Pick none, one or several. The number on a tile is how many jobs and skills listed below serve that goal. Greyed-out goals have no skill or job in Jobbery yet."
-            : "Pick none, one or several. The number on a tile is how many of your skills serve that goal. Greyed-out goals have no skill or job in Jobbery yet."}</p>
+            ? "Pick none, one or several. The number on a tile is how many jobs and skills listed below serve that goal."
+            : "Pick none, one or several. The number on a tile is how many of your skills serve that goal."}</p>
         )}
       </div>
     </div>
