@@ -14,6 +14,8 @@ import { AdvisorCard } from "@/components/Meetings";
 import { STRAND_STYLE } from "@/components/strands";
 import { Check } from "lucide-react";
 import { SourceDisclosure } from "@/components/SourceDisclosure";
+import { CertificateUpload } from "@/components/CertificateUpload";
+import { needsCertificate } from "@/lib/engine/certificate";
 
 
 // One question: what do I do next?
@@ -68,7 +70,9 @@ export default function PlanPage() {
                   <Btn href={activityHref(next)!} className="min-h-12 px-6 text-base">{next.activity === "task" ? "Take the quiz" : next.activity === "meeting" ? "Book a meeting" : "Open your updated resume"}</Btn>
                 ) : (
                   <>
-                    <Btn onClick={() => act("progress", { stepId: next.id, done: true })} disabled={busy} className="min-h-12 px-6 text-base">Mark as done</Btn>
+                    {needsCertificate(next)
+                      ? <CertificateUpload key={next.id} step={next} />
+                      : <Btn onClick={() => act("progress", { stepId: next.id, done: true })} disabled={busy} className="min-h-12 px-6 text-base">Mark as done</Btn>}
                     {next.url && <Btn href={next.url} variant="ghost" className="min-h-12">Open the course</Btn>}
                     {next.skillKey && !!next.alternatives && <Btn href={`/courses?skill=${next.skillKey.split("+")[0]}`} variant="quiet" className="min-h-12">Choose a different course</Btn>}
                   </>
@@ -103,7 +107,7 @@ export default function PlanPage() {
                 </Link>
               ) : (
                 <label className={`flex min-h-12 cursor-pointer flex-wrap items-center gap-x-3 gap-y-1 rounded-2xl border-l-4 px-4 py-2 ${STRAND_STYLE[s.strand].bar} ${prog[s.id] ? "bg-surface2 text-muted" : next?.id === s.id ? "bg-cuesoft ring-1 ring-cue" : "bg-raised"}`}>
-                  <input type="checkbox" className="h-5 w-5 shrink-0 accent-[var(--rise)]" checked={!!prog[s.id]} onChange={(e) => act("progress", { stepId: s.id, done: e.target.checked })} />
+                  <input type="checkbox" className="h-5 w-5 shrink-0 accent-[var(--rise)] disabled:cursor-not-allowed" checked={!!prog[s.id]} disabled={needsCertificate(s) && !prog[s.id]} title={needsCertificate(s) && !prog[s.id] ? "Upload your certificate to finish this step" : undefined} onChange={(e) => act("progress", { stepId: s.id, done: e.target.checked })} />
                   <span className="num w-24 shrink-0 text-sm text-muted">{s.weekStart === s.weekEnd ? `Week ${s.weekStart}` : `Weeks ${s.weekStart}–${s.weekEnd}`}</span>
                   <span className={`min-w-0 flex-1 text-sm ${prog[s.id] ? "line-through" : ""}`}>{s.title}</span>
                   {s.swapped && <Chip tone="accent">Your choice</Chip>}

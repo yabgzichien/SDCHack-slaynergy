@@ -235,7 +235,7 @@ export function matchInputFor(state: SessionState): MatchInput | null {
   if (!p) return null;
   const occ = occupationById[p.occupationId];
   const study = p.study !== undefined ? p.study : EDUCATION_RANK[p.education] >= 1 ? occ?.sector : null;
-  return pickInputs({ skills: p.skills, months: p.months, hoursPerWeek: p.hoursPerWeek, interests: p.interests, goals: state.goals, education: p.education, field: occ?.sector, study, area: areaFor(p.state, p.move, p.moveTo) });
+  return pickInputs({ skills: p.skills, months: p.months, hoursPerWeek: p.hoursPerWeek, interests: p.interests, goals: state.goals, education: p.education, field: occ?.sector, study, years: p.years, area: areaFor(p.state, p.move, p.moveTo) });
 }
 
 // Why a job scores what it does and what would raise it, under Our forecast and under each AI speed taken as certain

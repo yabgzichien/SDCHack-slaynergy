@@ -70,6 +70,9 @@ export type SessionState = {
   completion: Completion;
   // Courses the worker chose instead of the suggested one, by the gap skills a plan step covers ("a+b" -> course id).
   courseSwaps?: Record<string, string>;
+  // Course steps finished by showing a certificate: read by the AI (how "ai") or skipped with the developer demo button ("demo").
+  // Kept with the step's title, so a swapped course needs its own certificate. The file itself is never stored.
+  certificates?: Record<string, { how: "ai" | "demo"; at: string; title: string }>;
 };
 
 export const STAY_ID = "stay";

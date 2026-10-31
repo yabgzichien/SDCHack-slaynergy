@@ -49,6 +49,8 @@ export type Role = {
   id: string; title: string; onet: string; group: GroupKey; skills: Record<string, number>;
   sdg: { target: string; why: string }; tags: string[]; minWeeks: number;
   sector: SectorId; requires: Education; closest: boolean;
+  // O*NET Job Zone (2 to 5; O*NET groups its zones 1 and 2): how much preparation the job usually asks for, which sets the years of experience expected.
+  jobZone: 2 | 3 | 4 | 5;
   // The part of the job that rests on people, judgment or hands-on work, in one plain sentence, with its O*NET page.
   humanEdge: { text: string; tag: string; source: string };
   icon: string; // a lucide-react icon name, drawn by components/JobIcon

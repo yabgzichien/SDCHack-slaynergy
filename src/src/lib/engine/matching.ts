@@ -10,6 +10,8 @@ export type MatchInput = {
   skills: string[]; months: number; hoursPerWeek: number; interests: string[]; goals: string[]; education: Education; field?: SectorId;
   // What they studied. Only used for the entry check on field-locked degree jobs; when unknown, their last job's field stands in.
   study?: StudyField | null;
+  // Years of work in all jobs. Only used for the experience half of the qualifications part.
+  years?: number;
   // The states they can work in (home, or home's region), from their own answer. Null: anywhere, or not said.
   area?: string[] | null;
 };
@@ -23,11 +25,22 @@ export function pickInputs(p: Record<string, unknown> & Partial<MatchInput>): Ma
     education: isEducation(p.education) ? p.education : "diploma",
     field: p.field,
     study: isStudyField(p.study) ? p.study : p.study === null ? null : undefined,
+    years: Math.max(0, Number(p.years ?? 0)),
     area: Array.isArray(p.area) && p.area.length ? [...p.area].map(String).sort() : null,
   };
 }
 
-export const WEIGHTS = { overlap: 0.25, outlook: 0.3, demand: 0.2, reach: 0.15, interest: 0.1 };
+export const WEIGHTS = { overlap: 0.25, outlook: 0.28, demand: 0.18, reach: 0.15, interest: 0.04, quality: 0.1 };
+// Years of experience a job usually asks for, by its O*NET Job Zone ("a few months to a year" up to "five years or more").
+export const ZONE_YEARS: Record<Role["jobZone"], number> = { 2: 0.5, 3: 2, 4: 3, 5: 5 };
+// Years in other fields count for half in a job of another field.
+export const OTHER_FIELD_YEARS = 0.5;
+// Education fit (E): meeting the level the job asks for, plus a little for going beyond it and for having studied its field.
+export const educationFit = (have: Education, need: Education, studied: boolean) =>
+  0.6 + (EDUCATION_RANK[have] > EDUCATION_RANK[need] ? 0.2 : 0) + (studied ? 0.2 : 0);
+// Experience fit (X): the years they have, against the years the job's zone expects, never above 1.
+export const experienceFit = (years: number, sameField: boolean, zone: Role["jobZone"]) =>
+  clamp((sameField ? years : OTHER_FIELD_YEARS * years) / ZONE_YEARS[zone], 0, 1);
 export const AT_RISK_BELOW = 0.55; // roles whose skills mostly expire soon are flagged "skills at risk"
 // The ranking favours jobs that last: a penalty that grows smoothly from 0 (outlook 0.70) to 8 points (outlook 0.40),
 // so a small change in the futures' weights never makes a role jump by crossing a cliff.
@@ -132,9 +145,11 @@ export function matchRoles(input: MatchInput, w: Weights3, upTo: string, clerica
     const reachable = weeks <= deadlineWeeks && !blocked;
     const reach = clamp(1 - weeks / Math.max(1, deadlineWeeks), 0, 1);
     const tagFit = r.tags.length ? clamp(r.tags.filter((t) => input.interests.includes(t)).length / Math.min(2, r.tags.length), 0, 1) : 0;
-    const interest = clamp(0.5 * tagFit + (input.field && input.field === r.sector ? 0.5 : 0), 0, 1);
+    const interest = tagFit;
+    const education = educationFit(input.education, r.requires, !!study && study === r.sector);
+    const quality = 0.5 * education + 0.5 * experienceFit(input.years ?? 0, !!input.field && input.field === r.sector, r.jobZone);
     const localLq = input.area ? areaConcentration(r.sector, r.group, input.area) : null;
-    const base = WEIGHTS.overlap * overlap + WEIGHTS.outlook * outlook + WEIGHTS.demand * demand.score + WEIGHTS.reach * reach + WEIGHTS.interest * interest - riskPenalty(outlook) - localPenalty(localLq);
+    const base = WEIGHTS.overlap * overlap + WEIGHTS.outlook * outlook + WEIGHTS.demand * demand.score + WEIGHTS.reach * reach + WEIGHTS.interest * interest + WEIGHTS.quality * quality - riskPenalty(outlook) - localPenalty(localLq);
     const sdgMatch = input.goals.includes(r.sdg.target);
     out.push({
       roleId: r.id, title: r.title, onet: r.onet, sector: r.sector, requires: r.requires, closest: r.closest, blocked, blockedBy, sdgTarget: r.sdg.target, sdgWhy: r.sdg.why, group: r.group,
@@ -148,7 +163,8 @@ export function matchRoles(input: MatchInput, w: Weights3, upTo: string, clerica
         { key: "outlook", label: "Future outlook", value: outlook, weight: WEIGHTS.outlook },
         { key: "demand", label: "Job demand", value: demand.score, weight: WEIGHTS.demand },
         { key: "reach", label: "Reachable in time", value: reach, weight: WEIGHTS.reach },
-        { key: "interest", label: "Fits your interests and field", value: interest, weight: WEIGHTS.interest },
+        { key: "interest", label: "Fits your interests", value: interest, weight: WEIGHTS.interest },
+        { key: "quality", label: "Qualifications and experience", value: quality, weight: WEIGHTS.quality },
       ],
     });
   }

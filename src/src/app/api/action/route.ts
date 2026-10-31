@@ -11,6 +11,7 @@ import { getSessionId } from "@/lib/server/session";
 import { loadState, logEvent, resetState, saveState } from "@/lib/server/store";
 import { cardById, gradeQuiz, MAX_TEXT } from "@/lib/engine/pathway";
 import { canSwap } from "@/lib/engine/plan";
+import { needsCertificate } from "@/lib/engine/certificate";
 import { issueBadge, personaState } from "@/lib/engine/review";
 import { courseById } from "@/lib/engine/data";
 import type { PathwayWork } from "@/lib/engine/state";
@@ -172,7 +173,19 @@ export async function POST(req: Request) {
       break;
     }
     case "progress": {
-      state = { ...state, progress: { ...state.progress, [String(body.stepId ?? "")]: !!body.done } };
+      const stepId = String(body.stepId ?? "");
+      // A course is finished by its certificate (/api/certificate), not by ticking; ticking one off again is always allowed.
+      const step = computeView(state).plan?.steps.find((s) => s.id === stepId);
+      if (body.done && step && needsCertificate(step) && state.certificates?.[stepId]?.title !== step.title) return bad("Upload your certificate to finish this step.");
+      state = { ...state, progress: { ...state.progress, [stepId]: !!body.done } };
+      break;
+    }
+    case "certificateDemo": {
+      // Developer shortcut, labelled as such in the app: marks a course step as done without a certificate.
+      const stepId = String(body.stepId ?? "");
+      const step = computeView(state).plan?.steps.find((s) => s.id === stepId);
+      if (!step || !needsCertificate(step)) return bad("This step does not need a certificate.");
+      state = { ...state, progress: { ...state.progress, [stepId]: true }, certificates: { ...state.certificates, [stepId]: { how: "demo", at: new Date().toISOString(), title: step.title } } };
       break;
     }
     case "pathwaySave": {
@@ -199,6 +212,25 @@ export async function POST(req: Request) {
       const g = gradeQuiz(card, card.sampleAnswer.filter((a) => a.mistake).map((a) => a.id));
       const prev = state.pathway.quiz;
       state = { ...state, pathway: { ...state.pathway, quiz: { attempts: (prev?.attempts ?? 0) + 1, passed: true, found: g.found, wrong: [] } } };
+      break;
+    }
+    case "certificateDemoAll": {
+      // Developer shortcut, labelled as such in the app: every step before the resume step done (courses without certificates,
+      // the AI quiz passed, plain practice steps ticked), so the plan lands on the resume step.
+      const plan = computeView(state).plan;
+      if (!plan) return bad("There is no plan yet.");
+      const at = new Date().toISOString();
+      const resume = plan.steps.findIndex((s) => s.activity === "resume");
+      const before = plan.steps.slice(0, resume < 0 ? undefined : resume).filter((s) => !s.activity);
+      const steps = before.filter(needsCertificate);
+      const card = cardById(plan.steps.find((s) => s.activity === "task")?.cardId ?? "");
+      const g = card && gradeQuiz(card, card.sampleAnswer.filter((a) => a.mistake).map((a) => a.id));
+      state = {
+        ...state,
+        progress: { ...state.progress, ...Object.fromEntries(before.map((s) => [s.id, true])) },
+        certificates: { ...state.certificates, ...Object.fromEntries(steps.map((s) => [s.id, { how: "demo" as const, at, title: s.title }])) },
+        pathway: g ? { ...state.pathway, quiz: { attempts: (state.pathway.quiz?.attempts ?? 0) + 1, passed: true, found: g.found, wrong: [] } } : state.pathway,
+      };
       break;
     }
     case "claimBadge": {

@@ -1,5 +1,4 @@
 "use client";
-import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useApp } from "@/components/AppProvider";
@@ -11,11 +10,10 @@ import { JobBadge } from "@/components/JobIcon";
 import { GROUP_LABEL, GROUP_PAY, GROUP_PAY_SOURCE, roleById, sourceById } from "@/lib/engine/data";
 import { stateJobs } from "@/lib/engine/geo";
 import { areaName } from "@/lib/engine/geo";
-import { Btn, Card, Chip, Estimate, FUTURE_NAME, H, More, PageTitle, SdgTag, Skeleton, SourceChip, sdgName, sdgReport } from "@/components/ui";
+import { Btn, Card, Chip, Estimate, FUTURE_NAME, H, PageTitle, SdgTag, Skeleton, SourceChip, sdgName, sdgReport } from "@/components/ui";
 import { SdgIcon } from "@/components/SdgIcon";
 import { SpeedBar } from "@/components/SpeedBar";
-import { ScoreBreakdown, ScoreEquation } from "@/components/ScoreBreakdown";
-import type { ScoreLine } from "@/lib/engine/matching";
+import { ScoreBreakdown } from "@/components/ScoreBreakdown";
 
 // One question: why does this job score what it does, and what am I missing?
 export default function JobDetailPage() {
@@ -23,8 +21,6 @@ export default function JobDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { speed, previewing } = useSpeed();
   const selectJob = useSelectJob();
-  // The score card reports its lines and total, so the dropdown below can show them as an equation.
-  const [formula, setFormula] = useState<{ lines: ScoreLine[]; total: number } | null>(null);
   if (!view || !state) return <Skeleton lines={6} />;
   const m = view.matches.find((x) => x.roleId === id);
   const blocked = view.unreachable.find((x) => x.roleId === id);
@@ -54,7 +50,7 @@ export default function JobDetailPage() {
             <div className="mt-3"><BriefWhy m={m} /></div>
           </div>
         </div>
-        <Score value={m.score} />
+        <Score value={under ? under.score : m.score} />
       </header>
       <div className="mb-6 flex flex-wrap gap-2">
         <Btn onClick={choose} disabled={busy} className="min-h-12 px-6 text-base">{chosen ? "Selected: see it on the job map" : "Select job and see the job map"}</Btn>
@@ -81,12 +77,9 @@ export default function JobDetailPage() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <ScoreBreakdown roleId={m.roleId} speed={speed} version={`${Math.round(m.score * 1000)}:${state.profile?.hoursPerWeek}:${state.profile?.skills.length}`} onBreakdown={setFormula} />
+          <ScoreBreakdown roleId={m.roleId} speed={speed} version={`${Math.round(m.score * 1000)}:${state.profile?.hoursPerWeek}:${state.profile?.skills.length}`} />
           {m.localPenalty > 0.001 && where && <p className="num mt-3 text-sm">Few jobs like this nearby: they are {Math.round((1 - (m.localLq ?? 1)) * 100)}% less common in {where} than across Malaysia (an estimate from DOSM state figures). <Link href="/map" className="underline decoration-control underline-offset-2">See the job map</Link></p>}
           <p className="mt-3 text-sm">Job ads for work like this are {Math.abs(m.demand.trend) < 0.03 ? "steady" : m.demand.trend > 0 ? `up ${Math.abs(m.demand.trend * 100).toFixed(0)}%` : `down ${Math.abs(m.demand.trend * 100).toFixed(0)}%`} compared with earlier in the year.</p>
-          <More>
-            {formula ? <ScoreEquation lines={formula.lines} total={formula.total} /> : <div className="h-40 animate-pulse rounded-2xl bg-surface2" aria-label="Working out the score" />}
-          </More>
           <div className="mt-1"><SourceChip name="DOSM Job Market Insights" date={`to ${view.world.asOfQuarter.replace("Q", " Q")}`} url={view.world.past?.url ?? sourceById.dosm.url} /></div>
         </Card>
 
