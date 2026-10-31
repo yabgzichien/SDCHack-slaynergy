@@ -2,7 +2,7 @@ import type { Row } from "../index";
 
 // "How we worked out your skill dates" (components/SkillMathExplain.tsx, words in components/skill-math-text.ts, route /skills/how).
 // Formulas and the numbers in the tables are not translated. A {blank} is filled from the engine's own constants.
-export const SKILL_MATH: Row[] = [
+const BASE: Row[] = [
   ["How we worked out your skill dates", "Cara kami mengira tarikh kemahiran anda", "我们如何算出你的技能日期", "உங்கள் திறன் தேதிகளை நாங்கள் எப்படிக் கணக்கிட்டோம்"],
   ["This page shows every step behind the headline on your Skills page. Each formula has a label, each letter is explained, and the numbers are the ones behind your screen right now.", "Halaman ini menunjukkan setiap langkah di sebalik tajuk utama pada halaman Kemahiran anda. Setiap formula ada label, setiap huruf dijelaskan, dan angkanya ialah angka di sebalik skrin anda sekarang.", "本页展示你的“技能”页面标题背后的每一个步骤。每个公式都有标签，每个字母都有说明，数字就是你现在屏幕背后用的数字。", "உங்கள் திறன்கள் பக்கத்தின் தலைப்புக்குப் பின்னால் உள்ள ஒவ்வொரு படியையும் இந்தப் பக்கம் காட்டுகிறது. ஒவ்வொரு சூத்திரத்துக்கும் தலைப்பு உண்டு, ஒவ்வொரு எழுத்தும் விளக்கப்பட்டுள்ளது, எண்கள் இப்போது உங்கள் திரைக்குப் பின்னால் உள்ள எண்களே."],
   ["Back to your skills", "Kembali ke kemahiran anda", "返回你的技能", "உங்கள் திறன்களுக்குத் திரும்பு"],
@@ -127,4 +127,60 @@ export const SKILL_MATH: Row[] = [
   ["The ILO score says how much of an occupation’s work AI could do. It does not say that jobs will be lost.", "Skor ILO menyatakan berapa banyak kerja sesuatu pekerjaan yang boleh dilakukan AI. Ia tidak menyatakan bahawa pekerjaan akan hilang.", "ILO 评分说明 AI 能完成某个职业多少工作，并不表示工作岗位会消失。", "ILO மதிப்பெண் ஒரு தொழிலின் எவ்வளவு பணியை AI செய்யக்கூடும் என்பதைச் சொல்கிறது. வேலைகள் இழக்கப்படும் என்று அது சொல்லவில்லை."],
   ["The calculation is in the open code (src/lib/engine/expiry-math.ts and expiry.ts), and tests check that this page shows the same numbers the engine uses.", "Pengiraan ini ada dalam kod terbuka (src/lib/engine/expiry-math.ts dan expiry.ts), dan ujian memastikan halaman ini menunjukkan angka yang sama dengan yang digunakan enjin.", "这个计算在开源代码里（src/lib/engine/expiry-math.ts 和 expiry.ts），并且有测试确认本页显示的数字与引擎使用的一致。", "இந்தக் கணக்கீடு திறந்த குறியீட்டில் உள்ளது (src/lib/engine/expiry-math.ts மற்றும் expiry.ts); இந்தப் பக்கம் இயந்திரம் பயன்படுத்தும் அதே எண்களைக் காட்டுகிறது என்பதைச் சோதனைகள் உறுதிசெய்கின்றன."],
   ["Sources", "Sumber", "来源", "ஆதாரங்கள்"],
+];
+
+// Keep the existing reviewed translations connected to the clearer English copy.
+// The meanings and formula placeholders are unchanged.
+const alias = (english: string, source: string): Row => {
+  const row = BASE.find((candidate) => candidate[0] === source);
+  if (!row) throw new Error(`Missing skill-math translation source: ${source}`);
+  return [english, row[1], row[2], row[3]];
+};
+
+export const SKILL_MATH: Row[] = [
+  ...BASE,
+  alias("How your skill dates are calculated", "How we worked out your skill dates"),
+  alias("This page shows how we turn research data into the dates on your Skills page. Start with the five-step summary, then choose a skill to see the complete calculation with your actual numbers.", "This page shows every step behind the headline on your Skills page. Each formula has a label, each letter is explained, and the numbers are the ones behind your screen right now."),
+  alias("What the headline number means", "Your count"),
+  alias("The headline counts how many of your skills have an estimated date before 1 January {y}. The calculation below explains how each date is produced.", "The headline counts the skills whose date is before 1 January {y}. A skill’s date is the day our model flags it, which steps 1 to 7 below explain."),
+  alias("How the result changes by scenario", "The same count under each speed"),
+  alias("The headline uses the scenario selected on the Skills page. If you have not selected one, it uses Our forecast.", "The headline follows the speed picked on the Skills page. Until you pick one, it is Our forecast."),
+  alias("The calculation in five simple steps", "The idea in five steps"),
+  alias("Use ILO research to estimate how much of the skill's work AI could do", "How much of the skill’s work AI could do (ILO study)"),
+  alias("Estimate how quickly companies will begin using AI for that work", "How much companies use AI for that work as time passes (Anthropic Economic Index and the speed)"),
+  alias("Multiply exposure by adoption to estimate how much work AI can do in practice", "Exposure times adoption: the share of the work AI could do and is used for"),
+  alias("Find when readiness first reaches the {x} threshold", "The day readiness reaches {x}"),
+  alias("Combine the three scenarios, then count dates earlier than {y}", "Our forecast averages three speeds, and we count the dates before {y}"),
+  alias("Your results and the inputs behind them", "Your skills, with every number"),
+  alias("Each date shows when a scenario reaches the {x} readiness threshold. “Never” means the skill does not reach that threshold in any scenario.", "Each date is the month and year a speed reaches the {x} line. “Never” means the skill is never flagged under any speed."),
+  alias("See the complete calculation for one skill", "Step by step, with one of your skills"),
+  alias("Choose a skill", "Pick one of your skills"),
+  alias("Using this skill's numbers:", "With your numbers for this skill:"),
+  alias("1. Estimate how much of the work AI could do", "1. Exposure: how much of the skill’s work AI could do"),
+  alias("We match the skill to an occupation in the ILO's 2025 study of generative AI and jobs. The ILO gives that occupation an exposure score from 0 to 1. A higher score means AI could perform a larger share of its work.", "Each skill is matched to one occupation in the ILO’s 2025 study of generative AI and jobs. The ILO gives every occupation an exposure score from 0 to 1: the higher it is, the more of that occupation’s work generative AI could do."),
+  alias("We call this score the skill's exposure, E.", "We use that score as the exposure E of the skill."),
+  alias("2. Measure how much of that work already appears in AI use", "2. Coverage: how much of that work already shows up in real AI use"),
+  alias("The Anthropic Economic Index records work tasks people perform with Claude.ai. We match the skill to one or more O*NET occupations and check how many of their task statements appear in that data.", "The Anthropic Economic Index (AEI) lists the work tasks that people give to Claude on Claude.ai. We match each skill to one or more O*NET occupations and count how many of their task statements appear in that usage."),
+  alias("For each occupation, coverage is the share of its tasks found in the usage data. If the skill matches several occupations, we average their coverage scores to get K.", "The coverage c of an occupation is the share of its task statements that appear in the usage data. If a skill has several occupations, its coverage K is the average of their coverages."),
+  alias("3. Estimate how quickly companies will adopt AI", "3. Adoption rate: how quickly companies start using AI for it"),
+  alias("We assume companies adopt AI faster for work that people already use AI to perform. Therefore, a higher coverage score K produces a higher annual adoption rate r.", "We assume companies move faster on work that people already give to AI. So the adoption rate r rises with the coverage K."),
+  alias("4. Project adoption under three scenarios", "4. Adoption over time, under each speed"),
+  alias("The model starts adoption at 0 and gradually moves it toward 1, where 1 would mean companies use AI for all of that work. Growth is faster at first and slows as adoption becomes widespread.", "Adoption starts at 0 today and climbs towards 1, which would mean companies use AI for all of that work. It rises quickly at first and then more slowly."),
+  alias("The multiplier m changes how quickly adoption grows. Slow, Medium, and Fast are planning scenarios—not measured outcomes.", "The speed multiplier m makes this happen faster or slower. Slow, Medium and Fast are three scenarios that we chose. None of them is a measurement."),
+  alias("5. Calculate readiness against the {x} threshold", "5. Readiness and the {x} line"),
+  alias("Readiness equals exposure multiplied by adoption. It estimates the share of the skill's work that AI could perform and that companies are likely to use AI for.", "Readiness is exposure times adoption. We read it as the share of the skill’s work that AI could do and that companies actually use it for."),
+  alias("We assign the skill a date when readiness first reaches {x}. This threshold is a modeling choice; on the Skills page, we describe it as the point when AI could do most of the work.", "A skill is flagged on the first day its readiness reaches {x}. This line is our choice. On the Skills page we describe it as the time when AI could do most of the work."),
+  alias("Readiness cannot be higher than exposure E. Therefore, when E is {x} or lower, the skill can never reach the threshold and receives no date.", "Adoption never goes above 1, so readiness never goes above E. A skill whose E is {x} or less is therefore never flagged, however fast AI spreads."),
+  alias("6. Find the date for each scenario", "6. The date under each speed"),
+  alias("We set readiness equal to {x} and solve the equation for time. This tells us how many years each scenario needs to reach the threshold, which we then convert into a calendar date.", "Set the readiness equal to {x} and solve for the time. The first two lines show the equation, and the formulas after them give the answer."),
+  alias("7. Combine the three dates into Our forecast", "7. Our forecast: blending the three speeds"),
+  alias("We do not know which scenario will be closest to reality. Our forecast therefore combines the three dates, giving more weight to scenarios that currently appear more likely.", "Nobody knows which speed will turn out right. So Our forecast is the average of the three dates, with each speed counted by how likely it is (its likelihood w)."),
+  alias("To keep the forecast within the period shown on the site, dates later than {x} are treated as {x} when calculating the average. A skill that never reaches the threshold has no forecast date.", "A date after {x} is counted as {x} in this average. A skill that is never flagged has no Our forecast date."),
+  alias("8. Produce the headline count", "8. The count"),
+  alias("Finally, we count how many skill dates fall before 1 January {y} under the scenario selected on the Skills page. If none is selected, we use Our forecast.", "The headline counts the skills whose date is before 1 January {y}, under the speed picked on the Skills page. Until you pick one, that is Our forecast."),
+  alias("9. Estimate the likelihood of each scenario", "9. How likely each speed is"),
+  alias("The prediction game helps us estimate the likelihood w of each scenario. Every scenario assigns a probability to each question. When the real result is published, scenarios that gave it a higher probability receive a better score.", "The likelihoods w come from the prediction game. For every question, each speed predicts the chance that the answer is Yes. When the real number is published, we score each speed on how much chance it gave to what really happened."),
+  alias("A scenario is penalized more when it treated the real outcome as unlikely. Older evidence loses {x}% of its weight each quarter, and every new result is added at half strength.", "A speed that gave a low chance to the real answer ends up with a lower score than one that gave it a high chance. Older results fade by {x}% each quarter, and each new result counts at half strength."),
+  alias("Open questions also provide a smaller signal. Until the result is known, the current prediction-game price for Yes acts as the crowd's estimate and counts half as much as a resolved result.", "Questions that are still open count as well, but less. The current price of Yes, which is the crowd’s prediction, stands in for the real answer, at half the strength of a settled result. This is worked out again each time and never stored."),
+  alias("We combine each scenario's score with the signal from open questions, then convert the results into percentage shares. Every scenario keeps a minimum share, so none is completely ruled out.", "The likelihood of a speed is its score plus its tilt, turned into a share. Every speed keeps a floor, so no speed is ever ruled out."),
 ];

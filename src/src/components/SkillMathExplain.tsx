@@ -129,7 +129,19 @@ export function SkillMathExplain() {
   return (
     <div className="skills-page">
       <Link href="/skills" className="mb-3 inline-flex min-h-11 items-center gap-1.5 text-sm text-muted underline decoration-control underline-offset-2 hover:text-ink"><ArrowLeft size={14} aria-hidden />{t(SM.back)}</Link>
-      <PageTitle title={<span className="skills-title">{lang === "en" ? <>How we worked out <mark>your skill dates</mark></> : t(SM.title)}</span>}>{t(SM.intro)}</PageTitle>
+      <PageTitle title={<span className="skills-title">{lang === "en" ? <>How <mark>your skill dates</mark> are calculated</> : t(SM.title)}</span>}>{t(SM.intro)}</PageTitle>
+
+      <Card className="mt-4">
+        <h2 className="text-base font-semibold">{t(SM.glanceH)}</h2>
+        <ol className="mt-3 grid gap-2 sm:grid-cols-5">
+          {[[SM.g1t, SM.g1d], [SM.g2t, SM.g2d], [SM.g3t, SM.g3d], [SM.g4t, SM.g4d], [SM.g5t, SM.g5d]].map(([title, body], i) => (
+            <li key={i} className="rounded-2xl bg-raised p-3">
+              <p className="flex items-center gap-2 text-sm font-semibold"><span aria-hidden className="grid size-6 shrink-0 place-items-center rounded-full bg-primary text-xs text-primaryink">{i + 1}</span>{t(title)}</p>
+              <p className="mt-1 text-xs text-muted">{t(body, { x: c.threshold, y: c.headlineYear })}</p>
+            </li>
+          ))}
+        </ol>
+      </Card>
 
       <Card tone="raised">
         <h2 className="text-base font-semibold">{t(SM.countH)}</h2>
@@ -146,18 +158,6 @@ export function SkillMathExplain() {
           ))}
         </div>
         <p className="mt-2 text-xs text-muted">{t(SM.countBySpeed)}</p>
-      </Card>
-
-      <Card className="mt-4">
-        <h2 className="text-base font-semibold">{t(SM.glanceH)}</h2>
-        <ol className="mt-3 grid gap-2 sm:grid-cols-5">
-          {[[SM.g1t, SM.g1d], [SM.g2t, SM.g2d], [SM.g3t, SM.g3d], [SM.g4t, SM.g4d], [SM.g5t, SM.g5d]].map(([title, body], i) => (
-            <li key={i} className="rounded-2xl bg-raised p-3">
-              <p className="flex items-center gap-2 text-sm font-semibold"><span aria-hidden className="grid size-6 shrink-0 place-items-center rounded-full bg-primary text-xs text-primaryink">{i + 1}</span>{t(title)}</p>
-              <p className="mt-1 text-xs text-muted">{t(body, { x: c.threshold, y: c.headlineYear })}</p>
-            </li>
-          ))}
-        </ol>
       </Card>
 
       <Card className="mt-4">
