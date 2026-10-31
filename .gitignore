@@ -99,3 +99,4 @@ pitch-deck/
 # PowerPoint files: only the final pitch deck is committed; drafts and copies stay local
 *.pptx
 !submission/Jobbery pitch deck.pptx
+PRIORITY_TASKS.md
