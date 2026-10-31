@@ -141,7 +141,6 @@ export function LandingIntro() {
 
         <section id="statistics" className="landing-statistics landing-section-reveal" aria-labelledby="statistics-title">
           <div className="landing-stats-top landing-reveal"><div><span className="landing-section-label">{t("THE DATA")}</span><h2 id="statistics-title">{t("How AI is changing your work")}<span className="landing-period">.</span></h2><p>{t("Supported by real numbers from public government and research data, with sources attached accordingly.")}</p></div><Link href="/trends" className="landing-text-link landing-stats-all">{t("See all statistics")} <ArrowRight size={16} aria-hidden /></Link></div>
-          <p className="landing-update-note landing-reveal">{t("We automatically check for new releases and update these figures when new data is available.")}</p>
           {view && ai && (
             <div className="landing-data-grid">
               <article className="landing-chart-card landing-reveal">
