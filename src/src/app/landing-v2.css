@@ -456,6 +456,13 @@
 .landing-content .landing-insight-card { display:flex; flex-direction:column; }
 .landing-content .landing-insight-card > .landing-forecast-cta { align-self:flex-start; margin-top:auto; }
 .landing-content .landing-insight-card > .landing-data-note { margin:16px 0 18px; }
+@media (min-width:901px) {
+  .landing-content .landing-question-list { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  .landing-content .landing-question-list > li { min-width:0; }
+  .landing-content .landing-question { min-height:132px; height:100%; flex-direction:column; align-items:flex-start; justify-content:space-between; gap:14px; padding:16px; }
+  .landing-content .landing-question-odds { width:100%; flex-direction:row; align-items:baseline; justify-content:space-between; }
+  .landing-content .landing-insight-card > .landing-text-link:last-child { margin-top:18px; }
+}
 @media (max-width:900px) {
   .landing-content .landing-forecast-grid { grid-template-columns:1fr; }
   .landing-speeds { grid-template-columns:1fr; gap:4px; }

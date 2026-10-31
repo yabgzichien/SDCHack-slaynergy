@@ -54,7 +54,7 @@ export function LandingLiveMarket({ event }: { event: EventView }) {
         <p className="pb-1 text-sm text-[var(--muted)]">think Yes</p>
         <p className={`num pb-1 text-sm font-semibold ${change > 0 ? "text-[#3f8a52]" : change < 0 ? "text-[#b86a2c]" : "text-[var(--muted)]"}`}>{change === 0 ? "no change" : `${change > 0 ? "▲" : "▼"} ${Math.abs(change)}%`} in the last hour</p>
       </div>
-      <div className="mt-4 h-48" role="img" aria-label={`Chart of how many simulated players think Yes over the last hour, now ${main ? Math.round(main.price * 100) : 0}%`}>
+      <div className="mt-4 h-40 sm:h-44" role="img" aria-label={`Chart of how many simulated players think Yes over the last hour, now ${main ? Math.round(main.price * 100) : 0}%`}>
         {data.length > 1 ? (
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data} margin={{ left: 0, right: 0, top: 6, bottom: 0 }}>
