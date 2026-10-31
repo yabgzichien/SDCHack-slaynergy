@@ -2,17 +2,18 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-export function ForecastNav({ showResults }: { showResults: boolean }) {
+export function ForecastNav({ showResults, showYours }: { showResults: boolean; showYours: boolean }) {
   const [active, setActive] = useState("forecast-guide");
   const sections = [
     { id: "forecast-guide", label: "How to forecast" },
+    ...(showYours ? [{ id: "your-predictions", label: "Your predictions" }] : []),
     { id: "open-questions", label: "Open questions" },
     ...(showResults ? [{ id: "past-results", label: "Past results" }] : []),
     { id: "how", label: "Why forecasts matter" },
   ];
 
   useEffect(() => {
-    const ids = ["forecast-guide", "open-questions", ...(showResults ? ["past-results"] : []), "how"];
+    const ids = ["forecast-guide", ...(showYours ? ["your-predictions"] : []), "open-questions", ...(showResults ? ["past-results"] : []), "how"];
     let frame = 0;
     const update = () => {
       frame = 0;
@@ -32,7 +33,7 @@ export function ForecastNav({ showResults }: { showResults: boolean }) {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
-  }, [showResults]);
+  }, [showResults, showYours]);
 
   return (
     <aside className="forecast-nav">

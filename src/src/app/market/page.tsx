@@ -8,6 +8,7 @@ import { AnsweredBadge, MarketCard } from "@/components/MarketCards";
 import { ForecastDetails } from "@/components/ForecastDetails";
 import { MarketTabs } from "@/components/MarketTabs";
 import { ForecastNav } from "@/components/ForecastNav";
+import { YourPredictions } from "@/components/YourPredictions";
 import "./market.css";
 import { nextAnswersLine } from "@/components/ui";
 import { PastQuestionCard, ReleasePicker, dayLabel } from "@/components/History";
@@ -36,7 +37,7 @@ export default function MarketPage() {
       <p className="mb-6 text-sm text-muted">We automatically check for new releases and update these figures when new data is available. Open questions move the forecast slightly, based on all players, mostly simulated (computer-made).</p>
 
       <div className="forecast-layout">
-        <ForecastNav showResults={showResults} />
+        <ForecastNav showResults={showResults} showYours={!past} />
         <div className="forecast-content">
           <section id="forecast-guide" className="forecast-guide forecast-section" aria-labelledby="forecast-guide-title">
             <div className="forecast-guide-heading">
@@ -63,6 +64,8 @@ export default function MarketPage() {
               ))}
             </ol>
           </section>
+
+          {!past && <YourPredictions events={w.events} settled={w.settledEvents} />}
 
           <section id="open-questions" className="forecast-section" aria-labelledby="open-questions-title">
             <div className="forecast-section-heading">

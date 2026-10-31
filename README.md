@@ -410,7 +410,8 @@ AI benchmark pace is a stated part of each future too. It drives the Skills page
 3. The app keeps three possible **AI futures**—slow, medium, and fast—and adjusts how much weight it gives each one.
 4. **No future drops below 5%**, so no future is ever ruled out.
 5. **Forecasters are scored with the Brier score.** Influence moves to the most accurate ones.
-6. **About 200 simulated forecasters** (always labelled) earned track records by replaying real past releases. Judges and users can make predictions too, and each question shows what a Yes or No would change ("If Yes: data entry expires around Nov 2029").
+6. **One person cannot swing a market.** A prediction moves the Yes % of an answer by a fixed 0.1%, however many points are staked, and one person's total push on an answer stays within 0.1%. The stake buys shares at the current %, and the page confirms the prediction and its effect on the market.
+7. **About 200 simulated forecasters** (always labelled) earned track records by replaying real past releases. Judges and users can make predictions too, and each question shows what a Yes or No would change ("If Yes: data entry expires around Nov 2029").
 
 ### Being honest about it
 

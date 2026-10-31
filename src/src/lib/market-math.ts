@@ -1,45 +1,47 @@
-// Client-safe copy of the LMSR maths, used for instant order quotes in the ticket.
-// The server is the source of truth: it recomputes every order from the tape. A test checks that both agree.
-export const LIQUIDITY = 200; // must equal TAPE_LIQUIDITY in engine/tape.ts (a test checks the quote against the server)
-// Limits on one person's say, so the crowd of ~200 sets the price and no single player can swing it.
-export const MAX_MOVE = 0.03; // one prediction moves the Yes % by at most 3 points; points beyond that are not spent
+// Client-safe order maths, used for instant quotes in the ticket. The server is the source of truth: it replays every
+// order from the tape using these same rules, and a test checks that both agree.
+// Your stake and your say on the market are separate. All your points buy shares at the current Yes %, while the % itself
+// moves by a small fixed step, however many points you put in, so the crowd of ~200 sets it and no one person can swing it.
+export const PERSON_MOVE = 0.001; // one person moves one answer's Yes % by at most 0.1 of a percentage point in total
 export const MAX_PER_ANSWER = 100; // points one person can put into one answer (Yes and No together), across all predictions
-export const MAX_MOVE_WINDOW = 0.05; // all of one person's predictions on one answer move it by at most 5 points...
-export const MOVE_WINDOW_S = 600; // ...in any 10 minutes, so many small predictions cannot add up to one big push
-// How far one person's next buy on an answer may move it, given their earlier executions there.
-export function moveAllowance(executions: { t: number; action: "buy" | "sell"; priceBefore: number; priceAfter: number }[], t: number): number {
-  const recent = executions.filter((e) => e.action === "buy" && e.t > t - MOVE_WINDOW_S && e.t <= t).reduce((a, e) => a + Math.abs(e.priceAfter - e.priceBefore), 0);
-  return Math.max(0, Math.min(MAX_MOVE, MAX_MOVE_WINDOW - recent));
-}
-// The furthest price one buy may reach from `price`.
-export const moveLimit = (price: number, side: "yes" | "no", allow = MAX_MOVE) => (side === "yes" ? Math.min(0.97, price + allow) : Math.max(0.03, price - allow));
-const lnOnePlusExp = (x: number) => (x > 30 ? x : Math.log1p(Math.exp(x)));
 
-// d = qYes - qNo, recovered from the price p
-export const diffFromPrice = (p: number, b = LIQUIDITY) => b * Math.log(Math.min(0.999999, Math.max(0.000001, p)) / (1 - Math.min(0.999999, Math.max(0.000001, p))));
-export const priceFromDiff = (d: number, b = LIQUIDITY) => 1 / (1 + Math.exp(-d / b));
-
-// cost of moving the yes-minus-no difference from d to d2 when buying `side` (yes raises d, no lowers it)
-function cost(d: number, ds: number, side: "yes" | "no", b = LIQUIDITY) {
-  return side === "yes" ? b * (lnOnePlusExp((d + ds) / b) - lnOnePlusExp(d / b)) : b * (lnOnePlusExp((-d + ds) / b) - lnOnePlusExp(-d / b));
+export const SCORE_LEAN = 0.05; // for scoring only, never the market: a prediction counts as the crowd's % leaning this far towards the side you chose
+// What you are scored on. The market barely moves for you, so the % after your order would score you the same as the crowd.
+export function scoredForecast(executions: { action: "buy" | "sell"; side: "yes" | "no"; priceBefore: number }[]): number | null {
+  const last = executions.filter((e) => e.action === "buy").at(-1);
+  if (!last) return null;
+  return Math.min(0.99, Math.max(0.01, last.priceBefore + (last.side === "yes" ? SCORE_LEAN : -SCORE_LEAN)));
 }
+
+type Move = { priceBefore: number; priceAfter: number };
+// How far this person has pushed the answer so far: above 0 towards Yes, below 0 towards No.
+export const pushedSoFar = (executions: Move[]) => executions.reduce((a, e) => a + e.priceAfter - e.priceBefore, 0);
+
+// Where the Yes % lands after a buy. A second prediction on the same side leaves it where it is.
+export function priceAfterBuy(price: number, side: "yes" | "no", executions: Move[] = []): number {
+  const pushed = pushedSoFar(executions);
+  const room = side === "yes" ? PERSON_MOVE - pushed : PERSON_MOVE + pushed;
+  const step = room < 1e-9 ? 0 : Math.min(PERSON_MOVE, room);
+  return side === "yes" ? Math.max(price, Math.min(0.97, price + step)) : Math.min(price, Math.max(0.03, price - step));
+}
+// Where the Yes % lands after a sale: taking back everything on a side also takes back that side's push.
+export function priceAfterSell(price: number, side: "yes" | "no", sharesLeft: number, executions: Move[] = []): number {
+  const pushed = pushedSoFar(executions);
+  const sameWay = side === "yes" ? pushed > 1e-9 : pushed < -1e-9;
+  return sharesLeft <= 1e-9 && sameWay ? Math.min(0.999, Math.max(0.001, price - pushed)) : price;
+}
+const sidePrice = (yes: number, side: "yes" | "no") => (side === "yes" ? yes : 1 - yes);
 
 export type Quote = { shares: number; points: number; avg: number; priceBefore: number; priceAfter: number; maxPayout: number; profit: number };
 
-export function quoteBuy(price: number, side: "yes" | "no", points: number, b = LIQUIDITY, allow = MAX_MOVE): Quote {
-  const d = diffFromPrice(price, b);
-  let lo = 0, hi = 1;
-  while (cost(d, hi, side, b) < points && hi < 1e7) hi *= 2;
-  for (let i = 0; i < 60; i++) { const mid = (lo + hi) / 2; if (cost(d, mid, side, b) > points) hi = mid; else lo = mid; }
-  const cap = Math.max(0, Math.abs(diffFromPrice(moveLimit(price, side, allow), b) - d));
-  const shares = Math.min(lo, cap), spent = cost(d, shares, side, b);
-  const d2 = side === "yes" ? d + shares : d - shares;
-  return { shares, points: spent, avg: shares > 0 ? spent / shares : 0, priceBefore: price, priceAfter: priceFromDiff(d2, b), maxPayout: shares, profit: shares - spent };
+export function quoteBuy(price: number, side: "yes" | "no", points: number, executions: Move[] = []): Quote {
+  const avg = sidePrice(price, side), shares = points > 0 ? points / avg : 0;
+  return { shares, points: Math.max(0, points), avg, priceBefore: price, priceAfter: priceAfterBuy(price, side, executions), maxPayout: shares, profit: shares - Math.max(0, points) };
 }
 
-export function quoteSell(price: number, side: "yes" | "no", shares: number, b = LIQUIDITY): Quote {
-  const d = diffFromPrice(price, b);
-  const proceeds = -cost(d, -shares, side, b);
-  const d2 = side === "yes" ? d - shares : d + shares;
-  return { shares, points: proceeds, avg: shares > 0 ? proceeds / shares : 0, priceBefore: price, priceAfter: priceFromDiff(d2, b), maxPayout: 0, profit: 0 };
+// Sold at the price after any push comes off, so buying and taking straight back cannot make points.
+export function quoteSell(price: number, side: "yes" | "no", shares: number, held = shares, executions: Move[] = []): Quote {
+  const priceAfter = priceAfterSell(price, side, held - shares, executions);
+  const avg = sidePrice(priceAfter, side);
+  return { shares, points: shares * avg, avg, priceBefore: price, priceAfter, maxPayout: 0, profit: 0 };
 }

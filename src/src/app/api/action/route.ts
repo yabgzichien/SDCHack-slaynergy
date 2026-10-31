@@ -14,7 +14,7 @@ import { canSwap } from "@/lib/engine/plan";
 import { issueBadge, personaState } from "@/lib/engine/review";
 import { courseById } from "@/lib/engine/data";
 import type { PathwayWork } from "@/lib/engine/state";
-import { MAX_PER_ANSWER, moveAllowance } from "@/lib/market-math";
+import { MAX_PER_ANSWER } from "@/lib/market-math";
 import { ensureData } from "@/lib/server/refresh";
 
 export const dynamic = "force-dynamic";
@@ -132,7 +132,6 @@ export async function POST(req: Request) {
       if (action === "sell" && amount > (side === "yes" ? strike.position.yes : strike.position.no) + 1e-6) return bad(`You hold fewer ${side === "yes" ? "Yes" : "No"} contracts than that.`);
       const ev = w.events.find((e) => e.strikes.some((s) => s.marketId === market))!;
       const t = Math.max(0, (Date.now() - ev.clockStart) / 1000);
-      if (action === "buy" && moveAllowance(strike.executions, t) < 0.001) return bad("You have moved this answer as far as one player can for now. Try again in a few minutes, or predict another answer.");
       if (state.orders.length >= 300) return bad("Order limit reached for this session. Press Start over to reset.");
       state = { ...state, orders: [...state.orders, { id: `o${state.orders.length + 1}`, market, t, side, action, amount }] };
       await logEvent("order", sid, { market, side, action, amount: +amount.toFixed(2) });

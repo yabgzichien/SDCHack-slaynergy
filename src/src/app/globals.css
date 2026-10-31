@@ -190,3 +190,8 @@ input[type="range"] { accent-color: var(--accent); width: 100%; }
 @keyframes cue-flash { 0% { box-shadow: 0 0 0 0 rgb(201 116 26 / 0.55); background-color: var(--cue-soft); } 100% { box-shadow: 0 0 0 14px rgb(201 116 26 / 0); } }
 .cue-flash { animation: cue-flash 1.1s ease-out 1; }
 @media (prefers-reduced-motion: reduce) { .cue-flash { animation: none; } }
+
+/* The "+0.1% from you" chip beside the market's Yes %: appears, holds, then fades. */
+@keyframes market-nudge { 0% { opacity: 0; transform: translateY(6px); } 8%, 80% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+.market-nudge { animation: market-nudge 6s ease-out both; }
+@media (prefers-reduced-motion: reduce) { .market-nudge { animation: none; } }

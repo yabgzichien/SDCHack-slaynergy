@@ -9,7 +9,8 @@ import { futureWeights } from "@/lib/engine/futures";
 import { liveQuestions, replayHistory } from "@/lib/engine/replay";
 import { ladder, futureProbs } from "@/lib/engine/questions";
 import { runTape } from "@/lib/engine/tape";
-import { MAX_MOVE, MAX_MOVE_WINDOW, quoteBuy } from "@/lib/market-math";
+import { positionRows } from "@/lib/positions";
+import { PERSON_MOVE, quoteBuy, scoredForecast } from "@/lib/market-math";
 import { newMarket, price, tradeToward, cost } from "@/lib/engine/lmsr";
 import { verifyChain, entryHash, type LogEntry } from "@/lib/server/store";
 import { taskCards, gradeQuiz, completionGate, badgeRecord, linkedinAddUrl, achievements } from "@/lib/engine/pathway";
@@ -195,7 +196,7 @@ describe("the market: three answers per question, buy and sell", () => {
   it("the ticket's instant quote matches the server's executed order", () => {
     const m = strikeQ[1].id;
     const before = runTape(strikeQ[1], w0, "W0", [], 120);
-    for (const amount of [5, 50]) { // 5 points is under the move cap; 50 points hits it
+    for (const amount of [5, 50]) {
       const q = quoteBuy(before.price, "yes", amount);
       const after = runTape(strikeQ[1], w0, "W0", [{ id: "o1", market: m, t: 119.9, side: "yes", action: "buy", amount }], 120);
       const ex = after.executions[0];
@@ -697,32 +698,81 @@ describe("one player cannot swing the market", () => {
   const w0 = replayHistory().weights;
   const strikeQ = ladder(liveQuestions("live").find((q) => q.id === "swe-2026Q2")!);
 
-  it("caps a single guess at a 3-point move and does not charge the unused points", () => {
+  it("moves the Yes % by exactly 0.1 whatever the stake, and uses every point", () => {
     const m = strikeQ[1].id;
-    const before = runTape(strikeQ[1], w0, "W0", [], 120);
-    const ex = runTape(strikeQ[1], w0, "W0", [{ id: "o1", market: m, t: 119.9, side: "yes", action: "buy", amount: MAX_ORDER }], 120).executions[0];
-    expect(Math.abs(ex.priceAfter - ex.priceBefore)).toBeLessThanOrEqual(MAX_MOVE + 1e-9);
-    expect(ex.points).toBeLessThan(MAX_ORDER);
-    expect(before.price).toBeCloseTo(ex.priceBefore, 9);
+    for (const amount of [1, MAX_ORDER]) for (const side of ["yes", "no"] as const) {
+      const before = runTape(strikeQ[1], w0, "W0", [], 120);
+      const ex = runTape(strikeQ[1], w0, "W0", [{ id: "o1", market: m, t: 119.9, side, action: "buy", amount }], 120).executions[0];
+      expect(ex.priceAfter - ex.priceBefore).toBeCloseTo(side === "yes" ? PERSON_MOVE : -PERSON_MOVE, 9);
+      expect(ex.points).toBe(amount);
+      expect(ex.priceBefore).toBeCloseTo(before.price, 9);
+    }
   });
 
-  it("the most one player can push any question, with every point allowed in quick guesses, is 5 points, and it fades", () => {
+  it("many predictions by one person still move an answer by only 0.1, and the push fades", () => {
     for (const id of ids) {
       for (const side of ["yes", "no"] as const) {
         const orders = Array.from({ length: 10 }, (_, i) => ({ id: `o${i}`, market: `${id}~1`, t: 300 + i, side, action: "buy" as const, amount: 10 }));
         const st = { ...base, orders };
-        const now0 = Math.abs(priceAt(st, 311, id) - priceAt(base, 311, id));
-        const later = Math.abs(priceAt(st, 900, id) - priceAt(base, 900, id));
-        expect(now0, `${id} ${side}`).toBeLessThanOrEqual(MAX_MOVE_WINDOW + 1e-6);
-        expect(later, `${id} ${side} after 10 minutes`).toBeLessThan(0.01);
+        expect(Math.abs(priceAt(st, 310, id) - priceAt(base, 310, id)), `${id} ${side}`).toBeLessThanOrEqual(PERSON_MOVE * 1.5);
+        expect(Math.abs(priceAt(st, 900, id) - priceAt(base, 900, id)), `${id} ${side} after 10 minutes`).toBeLessThan(PERSON_MOVE * 1.5);
       }
     }
+  });
+
+  it("scores a prediction on the side chosen, not the barely moved market %", () => {
+    const ex = (side: "yes" | "no") => [{ action: "buy" as const, side, priceBefore: 0.5 }];
+    expect(scoredForecast(ex("yes"))).toBeCloseTo(0.55, 9);
+    expect(scoredForecast(ex("no"))).toBeCloseTo(0.45, 9);
+    expect(scoredForecast([])).toBeNull();
+  });
+
+  it("switching side undoes the push, taking everything back removes it, and neither makes points", () => {
+    const m = strikeQ[1].id;
+    const buy = (id: string, t: number, side: "yes" | "no") => ({ id, market: m, t, side, action: "buy" as const, amount: 20 });
+    const flip = runTape(strikeQ[1], w0, "W0", [buy("o1", 119.7, "yes"), buy("o2", 119.8, "no"), buy("o3", 119.9, "no")], 120).executions;
+    expect(flip[1].priceAfter - flip[1].priceBefore).toBeCloseTo(-PERSON_MOVE, 9);
+    expect(flip[2].priceAfter - flip[2].priceBefore).toBeCloseTo(-PERSON_MOVE, 9);
+    const shares = runTape(strikeQ[1], w0, "W0", [buy("o1", 119.8, "yes")], 120).position.yes;
+    const back = runTape(strikeQ[1], w0, "W0", [buy("o1", 119.8, "yes"), { id: "o2", market: m, t: 119.85, side: "yes", action: "sell", amount: shares }], 120).executions;
+    expect(back[1].priceAfter).toBeCloseTo(back[0].priceBefore, 9);
+    expect(back[1].points).toBeLessThanOrEqual(back[0].points + 1e-6);
   });
 
   it("one player's pressure barely changes how likely each AI speed looks", () => {
     const orders = ids.map((id, i) => ({ id: `o${i}`, market: `${id}~1`, t: 300, side: "yes" as const, action: "buy" as const, amount: MAX_ORDER }));
     const a = computeWorld(base, now + 301_000).weights, b = computeWorld({ ...base, orders }, now + 301_000).weights;
     for (const k of Object.keys(a) as (keyof typeof a)[]) expect(Math.abs(b[k] - a[k]), k).toBeLessThan(0.01);
+  });
+});
+
+describe("your predictions card", () => {
+  const now = Date.parse(T0) + 600_000;
+  it("lists each side held on an open answer, and drops one you took back in full", () => {
+    const m = `${computeWorld({ ...initialState(), clock: { t0: T0 } }, now).events[0].id}~1`;
+    const held: SessionState = { ...initialState(), clock: { t0: T0 }, orders: [
+      { id: "o1", market: m, t: 30, side: "yes", action: "buy", amount: 10 },
+      { id: "o2", market: m, t: 40, side: "no", action: "buy", amount: 20 },
+    ] };
+    const w = computeWorld(held, now);
+    const rows = positionRows(w.events, w.settledEvents);
+    expect(rows.map((r) => r.sides[0])).toEqual(["yes", "no"]);
+    expect(rows[0].put).toBeCloseTo(10, 6);
+    expect(rows[1].put).toBeCloseTo(20, 6);
+    expect(rows[0].back).toBeGreaterThan(10);
+    const shares = rows[0].back;
+    const back: SessionState = { ...held, orders: [...held.orders, { id: "o3", market: m, t: 50, side: "yes", action: "sell", amount: shares }] };
+    const w2 = computeWorld(back, now);
+    expect(positionRows(w2.events, w2.settledEvents).map((r) => r.sides[0])).toEqual(["no"]);
+    const none = computeWorld({ ...initialState(), clock: { t0: T0 } }, now);
+    expect(positionRows(none.events, none.settledEvents)).toEqual([]);
+  });
+  it("shows the result once the question is answered", () => {
+    const st: SessionState = { ...initialState(), release: 1, clock: { t0: T0, t1: T1 }, orders: [{ id: "o1", market: "swe-2026Q2~1", t: 30, side: "yes", action: "buy", amount: 10 }] };
+    const w = computeWorld(st, Date.parse(T1) + 1000);
+    const [row] = positionRows(w.events, w.settledEvents);
+    expect(row.outcome).toBe(true);
+    expect(row.gain).toBeGreaterThan(0);
   });
 });
 

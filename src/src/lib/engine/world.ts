@@ -1,3 +1,4 @@
+import { scoredForecast } from "../market-math";
 import { prevQuarter, series, sourceById } from "./data";
 import { FUTURES, FUTURE_IDS, type FutureId } from "./futures-def";
 import { crowdTilt, futureWeights, type Weights3 } from "./futures";
@@ -127,8 +128,7 @@ export function computeWorld(state: SessionState, nowMs: number = Date.now()): W
   // A prediction on a question counts only if the question was still open when it was made. The questions settled by
   // the release a session starts after were never open to it: predictions on them are practice and are not scored.
   const yourForecasts = p0.events.map((e) => {
-    const ex = e.tapes[1].executions;
-    return { eventId: e.q.id, title: eventTitle(e.q), forecast: ex.length ? ex[ex.length - 1].priceAfter : null, outcome: released ? e.strikes[1].outcome ?? null : null, practice: !series.market.frozen[e.q.id]?.settledAt };
+    return { eventId: e.q.id, title: eventTitle(e.q), forecast: scoredForecast(e.tapes[1].executions), outcome: released ? e.strikes[1].outcome ?? null : null, practice: !series.market.frozen[e.q.id]?.settledAt };
   });
   // Rank and influence use the same score: every headline question counts, and one you did not trade counts as 50%.
   // You are scored on a release only if you made a prediction on it while it was open.

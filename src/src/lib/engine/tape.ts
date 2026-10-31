@@ -1,9 +1,9 @@
-import { cost, newMarket, price as lprice, tradeToward, type Lmsr } from "./lmsr";
+import { newMarket, price as lprice, tradeToward, type Lmsr } from "./lmsr";
 import { clamp, gaussian, hashString, logit, mulberry32, sigmoid } from "./math";
 import { FORECASTERS, runMarket, type MarketRun, type Weights } from "./market";
 import type { Question } from "./questions";
 import { dataStamp } from "./data";
-import { moveAllowance, moveLimit } from "../market-math";
+import { priceAfterBuy, priceAfterSell } from "../market-math";
 
 // A market's "tape": every trade in time order, so the chart can move in real time.
 //  - history (t < 0): the ~200 simulated forecasters' opening trades, spread over the last 6 hours
@@ -19,7 +19,7 @@ const MEAN_GAP = 6; // seconds between simulated live trades in the session's fi
 // a week-old session replayed ~100k trades per line and took 13 s (docs/adr/0001).
 export const liveGap = (t: number) => (t < 3600 ? MEAN_GAP : t < 24 * 3600 ? 10 * MEAN_GAP : 100 * MEAN_GAP);
 const LIVE_LIMIT_S = 7 * 24 * 3600; // simulated players keep trading for a week of session time
-export const TAPE_LIQUIDITY = 200; // depth of the live market: a 25-point order moves a mid-priced contract by about 6 cents
+export const TAPE_LIQUIDITY = 200; // depth of the live market, for the simulated players (your orders move it by a fixed step: market-math.ts)
 const HIST_PULL = 0.06; // opening trades move the price 6% of the way to each forecaster's view
 const LIVE_PULL = 0.09; // each live trade moves the price 5% of the way to that forecaster's view, so your order's impact fades slowly
 
@@ -79,17 +79,8 @@ function prepare(q: Question, w: Weights, wkey: string): Prepared {
   return p;
 }
 
-const withShares = (m: Lmsr, side: "yes" | "no", s: number): Lmsr => (side === "yes" ? { ...m, qy: m.qy + s } : { ...m, qn: m.qn + s });
-
-function sharesForPoints(m: Lmsr, side: "yes" | "no", points: number): number {
-  let lo = 0, hi = 1;
-  while (cost(withShares(m, side, hi)) - cost(m) < points && hi < 1e7) hi *= 2;
-  for (let i = 0; i < 60; i++) {
-    const mid = (lo + hi) / 2;
-    if (cost(withShares(m, side, mid)) - cost(m) > points) hi = mid; else lo = mid;
-  }
-  return lo;
-}
+// Move the market to a given Yes % without anyone holding the shares: how a person's fixed step reaches the price.
+const moveTo = (m: Lmsr, p: number) => { m.qy += m.b * logit(p) - (m.qy - m.qn); };
 
 // Without this the simulated players stopped after their first ~70 minutes and every chart went flat.
 function extendLive(prep: Prepared, nowT: number) {
@@ -119,19 +110,21 @@ export function runTape(q: Question, w: Weights, wkey: string, orders: Order[], 
     const before = lprice(m);
     let shares = 0, points = 0;
     if (o.action === "buy") {
-      // One prediction may move the price by at most MAX_MOVE; points beyond that stay with the player.
-      const cap = Math.max(0, Math.abs(m.b * logit(moveLimit(before, o.side, moveAllowance(executions, o.t))) - (m.qy - m.qn)));
-      shares = Math.min(sharesForPoints(m, o.side, Math.max(0, o.amount)), cap);
-      points = cost(withShares(m, o.side, shares)) - cost(m);
-      if (o.side === "yes") { m.qy += shares; pos.yes += shares; pos.yesCost += points; } else { m.qn += shares; pos.no += shares; pos.noCost += points; }
+      // All the points buy shares at the current %; the % itself moves by the person's fixed step.
+      points = Math.max(0, o.amount);
+      shares = points / (o.side === "yes" ? before : 1 - before);
+      moveTo(m, priceAfterBuy(before, o.side, executions));
+      if (o.side === "yes") { pos.yes += shares; pos.yesCost += points; } else { pos.no += shares; pos.noCost += points; }
     } else {
       const held = o.side === "yes" ? pos.yes : pos.no;
       shares = Math.min(Math.max(0, o.amount), held);
       if (shares <= 1e-9) return;
-      points = cost(m) - cost(withShares(m, o.side, -shares));
+      const to = priceAfterSell(before, o.side, held - shares, executions);
+      moveTo(m, to);
+      points = shares * (o.side === "yes" ? to : 1 - to);
       const avgCost = (o.side === "yes" ? pos.yesCost / pos.yes : pos.noCost / pos.no) || 0;
       pos.realised += points - avgCost * shares;
-      if (o.side === "yes") { m.qy -= shares; pos.yes -= shares; pos.yesCost -= avgCost * shares; } else { m.qn -= shares; pos.no -= shares; pos.noCost -= avgCost * shares; }
+      if (o.side === "yes") { pos.yes -= shares; pos.yesCost -= avgCost * shares; } else { pos.no -= shares; pos.noCost -= avgCost * shares; }
     }
     if (shares <= 1e-9) return;
     volume += points; trades++;

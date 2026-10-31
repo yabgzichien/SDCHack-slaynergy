@@ -2,11 +2,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { CartesianGrid, Line, LineChart, ReferenceDot, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { EventView } from "@/lib/engine/world";
-import { MAX_MOVE, MAX_MOVE_WINDOW, MAX_PER_ANSWER, MOVE_WINDOW_S, moveAllowance, quoteBuy, quoteSell } from "@/lib/market-math";
+import { MAX_PER_ANSWER, PERSON_MOVE, quoteBuy, quoteSell } from "@/lib/market-math";
 import { useApp } from "./AppProvider";
 import { Btn, Card, DemoLabel, FUTURE_COLOR, FUTURE_NAME, SourceChip, pct as fpct } from "./ui";
 import { AnsweredBadge, AnswerStamp, OpenBadge, STRIKE_COLORS } from "./MarketCards";
-import { Lock } from "lucide-react";
+import { Check, Lock } from "lucide-react";
 
 type Execution = { orderId: string; t: number; side: "yes" | "no"; action: "buy" | "sell"; shares: number; points: number; avg: number; priceBefore: number; priceAfter: number };
 type Strike = {
@@ -16,8 +16,8 @@ type Strike = {
 };
 type Feed = { event: string; settled: boolean; nowT: number; clockStart: number; serverNow: number; strikes: Strike[]; balance: number };
 
-const cents = (p: number) => `${Math.round(p * 100)}%`;
-const pct = (p: number) => `${Math.round(p * 100)}%`;
+// One decimal on this page: a person moves the Yes % by 0.1, which a whole number would hide.
+const pct = (p: number) => `${(p * 100).toFixed(1)}%`;
 const RANGES = [{ id: "15m", label: "15 min", s: 900 }, { id: "1h", label: "1 hour", s: 3600 }, { id: "all", label: "All", s: 21600 + 3600 }] as const;
 const clock = (ms: number) => new Date(ms).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 
@@ -31,6 +31,8 @@ export function MarketBoard({ event }: { event: EventView }) {
   const [amount, setAmount] = useState("25");
   const [range, setRange] = useState<"15m" | "1h" | "all">("1h");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [placed, setPlaced] = useState<Execution & { market: string } | null>(null);
+  const [nudge, setNudge] = useState<{ key: string; market: string; move: number } | null>(null);
   const [tick, setTick] = useState(0);
   const reload = useCallback(() => setTick((x) => x + 1), []);
   const maxOrder = view?.world.you.maxOrder ?? 500;
@@ -51,6 +53,12 @@ export function MarketBoard({ event }: { event: EventView }) {
     pull();
     return () => { on = false; window.clearTimeout(timer); controller.abort(); };
   }, [event.id, event.settled, tick]);
+
+  useEffect(() => {
+    if (!nudge) return;
+    const id = window.setTimeout(() => setNudge(null), 6000);
+    return () => window.clearTimeout(id);
+  }, [nudge]);
 
   const strikes = useMemo(() => feed?.strikes ?? [], [feed]);
   const cur = strikes[sel];
@@ -76,23 +84,27 @@ export function MarketBoard({ event }: { event: EventView }) {
   const yesP = settled ? (cur.settled?.outcome ? 1 : 0) : price;
   const held = side === "yes" ? cur.position.yes : cur.position.no;
   const amt = Math.max(0, Number(amount) || 0);
-  const allow = moveAllowance(cur.executions, feed.nowT);
-  const q = mode === "buy" ? quoteBuy(price, side, amt, undefined, allow) : quoteSell(price, side, Math.min(amt, held));
+  const q = mode === "buy" ? quoteBuy(price, side, amt, cur.executions) : quoteSell(price, side, Math.min(amt, held), held, cur.executions);
   const usedHere = cur.executions.filter((x) => x.action === "buy").reduce((a, x) => a + x.points, 0);
   const leftHere = Math.max(0, MAX_PER_ANSWER - usedHere);
-  const resting = mode === "buy" && allow < 0.001;
   const tooBig = mode === "buy" && (amt > maxOrder || amt > leftHere + 1e-6);
-  const capped = mode === "buy" && q.shares > 0 && q.points < amt - 0.5;
   const insufficient = mode === "buy" ? amt > feed.balance + 1e-6 : amt > held + 1e-6;
-  const canPlace = !settled && !busy && amt > 0 && !insufficient && !tooBig && !resting && q.shares > 0.0001;
+  const canPlace = !settled && !busy && amt > 0 && !insufficient && !tooBig && q.shares > 0.0001;
   const hasPos = cur.position.yes > 1e-6 || cur.position.no > 1e-6;
   const dChange = Math.round(cur.change1h * 100);
 
   const place = async () => {
-    setMsg(null);
+    setMsg(null); setPlaced(null);
     const r = await act("order", { market: cur.id, side, action: mode, amount: amt });
     if (!r) { setMsg({ ok: false, text: "Your prediction could not be placed. Please try again." }); return; }
-    setMsg({ ok: true, text: mode === "buy" ? `Done. You put ${q.points.toFixed(0)} points on ${side === "yes" ? "Yes" : "No"}. If you are right you get ${q.maxPayout.toFixed(0)} points back.` : `Done. You took back your prediction and got ${q.points.toFixed(0)} points.` });
+    // What the server actually executed, so the confirmation can never disagree with the market.
+    const fresh: Feed | null = await fetch(`/api/market?event=${encodeURIComponent(event.id)}`, { cache: "no-store" }).then((x) => (x.ok ? x.json() : null)).catch(() => null);
+    const done = fresh?.strikes.find((s) => s.id === cur.id)?.executions.at(-1);
+    if (fresh) setFeed(fresh);
+    if (done) {
+      setPlaced({ ...done, market: cur.id });
+      if (Math.abs(done.priceAfter - done.priceBefore) > 1e-9) setNudge({ key: done.orderId, market: cur.id, move: done.priceAfter - done.priceBefore });
+    }
     reload(); await refresh();
   };
 
@@ -112,6 +124,7 @@ export function MarketBoard({ event }: { event: EventView }) {
           ) : (
             <div className="mt-2 flex flex-wrap items-end gap-x-3 gap-y-1">
               <p className="num text-[2.5rem] leading-none" aria-live="polite">{pct(yesP)}</p>
+              {nudge?.market === cur.id && <p key={nudge.key} className={`market-nudge num mb-1 rounded-full px-2.5 py-1 text-sm font-semibold ${nudge.move > 0 ? "bg-risesoft text-rise" : "bg-fallsoft text-fall"}`}>{signed(nudge.move)} from you</p>}
               <p className="pb-1 text-sm text-muted">of players think Yes (mostly computer-made)</p>
               <p className={`num pb-1 text-sm font-medium ${dChange > 0 ? "text-rise" : dChange < 0 ? "text-fall" : "text-muted"}`} title="Change over the last hour">{dChange === 0 ? "no change" : `${dChange > 0 ? "up" : "down"} ${Math.abs(dChange)}%`} in the last hour</p>
               <div className="w-full"><DemoLabel /></div>
@@ -192,7 +205,7 @@ export function MarketBoard({ event }: { event: EventView }) {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div role="tablist" aria-label="Order type" className="inline-flex rounded-full bg-surface2 p-1">
               {(["buy", "sell"] as const).map((m) => (
-                <button key={m} role="tab" aria-selected={mode === m} onClick={() => { setMode(m); setMsg(null); setAmount(m === "sell" ? String(Math.floor(held)) : "25"); }}
+                <button key={m} role="tab" aria-selected={mode === m} onClick={() => { setMode(m); setMsg(null); setPlaced(null); setAmount(m === "sell" ? String(Math.floor(held)) : "25"); }}
                   className={`press min-h-9 whitespace-nowrap rounded-full px-4 text-sm ${mode === m ? "bg-raised font-medium" : "text-muted"}`}>{m === "buy" ? "Predict" : "Take back"}</button>
               ))}
             </div>
@@ -204,14 +217,14 @@ export function MarketBoard({ event }: { event: EventView }) {
             {(["yes", "no"] as const).map((s) => {
               const on = side === s;
               return <button key={s} aria-pressed={on} disabled={settled}
-                onClick={() => { setSide(s); setMsg(null); if (mode === "sell") setAmount(String(Math.floor(s === "yes" ? cur.position.yes : cur.position.no))); }}
+                onClick={() => { setSide(s); setMsg(null); setPlaced(null); if (mode === "sell") setAmount(String(Math.floor(s === "yes" ? cur.position.yes : cur.position.no))); }}
                 className={`press min-h-12 rounded-full text-sm font-medium ${on ? (s === "yes" ? "bg-rise text-white" : "bg-fall text-white") : "bg-surface2"}`}>{s === "yes" ? "Yes" : "No"}</button>;
             })}
           </div>
 
           <label className="mt-4 block text-sm">
             {mode === "buy" ? `How many points to put on it? (up to ${Math.min(maxOrder, Math.floor(leftHere))})` : `How much to take back? (you have ${held.toFixed(1)} shares)`}
-            <input inputMode="decimal" value={amount} onChange={(e) => { setAmount(e.target.value.replace(/[^0-9.]/g, "")); setMsg(null); }} disabled={settled}
+            <input inputMode="decimal" value={amount} onChange={(e) => { setAmount(e.target.value.replace(/[^0-9.]/g, "")); setMsg(null); setPlaced(null); }} disabled={settled}
               className="num mt-1 min-h-12 w-full rounded-2xl border border-control bg-raised px-4 text-right text-xl" />
           </label>
           <div className="mt-2 flex flex-wrap gap-1.5">
@@ -227,16 +240,16 @@ export function MarketBoard({ event }: { event: EventView }) {
               <div className="-mx-2 rounded-xl bg-risesoft px-2 py-1.5"><Row k="You get back if right" v={q.shares > 0 ? `${q.maxPayout.toFixed(0)} points` : "–"} strong /></div>
               <Row k="You win" v={q.shares > 0 ? `${(q.maxPayout - q.points).toFixed(0)} points` : "–"} />
             </> : <Row k="You get back now" v={q.shares > 0 ? `${q.points.toFixed(0)} points` : "–"} strong />}
-            <Row k={`"${side === "yes" ? "Yes" : "No"}" % after your prediction`} v={q.shares > 0 ? `${cents(side === "yes" ? q.priceBefore : 1 - q.priceBefore)} → ${cents(side === "yes" ? q.priceAfter : 1 - q.priceAfter)}` : "–"} />
+            <Row k={`"${side === "yes" ? "Yes" : "No"}" % after your prediction`} v={q.shares > 0 ? `${pct(side === "yes" ? q.priceBefore : 1 - q.priceBefore)} → ${pct(side === "yes" ? q.priceAfter : 1 - q.priceAfter)}` : "–"} />
           </dl>
           <div className="mt-4">
             <Btn onClick={place} disabled={!canPlace} className="min-h-12 w-full text-base">
-              {settled ? "This question is answered" : resting ? "Wait a few minutes to predict here again" : tooBig ? (amt > leftHere + 1e-6 ? `Only ${leftHere.toFixed(0)} points left for this answer` : `Up to ${maxOrder} points at a time`) : insufficient ? (mode === "buy" ? "Not enough points" : "You do not have that much to take back") : mode === "buy" ? `Predict ${side === "yes" ? "Yes" : "No"}` : "Take back"}
+              {settled ? "This question is answered" : tooBig ? (amt > leftHere + 1e-6 ? `Only ${leftHere.toFixed(0)} points left for this answer` : `Up to ${maxOrder} points at a time`) : insufficient ? (mode === "buy" ? "Not enough points" : "You do not have that much to take back") : mode === "buy" ? `Predict ${side === "yes" ? "Yes" : "No"}` : "Take back"}
             </Btn>
           </div>
-          {capped && <p className="mt-2 text-sm text-muted">Only {q.points.toFixed(0)} of your {amt.toFixed(0)} points will be used: one prediction can move the % by at most {Math.round(MAX_MOVE * 100)} points, and all your predictions on one answer by {Math.round(MAX_MOVE_WINDOW * 100)} points in {MOVE_WINDOW_S / 60} minutes.</p>}
           {msg && <p role="status" className={`mt-2 text-sm ${msg.ok ? "text-rise" : "text-negative"}`}>{msg.text}</p>}
-          <p className="mt-3 text-xs text-muted">The less likely an answer looks, the more you win if it is right. Wrong predictions lose the points you put in. To keep it fair, one prediction moves the % by at most {Math.round(MAX_MOVE * 100)} points, your predictions on one answer by at most {Math.round(MAX_MOVE_WINDOW * 100)} points in {MOVE_WINDOW_S / 60} minutes, and you can put at most {MAX_PER_ANSWER} points into each answer. Points only, never money.</p>
+          {placed?.market === cur.id && <Placed e={placed} />}
+          <p className="mt-3 text-xs text-muted">The less likely an answer looks, the more you win if it is right. Wrong predictions lose the points you put in. To keep it fair, one person moves the Yes % of an answer by at most {(PERSON_MOVE * 100).toFixed(1)}%, however many points they put in, and can put at most {MAX_PER_ANSWER} points into each answer. Points only, never money.</p>
         </Card>
         )}
 
@@ -257,6 +270,21 @@ export function MarketBoard({ event }: { event: EventView }) {
           {!settled && <p className="num mt-3 text-xs text-muted">The % updates every few seconds. Last update {clock(feed.serverNow)}.</p>}
         </Card>
       </aside>
+    </div>
+  );
+}
+
+const signed = (move: number) => `${move > 0 ? "+" : "−"}${(Math.abs(move) * 100).toFixed(1)}%`;
+
+// The confirmation after a prediction: what was placed and what it did to the market.
+function Placed({ e }: { e: Execution }) {
+  const move = e.priceAfter - e.priceBefore, moved = Math.abs(move) > 1e-9;
+  const name = e.side === "yes" ? "Yes" : "No";
+  return (
+    <div role="status" className="mt-3 rounded-2xl bg-risesoft px-4 py-3 text-sm">
+      <p className="flex items-center gap-2 font-semibold text-rise"><Check size={16} strokeWidth={3} aria-hidden />{e.action === "buy" ? "Prediction placed" : "Prediction taken back"}</p>
+      <p className="num mt-1">{e.action === "buy" ? `You put ${e.points.toFixed(0)} points on ${name}. If you are right you get ${e.shares.toFixed(0)} points back.` : `You got ${e.points.toFixed(0)} points back.`}</p>
+      <p className="num mt-1">{moved ? `The market moved ${signed(move)} because of you: Yes went from ${pct(e.priceBefore)} to ${pct(e.priceAfter)}.` : e.action === "buy" ? `The market stays at ${pct(e.priceAfter)} Yes: you have already moved this answer as far as one person can.` : `The market stays at ${pct(e.priceAfter)} Yes.`}</p>
     </div>
   );
 }

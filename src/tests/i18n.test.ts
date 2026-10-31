@@ -50,3 +50,30 @@ describe("translations", () => {
     expect(lookup("en", "Plan my path to this job")).toBeNull();
   });
 });
+
+describe("the prediction confirmation", () => {
+  it.each(["ms", "zh", "ta"] as const)("is fully translated in %s", (lang) => {
+    for (const text of [
+      "Prediction placed", "Prediction taken back", "+0.1% from you", "You got 44 points back.",
+      "You put 25 points on Yes. If you are right you get 44 points back.",
+      "The market moved +0.1% because of you: Yes went from 56.8% to 56.9%.",
+      "The market moved −0.1% because of you: Yes went from 56.8% to 56.7%.",
+      "The market stays at 56.8% Yes: you have already moved this answer as far as one person can.",
+      "The market stays at 56.8% Yes.",
+    ]) {
+      const out = lookup(lang, text);
+      expect(out, text).toBeTruthy();
+      expect(out, text).not.toContain("{");
+    }
+  });
+});
+
+describe("the your predictions card", () => {
+  it.each(["ms", "zh", "ta"] as const)("is fully translated in %s", (lang) => {
+    for (const text of ["Your predictions", "75 points in play, worth 76 now", "You have not made a prediction yet.", "Choose an open question", "to start.", "Still open", "Answered", "Put in", "Back if right", "Worth now", "Result", "25 points", "+12 points", "−12 points", "Now 57% think Yes", "The answer was Yes"]) {
+      const out = lookup(lang, text);
+      expect(out, text).toBeTruthy();
+      expect(out, text).not.toContain("{");
+    }
+  });
+});
