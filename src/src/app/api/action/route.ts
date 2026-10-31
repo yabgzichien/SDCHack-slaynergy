@@ -154,6 +154,7 @@ export async function POST(req: Request) {
       const id = String(body.roleId ?? "");
       if (id !== STAY_ID && !roleById[id]) return bad("Unknown role.");
       state = { ...state, chosenRoleId: id, progress: {}, pathway: keepMeeting(state), completion: { status: "none" }, courseSwaps: {} };
+      await logEvent("job_picked", sid, { role: id });
       break;
     }
     case "swapCourse": {
@@ -178,6 +179,7 @@ export async function POST(req: Request) {
       const step = computeView(state).plan?.steps.find((s) => s.id === stepId);
       if (body.done && step && needsCertificate(step) && state.certificates?.[stepId]?.title !== step.title) return bad("Upload your certificate to finish this step.");
       state = { ...state, progress: { ...state.progress, [stepId]: !!body.done } };
+      if (body.done) await logEvent("step_done", sid, { step: stepId });
       break;
     }
     case "certificateDemo": {

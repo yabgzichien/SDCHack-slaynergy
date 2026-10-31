@@ -15,7 +15,9 @@
     "typecheck": "tsc --noEmit",
     "build:map": "node scripts/build-map.mjs",
     "data:refresh": "tsx scripts/data-refresh.ts",
-    "data:repin-aei": "tsx scripts/repin-aei.ts"
+    "data:repin-aei": "tsx scripts/repin-aei.ts",
+    "courses:check": "node scripts/check-links.mjs",
+    "images:compress": "node scripts/compress-images.mjs"
   },
   "dependencies": {
     "better-sqlite3": "^13.0.3",

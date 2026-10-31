@@ -11,8 +11,9 @@ export function LandingSdgAnimation({ replayKey }: { replayKey: number }) {
         alt=""
         width={1312}
         height={1199}
+        sizes="310px"
         className="landing-sdg-stack"
-        priority
+        preload
       />
     </div>
   );

@@ -11,11 +11,12 @@ for (const c of courses) {
     const r = await fetch(c.url, { method: "GET", redirect: "follow", headers: { "User-Agent": UA }, signal: AbortSignal.timeout(15000) });
     const status = r.status === 403 ? "403 to automated checks; open it manually to confirm" : String(r.status);
     if (String(c.linkStatus).startsWith("403") && r.status === 403) continue; // keep any note written by hand
-    c.linkStatus = r.status === 200 ? 200 : status;
+    // A string, as the courses page checks linkStatus === "200".
+    c.linkStatus = r.status === 200 ? "200" : status;
     if (r.status === 200) c.checked = today;
   } catch (e) {
     c.linkStatus = `error: ${e.name}`;
   }
-  if (c.linkStatus !== 200) console.log(c.id, c.linkStatus, c.url);
+  if (c.linkStatus !== "200") console.log(c.id, c.linkStatus, c.url);
 }
 fs.writeFileSync(file, JSON.stringify(courses, null, 2) + "\n");

@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { skills } from "@/lib/engine/data";
 import { DEFAULT_BASE, DEFAULT_MODEL } from "@/lib/server/assist";
 
@@ -18,9 +19,15 @@ const LLM_TIMEOUT_MS = 20000;
 const RUNPOD_TIMEOUT_MS = 20000; // a cold worker can take longer; then Groq answers instead
 const GROQ_TIMEOUT_MS = 15000;
 const MAX_CHARS = 12000;
+// The JSON answer needs about 300 to 600 tokens; a smaller cap uses less of the per-minute token quota.
+const MAX_OUT = 900;
+// Groq rate-limits each model separately, so when the main model is busy a smaller one can still answer.
+const GROQ_FALLBACK_MODEL = "llama-3.1-8b-instant";
+const CACHE_TTL_MS = 60 * 60 * 1000;
+const CACHE_MAX = 200;
 
 type Env = Record<string, string | undefined>;
-type Provider = { name: "llm" | "runpod" | "groq"; url: string; key: string; model: string; timeout: number; tokenParam: "max_tokens" | "max_completion_tokens" };
+type Provider = { name: "llm" | "runpod" | "groq"; url: string; key: string; model: string; timeout: number; tokenParam: "max_tokens" | "max_completion_tokens"; fallbackModel?: string };
 
 // The gateway needs LLM_API_KEY (DATA_ASSIST only switches off the data-source finder). RunPod needs both RUNPOD_API_KEY and
 // RUNPOD_ENDPOINT_ID. Groq needs GROQ_API_KEY. Order = order tried.
@@ -35,7 +42,8 @@ export function aiProviders(env: Env = process.env): Provider[] {
       key: env.RUNPOD_API_KEY, model: env.RUNPOD_MODEL || RUNPOD_MODEL, timeout: RUNPOD_TIMEOUT_MS, tokenParam: "max_tokens" });
   }
   if (env.GROQ_API_KEY) {
-    out.push({ name: "groq", url: GROQ_URL, key: env.GROQ_API_KEY, model: AI_MODEL, timeout: GROQ_TIMEOUT_MS, tokenParam: "max_completion_tokens" });
+    out.push({ name: "groq", url: GROQ_URL, key: env.GROQ_API_KEY, model: AI_MODEL, timeout: GROQ_TIMEOUT_MS, tokenParam: "max_completion_tokens",
+      fallbackModel: env.GROQ_FALLBACK_MODEL || GROQ_FALLBACK_MODEL });
   }
   return out;
 }
@@ -72,31 +80,41 @@ async function callProvider(p: Provider, resume: string): Promise<AiRead | null>
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), p.timeout);
   try {
-    const call = () => fetch(p.url, {
+    // Qwen3 on Groq writes out its reasoning first unless told not to; those tokens count against the quota and are thrown away.
+    const call = (model: string, noThink = p.name === "groq" && model.startsWith("qwen/")) => fetch(p.url, {
       method: "POST", signal: ctrl.signal,
       headers: { Authorization: `Bearer ${p.key}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: p.model, temperature: 0.2, [p.tokenParam]: 2000,
+        model, temperature: 0.2, [p.tokenParam]: MAX_OUT,
         response_format: { type: "json_object" },
+        ...(noThink ? { reasoning_effort: "none" } : {}),
         messages: [
           { role: "system", content: SYSTEM },
           { role: "user", content: `SKILL LIST:\n${skillList()}\n\nRESUME:\n<<<\n${resume}\n>>>` },
         ],
       }),
     });
-    let r = await call();
-    // Groq's free tier allows ~1000 output tokens a minute (about two scans). Wait once if the wait is short.
+    let model = p.model;
+    let r = await call(model);
+    // A model that does not accept reasoning_effort answers 400; ask again without it.
+    if (r.status === 400 && p.name === "groq" && model.startsWith("qwen/")) r = await call(model, false);
+    // Groq's free tier allows ~1000 output tokens a minute per model. Wait once if the wait is short, otherwise try the fallback model.
     if (r.status === 429) {
       const wait = Number(r.headers.get("retry-after") ?? "60");
-      if (wait > 12) return null;
-      await new Promise((res) => setTimeout(res, wait * 1000 + 300));
-      r = await call();
+      if (wait <= 5) {
+        await new Promise((res) => setTimeout(res, wait * 1000 + 300));
+      } else if (p.fallbackModel) {
+        model = p.fallbackModel;
+      } else {
+        return null;
+      }
+      r = await call(model);
     }
     if (!r.ok) return null;
     const d = (await r.json()) as { choices?: { message?: { content?: string } }[] };
     const content = d.choices?.[0]?.message?.content ?? "";
     const answer = content.replace(/<think>[\s\S]*?<\/think>/g, "");
-    return checkAiRead(JSON.parse(answer.slice(answer.indexOf("{"), answer.lastIndexOf("}") + 1)), resume, p.model);
+    return checkAiRead(JSON.parse(answer.slice(answer.indexOf("{"), answer.lastIndexOf("}") + 1)), resume, model);
   } catch {
     return null;
   } finally {
@@ -107,11 +125,27 @@ async function callProvider(p: Provider, resume: string): Promise<AiRead | null>
 // Tries each configured provider in turn; null means none worked and the rule scan runs alone.
 export async function aiReadResume(text: string, env: Env = process.env): Promise<AiRead | null> {
   const resume = text.slice(0, MAX_CHARS);
+  const key = createHash("sha256").update(resume).digest("hex");
+  const cached = fromCache(key);
+  if (cached) return cached;
   for (const p of aiProviders(env)) {
     const read = await callProvider(p, resume);
-    if (read) return read;
+    if (read) { toCache(key, read); return read; }
   }
   return null;
+}
+
+// A rescan of the same resume (a refresh, a retry, the demo resume) is answered from server memory instead of the API.
+// Memory only, never the database: the answer quotes resume lines, and the resume text is never stored.
+const cache = new Map<string, { at: number; read: AiRead }>();
+function fromCache(key: string): AiRead | null {
+  const hit = cache.get(key);
+  if (!hit || Date.now() - hit.at > CACHE_TTL_MS) { cache.delete(key); return null; }
+  return hit.read;
+}
+function toCache(key: string, read: AiRead) {
+  if (cache.size >= CACHE_MAX) cache.delete(cache.keys().next().value!);
+  cache.set(key, { at: Date.now(), read });
 }
 
 // Keep only what the resume itself supports. Exported for tests.

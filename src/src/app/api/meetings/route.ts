@@ -4,7 +4,7 @@ import { checkBooking, freeSlots, isTopic, MAX_QUESTION, upcoming, type Meeting 
 import { allSlots, publicMeeting } from "@/lib/server/meetings";
 import { recordMeeting } from "@/lib/engine/review";
 import { getSessionId } from "@/lib/server/session";
-import { anonymise, insertMeeting, listMeetings, loadState, saveState, updateMeeting } from "@/lib/server/store";
+import { anonymise, insertMeeting, listMeetings, loadState, logEvent, saveState, updateMeeting } from "@/lib/server/store";
 import { ensureData } from "@/lib/server/refresh";
 
 export const dynamic = "force-dynamic";
@@ -57,6 +57,7 @@ export async function POST(req: Request) {
       if (!(await insertMeeting(m, sid))) return bad("Someone booked that time a moment ago. Please pick another.", 409);
       // Booking ticks the plan's meeting step; the advisor's advice still arrives after the meeting.
       await saveState(sid, { ...state, pathway: { ...state.pathway, meetingBooked: { meetingId: m.id, start: m.start, at: now } } });
+      await logEvent("meeting_booked", sid, { topic: m.topic });
       return NextResponse.json(await payload(sid));
     }
     case "cancel": {
