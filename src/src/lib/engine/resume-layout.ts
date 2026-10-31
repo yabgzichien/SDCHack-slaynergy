@@ -19,6 +19,33 @@ export const isBullet = (s: string) => BULLET.test(s);
 export const stripBullet = (s: string) => s.replace(BULLET, "");
 export const cleanHeading = (l: string) => l.replace(/[:\-–_=*#]+$/g, "").replace(/^[#*\s]+/, "").trim();
 
+// Some PDFs give their text in a form the page does not show. Designed templates space their headings out ("E D U C A T I O N",
+// sometimes with the gap between two words lost: "WORKEXPERIENCE"), and a hidden second text layer repeats lines, often
+// glued together ("Foundation in ScienceFoundation in Science"). cleanResumeText puts that back the way the page reads, so
+// the scanner, the AI and the report all see the same lines. Running it twice changes nothing more.
+const SPACED = /^(?:[A-Za-z] ){3,}[A-Za-z]$/;
+const GLUED_HEAD = /^(WORK|WORKING|PROFESSIONAL|CAREER|EMPLOYMENT|TECHNICAL|KEY|CORE|ABOUT)(EXPERIENCE|HISTORY|SUMMARY|SKILLS|OBJECTIVE|PROFILE|ME|COMPETENCIES|COMPETENCES)$/i;
+const REPEATED = /(.{6,}?)\1+/g;
+export function cleanResumeText(text: string): string {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of text.split("\n")) {
+    let line = raw.trim();
+    if (SPACED.test(line)) {
+      line = line.replace(/ /g, "");
+      line = line.replace(GLUED_HEAD, "$1 $2");
+    }
+    line = line.replace(REPEATED, "$1");
+    // A whole line that already appeared is the hidden copy. Short lines (a year, "Present") can repeat honestly, so they stay.
+    if (line.length >= 12) {
+      if (seen.has(line)) continue;
+      seen.add(line);
+    }
+    out.push(line);
+  }
+  return out.join("\n");
+}
+
 export type ResumeEntry = { kind: "bullet" | "text"; text: string } | { kind: "role"; text: string; org: string; date: string };
 export type ResumeBlock = { key: string; head: string; entries: ResumeEntry[]; chips: string[] };
 export type ResumeLayout = { name: string; title: string; contact: string[]; main: ResumeBlock[]; side: ResumeBlock[] };

@@ -2,7 +2,7 @@ import kw from "../../../data/skill-keywords.json";
 import { occupations, skills, skillById, type Education } from "./data";
 import { expiryFor, NOW } from "./expiry";
 import type { Weights3 } from "./futures";
-import { SECTION_RE, cleanHeading, isBullet, stripBullet, wc } from "./resume-layout";
+import { SECTION_RE, cleanHeading, cleanResumeText, isBullet, stripBullet, wc } from "./resume-layout";
 
 // Rule-based resume scanner. No AI model, no network, nothing stored: the text lives only in memory for the request.
 // The optional AI reader (src/lib/server/ai-resume.ts) adds suggestions on top; the score always comes from here.
@@ -91,7 +91,7 @@ function monthsOf(text: string): number | null {
 }
 
 export function analyseResume(raw: string, weights: Weights3): ResumeAnalysis {
-  const text = raw.replace(/\r/g, "").replace(/\t/g, " ").slice(0, 60000);
+  const text = cleanResumeText(raw.replace(/\r/g, "").replace(/\t/g, " ").slice(0, 60000));
   const rawLines = text.split("\n").map((l) => l.trim()).filter(Boolean);
   const lower = text.toLowerCase();
   const words = wc(text);
