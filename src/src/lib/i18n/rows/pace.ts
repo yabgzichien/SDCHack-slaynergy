@@ -3,7 +3,7 @@ import type { Row } from "../index";
 // "See the full calculation" under "Where do these numbers come from?": the AI speed explainer (components/PaceExplain.tsx,
 // words in components/pace-text.ts). Formulas and the numbers in the table are not translated. "Close" and
 // "These are estimates, not certainties." are rows elsewhere.
-export const PACE: Row[] = [
+const BASE: Row[] = [
   ["See the full calculation", "Lihat pengiraan penuh", "查看完整计算", "முழுக் கணக்கீட்டைப் பாருங்கள்"],
   ["How the AI speeds are worked out", "Cara kelajuan AI dikira", "AI 速度如何计算", "AI வேகங்கள் எப்படிக் கணக்கிடப்படுகின்றன"],
   ["Everything on this page comes from one measurement, three scenario choices that we made, and one blend of the three.", "Semua yang ada di halaman ini datang daripada satu ukuran, tiga pilihan senario yang kami buat, dan satu campuran ketiga-tiganya.", "本页的一切都来自一项测量、我们设定的三个情景，以及对这三者的一种混合。", "இந்தப் பக்கத்தில் உள்ள அனைத்தும் ஒரு அளவீடு, நாங்கள் தேர்ந்த மூன்று சூழ்நிலைகள், அந்த மூன்றின் ஒரு கலவை ஆகியவற்றிலிருந்து வருகின்றன."],
@@ -81,4 +81,60 @@ export const PACE: Row[] = [
   ["It is not a measure of every job.", "Ia bukan ukuran bagi setiap pekerjaan.", "它并不衡量每一种工作。", "இது ஒவ்வொரு வேலையையும் அளக்கும் அளவீடு அல்ல."],
   ["The 0.6 and 1.6 multipliers are scenarios.", "Pengali 0.6 dan 1.6 ialah senario.", "0.6 和 1.6 这两个倍数是情景设定。", "0.6, 1.6 பெருக்கிகள் சூழ்நிலைகள்."],
   ["The likelihoods come from our model and the prediction game, not from a published probability.", "Kebarangkalian datang daripada model kami dan permainan meramal, bukan daripada kebarangkalian yang diterbitkan.", "可能性来自我们的模型和预测游戏，而不是某个已公布的概率。", "வாய்ப்புகள் எங்கள் மாதிரி மற்றும் கணிக்கும் விளையாட்டிலிருந்து வருகின்றன, வெளியிடப்பட்ட நிகழ்தகவிலிருந்து அல்ல."],
+];
+
+// These clearer English labels and explanations replace earlier wording. Reuse the
+// existing translations until the next translation review so non-English locales do
+// not fall back to English in the meantime.
+const alias = (english: string, source: string): Row => {
+  const row = BASE.find((candidate) => candidate[0] === source);
+  if (!row) throw new Error(`Missing pace translation source: ${source}`);
+  return [english, row[1], row[2], row[3]];
+};
+
+export const PACE: Row[] = [
+  ...BASE,
+  alias("See how we calculate it", "See the full calculation"),
+  alias("How we calculate AI progress", "How the AI speeds are worked out"),
+  ["The calculation in four steps", "Pengiraan dalam empat langkah", "四步看懂计算方法", "நான்கு படிகளில் கணக்கீடு"],
+  alias("Measure the longest task AI can complete without help, using METR's time-horizon results.", "METR is an independent research group that tests how long a task the best AI models can finish on their own."),
+  alias("Compare the latest score with the score four quarters ago to estimate how often AI capability is doubling.", "The four changes chain together, so g equals the latest score minus the score four quarters earlier, divided by 4."),
+  alias("Create three scenarios: Slow uses 60% of the recent pace, Medium uses 100%, and Fast uses 160%.", "Slow runs at 60% of that pace and Fast at 160%."),
+  alias("Estimate how likely each scenario is, combine them into one weighted forecast, and apply an adoption model to estimate skill dates and job-market changes.", "The skill dates use the same three multipliers, applied to how fast companies adopt AI."),
+  alias("1. Measuring what AI can do", "1. What is measured"),
+  alias("METR is an independent research group that tests how long leading AI models can work on a task without human help.", "METR is an independent research group that tests how long a task the best AI models can finish on their own."),
+  alias("We use METR results republished by Epoch AI, together with each model's release date.", "Epoch AI republishes the METR results for each model, with its release date."),
+  alias("For each quarter, we use the longest time horizon reached by any model released by then. If no new model does better, we keep the previous record.", "For each quarter we keep the longest time horizon of any model released so far, so the series never falls."),
+  alias("We convert that time into a horizon score using a base-2 logarithm. This makes the score easy to read: every 1-point increase means the task length has doubled.", "Then we take the base-2 logarithm, which is our own choice: every +1 on the score means the time horizon has doubled."),
+  alias("2. Calculating the recent pace", "2. The recent pace"),
+  alias("The recent pace, g, tells us how quickly the horizon score changed during the last four quarters. It is measured in doublings per quarter.", "The recent pace g is the average change of the score over the last four quarters, in doublings per quarter."),
+  alias("We subtract the score from four quarters ago from the latest score, then divide the difference by 4.", "The four changes chain together, so g equals the latest score minus the score four quarters earlier, divided by 4."),
+  alias("Because one quarter is 3 months, the estimated time between doublings is 3 ÷ g months.", "One quarter is 3 months, so at this pace the task length doubles every 3 divided by g months."),
+  alias("3. Creating three scenarios", "3. Slow, Medium and Fast"),
+  alias("The Medium scenario continues at the recent pace, so its multiplier is 1.", "Medium keeps the recent pace, so its multiplier is 1."),
+  alias("The Slow and Fast multipliers are assumptions used to explore different futures. They are not measured results.", "These two multipliers are scenario choices that we made."),
+  alias("4. Combining the scenarios into one forecast", "4. Our forecast"),
+  alias("The result is a likelihood-weighted average: more likely scenarios have more influence on the final forecast.", "Its multiplier is the likelihood-weighted average of the three multipliers."),
+  alias("Scenario", "Speed"),
+  alias("Estimated likelihood w", "Likelihood w"),
+  alias("Annual drop per 100 office admin job ads", "Fewer office admin ads per 100, each year"),
+  alias("For readability, results below 10 months are rounded to the nearest half-month.", "The page rounds D to the nearest half month when it is under 10 months."),
+  alias("5. Estimating how likely each scenario is", "5. How likely each speed is"),
+  alias("When the real result is published, each scenario receives a score, s. A scenario loses only a little when it gave the result a high probability, but loses much more when it treated that result as unlikely.", "When a question settles on the real published number, each speed gets a score s: it falls a little if the speed gave the real outcome a high chance, and a lot if it gave it a low chance."),
+  alias("Formula 5a: scenario score", "Formula 5a: score of a speed"),
+  alias("p is the probability the scenario assigned to Yes. ℓ equals p when the answer is Yes, and 1 − p when the answer is No.", "p is the chance the speed gave to Yes, and ℓ is p if the answer was Yes and 1 − p if it was No."),
+  alias("Open questions also provide a small signal. The current prediction-game price for Yes affects a scenario half as much as a resolved result.", "Questions that are still open count for less: the price players have put on Yes tilts each speed by half as much as a settled result would."),
+  alias("P is the current prediction-game price for Yes, summed across all open questions.", "P is the current price of Yes, added up over the open questions."),
+  alias("Formula 5c: estimated scenario likelihood", "Formula 5c: likelihood of a speed"),
+  alias("The probability, p, that a scenario assigns to a question is based on the recent average change and how much past changes have varied.", "The chance p that a speed gives to a question comes from the recent gain and its spread."),
+  alias("Formula 5d: probability assigned to Yes", "Formula 5d: chance a speed gives to Yes"),
+  alias("For questions about office administration job ads, the scenario's job-ad trend from the table replaces m × g-bar.", "For office admin job ad questions, the drift of the speed in the table takes the place of m times g-bar."),
+  alias("6. Turning AI progress into skill estimates", "6. What the speed changes on your screen"),
+  alias("We apply the same three scenario multipliers to the rate at which companies adopt AI for a skill.", "The skill dates use the same three multipliers, applied to how fast companies adopt AI."),
+  alias("The formula models adoption as gradual growth over time. We flag a skill when its AI exposure multiplied by its estimated adoption reaches 0.45.", "Adoption of AI for a skill grows as 1 − e^(−r m t), and a skill is flagged when its exposure times its adoption reaches 0.45."),
+  alias("For Our forecast, we calculate a date for each scenario and combine the three dates according to their likelihoods. Dates later than 2040 are treated as 2040 in this calculation.", "Under Our forecast the date is the likelihood-weighted average of the three dates, with each date capped at 2040."),
+  alias("The scenario previews also project the office administration job-ad trend four quarters ahead. Because this changes the outlook for those jobs, it may also change your job ranking.", "In the speed previews, office admin job ads also shift by the drift in the table, projected four quarters ahead, and your job ranking changes with it."),
+  alias("Important limitations", "What to keep in mind"),
+  alias("The 0.6 and 1.6 multipliers are scenario assumptions, not measured facts. Their likelihoods come from our model and the prediction game, not from an externally published forecast.", "The 0.6 and 1.6 multipliers are scenarios."),
+  ["Use these results as a guide, not a guarantee.", "Gunakan keputusan ini sebagai panduan, bukan jaminan.", "请将这些结果作为参考，而非保证。", "இந்த முடிவுகளை வழிகாட்டியாகப் பயன்படுத்துங்கள்; உத்தரவாதமாக அல்ல."],
 ];

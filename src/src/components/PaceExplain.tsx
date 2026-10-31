@@ -70,6 +70,16 @@ export function PaceExplain({ pace }: { pace: View["pace"] }) {
         </div>
         <p className="mt-2 text-sm text-muted">{PT.intro}</p>
 
+        <section className="mt-5 rounded-2xl bg-raised p-4">
+          <h3 className="text-sm font-semibold">{PT.summaryTitle}</h3>
+          <ol className="mt-2 list-decimal space-y-1.5 pl-5 text-sm text-muted">
+            <li>{PT.summary1}</li>
+            <li>{PT.summary2}</li>
+            <li>{PT.summary3}</li>
+            <li>{PT.summary4}</li>
+          </ol>
+        </section>
+
         <Step title={PT.h1}>
           <p>{PT.s1a}</p>
           <p>{PT.s1b}</p>
