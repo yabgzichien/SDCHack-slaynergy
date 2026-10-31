@@ -20,6 +20,19 @@ export function Score({ value, label = "match score" }: { value: number; label?:
   );
 }
 
+// A compact match score for a job card: the number out of 100, with a bar, so jobs can be compared at a glance.
+export function ScoreBadge({ value, size = "sm" }: { value: number; size?: "sm" | "lg" }) {
+  const n = Math.round(value * 100);
+  const lg = size === "lg";
+  return (
+    <div className={`shrink-0 rounded-2xl bg-raised ring-1 ring-line ${lg ? "w-28 px-4 py-3" : "w-20 px-2 py-1.5"} text-center`} role="img" aria-label={`Match score ${n} out of 100`}>
+      <p className={`num leading-none ${lg ? "text-4xl" : "text-xl"} font-semibold`}>{n}</p>
+      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface2" aria-hidden><div className="h-full rounded-full bg-accent" style={{ width: `${Math.min(100, n)}%` }} /></div>
+      <p className={`mt-1 whitespace-nowrap text-muted ${lg ? "text-xs" : "text-[10px]"}`}>match score</p>
+    </div>
+  );
+}
+
 // Why this job, in three reasons read top to bottom (left to right on wide screens): what you care about, what you
 // already know, and why AI is unlikely to take it over. Each reason leads with the dark words; the detail is muted.
 export function WhyThisJob({ m, speed }: { m: RoleMatchView; speed: string }) {
