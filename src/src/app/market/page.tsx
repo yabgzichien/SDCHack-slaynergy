@@ -1,7 +1,6 @@
 "use client";
 import { useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight, ClipboardPenLine, Coins, Sparkles, Trophy } from "lucide-react";
 import { useApp } from "@/components/AppProvider";
 import { Skeleton } from "@/components/ui";
 import { AnsweredBadge, MarketCard } from "@/components/MarketCards";
@@ -13,12 +12,6 @@ import { YourPredictions } from "@/components/YourPredictions";
 import "./market.css";
 import { nextAnswersLine } from "@/components/ui";
 import { PastQuestionCard, ReleasePicker, dayLabel } from "@/components/History";
-
-const HOW = [
-  { icon: ClipboardPenLine, title: "Choose a question", text: "Explore the questions below and pick one that interests you." },
-  { icon: Coins, title: "Back your prediction", text: "Put free points on your answer." },
-  { icon: Trophy, title: "See the result", text: "When official figures arrive, earn points and a bigger vote." },
-];
 
 // One question: what can I forecast right now? Layout from the home-page branch; the cards keep the Open / Answered styling.
 export default function MarketPage() {
@@ -41,30 +34,6 @@ export default function MarketPage() {
             <h1>The Forecast</h1>
             <p>Free points, never money. The better your predictions, the more your vote counts in Jobbery&apos;s forecast of how fast AI changes jobs.</p>
           </header>
-          <section id="forecast-guide" className="forecast-guide" aria-labelledby="forecast-guide-title">
-            <div className="forecast-guide-heading">
-              <h2 id="forecast-guide-title"><Sparkles size={17} aria-hidden />How to forecast</h2>
-              <div className="forecast-points-box">
-                <Coins className="forecast-points-coin" size={23} aria-hidden />
-                <div>
-                  <p className="forecast-points-balance">You have <span className="num">{w.user.balance.toFixed(0)}</span> points</p>
-                  <p className="forecast-points-influence">Your vote counts {w.you.influence.toFixed(1)}×</p>
-                </div>
-              </div>
-            </div>
-            <ol className="forecast-steps">
-              {HOW.map((h, i) => (
-                <li key={h.title} className={`forecast-step forecast-step-${i + 1}`}>
-                  <h.icon className="forecast-step-icon" size={40} aria-hidden />
-                  <div className="forecast-step-body">
-                    <h3>{h.title}</h3>
-                    <p className="forecast-step-copy">{h.text}</p>
-                  </div>
-                  {i < HOW.length - 1 && <span className="forecast-step-arrow" aria-hidden><ArrowRight size={16} /></span>}
-                </li>
-              ))}
-            </ol>
-          </section>
         </div>
       </div>
 

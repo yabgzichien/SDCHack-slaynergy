@@ -3,9 +3,8 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 
 export function ForecastNav({ showResults, showYours }: { showResults: boolean; showYours: boolean }) {
-  const [active, setActive] = useState("forecast-guide");
+  const [active, setActive] = useState(showYours ? "your-predictions" : "open-questions");
   const sections = [
-    { id: "forecast-guide", label: "How to forecast" },
     ...(showYours ? [{ id: "your-predictions", label: "Your predictions" }] : []),
     { id: "open-questions", label: "Open questions" },
     ...(showResults ? [{ id: "past-results", label: "Past results" }] : []),
@@ -13,7 +12,7 @@ export function ForecastNav({ showResults, showYours }: { showResults: boolean; 
   ];
 
   useEffect(() => {
-    const ids = ["forecast-guide", ...(showYours ? ["your-predictions"] : []), "open-questions", ...(showResults ? ["past-results"] : []), "how"];
+    const ids = [...(showYours ? ["your-predictions"] : []), "open-questions", ...(showResults ? ["past-results"] : []), "how"];
     let frame = 0;
     const update = () => {
       frame = 0;
