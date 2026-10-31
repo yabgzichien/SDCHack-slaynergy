@@ -7,7 +7,7 @@ import { useApp } from "./AppProvider";
 import { Btn, Card, FUTURE_COLOR, FUTURE_NAME, SourceChip, pct as fpct } from "./ui";
 import { AnswerStamp, STRIKE_COLORS, answerDay } from "./MarketCards";
 import { MarketOddsBar } from "./MarketOddsBar";
-import { ArrowDownRight, ArrowUpRight, Info, Lock, Users } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Check, Info, Lock, Users } from "lucide-react";
 import "./MarketBoard.css";
 
 type Execution = { orderId: string; t: number; side: "yes" | "no"; action: "buy" | "sell"; shares: number; points: number; avg: number; priceBefore: number; priceAfter: number };
@@ -24,6 +24,18 @@ const MAX_PREDICTION_POINTS = 50;
 const RANGES = [{ id: "15m", label: "15 min", s: 900 }, { id: "1h", label: "1 hour", s: 3600 }, { id: "all", label: "All", s: 21600 + 3600 }] as const;
 const clock = (ms: number) => new Date(ms).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 const dateLabel = (iso: string) => new Date(`${iso}T00:00:00+08:00`).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" });
+
+// A short name and a one-line rule for each version, so nobody has to decode the engine's label.
+function plainStrike(label: string): { title: string; rule: string } {
+  const n = label.match(/[\d.]+/)?.[0];
+  if (label === "Drops at all") return { title: "Any drop", rule: "Yes if office admin jobs fall at all, even by a little." };
+  if (label.startsWith("Drops by")) return { title: "A big drop", rule: `Yes if office admin jobs fall by more than ${n} in every 100 job ads.` };
+  if (label.startsWith("Does not rise")) return { title: "No big rise", rule: `Yes if office admin jobs fall, stay the same or rise by less than ${n} in every 100 job ads.` };
+  if (label === "Goes up at all") return { title: label, rule: "Yes if the best result goes up at all compared with the previous quarter." };
+  if (label === "Grows at all") return { title: label, rule: "Yes if the longest task grows at all compared with the previous quarter." };
+  if (label.startsWith("Grows")) return { title: label, rule: `Yes if the longest task grows by more than ${n}% compared with the previous quarter.` };
+  return { title: label, rule: `Yes if the best result goes up by more than ${n} points compared with the previous quarter.` };
+}
 
 export function MarketBoard({ event }: { event: EventView }) {
   const { act, busy, refresh, view } = useApp();
@@ -105,7 +117,7 @@ export function MarketBoard({ event }: { event: EventView }) {
   const chartLegend = strikes.map((strike, i) => {
     const yes = strike.settled ? (strike.settled.outcome ? 1 : 0) : strike.price;
     return {
-      label: i === 1 ? "Main" : i < 1 ? "Easier" : "Harder",
+      label: plainStrike(strike.label).title,
       fullLabel: strike.label,
       value: leadingSide === "yes" ? yes : 1 - yes,
       color: settled ? "#7b8696" : STRIKE_COLORS[i],
@@ -237,9 +249,11 @@ export function MarketBoard({ event }: { event: EventView }) {
             <ul className="mt-3 space-y-1.5">{strikes.map((s, i) => i === 1 ? strikeRow(s, i) : null)}</ul>
           ) : (
             <>
+            <p className="market-prediction-intro">All three ask about the same number, compared with the previous 3 months. Only the main question counts for your score.</p>
             <div className="market-prediction-types" role="radiogroup" aria-label="Prediction type">
               {strikes.map((strike, i) => {
                 const selected = predictionSelected && sel === i;
+                const plain = plainStrike(strike.label);
                 return (
                   <button
                     key={strike.id}
@@ -250,15 +264,17 @@ export function MarketBoard({ event }: { event: EventView }) {
                     className={`market-prediction-type press${selected ? " is-selected" : ""}`}
                   >
                     <span className="market-prediction-type-dot" style={{ background: STRIKE_COLORS[i] }} aria-hidden />
-                    <span>{strike.label}</span>
+                    <span>{plain.title}</span>
+                    <span className="market-prediction-type-rule">{plain.rule}</span>
                     <strong className="num">{pct(strike.price)} Yes</strong>
+                    <span className={`market-prediction-type-tag${i === 1 ? " is-main" : ""}`}>{selected ? <><Check size={13} aria-hidden /> Selected</> : i === 1 ? "Main question" : "Extra question"}</span>
                   </button>
                 );
               })}
             </div>
 
             {predictionSelected && <>
-            <h3 className="market-selected-prediction">Your prediction: <strong>{cur.label}{side ? ` · ${side === "yes" ? "Yes" : "No"}` : ""}</strong></h3>
+            <h3 className="market-selected-prediction">Your prediction: <strong>{plainStrike(cur.label).title}{side ? ` · ${side === "yes" ? "Yes" : "No"}` : ""}</strong></h3>
             <p className="market-side-prompt">Will this happen?</p>
             <div className="market-choices">
               {(["yes", "no"] as const).map((choice) => {
