@@ -11,6 +11,7 @@ import { getSessionId } from "@/lib/server/session";
 import { loadState, logEvent, resetState, saveState } from "@/lib/server/store";
 import { cardById, gradeQuiz, MAX_TEXT } from "@/lib/engine/pathway";
 import { canSwap } from "@/lib/engine/plan";
+import { needsCertificate } from "@/lib/engine/certificate";
 import { issueBadge, personaState } from "@/lib/engine/review";
 import { courseById } from "@/lib/engine/data";
 import type { PathwayWork } from "@/lib/engine/state";
@@ -172,7 +173,19 @@ export async function POST(req: Request) {
       break;
     }
     case "progress": {
-      state = { ...state, progress: { ...state.progress, [String(body.stepId ?? "")]: !!body.done } };
+      const stepId = String(body.stepId ?? "");
+      // A course is finished by its certificate (/api/certificate), not by ticking; ticking one off again is always allowed.
+      const step = computeView(state).plan?.steps.find((s) => s.id === stepId);
+      if (body.done && step && needsCertificate(step) && state.certificates?.[stepId]?.title !== step.title) return bad("Upload your certificate to finish this step.");
+      state = { ...state, progress: { ...state.progress, [stepId]: !!body.done } };
+      break;
+    }
+    case "certificateDemo": {
+      // Developer shortcut, labelled as such in the app: marks a course step as done without a certificate.
+      const stepId = String(body.stepId ?? "");
+      const step = computeView(state).plan?.steps.find((s) => s.id === stepId);
+      if (!step || !needsCertificate(step)) return bad("This step does not need a certificate.");
+      state = { ...state, progress: { ...state.progress, [stepId]: true }, certificates: { ...state.certificates, [stepId]: { how: "demo", at: new Date().toISOString(), title: step.title } } };
       break;
     }
     case "pathwaySave": {
