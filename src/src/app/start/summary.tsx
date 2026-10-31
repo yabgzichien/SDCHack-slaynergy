@@ -1,5 +1,5 @@
 "use client";
-import { ResumeBaseline, ResumeScoreExplain } from "@/components/ResumeScoreExplain";
+import { ResumeScoreExplain } from "@/components/ResumeScoreExplain";
 import { useEffect, useRef, type ReactNode } from "react";
 import Image from "next/image";
 import { Check, Pencil } from "lucide-react";
@@ -46,7 +46,7 @@ export function AnswersSummary({ cat, saved, onEdit, onStartOver, onContinue }: 
       { label: "Doing now", value: studying ? "Studying" : "Working, or looking for work" },
     ] },
     { step: "resume", title: STEP_LABEL.resume, facts: [
-      { label: "Resume score", value: resume ? <>{`${resume.score} out of 100`}<ResumeScoreExplain resume={resume} className="ml-3 text-sm underline decoration-control underline-offset-2 hover:text-ink" /><ResumeBaseline className="mt-0.5" /></> : "Not scanned" },
+      { label: "Resume score", value: resume ? <>{`${resume.score} out of 100`}<ResumeScoreExplain resume={resume} className="ml-3 text-sm underline decoration-control underline-offset-2 hover:text-ink" /></> : "Not scanned" },
     ] },
     { step: "job", title: studying ? "Job or internship" : STEP_LABEL.job, facts: [
       { label: "Job", value: occ ? <>{occ.title}<span className="block text-sm text-muted">{sector(occ.sector)}</span></> : studying ? "None yet" : "Not picked yet" },
@@ -92,7 +92,7 @@ export function AnswersSummary({ cat, saved, onEdit, onStartOver, onContinue }: 
               return (
                 <section key={b.step} aria-labelledby={id} className="rounded-[22px] bg-surface px-5 py-4">
                   <div className="flex items-center justify-between gap-3">
-                    <h2 id={id} className="flex items-center gap-2.5 text-base font-medium"><Icon size={18} strokeWidth={1.8} aria-hidden className="shrink-0 text-muted" />{b.title}</h2>
+                    <h2 id={id} className="flex items-center gap-2.5 text-lg font-bold"><Icon size={18} strokeWidth={1.8} aria-hidden className="shrink-0 text-muted" />{b.title}</h2>
                     <button type="button" onClick={() => onEdit(b.step)} aria-label={t("Edit {x}", { x: t(b.title) })}
                       className="press inline-flex min-h-11 items-center gap-1.5 rounded-full bg-raised px-4 text-sm font-medium hover:bg-surface2">
                       <Pencil size={14} strokeWidth={2} aria-hidden />Edit

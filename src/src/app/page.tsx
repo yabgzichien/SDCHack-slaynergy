@@ -74,7 +74,7 @@ function Dashboard() {
                     {isNext && <span className="ml-auto hidden rounded-full bg-accentsoft px-2 py-0.5 text-xs font-medium text-accentink xl:inline">Next</span>}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="flex items-center gap-1.5 text-sm font-medium"><Icon size={14} strokeWidth={1.8} className="shrink-0 text-muted" aria-hidden />{s.label}{stt === "done" && <span className="sr-only">done</span>}</span>
+                    <span className="flex items-center gap-1.5 text-base font-bold"><Icon size={14} strokeWidth={1.8} className="shrink-0 text-muted" aria-hidden />{s.label}{stt === "done" && <span className="sr-only">done</span>}</span>
                     <span className="mt-0.5 block text-sm text-muted">{fact[i]}</span>
                   </span>
                   <ChevronRight size={16} className="shrink-0 text-muted xl:hidden" aria-hidden />

@@ -74,6 +74,16 @@ export function PaceExplain({ pace }: { pace: View["pace"] }) {
         </div>
         <p className="mt-2 text-sm text-muted">{PT.intro}</p>
 
+        <section className="mt-5 rounded-2xl bg-raised p-4">
+          <h3 className="text-sm font-semibold">{PT.summaryTitle}</h3>
+          <ol className="mt-2 list-decimal space-y-1.5 pl-5 text-sm text-muted">
+            <li>{PT.summary1}</li>
+            <li>{PT.summary2}</li>
+            <li>{PT.summary3}</li>
+            <li>{PT.summary4}</li>
+          </ol>
+        </section>
+
         <Step title={PT.h1}>
           <p>{PT.s1a}</p>
           <p>{PT.s1b}</p>
@@ -163,7 +173,6 @@ export function PaceExplain({ pace }: { pace: View["pace"] }) {
           <Caption>{PT.c5d}</Caption>
           <M><mrow>{sub(v("p"), v("f"))}{o("=")}{n(1)}{o("−")}{v("Φ")}{o("(")}{frac(<>{v("T")}{o("−")}{sub(v("m"), v("f"))}{o("×")}{gbar}</>, v("σ"))}{o(")")}</mrow></M>
           <Legend>{PT.l5d}</Legend>
-          <Legend>{PT.l5e}</Legend>
           <p>{PT.s5g}</p>
           <Basis items={[[PT.b5a, "good", "gneiting"], [PT.b5b, "raftery"], [PT.b5c, "cesa"], [PT.b5d, "herbster"], [PT.b5e, "gneiting", "wolfers"], [PT.b5f], [PT.b5g, "hyndman"], [PT.b5h]]} />
         </Step>

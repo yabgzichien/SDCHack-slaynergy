@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { analyseResume, summarise } from "@/lib/engine/resume";
+import { cleanResumeText } from "@/lib/engine/resume-layout";
 import { aiProviders, aiReadResume } from "@/lib/server/ai-resume";
 import { computeWorld } from "@/lib/engine/world";
 import { getSessionId } from "@/lib/server/session";
@@ -58,7 +59,7 @@ export async function POST(req: Request) {
   } catch (e) {
     return bad(e instanceof Error ? e.message : "We could not read that file. Try pasting the text instead.");
   }
-  text = text.trim();
+  text = cleanResumeText(text).trim();
   if (text.split(/\s+/).length < 40) return bad("We could not find enough text to scan (at least about 40 words). If your PDF is a picture, paste the text instead.");
 
   const state = await loadState(sid);

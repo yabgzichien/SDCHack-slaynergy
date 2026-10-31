@@ -75,7 +75,7 @@ export default function SkillsPage() {
 
       <Card tone="raised">
         <h2 className="text-xl font-bold sm:text-2xl">How fast is AI getting better?</h2>
-        <p className="mt-1 text-sm text-muted">We measure this by how long a task AI can finish without help. Nobody knows the future speed: Our forecast blends the three, or pick one to see how your dates change. Your pick also re-ranks your jobs.</p>
+        <p className="mt-1 text-sm text-muted">We track the longest tasks AI can complete without human help. Because no one knows how quickly AI will improve, we show three possible scenarios and combine them into Our forecast. Choose a scenario to see how it changes your skill dates and job ranking.</p>
         <div role="radiogroup" aria-label="Speed of AI progress" className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
           {options.map((f) => {
             const on = f.id === speed;
@@ -99,8 +99,9 @@ export default function SkillsPage() {
           })}
         </div>
         <More summary="Where do these numbers come from?">
-          <p>The speeds come from a test by the research group METR (data from Epoch AI). Over the last year, the length of task AI can finish on its own doubled about every {months(pace.futures.find((f) => f.id === "medium")!.doublingMonths)} months. &quot;Slow&quot; assumes 60% of that pace, &quot;Fast&quot; 160%. Faster AI also means companies start using it sooner and office admin job ads shrink faster ({pace.futures.map((f) => `${SPEED[f.id].name.toLowerCase()}: ${Math.abs(f.clericalPerYear).toFixed(1)} fewer in every 100 ads each year`).join(", ")}).</p>
-          <p>How likely each speed is comes from real published numbers and from a prediction game where players predict the next numbers; players who predict well count more. <Link href="/market" className="underline decoration-control underline-offset-2 hover:text-ink">Try the prediction game</Link>.</p>
+          <p>METR tests how long leading AI models can work on a task without human help; we use results republished by Epoch AI. During the past year, the longest task AI could complete doubled about every {months(pace.futures.find((f) => f.id === "medium")!.doublingMonths)} months. The Medium scenario continues that pace, Slow uses 60% of it, and Fast uses 160%.</p>
+          <p>Faster progress also means companies may adopt AI sooner and office administration job ads may decline more quickly. The estimated annual drops per 100 ads are: {pace.futures.map((f) => `${SPEED[f.id].name.toLowerCase()} ${Math.abs(f.clericalPerYear).toFixed(1)}`).join(", ")}.</p>
+          <p>We estimate the likelihood of each scenario using published results and a prediction game about future results. Predictions from players with stronger records receive more weight. <Link href="/market" className="underline decoration-control underline-offset-2 hover:text-ink">Try the prediction game</Link>.</p>
           <PaceExplain pace={pace} />
         </More>
       </Card>

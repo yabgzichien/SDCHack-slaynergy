@@ -1,4 +1,6 @@
 "use client";
+import "./plan.css";
+import Image from "next/image";
 import Link from "next/link";
 import { useApp } from "@/components/AppProvider";
 import { JobberyStrip } from "@/components/JobberyStrip";
@@ -44,10 +46,11 @@ export default function PlanPage() {
       {next && (() => {
         const st = STRAND_STYLE[next.strand];
         const Icon = st.icon;
+        const certificate = needsCertificate(next);
         return (
-          <Card tone="raised" className="ring-2 ring-cue">
-            <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-8">
-              <div className="min-w-0">
+          <Card tone="raised" className={certificate ? "plan-certificate-card" : "ring-2 ring-cue"}>
+            <div className={certificate ? "plan-certificate-layout" : "grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-8"}>
+              <div className={certificate ? "plan-certificate-summary min-w-0" : "min-w-0"}>
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="rounded-full bg-cue px-2.5 py-0.5 text-xs font-semibold text-white">Next step</span>
                   <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${st.soft} ${st.ink}`}><Icon size={13} aria-hidden />{st.label}</span>
@@ -65,15 +68,28 @@ export default function PlanPage() {
                 {next.activity === "meeting" && <p className="mt-3 text-xs text-muted">Pick any topic: a mock interview, your resume, courses, or something else. This step is ticked as soon as you book.</p>}
                 {next.checked && <p className="mt-3 text-xs text-muted">Link checked {next.checked}. Hours are estimates.</p>}
               </div>
-              <div className="flex flex-wrap gap-2 lg:max-w-md lg:justify-end">
+              {certificate && (
+                <div className="plan-certificate-guide" aria-hidden>
+                  <svg className="plan-certificate-path" viewBox="0 0 410 160" focusable="false">
+                    <defs>
+                      <marker id="certificate-arrow" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto" markerUnits="userSpaceOnUse">
+                        <path d="M2 2 12 7 2 12" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                      </marker>
+                    </defs>
+                    <path d="M5 60 C64 28 91 112 151 94 C212 76 215 -37 298 -37" fill="none" stroke="currentColor" strokeWidth="4" strokeDasharray="6 9" markerEnd="url(#certificate-arrow)" />
+                  </svg>
+                  <Image src="/cockatiel-certificate-guide.png" width={420} height={420} alt="" className="plan-certificate-mascot" priority />
+                </div>
+              )}
+              <div className={certificate ? "plan-certificate-action" : "flex flex-wrap gap-2 lg:max-w-md lg:justify-end"}>
                 {next.activity ? (
                   <Btn href={activityHref(next)!} className="min-h-12 px-6 text-base">{next.activity === "task" ? "Take the quiz" : next.activity === "meeting" ? "Book a meeting" : "Open your updated resume"}</Btn>
                 ) : (
                   <>
-                    {needsCertificate(next)
-                      ? <CertificateUpload key={next.id} step={next} />
+                    {certificate
+                      ? <CertificateUpload key={next.id} step={next} courseHref={next.url} />
                       : <Btn onClick={() => act("progress", { stepId: next.id, done: true })} disabled={busy} className="min-h-12 px-6 text-base">Mark as done</Btn>}
-                    {next.url && <Btn href={next.url} variant="ghost" className="min-h-12">Open the course</Btn>}
+                    {!certificate && next.url && <Btn href={next.url} variant="ghost" className="min-h-12">Open the course</Btn>}
                     {next.skillKey && !!next.alternatives && <Btn href={`/courses?skill=${next.skillKey.split("+")[0]}`} variant="quiet" className="min-h-12">Choose a different course</Btn>}
                   </>
                 )}
