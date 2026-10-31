@@ -146,7 +146,7 @@ export async function POST(req: Request) {
       break;
     }
     case "goals": {
-      const goals = (Array.isArray(body.goals) ? body.goals.map(String) : []).filter((g) => /^\d+\.\d+$/.test(g)).slice(0, 8);
+      const goals = (Array.isArray(body.goals) ? body.goals.map(String) : []).filter((g) => /^\d+\.\d+$/.test(g)).slice(0, 25);
       state = { ...state, goals };
       break;
     }

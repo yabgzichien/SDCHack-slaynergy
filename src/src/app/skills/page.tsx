@@ -6,7 +6,11 @@ import { useApp } from "@/components/AppProvider";
 import { useT } from "@/components/I18nProvider";
 import { useSpeed } from "@/components/useSpeed";
 import { ExpiryAxis, ExpiryTrack } from "@/components/ExpiryTrack";
-import { Btn, Card, Chip, Estimate, FUTURE_COLOR, More, NextRow, PageTitle, Skeleton, SourceChip } from "@/components/ui";
+import { Btn, Card, Chip, Estimate, FUTURE_COLOR, More, NextRow, PageTitle, Skeleton, SourceChip, sdgName } from "@/components/ui";
+import { SdgFocus } from "@/components/SdgFocus";
+import { SdgIcon, sdgColor } from "@/components/SdgIcon";
+import { sdg as SDG_TARGETS } from "@/lib/engine/data";
+import { focusGoals, goalOf, orderByGoals, targetsByGoal, toggleGoal } from "@/lib/sdgFocus";
 
 const SPEED: Record<string, { name: string; icon: typeof Gauge }> = {
   [FORECAST]: { name: "Our forecast", icon: Layers },
@@ -18,10 +22,10 @@ const months = (m: number) => (m >= 10 ? Math.round(m) : Math.round(m * 2) / 2).
 
 // One question: which of my skills will last, and how does that change with the speed of AI?
 export default function SkillsPage() {
-  const { view, state } = useApp();
+  const { view, state, catalog, act, busy } = useApp();
   const { lang, t } = useT();
   const { speed, previewing, setSpeed: setChosen } = useSpeed();
-  if (!view || !state) return <Skeleton lines={6} />;
+  if (!view || !state || !catalog) return <Skeleton lines={6} />;
   if (!state.profile) {
     return (
       <div>
@@ -44,6 +48,16 @@ export default function SkillsPage() {
   const mine = [...view.profileSkills].sort((a, b) => yearOf(a) - yearOf(b));
   const fading = mine.filter((s) => yearOf(s) < 2031);
   const lasting = mine.filter((s) => yearOf(s) >= 2034);
+
+  // The UN goals the person chose to build their working life around (saved with the Goals page's list of targets).
+  const skillSdg = Object.fromEntries(catalog.skills.map((k) => [k.id, k.sdg]));
+  const goalFor = (s: (typeof mine)[number]) => goalOf(skillSdg[s.skillId].target);
+  const byGoal = targetsByGoal(catalog.goals.map((g) => g.target));
+  const chosen = focusGoals(state.goals);
+  const serving = new Map<number, number>();
+  for (const s of mine) serving.set(goalFor(s), (serving.get(goalFor(s)) ?? 0) + 1);
+  const ordered = orderByGoals(mine, goalFor, chosen);
+  const saveGoals = (goals: string[]) => act("goals", { goals });
   const shelf = (y: number) => (y >= 2034 ? { t: "Safe for years", tone: "rise" as const } : y < 2031 ? { t: "AI may take over soon", tone: "fall" as const } : { t: "Safe for now", tone: "neutral" as const });
 
   return (
@@ -89,24 +103,41 @@ export default function SkillsPage() {
       </Card>
 
       <Card className="mt-4">
+        <h2 className="text-base font-semibold">Which UN goals do you want to build your working life around?</h2>
+        <p className="mb-4 mt-1 text-sm text-muted">Each skill serves one of the UN Sustainable Development Goals. Pick the goals you care about and the skills that serve them move to the top of your list, in the goal&apos;s colour. Jobs that serve them move up too.</p>
+        <SdgFocus chosen={chosen} available={new Set(byGoal.keys())} serving={serving} busy={busy}
+          onToggle={(g) => saveGoals(toggleGoal(state.goals, g, byGoal.get(g) ?? []))}
+          onClear={() => saveGoals([])} />
+      </Card>
+
+      <Card className="mt-4">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-base font-semibold">Your skills: the ones AI could take over soonest are at the top</h2>
+          <h2 className="text-base font-semibold">{chosen.size ? "Your skills: the ones that serve your goals come first, then the ones AI could take over soonest" : "Your skills: the ones AI could take over soonest are at the top"}</h2>
           <p className="text-xs text-muted">{previewing ? `Speed picked: ${SPEED[speed].name.toLowerCase()}` : "Our forecast"} (AI twice as capable every {months(sp.doublingMonths)} months)</p>
         </div>
         <ul className="space-y-2">
-          {mine.map((s) => {
+          {ordered.map((s) => {
             const y = yearOf(s);
             const sh = shelf(y);
+            const target = skillSdg[s.skillId];
+            const goal = goalOf(target.target);
+            const hit = chosen.has(goal);
+            const color = sdgColor(goal);
             return (
-              <li key={s.skillId} className="rounded-2xl bg-raised px-4 py-3">
+              <li key={s.skillId} className="rounded-2xl bg-raised px-4 py-3" style={hit ? { background: `color-mix(in srgb, ${color} 14%, var(--raised))`, boxShadow: `inset 5px 0 0 ${color}` } : undefined}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="font-medium">{s.name}</p>
+                  <p className="flex items-center gap-2 font-medium"><SdgIcon goal={goal} size={28} />{s.name}</p>
                   <div className="flex items-center gap-3">
                     <Chip tone={sh.tone}>{sh.t}</Chip>
                     <span className="num w-24 text-right">{s.expiry.byFuture[speed]}</span>
                   </div>
                 </div>
                 <div className="mt-2"><ExpiryTrack byFuture={s.expiry.byFuture} expected={s.expiry.expected} durable={s.expiry.durable} pick={speed} axis={false} /></div>
+                <More summary={t("How this serves UN goal {goal}: {name}", { goal, name: t(sdgName(target.target)) })}>
+                  <p><span className="num font-medium text-ink">{t("Target {target}", { target: target.target })}:</span> {SDG_TARGETS[target.target]?.text}</p>
+                  <p>{target.why}</p>
+                  <p><Link href="/plan#sdg-path" className="underline decoration-control underline-offset-2 hover:text-ink">See your whole plan&apos;s contribution to the UN goals</Link></p>
+                </More>
               </li>
             );
           })}

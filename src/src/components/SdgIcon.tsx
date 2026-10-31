@@ -7,6 +7,9 @@ const SDG: Record<number, [string, string]> = {
   17: ["#19486A", "🤝"],
 };
 
+// The official colour of a goal, for tinting anything that serves it.
+export const sdgColor = (goal: number) => (SDG[goal] ?? ["#64748b"])[0];
+
 export function SdgIcon({ goal, size = 44 }: { goal: number; size?: number }) {
   const [bg, glyph] = SDG[goal] ?? ["#64748b", "•"];
   return (

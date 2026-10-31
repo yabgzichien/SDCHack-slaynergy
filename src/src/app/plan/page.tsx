@@ -127,7 +127,7 @@ export default function PlanPage() {
           <BadgePanel />
         </Card>
         <Card className="lg:col-span-4" tone="accent">
-          <SdgPath plan={plan} />
+          <div id="sdg-path" className="scroll-mt-24"><SdgPath plan={plan} /></div>
         </Card>
       </div>
 
