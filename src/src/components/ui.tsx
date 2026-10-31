@@ -1,6 +1,8 @@
 "use client";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { ExternalLink } from "lucide-react";
+import { sdgColor, sdgUrl } from "@/components/SdgIcon";
 
 export const FUTURE_COLOR: Record<string, string> = { slow: "var(--slow)", medium: "var(--medium)", fast: "var(--fast)" };
 export const FUTURE_NAME: Record<string, string> = { slow: "Slow", medium: "Medium", fast: "Fast" };
@@ -79,10 +81,17 @@ export const SDG_SHORT: Record<string, string> = {
 export const sdgName = (target: string) => SDG_SHORT[target.split(".")[0]] ?? `Goal ${target}`;
 
 // Keep the chip concise; the exact UN target number sits in the tooltip and the accessible name.
-export function SdgTag({ target, why }: { target: string; why?: string }) {
+// It links to the UN's own page for the goal; highlight draws it in the goal's colour (the person chose that goal).
+export function SdgTag({ target, why, highlight }: { target: string; why?: string; highlight?: boolean }) {
   const goal = target.split(".")[0];
   const tip = `UN Sustainable Development Goal ${goal}, target ${target}${why ? `. ${why}` : ""}`;
-  return <span title={tip} aria-label={tip} className="inline-flex items-center rounded-full bg-accentsoft px-2.5 py-0.5 text-xs font-medium text-accentink">UN goal {goal}</span>;
+  return (
+    <a href={sdgUrl(Number(goal))} target="_blank" rel="noreferrer" title={tip} aria-label={tip} onClick={(e) => e.stopPropagation()}
+      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium hover:underline ${highlight ? "text-white" : "bg-accentsoft text-accentink"}`}
+      style={highlight ? { background: sdgColor(Number(goal)) } : undefined}>
+      UN goal {goal}<ExternalLink size={11} strokeWidth={2} aria-hidden />
+    </a>
+  );
 }
 
 // Detail most people can skip: the method, the formula, the source codes. Closed by default.

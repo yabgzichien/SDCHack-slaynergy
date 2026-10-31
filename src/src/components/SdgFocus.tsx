@@ -7,8 +7,11 @@ import { SDG_SHORT } from "@/components/ui";
 const GOALS = Array.from({ length: 17 }, (_, i) => i + 1);
 
 // The 17 UN goals as a row of tiles. A tile turns a whole goal on or off; goals nothing in Jobbery serves yet cannot be picked.
-export function SdgFocus({ chosen, available, serving, busy, onToggle, onClear }: {
+// serving counts what each tile stands for: "yours" is the person's own skills, "page" is the jobs and skills listed on the page.
+// A goal that is not chosen still shows its tile; showPlan adds the link to the plan's contribution (only useful with a profile).
+export function SdgFocus({ chosen, available, serving, busy, onToggle, onClear, count = "yours", showPlan = true }: {
   chosen: Set<number>; available: Set<number>; serving: Map<number, number>; busy: boolean; onToggle: (goal: number) => void; onClear: () => void;
+  count?: "yours" | "page"; showPlan?: boolean;
 }) {
   const { t } = useT();
   const names = [...chosen].sort((a, b) => a - b).join(", ");
@@ -20,7 +23,9 @@ export function SdgFocus({ chosen, available, serving, busy, onToggle, onClear }
           const can = available.has(g);
           const n = serving.get(g) ?? 0;
           const name = t(SDG_SHORT[String(g)]);
-          const tip = !can ? t("No job or skill in Jobbery serves this goal yet") : n === 1 ? t("1 of your skills serves this goal") : n ? t("{n} of your skills serve this goal", { n }) : t("None of your skills serve this goal yet");
+          const tip = !can ? t("No job or skill in Jobbery serves this goal yet")
+            : count === "page" ? (n === 1 ? t("1 job or skill listed on this page serves this goal") : n ? t("{n} jobs and skills listed on this page serve this goal", { n }) : t("Nothing listed on this page serves this goal"))
+            : n === 1 ? t("1 of your skills serves this goal") : n ? t("{n} of your skills serve this goal", { n }) : t("None of your skills serve this goal yet");
           return (
             <button key={g} type="button" aria-pressed={on} disabled={!can || busy} onClick={() => onToggle(g)}
               title={`${t("UN goal {goal}: {name}", { goal: g, name })}. ${tip}`} aria-label={`${t("UN goal {goal}: {name}", { goal: g, name })}. ${tip}`}
@@ -35,11 +40,13 @@ export function SdgFocus({ chosen, available, serving, busy, onToggle, onClear }
         {chosen.size ? (
           <>
             <p className="font-medium">{chosen.size === 1 ? t("Skills that serve UN goal {goal} come first.", { goal: names }) : t("Skills that serve UN goals {goals} come first.", { goals: names })}</p>
-            <Link href="/plan#sdg-path" className="underline decoration-control underline-offset-2 hover:text-ink">See how your plan serves them</Link>
+            {showPlan && <Link href="/plan#sdg-path" className="underline decoration-control underline-offset-2 hover:text-ink">See how your plan serves them</Link>}
             <button type="button" onClick={onClear} disabled={busy} className="min-h-11 text-muted underline decoration-control underline-offset-2 hover:text-ink">Clear my choice</button>
           </>
         ) : (
-          <p className="text-muted">Pick none, one or several. The number on a tile is how many of your skills serve that goal. Greyed-out goals have no skill or job in Jobbery yet.</p>
+          <p className="text-muted">{count === "page"
+            ? "Pick none, one or several. The number on a tile is how many jobs and skills listed below serve that goal. Greyed-out goals have no skill or job in Jobbery yet."
+            : "Pick none, one or several. The number on a tile is how many of your skills serve that goal. Greyed-out goals have no skill or job in Jobbery yet."}</p>
         )}
       </div>
     </div>

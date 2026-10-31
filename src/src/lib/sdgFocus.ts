@@ -19,6 +19,9 @@ export function toggleGoal(saved: string[], goal: number, all: string[]): string
   return on ? saved.filter((t) => goalOf(t) !== goal) : [...saved, ...all.filter((t) => !saved.includes(t))];
 }
 
+// How a row that serves a chosen goal stands out: a wash of the goal's colour and a bar down its left edge.
+export const goalTint = (color: string) => ({ background: `color-mix(in srgb, ${color} 14%, var(--raised))`, boxShadow: `inset 5px 0 0 ${color}` });
+
 // Skills that serve a chosen goal come first; inside each group the incoming order (soonest to be replaced) is kept.
 export function orderByGoals<T>(items: T[], goalFor: (x: T) => number, chosen: Set<number>): T[] {
   if (!chosen.size) return items;

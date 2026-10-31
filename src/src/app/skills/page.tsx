@@ -8,9 +8,9 @@ import { useSpeed } from "@/components/useSpeed";
 import { ExpiryAxis, ExpiryTrack } from "@/components/ExpiryTrack";
 import { Btn, Card, Chip, Estimate, FUTURE_COLOR, More, NextRow, PageTitle, Skeleton, SourceChip, sdgName } from "@/components/ui";
 import { SdgFocus } from "@/components/SdgFocus";
-import { SdgIcon, sdgColor } from "@/components/SdgIcon";
+import { SdgIcon, sdgColor, sdgUrl } from "@/components/SdgIcon";
 import { sdg as SDG_TARGETS } from "@/lib/engine/data";
-import { focusGoals, goalOf, orderByGoals, targetsByGoal, toggleGoal } from "@/lib/sdgFocus";
+import { focusGoals, goalOf, goalTint, orderByGoals, targetsByGoal, toggleGoal } from "@/lib/sdgFocus";
 
 const SPEED: Record<string, { name: string; icon: typeof Gauge }> = {
   [FORECAST]: { name: "Our forecast", icon: Layers },
@@ -124,9 +124,11 @@ export default function SkillsPage() {
             const hit = chosen.has(goal);
             const color = sdgColor(goal);
             return (
-              <li key={s.skillId} className="rounded-2xl bg-raised px-4 py-3" style={hit ? { background: `color-mix(in srgb, ${color} 14%, var(--raised))`, boxShadow: `inset 5px 0 0 ${color}` } : undefined}>
+              <li key={s.skillId} className="rounded-2xl bg-raised px-4 py-3" style={hit ? goalTint(color) : undefined}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="flex items-center gap-2 font-medium"><SdgIcon goal={goal} size={28} />{s.name}</p>
+                  <p className="flex items-center gap-2 font-medium">
+                    <a href={sdgUrl(goal)} target="_blank" rel="noreferrer" aria-label={`UN Sustainable Development Goal ${goal}, target ${target.target}. ${target.why}`} title={`UN Sustainable Development Goal ${goal}, target ${target.target}. ${target.why}`} className="shrink-0 rounded-lg hover:opacity-80"><SdgIcon goal={goal} size={28} /></a>
+                    {s.name}</p>
                   <div className="flex items-center gap-3">
                     <Chip tone={sh.tone}>{sh.t}</Chip>
                     <span className="num w-24 text-right">{s.expiry.byFuture[speed]}</span>

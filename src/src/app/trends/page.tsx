@@ -9,6 +9,9 @@ import { Card, H, SdgTag, Skeleton, SourceChip } from "@/components/ui";
 import { SourceDisclosure } from "@/components/SourceDisclosure";
 import { ReleasePicker } from "@/components/History";
 import { SourceDownNote } from "@/components/SourceDown";
+import { SdgFocus } from "@/components/SdgFocus";
+import { sdgColor } from "@/components/SdgIcon";
+import { focusGoals, goalOf, goalTint, orderByGoals, targetsByGoal, toggleGoal } from "@/lib/sdgFocus";
 
 // Each row's number and where it came from, so every line of the Future Skills Radar carries its source and date.
 function Cite({ children }: { children: string }) {
@@ -18,7 +21,7 @@ const ads = (trend: number) => (Math.abs(trend) < 0.03 ? "steady" : `${trend > 0
 
 // One question: what is changing in the job market? Written for someone who has never read a chart like this.
 export default function TrendsPage() {
-  const { view, history } = useApp();
+  const { view, state, catalog, act, busy, history } = useApp();
   const { speed } = useSpeed();
   const pageRef = useRef<HTMLDivElement>(null);
   const ready = Boolean(view);
@@ -55,6 +58,17 @@ export default function TrendsPage() {
   if (!view) return <Skeleton lines={6} />;
   // The charts are today's; the job and skill lists below follow the release picked above them.
   const w = view.world, r = (history.past?.view ?? view).radar;
+
+  // The UN goals the person chose (the same list the skills and Goals pages save): jobs and skills that serve them
+  // move to the top of each list and are drawn in the goal's colour.
+  const chosen = focusGoals(state?.goals ?? []);
+  const byGoal = targetsByGoal((catalog?.goals ?? []).map((g) => g.target));
+  const serving = new Map<number, number>();
+  for (const x of [...r.risingJobs, ...r.rising, ...r.declining]) serving.set(goalOf(x.sdgTarget), (serving.get(goalOf(x.sdgTarget)) ?? 0) + 1);
+  const first = <T extends { sdgTarget: string }>(items: T[]) => orderByGoals(items, (x) => goalOf(x.sdgTarget), chosen);
+  const hit = (x: { sdgTarget: string }) => chosen.has(goalOf(x.sdgTarget));
+  const tint = (x: { sdgTarget: string }) => (hit(x) ? goalTint(sdgColor(goalOf(x.sdgTarget))) : undefined);
+  const saveGoals = (goals: string[]) => act("goals", { goals });
   return (
     <div className="statistics-page" ref={pageRef}>
       <header className="statistics-hero statistics-reveal">
@@ -75,6 +89,15 @@ export default function TrendsPage() {
       <div className="mt-4 statistics-reveal"><AiCapability asOfQuarter={w.asOfQuarter} /></div>
 
       <div className="mt-8 statistics-reveal"><ReleasePicker label="Job lists as of" /></div>
+      {state && catalog && (
+        <Card className="mb-4 statistics-reveal">
+          <h2 className="text-base font-semibold">Which UN goals do you want to build your working life around?</h2>
+          <p className="mb-4 mt-1 text-sm text-muted">Pick the goals you care about. The jobs and skills below that serve them move to the top of their list, in the goal&apos;s colour. Each UN goal tag links to the UN&apos;s own page for that goal.</p>
+          <SdgFocus chosen={chosen} available={new Set(byGoal.keys())} serving={serving} busy={busy} count="page" showPlan={!!state.profile}
+            onToggle={(g) => saveGoals(toggleGoal(state.goals, g, byGoal.get(g) ?? []))}
+            onClear={() => saveGoals([])} />
+        </Card>
+      )}
       <div className="grid gap-y-4 gap-x-8 lg:grid-cols-2">
         <Card className="statistics-opportunities statistics-reveal">
           <div className="statistics-opportunities-heading">
@@ -82,10 +105,10 @@ export default function TrendsPage() {
             <Image src="/cockatiel-welcome.png" alt="" width={96} height={96} className="statistics-opportunities-bird" />
           </div>
           <ul className="space-y-1.5">
-            {r.risingJobs.slice(0, 6).map((j) => (
-              <li key={j.roleId} className="flex items-center justify-between gap-2 rounded-2xl bg-raised px-4 py-2.5">
+            {first(r.risingJobs).slice(0, 6).map((j) => (
+              <li key={j.roleId} className="flex items-center justify-between gap-2 rounded-2xl bg-raised px-4 py-2.5" style={tint(j)}>
                 <div className="min-w-0"><p className="text-sm font-medium">{j.title}</p><p className="num text-xs text-muted">Job type: {j.group}</p><Cite>{`Ads ${ads(j.trend)} · ${r.cite.dosm}`}</Cite></div>
-                <SdgTag target={j.sdgTarget} />
+                <SdgTag target={j.sdgTarget} highlight={hit(j)} />
               </li>
             ))}
           </ul>
@@ -109,14 +132,14 @@ export default function TrendsPage() {
             <H sub="Employers want these and AI cannot easily do them.">Skills worth learning</H>
             <Image src="/cockatiel-reading.png" alt="" width={96} height={96} className="statistics-opportunities-bird" />
           </div>
-          <ul className="space-y-1.5 text-sm">{r.rising.map((s) => <li key={s.skillId} className="flex items-start justify-between gap-2"><span className="min-w-0">{s.name}<Cite>{`${s.durable ? "Safe past 2040" : `AI could do most of it by ${s.byFuture[speed]}`} · ${r.cite.ilo}, ${r.cite.aei} · ${r.cite.dosm}`}</Cite></span><SdgTag target={s.sdgTarget} /></li>)}</ul>
+          <ul className="space-y-1.5 text-sm">{first(r.rising).map((s) => <li key={s.skillId} className="flex items-start justify-between gap-2 rounded-2xl" style={hit(s) ? { ...tint(s), padding: "0.4rem 0.75rem" } : undefined}><span className="min-w-0">{s.name}<Cite>{`${s.durable ? "Safe past 2040" : `AI could do most of it by ${s.byFuture[speed]}`} · ${r.cite.ilo}, ${r.cite.aei} · ${r.cite.dosm}`}</Cite></span><SdgTag target={s.sdgTarget} highlight={hit(s)} /></li>)}</ul>
         </Card>
         <Card className="statistics-reveal">
           <div className="statistics-opportunities-heading statistics-fading-heading">
             <H sub="The date AI is expected to do most of this work.">Skills AI will take over first</H>
             <Image src="/cockatiel-sunglasses.png" alt="" width={96} height={96} className="statistics-opportunities-bird" />
           </div>
-          <ul className="space-y-1.5 text-sm">{r.declining.map((s) => <li key={s.skillId} className="flex items-start justify-between gap-2"><span className="min-w-0">{s.name}<Cite>{`${r.cite.ilo}, ${r.cite.aei}`}</Cite></span><span className="num shrink-0 text-fall">{s.byFuture[speed]}</span></li>)}</ul>
+          <ul className="space-y-1.5 text-sm">{first(r.declining).map((s) => <li key={s.skillId} className="flex items-start justify-between gap-2 rounded-2xl" style={hit(s) ? { ...tint(s), padding: "0.4rem 0.75rem" } : undefined}><span className="min-w-0">{s.name}<Cite>{`${r.cite.ilo}, ${r.cite.aei}`}</Cite></span><span className="flex shrink-0 items-center gap-2"><SdgTag target={s.sdgTarget} highlight={hit(s)} /><span className="num text-fall">{s.byFuture[speed]}</span></span></li>)}</ul>
         </Card>
       </div>
       <div className="statistics-reveal"><SourceDisclosure>{r.sources.map((s) => <SourceChip key={s.name} name={s.name} date={s.date} url={s.url} />)}</SourceDisclosure></div>
