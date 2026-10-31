@@ -5,7 +5,7 @@ import { useApp } from "@/components/AppProvider";
 import { useT } from "@/components/I18nProvider";
 import { useSpeed } from "@/components/useSpeed";
 import { useSelectJob } from "@/components/useSelectJob";
-import { BriefWhy } from "@/components/JobBits";
+import { BriefWhy, ScoreBadge } from "@/components/JobBits";
 import { JobBadge } from "@/components/JobIcon";
 import { JobsNav } from "@/components/JobsNav";
 import { ArrowDown, ChevronRight, HandHeart, MapPin, TrendingDown, TrendingUp } from "lucide-react";
@@ -106,7 +106,8 @@ export default function JobsPage() {
                 </div>
                 <p className="mt-3 text-sm text-muted">About {best.weeks} weeks to get ready.</p>
               </div>
-              <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
+              <div className="flex shrink-0 flex-wrap items-center gap-3 sm:justify-end">
+                <ScoreBadge value={best.score} size="lg" />
                 <Btn onClick={() => select(best.roleId)} disabled={busy} className="min-h-12 px-6 text-base">Select job <ChevronRight size={18} aria-hidden /></Btn>
                 <Btn href={`/jobs/${best.roleId}`} variant="ghost" className="min-h-12">See why <ChevronRight size={16} aria-hidden /></Btn>
               </div>
@@ -126,11 +127,14 @@ export default function JobsPage() {
                 <li key={m.roleId} className={`flex h-full flex-col rounded-[22px] bg-surface p-4 ${selectedId === m.roleId ? "ring-2 ring-cue" : ""}`}>
                   <div className="flex items-start justify-between gap-2">
                     <JobBadge name={m.why.icon} size="sm" />
-                    <span className="flex flex-wrap justify-end gap-1">
+                    <ScoreBadge value={m.score} />
+                  </div>
+                  {(selectedId === m.roleId || move(m.roleId) !== null) && (
+                    <span className="mt-2 flex flex-wrap gap-1">
                       <MoveChip n={move(m.roleId)} speed={speed} />
                       {selectedId === m.roleId && <Chip tone="cue">Selected</Chip>}
                     </span>
-                  </div>
+                  )}
                   <Link data-no-translate href={`/jobs/${m.roleId}`} className="job-card-title mt-3 underline-offset-2 hover:underline"><strong>{jobTitle(m.title)}</strong></Link>
                   <div className="mt-2"><BriefWhy m={m} stack /></div>
                   <p className="mt-3 text-sm text-muted">About {m.weeks} weeks{m.fewNearby ? " · few near you" : ""}</p>

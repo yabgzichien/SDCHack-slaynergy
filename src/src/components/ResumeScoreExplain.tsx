@@ -40,7 +40,12 @@ const PARTS: { key: string; label: string; of: number; formula: React.ReactNode;
     text: "r is the number of found skills expected to last (AI is unlikely to take them over soon), so 40% lasting skills earns full marks on that half; g is 1 if the resume shows work with AI tools." },
 ];
 
-const LINK = "mt-1 text-sm underline decoration-control underline-offset-2 hover:text-ink";
+const LINK = "mt-1 block text-sm underline decoration-control underline-offset-2 hover:text-ink";
+
+// What to compare a resume score with. The bands are the ones analyseResume uses (engine/resume.ts).
+export function ResumeBaseline({ className = "" }: { className?: string }) {
+  return <p className={`text-sm text-muted ${className}`}>Aim for 75 out of 100 or more. We count 55 as good and 75 as strong. These marks are our own rules, not a hiring standard.</p>;
+}
 
 // className restyles the button that opens the explainer; by default it is a small link.
 export function ResumeScoreExplain({ resume, className = LINK }: { resume: Pick<ResumeSummary, "score" | "parts">; className?: string }) {

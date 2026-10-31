@@ -80,7 +80,15 @@ export const SDG_SHORT: Record<string, string> = {
 };
 export const sdgName = (target: string) => SDG_SHORT[target.split(".")[0]] ?? `Goal ${target}`;
 
-// Keep the chip concise; the exact UN target number sits in the tooltip and the accessible name.
+// Where to read the world's progress on a goal: the 2026 UN report's page for it, or for goal 16 its own yearly global progress report.
+export function sdgReport(target: string) {
+  const goal = target.split(".")[0];
+  return goal === "16"
+    ? { name: "Global Progress Report on SDG 16, 2026", url: "https://reliefweb.int/report/world/global-progress-report-sustainable-development-goal-16-indicators-peaceful-just-and-inclusive-societies-2026" }
+    : { name: `The Sustainable Development Goals Report 2026, goal ${goal}`, url: `https://unstats.un.org/sdgs/report/2026/Goal-${goal.padStart(2, "0")}/` };
+}
+
+// The chip names the exact UN target, such as 8.2; the goal and the reason sit in the tooltip and the accessible name.
 // It links to the UN's own page for the goal; highlight draws it in the goal's colour (the person chose that goal).
 export function SdgTag({ target, why, highlight }: { target: string; why?: string; highlight?: boolean }) {
   const goal = target.split(".")[0];
@@ -89,7 +97,7 @@ export function SdgTag({ target, why, highlight }: { target: string; why?: strin
     <a href={sdgUrl(Number(goal))} target="_blank" rel="noreferrer" title={tip} aria-label={tip} onClick={(e) => e.stopPropagation()}
       className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium hover:underline ${highlight ? "text-white" : "bg-accentsoft text-accentink"}`}
       style={highlight ? { background: sdgColor(Number(goal)) } : undefined}>
-      UN goal {goal}<ExternalLink size={11} strokeWidth={2} aria-hidden />
+      UN goal {target}<ExternalLink size={11} strokeWidth={2} aria-hidden />
     </a>
   );
 }

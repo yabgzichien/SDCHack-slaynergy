@@ -143,6 +143,12 @@ export default function TrendsPage() {
         </Card>
       </div>
       <div className="statistics-reveal"><SourceDisclosure>{r.sources.map((s) => <SourceChip key={s.name} name={s.name} date={s.date} url={s.url} />)}</SourceDisclosure></div>
+      <footer className="statistics-reveal mt-6 rounded-2xl bg-surface p-4 text-sm sm:p-5">
+        <h2 className="font-semibold">Why SDGs matter</h2>
+        <p className="mt-1 text-muted">The Sustainable Development Goals (SDGs) are important because they provide a shared global framework for addressing the most pressing challenges humanity faces, from poverty and climate change to inequality and lack of access to education.{" "}
+          <a href="https://waitro.org/blog/why-are-the-sustainable-development-goals-important/" target="_blank" rel="noreferrer" className="text-ink underline decoration-control underline-offset-2">Read more</a>
+        </p>
+      </footer>
     </div>
   );
 }

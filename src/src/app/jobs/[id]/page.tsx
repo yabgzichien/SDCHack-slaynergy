@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useApp } from "@/components/AppProvider";
+import type { RoleMatchView } from "@/lib/engine/view";
 import { useSpeed } from "@/components/useSpeed";
 import { useSelectJob } from "@/components/useSelectJob";
 import { BriefWhy, Score, WhyThisJob } from "@/components/JobBits";
@@ -9,7 +10,8 @@ import { JobBadge } from "@/components/JobIcon";
 import { GROUP_LABEL, GROUP_PAY, GROUP_PAY_SOURCE, roleById, sourceById } from "@/lib/engine/data";
 import { stateJobs } from "@/lib/engine/geo";
 import { areaName } from "@/lib/engine/geo";
-import { Btn, Card, Chip, Estimate, FUTURE_NAME, H, More, PageTitle, SdgTag, Skeleton, SourceChip } from "@/components/ui";
+import { Btn, Card, Chip, Estimate, FUTURE_NAME, H, More, PageTitle, SdgTag, Skeleton, SourceChip, sdgName, sdgReport } from "@/components/ui";
+import { SdgIcon } from "@/components/SdgIcon";
 import { SpeedBar } from "@/components/SpeedBar";
 import { ScoreBreakdown } from "@/components/ScoreBreakdown";
 
@@ -69,6 +71,8 @@ export default function JobDetailPage() {
         <WhyThisJob m={m} speed={speed} />
       </Card>
 
+      <JobGoal m={m} />
+
       <Pay roleId={m.roleId} home={state.profile?.state ?? null} />
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -95,12 +99,35 @@ export default function JobDetailPage() {
             ))}
           </ul>
           <div className="mt-4 flex flex-wrap gap-1.5"><SdgTag target={m.sdgTarget} why={m.sdgWhy} /><Chip>About {m.weeks} weeks to get ready</Chip>{m.atRisk && <Chip tone="fall">AI may take over some skills soon</Chip>}{m.fewNearby && <Chip tone="fall">Few jobs like this near you</Chip>}</div>
-          <p className="mt-2 text-sm">{m.sdgWhy}</p>
           {m.tradeoff && <p className="mt-2 text-sm text-muted">{m.tradeoff}</p>}
         </Card>
       </div>
       <div className="mt-4"><Estimate /></div>
     </div>
+  );
+}
+
+// Why this job counts towards its UN target, in the UN's words and then the job's, and where to read the world's progress.
+// One person's job will not move a global goal much, so the link gives the bigger picture rather than claiming an impact.
+function JobGoal({ m }: { m: RoleMatchView }) {
+  const report = sdgReport(m.sdgTarget);
+  return (
+    <Card className="mb-4">
+      <H sub={m.sdgMatch ? "You picked this goal." : undefined}>{`Why this job serves UN goal ${m.sdgTarget}`}</H>
+      <div className="flex items-start gap-4">
+        <SdgIcon goal={Number(m.sdgTarget.split(".")[0])} />
+        <div className="min-w-0">
+          <p className="font-medium">{sdgName(m.sdgTarget)}</p>
+          <p className="mt-1 text-sm">{m.sdgWhy}</p>
+          {m.sdgText && <p className="mt-2 text-sm text-muted">{`The UN target: ${m.sdgText}`}</p>}
+        </div>
+      </div>
+      <div className="mt-4 border-t border-line pt-4">
+        <p className="font-semibold">Contribute and Make a Change.</p>
+        <p className="mt-1 text-sm">Every little decision adds up. See the current global progress on this goal here:</p>
+        <a href={report.url} target="_blank" rel="noreferrer" className="mt-1 inline-block text-sm underline decoration-control underline-offset-2 hover:text-ink">{report.name}</a>
+      </div>
+    </Card>
   );
 }
 

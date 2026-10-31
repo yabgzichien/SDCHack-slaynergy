@@ -5,7 +5,7 @@ import type { Finding, ResumeAnalysis } from "@/lib/engine/resume";
 import type { AiRead } from "@/lib/server/ai-resume";
 import { ResumeGraphic } from "@/components/ResumeGraphic";
 import { ResumeOriginal, type ResumeSource } from "@/components/ResumeOriginal";
-import { ResumeScoreExplain } from "@/components/ResumeScoreExplain";
+import { ResumeBaseline, ResumeScoreExplain } from "@/components/ResumeScoreExplain";
 import { ScoreRing } from "@/components/ScoreRing";
 import { Btn, Card, Chip } from "@/components/ui";
 
@@ -33,6 +33,7 @@ export function ResumeReport({ analysis: a, ai, aiStatus, fileName, source, onAg
         <div>
           <Chip tone={a.band === "strong" ? "rise" : a.band === "good" ? "accent" : "fall"}>{a.band === "needs work" ? "Needs work" : a.band === "good" ? "Good start" : "Strong"}</Chip>
           <h2 className="mt-2 text-2xl font-bold">{a.headline}</h2>
+          <ResumeBaseline className="mt-2" />
           <p className="mt-2 text-muted">
             {a.occupation && <>{`Reads as: ${a.occupation.title}.`}{" "}</>}
             {a.years !== null && a.years > 0 && <>{a.years === 1 ? "1 year of experience." : `${a.years} years of experience.`}{" "}</>}

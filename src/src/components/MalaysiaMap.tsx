@@ -86,9 +86,14 @@ export function MalaysiaMap({ values, bins, ramp, selected = null, home = null, 
               );
             })}
           </g>
-          {/* outlines on top: your state dashed, the hovered and selected states in ink */}
+          {/* outlines on top: your state in a thick orange ring, the hovered and selected states in ink */}
           <g pointerEvents="none" fill="none" vectorEffect="non-scaling-stroke">
-            {home && L.states.filter((s) => s.id === home && s.id !== focus).map((s) => <path key={s.id} d={s.d} stroke="var(--ink)" strokeWidth={1.8} strokeDasharray="4 3" vectorEffect="non-scaling-stroke" />)}
+            {home && L.states.filter((s) => s.id === home).map((s) => (
+              <g key={s.id}>
+                <path d={s.d} stroke="var(--raised)" strokeWidth={7} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                <path d={s.d} stroke="var(--lane-ai)" strokeWidth={4} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+              </g>
+            ))}
             {focus && L.states.filter((s) => s.id === focus).map((s) => <path key={s.id} d={s.d} stroke="var(--ink)" strokeWidth={2.5} vectorEffect="non-scaling-stroke" />)}
           </g>
           <g pointerEvents="none" fontFamily="var(--font-sans)">
@@ -151,7 +156,7 @@ export function MapLegend({ title, bins, ramp, fmt, home }: { title: string; bin
           ))}
         </ol>
       </div>
-      {home && <span className="inline-flex items-center gap-1.5 text-xs text-muted"><span className="inline-block h-3 w-5 rounded border-2 border-dashed border-ink/70" />Your state</span>}
+      {home && <span className="inline-flex items-center gap-1.5 text-xs text-muted"><span className="inline-block h-3 w-5 rounded border-[3px]" style={{ borderColor: "var(--lane-ai)" }} />Your state</span>}
     </div>
   );
 }

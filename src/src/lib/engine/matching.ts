@@ -183,11 +183,33 @@ export function scoreLines(m: RoleMatch): { lines: ScoreLine[]; total: number } 
   return { lines: raw.map((x, i) => ({ key: x.key, label: x.label, points: pts[i], raw: x.v })), total: pts.reduce((a, b) => a + b, 0) };
 }
 
+// What each skill the job lists adds to the score. Having it earns its share of the skill overlap points; every listed
+// skill, had or not, earns its share of the future outlook points, smaller the sooner AI is expected to take it over.
+// Shares follow the skill's importance to the job, and each column adds up exactly to its line in the score.
+export type SkillPoints = { skillId: string; name: string; have: boolean; durable: boolean; overlap: number; outlook: number; points: number };
+function toLine(xs: number[], target: number): number[] {
+  const out = roundToTotal(xs);
+  const fix = target - out.reduce((a, b) => a + b, 0);
+  if (fix) out[xs.reduce((b, x, j) => (x > xs[b] ? j : b), 0)] += fix;
+  return out;
+}
+export function skillPointsFor(m: RoleMatch, lines: ScoreLine[], w: Weights3): SkillPoints[] {
+  const skills = Object.entries(roleById[m.roleId].skills);
+  const total = skills.reduce((a, [, imp]) => a + imp, 0);
+  const have = new Set(m.have);
+  const part = (key: string) => lines.find((l) => l.key === key)!.points;
+  const overlap = toLine(skills.map(([s, imp]) => (have.has(s) ? (imp / total) * WEIGHTS.overlap * 100 : 0)), part("overlap"));
+  const outlook = toLine(skills.map(([s, imp]) => (imp / total) * durability(expiryFor(s, w)) * WEIGHTS.outlook * 100), part("outlook"));
+  return skills
+    .map(([s], i) => ({ skillId: s, name: skillById[s].name, have: have.has(s), durable: expiryFor(s, w).durable, overlap: overlap[i], outlook: outlook[i], points: overlap[i] + outlook[i] }))
+    .sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
+}
+
 // One change and what it adds, scored again by the same engine. Learning a skill raises the overlap and shortens the
 // training (more "reachable in time"); more hours a week only shortens the training.
 export type Raiser = { kind: "skill" | "hours"; skillId?: string; name: string; points: number; parts: Record<string, number>; course?: { title: string; provider: string; hours: number; url: string } | null; hoursPerWeek?: number };
 export const MORE_HOURS = 2;
-export function raisersFor(input: MatchInput, w: Weights3, upTo: string, roleId: string, clericalShiftPp = 0): { lines: ScoreLine[]; total: number; raisers: Raiser[] } | null {
+export function raisersFor(input: MatchInput, w: Weights3, upTo: string, roleId: string, clericalShiftPp = 0): { lines: ScoreLine[]; total: number; skills: SkillPoints[]; raisers: Raiser[] } | null {
   const base = matchRoles(input, w, upTo, clericalShiftPp, roleId)[0];
   if (!base) return null;
   const now = scoreLines(base);
@@ -209,5 +231,5 @@ export function raisersFor(input: MatchInput, w: Weights3, upTo: string, roleId:
   });
   const more = matchRoles({ ...input, hoursPerWeek: input.hoursPerWeek + MORE_HOURS }, w, upTo, clericalShiftPp, roleId)[0];
   raisers.push({ kind: "hours", name: `${MORE_HOURS} more hours a week`, hoursPerWeek: input.hoursPerWeek + MORE_HOURS, ...delta(more) });
-  return { ...now, raisers: raisers.filter((r) => r.points > 0).sort((a, b) => b.points - a.points || a.name.localeCompare(b.name)) };
+  return { ...now, skills: skillPointsFor(base, now.lines, w), raisers: raisers.filter((r) => r.points > 0).sort((a, b) => b.points - a.points || a.name.localeCompare(b.name)) };
 }
