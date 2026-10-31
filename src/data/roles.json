@@ -23,6 +23,7 @@
   "minWeeks": 8,
   "sector": "finance",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Advising owners on what the numbers mean and signing off on figures they will be held to.",
@@ -54,6 +55,7 @@
   "minWeeks": 10,
   "sector": "finance",
   "requires": "degree",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Questioning people, spotting what does not add up and putting your name to the opinion.",
@@ -85,6 +87,7 @@
   "minWeeks": 8,
   "sector": "finance",
   "requires": "degree",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Judging which story the numbers tell and convincing managers to act on it.",
@@ -115,6 +118,7 @@
   "minWeeks": 6,
   "sector": "finance",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Weighing a borrower's character and context, not just the score, and owning the lending decision.",
@@ -146,6 +150,7 @@
   "minWeeks": 4,
   "sector": "finance",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Meeting borrowers, reading their situation and deciding whom the bank can trust.",
@@ -176,6 +181,7 @@
   "minWeeks": 10,
   "sector": "finance",
   "requires": "degree",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Interviewing bank staff on site and judging whether a firm is being honest.",
@@ -208,6 +214,7 @@
   "minWeeks": 6,
   "sector": "finance",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Deciding which flagged cases are real crime and building a case others can act on.",
@@ -237,6 +244,7 @@
   "minWeeks": 6,
   "sector": "finance",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Reading grey areas in the rules and persuading colleagues to change how they work.",
@@ -268,6 +276,7 @@
   "minWeeks": 6,
   "sector": "finance",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Checking claims against what really happens on the ground and asking teams for proof.",
@@ -297,6 +306,7 @@
   "minWeeks": 6,
   "sector": "finance",
   "requires": "diploma",
+  "jobZone": 3,
   "closest": false,
   "humanEdge": {
    "text": "Sitting with clients to untangle their situation and standing behind the return they file.",
@@ -326,6 +336,7 @@
   "minWeeks": 8,
   "sector": "finance",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Judging unusual risks that do not fit the model and negotiating terms with agents.",
@@ -357,6 +368,7 @@
   "minWeeks": 4,
   "sector": "finance",
   "requires": "spm",
+  "jobZone": 2,
   "closest": false,
   "humanEdge": {
    "text": "Handling disputed claims and explaining decisions to worried patients and clinics.",
@@ -386,6 +398,7 @@
   "minWeeks": 6,
   "sector": "finance",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Negotiating trade-offs between departments and defending the budget to decision makers.",
@@ -416,6 +429,7 @@
   "minWeeks": 4,
   "sector": "finance",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Earning the trust of people new to banking, face to face, and judging what they can really repay.",
@@ -447,6 +461,7 @@
   "minWeeks": 12,
   "sector": "computing",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Finding out what managers really need to know and turning it into decisions they trust.",
@@ -478,6 +493,7 @@
   "minWeeks": 10,
   "sector": "business",
   "requires": "degree",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Interviewing staff, reading the politics of a workplace and getting people to accept change.",
@@ -508,6 +524,7 @@
   "minWeeks": 8,
   "sector": "computing",
   "requires": "spm",
+  "jobZone": 3,
   "closest": false,
   "humanEdge": {
    "text": "Calming frustrated users and fixing problems on real machines that no script foresaw.",
@@ -538,6 +555,7 @@
   "minWeeks": 6,
   "sector": "logistics",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Negotiating with suppliers face to face and judging which vendors will keep their word.",
@@ -568,6 +586,7 @@
   "minWeeks": 8,
   "sector": "logistics",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Working with drivers, warehouses and suppliers to fix problems when plans meet reality.",
@@ -597,6 +616,7 @@
   "minWeeks": 6,
   "sector": "business",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Handling sensitive conversations about hiring, conflict and dismissal with care and fairness.",
@@ -627,6 +647,7 @@
   "minWeeks": 6,
   "sector": "business",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Explaining pay and benefits to anxious staff and balancing fairness with cost.",
@@ -657,6 +678,7 @@
   "minWeeks": 8,
   "sector": "education",
   "requires": "degree",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Reading a room, keeping learners engaged and changing course when they are lost.",
@@ -685,6 +707,7 @@
   "minWeeks": 2,
   "sector": "service",
   "requires": "spm",
+  "jobZone": 2,
   "closest": false,
   "humanEdge": {
    "text": "Handling the upset customers and unusual cases that chatbots pass on to a person.",
@@ -714,6 +737,7 @@
   "minWeeks": 2,
   "sector": "finance",
   "requires": "spm",
+  "jobZone": 2,
   "closest": false,
   "humanEdge": {
    "text": "Sorting out disputed bills with customers and catching errors before they go out.",
@@ -742,6 +766,7 @@
   "minWeeks": 12,
   "sector": "health",
   "requires": "diploma",
+  "jobZone": 3,
   "closest": false,
   "humanEdge": {
    "text": "Clarifying unclear notes with doctors and protecting patient privacy.",
@@ -772,6 +797,7 @@
   "minWeeks": 8,
   "sector": "business",
   "requires": "degree",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Talking to real customers, reading between the lines and framing what the findings mean.",
@@ -801,6 +827,7 @@
   "minWeeks": 6,
   "sector": "business",
   "requires": "spm",
+  "jobZone": 3,
   "closest": false,
   "humanEdge": {
    "text": "Leading a team day to day, solving people problems and keeping the office running.",
@@ -830,6 +857,7 @@
   "minWeeks": 24,
   "sector": "computing",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Understanding what users really need and taking responsibility for code that ships.",
@@ -860,6 +888,7 @@
   "minWeeks": 20,
   "sector": "computing",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Outthinking real attackers and making the call during a live incident.",
@@ -888,6 +917,7 @@
   "minWeeks": 14,
   "sector": "computing",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Owning the data a business cannot afford to lose and deciding what to do when it breaks.",
@@ -918,6 +948,7 @@
   "minWeeks": 14,
   "sector": "computing",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Turning a client's vague idea into a working site and judging what users will find easy.",
@@ -949,6 +980,7 @@
   "minWeeks": 10,
   "sector": "computing",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Thinking like an awkward user to find the bugs that automated tests miss.",
@@ -978,6 +1010,7 @@
   "minWeeks": 18,
   "sector": "computing",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Fitting new code into old, messy systems and owning the fix when it fails.",
@@ -1007,6 +1040,7 @@
   "minWeeks": 12,
   "sector": "computing",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Fixing physical networks on site and deciding fast when systems go down.",
@@ -1036,6 +1070,7 @@
   "minWeeks": 20,
   "sector": "computing",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": true,
   "humanEdge": {
    "text": "Designing systems around a firm's real limits on cost, risk and staff skill.",
@@ -1066,6 +1101,7 @@
   "minWeeks": 24,
   "sector": "computing",
   "requires": "degree",
+  "jobZone": 5,
   "closest": true,
   "humanEdge": {
    "text": "Choosing the right question, spotting misleading data and explaining limits to non-experts.",
@@ -1096,6 +1132,7 @@
   "minWeeks": 14,
   "sector": "computing",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Bridging what users say they want and what the system can really do.",
@@ -1126,6 +1163,7 @@
   "minWeeks": 12,
   "sector": "computing",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": true,
   "humanEdge": {
    "text": "Keeping people, deadlines and competing demands aligned when plans slip.",
@@ -1155,6 +1193,7 @@
   "minWeeks": 8,
   "sector": "computing",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Interviewing engineers and testing steps yourself so instructions are right and clear.",
@@ -1186,6 +1225,7 @@
   "minWeeks": 20,
   "sector": "engineering",
   "requires": "degree",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Taking legal responsibility for safe structures and making calls on site.",
@@ -1216,6 +1256,7 @@
   "minWeeks": 10,
   "sector": "engineering",
   "requires": "diploma",
+  "jobZone": 3,
   "closest": false,
   "humanEdge": {
    "text": "Measuring and checking real sites, where conditions rarely match the drawings.",
@@ -1247,6 +1288,7 @@
   "minWeeks": 20,
   "sector": "engineering",
   "requires": "degree",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Building and testing physical prototypes and owning safety decisions.",
@@ -1276,6 +1318,7 @@
   "minWeeks": 10,
   "sector": "engineering",
   "requires": "diploma",
+  "jobZone": 3,
   "closest": false,
   "humanEdge": {
    "text": "Setting up, testing and adjusting real machines with your hands.",
@@ -1307,6 +1350,7 @@
   "minWeeks": 20,
   "sector": "engineering",
   "requires": "degree",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Designing safe power systems and signing off on work that could harm people if wrong.",
@@ -1337,6 +1381,7 @@
   "minWeeks": 20,
   "sector": "engineering",
   "requires": "degree",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Debugging real circuits on the bench, where faults are physical and messy.",
@@ -1367,6 +1412,7 @@
   "minWeeks": 10,
   "sector": "engineering",
   "requires": "diploma",
+  "jobZone": 3,
   "closest": false,
   "humanEdge": {
    "text": "Repairing and testing equipment by hand, often in tight or live conditions.",
@@ -1398,6 +1444,7 @@
   "minWeeks": 16,
   "sector": "engineering",
   "requires": "degree",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Walking the factory floor, watching how work is really done and winning workers over to change.",
@@ -1429,6 +1476,7 @@
   "minWeeks": 14,
   "sector": "engineering",
   "requires": "degree",
+  "jobZone": 4,
   "closest": true,
   "humanEdge": {
    "text": "Investigating defects on the line and getting suppliers and staff to fix root causes.",
@@ -1459,6 +1507,7 @@
   "minWeeks": 8,
   "sector": "engineering",
   "requires": "diploma",
+  "jobZone": 3,
   "closest": false,
   "humanEdge": {
    "text": "Handling samples and instruments by hand and deciding whether a batch can be released.",
@@ -1490,6 +1539,7 @@
   "minWeeks": 20,
   "sector": "engineering",
   "requires": "degree",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Running real plants safely and deciding what to do when a process misbehaves.",
@@ -1521,6 +1571,7 @@
   "minWeeks": 18,
   "sector": "engineering",
   "requires": "degree",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Inspecting sites, working with communities and signing off on designs that protect people.",
@@ -1549,6 +1600,7 @@
   "minWeeks": 12,
   "sector": "engineering",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Working outdoors on real ground and certifying boundaries that carry legal weight.",
@@ -1579,6 +1631,7 @@
   "minWeeks": 10,
   "sector": "engineering",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Inspecting worksites in person and stopping unsafe work before someone gets hurt.",
@@ -1609,6 +1662,7 @@
   "minWeeks": 22,
   "sector": "engineering",
   "requires": "degree",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Leading crews on site, solving surprises daily and answering for safety and budget.",
@@ -1639,6 +1693,7 @@
   "minWeeks": 10,
   "sector": "engineering",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Visiting sites, talking to contractors and judging risks that are not in the drawings.",
@@ -1668,6 +1723,7 @@
   "minWeeks": 8,
   "sector": "engineering",
   "requires": "diploma",
+  "jobZone": 3,
   "closest": false,
   "humanEdge": {
    "text": "Working with engineers on site details and catching design clashes before they are built.",
@@ -1698,6 +1754,7 @@
   "minWeeks": 12,
   "sector": "science",
   "requires": "degree",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Designing experiments, handling real chemicals safely and judging unexpected results.",
@@ -1727,6 +1784,7 @@
   "minWeeks": 8,
   "sector": "science",
   "requires": "diploma",
+  "jobZone": 3,
   "closest": false,
   "humanEdge": {
    "text": "Running hands-on lab work safely, where samples and equipment need careful handling.",
@@ -1757,6 +1815,7 @@
   "minWeeks": 8,
   "sector": "science",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Handling living samples by hand and noticing when an experiment goes wrong.",
@@ -1787,6 +1846,7 @@
   "minWeeks": 14,
   "sector": "science",
   "requires": "degree",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Growing and testing living organisms in the lab and judging what the results mean.",
@@ -1817,6 +1877,7 @@
   "minWeeks": 14,
   "sector": "science",
   "requires": "degree",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Collecting samples in the field and explaining findings to communities and regulators.",
@@ -1847,6 +1908,7 @@
   "minWeeks": 14,
   "sector": "science",
   "requires": "degree",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Tasting, testing and developing real food, and answering for its safety.",
@@ -1875,6 +1937,7 @@
   "minWeeks": 8,
   "sector": "science",
   "requires": "diploma",
+  "jobZone": 3,
   "closest": false,
   "humanEdge": {
    "text": "Testing real food samples by hand and catching safety problems before products ship.",
@@ -1905,6 +1968,7 @@
   "minWeeks": 14,
   "sector": "health",
   "requires": "diploma",
+  "jobZone": 3,
   "closest": false,
   "humanEdge": {
    "text": "Handling patient samples by hand, where a mistake can affect a diagnosis.",
@@ -1935,6 +1999,7 @@
   "minWeeks": 10,
   "sector": "health",
   "requires": "diploma",
+  "jobZone": 3,
   "closest": false,
   "humanEdge": {
    "text": "Preparing medicines by hand and checking with patients and pharmacists before they leave.",
@@ -1965,6 +2030,7 @@
   "minWeeks": 8,
   "sector": "health",
   "requires": "diploma",
+  "jobZone": 3,
   "closest": false,
   "humanEdge": {
    "text": "Caring for patients in person, taking vitals and putting nervous people at ease.",
@@ -1995,6 +2061,7 @@
   "minWeeks": 8,
   "sector": "health",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Visiting families in their homes and earning the trust of the community.",
@@ -2025,6 +2092,7 @@
   "minWeeks": 12,
   "sector": "health",
   "requires": "degree",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Teaching people face to face in a way that fits their culture and changes habits.",
@@ -2054,6 +2122,7 @@
   "minWeeks": 3,
   "sector": "service",
   "requires": "spm",
+  "jobZone": 2,
   "closest": false,
   "humanEdge": {
    "text": "Helping shoppers in person, reading what they want and building loyalty.",
@@ -2083,6 +2152,7 @@
   "minWeeks": 6,
   "sector": "service",
   "requires": "spm",
+  "jobZone": 2,
   "closest": false,
   "humanEdge": {
    "text": "Leading a shop-floor team and handling customers and staff problems as they happen.",
@@ -2113,6 +2183,7 @@
   "minWeeks": 10,
   "sector": "service",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Building long-term client relationships and explaining technical products in person.",
@@ -2141,6 +2212,7 @@
   "minWeeks": 6,
   "sector": "service",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Building relationships and trust with buyers, which still closes most deals.",
@@ -2170,6 +2242,7 @@
   "minWeeks": 10,
   "sector": "service",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Sitting with families to understand their needs and earning their trust over years.",
@@ -2198,6 +2271,7 @@
   "minWeeks": 10,
   "sector": "service",
   "requires": "diploma",
+  "jobZone": 2,
   "closest": false,
   "humanEdge": {
    "text": "Showing homes in person, negotiating and guiding clients through a big decision.",
@@ -2226,6 +2300,7 @@
   "minWeeks": 6,
   "sector": "service",
   "requires": "diploma",
+  "jobZone": 3,
   "closest": false,
   "humanEdge": {
    "text": "Planning complex trips around a client's wishes and fixing problems when travel goes wrong.",
@@ -2255,6 +2330,7 @@
   "minWeeks": 3,
   "sector": "service",
   "requires": "spm",
+  "jobZone": 2,
   "closest": false,
   "humanEdge": {
    "text": "Welcoming guests in person and handling complaints and surprises on the spot.",
@@ -2284,6 +2360,7 @@
   "minWeeks": 10,
   "sector": "service",
   "requires": "diploma",
+  "jobZone": 2,
   "closest": false,
   "humanEdge": {
    "text": "Leading kitchen and floor staff through busy shifts and keeping food safe.",
@@ -2314,6 +2391,7 @@
   "minWeeks": 12,
   "sector": "business",
   "requires": "diploma",
+  "jobZone": 3,
   "closest": false,
   "humanEdge": {
    "text": "Interviewing clients and witnesses and judging which details matter to the case.",
@@ -2343,6 +2421,7 @@
   "minWeeks": 8,
   "sector": "business",
   "requires": "diploma",
+  "jobZone": 4,
   "closest": false,
   "humanEdge": {
    "text": "Building relationships with journalists and handling a crisis with judgment.",
@@ -2371,6 +2450,7 @@
   "minWeeks": 3,
   "sector": "logistics",
   "requires": "spm",
+  "jobZone": 2,
   "closest": false,
   "humanEdge": {
    "text": "Checking real goods, sorting out damaged or missing stock and working with drivers.",
@@ -2399,6 +2479,7 @@
   "minWeeks": 8,
   "sector": "logistics",
   "requires": "diploma",
+  "jobZone": 2,
   "closest": false,
   "humanEdge": {
    "text": "Juggling machines, people and late materials when the plan meets the factory floor.",
@@ -2427,6 +2508,7 @@
   "minWeeks": 4,
   "sector": "logistics",
   "requires": "spm",
+  "jobZone": 2,
   "closest": false,
   "humanEdge": {
    "text": "Making fast calls under pressure and keeping drivers and customers informed.",
@@ -2455,6 +2537,7 @@
   "minWeeks": 20,
   "sector": "trades",
   "requires": "diploma",
+  "jobZone": 3,
   "closest": false,
   "humanEdge": {
    "text": "Installing and repairing wiring by hand in real buildings, safely and to code.",
@@ -2483,6 +2566,7 @@
   "minWeeks": 14,
   "sector": "trades",
   "requires": "diploma",
+  "jobZone": 3,
   "closest": false,
   "humanEdge": {
    "text": "Diagnosing and repairing equipment on site, often in awkward spaces.",
@@ -2511,6 +2595,7 @@
   "minWeeks": 14,
   "sector": "trades",
   "requires": "spm",
+  "jobZone": 3,
   "closest": false,
   "humanEdge": {
    "text": "Setting up machines and making precise parts by hand, adjusting as you go.",
@@ -2538,6 +2623,7 @@
   "minWeeks": 10,
   "sector": "trades",
   "requires": "spm",
+  "jobZone": 2,
   "closest": false,
   "humanEdge": {
    "text": "Joining metal by hand in real conditions, where skill and safety cannot be automated cheaply.",
@@ -2567,6 +2653,7 @@
   "minWeeks": 14,
   "sector": "trades",
   "requires": "diploma",
+  "jobZone": 3,
   "closest": false,
   "humanEdge": {
    "text": "Diagnosing and fixing machines on the factory floor when production is stopped.",
@@ -2596,6 +2683,7 @@
   "minWeeks": 6,
   "sector": "education",
   "requires": "spm",
+  "jobZone": 2,
   "closest": false,
   "humanEdge": {
    "text": "Supporting children in person, noticing who is struggling and keeping them going.",
@@ -2625,6 +2713,7 @@
   "minWeeks": 12,
   "sector": "education",
   "requires": "degree",
+  "jobZone": 5,
   "closest": false,
   "humanEdge": {
    "text": "Working with teachers to improve how they teach and winning their buy-in.",

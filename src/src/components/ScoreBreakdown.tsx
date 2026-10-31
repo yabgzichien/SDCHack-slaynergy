@@ -10,7 +10,7 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 // The points a change would add, drawn faintly after the bar: striped, so it never reads as points already earned.
 const GHOST = "repeating-linear-gradient(135deg, var(--rise) 0 3px, transparent 3px 6px)";
 // Most points each part can give (its weight); the adjustments have no bar.
-const MAX: Record<string, number> = { overlap: 25, outlook: 30, demand: 20, reach: 15, interest: 10 };
+const MAX: Record<string, number> = { overlap: 25, outlook: 28, demand: 18, reach: 15, interest: 4, quality: 10 };
 
 // Why this score, as points that add up exactly to the score shown, and what would raise it (docs/adr/0003). It follows
 // the AI speed picker. Pointing at (or tapping) a raiser shows, faintly on the bars, the points it would add.
@@ -113,12 +113,12 @@ function SkillMarks({ skills, raisers, total }: { skills: SkillPoints[]; raisers
           );
         })}
       </ul>
-      <p className="num mt-2 text-xs text-muted">{`Skills give ${sum} of your ${total} points. The rest is job demand, time to get ready, your interests and any adjustments.`}</p>
+      <p className="num mt-2 text-xs text-muted">{`Skills give ${sum} of your ${total} points. The rest is job demand, time to get ready, your qualifications and experience, your interests and any adjustments.`}</p>
     </div>
   );
 }
 
-const SYMBOL: Record<string, string> = { overlap: "S", outlook: "F", demand: "D", reach: "R", interest: "I" };
+const SYMBOL: Record<string, string> = { overlap: "S", outlook: "F", demand: "D", reach: "R", interest: "I", quality: "Q" };
 const f2 = (x: number) => x.toFixed(2);
 
 // The same score as an equation. Each part is its value (0 to 1) times its weight; the adjustments are added or taken off.
@@ -167,7 +167,7 @@ export function ScoreEquation({ lines, total }: { lines: ScoreLine[]; total: num
             </tr>
           </tbody>
         </table>
-        <p className="mt-3 text-xs text-muted">The risk adjustment P grows from 0 to 0.08 as the future outlook falls from 0.70 to 0.40. L grows from 0 to 0.06 when few such jobs are near where you can work. G adds 0.12 when the job serves a goal you picked.</p>
+        <p className="mt-3 text-xs text-muted">The risk adjustment P grows from 0 to 0.08 as the future outlook falls from 0.70 to 0.40. L grows from 0 to 0.06 when few such jobs are near where you can work. G adds 0.12 when the job serves a goal you picked. Q is half your education fit and half your years of work against the years this job's O*NET Job Zone usually asks for (years in other fields count for half).</p>
       </div>
     </div>
   );

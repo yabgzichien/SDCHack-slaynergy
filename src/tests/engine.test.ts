@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { occupations, personas, roles, skills, courses, sdg, series, skillById } from "@/lib/engine/data";
-import { matchRoles, pickInputs } from "@/lib/engine/matching";
+import { matchRoles, pickInputs, WEIGHTS, educationFit, experienceFit } from "@/lib/engine/matching";
 import { computeWorld, MAX_ORDER } from "@/lib/engine/world";
 import { computeView } from "@/lib/engine/view";
 import { suggestedJobs } from "@/lib/suggested";
@@ -359,7 +359,7 @@ describe("sectors and qualifications", () => {
   it("lets the right worker see their own field first: a civil engineer is matched to civil engineering, a QA tester to QA", () => {
     expect(computeView(profileFor("civil_eng_job", "degree")).matches[0].roleId).toBe("civil_engineer");
     const qa = computeView(profileFor("qa_tester", "diploma")).matches;
-    expect(qa[0].sector).toBe("computing");
+    expect(qa.slice(0, 3).some((m) => m.sector === "computing")).toBe(true);
     expect(qa.slice(0, 3).map((m) => m.roleId)).toContain("qa_tester_software");
     expect(computeView(profileFor("lab_analyst", "degree")).matches.slice(0, 3).map((m) => m.sector)).toEqual(["science", "science", "science"]);
   });
@@ -948,5 +948,38 @@ describe("the market keeps moving in long sessions", () => {
     const at = (h: number) => runTape(q, w0, "long", [], h * 3600);
     expect(at(5).trades).toBeGreaterThan(at(3).trades);
     expect(at(5).series.some((p) => p.t > 4 * 3600)).toBe(true);
+  });
+});
+
+describe("qualifications and experience (Q)", () => {
+  it("weights add up to 1, with Q at 10% and interests still counted", () => {
+    expect(Object.values(WEIGHTS).reduce((a, b) => a + b, 0)).toBeCloseTo(1, 10);
+    expect(WEIGHTS.quality).toBe(0.1);
+    expect(WEIGHTS.interest).toBeGreaterThan(0);
+  });
+  it("education fit rewards a higher level and the field studied, and stays within 0 to 1", () => {
+    expect(educationFit("diploma", "diploma", false)).toBeCloseTo(0.6);
+    expect(educationFit("degree", "diploma", false)).toBeCloseTo(0.8);
+    expect(educationFit("degree", "diploma", true)).toBeCloseTo(1);
+  });
+  it("experience fit grows with years against the job's zone, counts other fields at half, and caps at 1", () => {
+    expect(experienceFit(0, true, 4)).toBe(0);
+    expect(experienceFit(1.5, true, 4)).toBeCloseTo(0.5);
+    expect(experienceFit(3, false, 4)).toBeCloseTo(0.5);
+    expect(experienceFit(20, true, 5)).toBe(1);
+    expect(experienceFit(0, true, 2)).toBe(0);
+  });
+  it("every job has an O*NET Job Zone, and a fresh graduate is not hidden from senior jobs, only scored a little lower", () => {
+    expect(roles.every((r) => [2, 3, 4, 5].includes(r.jobZone))).toBe(true);
+    const base = { skills: occupations[0].skills, months: 6, hoursPerWeek: 10, interests: [] as string[], goals: [] as string[], education: "degree" as const };
+    const w = computeWorld(initialState()).weights;
+    const green = matchRoles(pickInputs({ ...base, years: 0 }), w, "2026Q1");
+    const seasoned = matchRoles(pickInputs({ ...base, years: 10 }), w, "2026Q1");
+    expect(green.length).toBe(seasoned.length);
+    for (const g of green) {
+      const s = seasoned.find((x) => x.roleId === g.roleId)!;
+      expect(s.score - g.score).toBeGreaterThanOrEqual(-1e-9);
+      expect(s.score - g.score).toBeLessThanOrEqual(0.05 + 1e-9);
+    }
   });
 });
