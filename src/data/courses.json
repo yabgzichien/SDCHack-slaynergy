@@ -1,5 +1,19 @@
 [
  {
+  "id": "greatlearning_excel",
+  "title": "Excel for Beginners",
+  "provider": "Great Learning",
+  "url": "https://www.mygreatlearning.com/academy/learn-for-free/courses/excel-for-beginners",
+  "hours": 7,
+  "cost": "Free to enrol (sign-up needed; the Pro+ certificate is paid)",
+  "funding": "Free",
+  "skills": [
+   "spreadsheets"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
   "id": "excel",
   "title": "Excel: Foundations",
   "provider": "GCFGlobal LearnFree",
@@ -1355,6 +1369,1122 @@
   "checked": "2026-10-30",
   "linkStatus": "200",
   "strand": "people"
+ },
+ {
+  "id": "alison_bookkeeping_methods",
+  "title": "Bookkeeping and Accounting Methods",
+  "provider": "Alison",
+  "url": "https://alison.com/course/introduction-to-bookkeeping-and-accounting-methods",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "bookkeeping"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_xero",
+  "title": "Accounts Management Using Xero",
+  "provider": "Alison",
+  "url": "https://alison.com/course/accounts-management-using-xero",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "billing",
+   "bookkeeping"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_data_entry",
+  "title": "Data Entry Tools and Techniques",
+  "provider": "Alison",
+  "url": "https://alison.com/course/data-entry-tools-and-techniques",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "data_entry"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_fin_accounting",
+  "title": "Financial Accounting Basics",
+  "provider": "Alison",
+  "url": "https://alison.com/course/financial-accounting-basics",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "accounting"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_cashflow",
+  "title": "Financial Wellness: Personal Cash Flow Management",
+  "provider": "Alison",
+  "url": "https://alison.com/course/financial-wellness-personal-cash-flow-management",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "budgeting"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_fin_intelligence",
+  "title": "An Introduction to Financial Intelligence",
+  "provider": "Alison",
+  "url": "https://alison.com/course/an-introduction-to-financial-intelligence",
+  "hours": 5,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "budgeting"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_hr_admin",
+  "title": "Effective Human Resource Administration",
+  "provider": "Alison",
+  "url": "https://alison.com/course/effective-human-resource-administration",
+  "hours": 15,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "hr_admin"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_it_support",
+  "title": "IT Support Technician Foundations",
+  "provider": "Alison",
+  "url": "https://alison.com/course/it-support-technician-foundations",
+  "hours": 4,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "it_support"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_sales",
+  "title": "Sales Training: Learn How to Sell in 7 Effective Steps",
+  "provider": "Alison",
+  "url": "https://alison.com/course/sales-training-learn-how-to-sell-in-7-effective-steps",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "sales"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_payroll_acct",
+  "title": "Introduction to Payroll Accounting",
+  "provider": "Alison",
+  "url": "https://alison.com/course/introduction-to-payroll-accounting",
+  "hours": 4,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "payroll"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_retail_sales",
+  "title": "Retail Management: Merchandising, Sales and Customer Communications",
+  "provider": "Alison",
+  "url": "https://alison.com/course/retail-management-merchandising-sales-and-customer-communications",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "counter_service",
+   "retail_ops"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_retail_dist",
+  "title": "Retail Management: Merchandising, Distribution and Marketing",
+  "provider": "Alison",
+  "url": "https://alison.com/course/retail-management-merchandising-distribution-and-marketing",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "retail_ops"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_exec_assist",
+  "title": "Executive Assistant Skills",
+  "provider": "Alison",
+  "url": "https://alison.com/course/executive-assistant-skills",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "office_admin"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_credit_mgmt",
+  "title": "Fundamentals of Credit Management",
+  "provider": "Alison",
+  "url": "https://alison.com/course/fundamentals-of-credit-management",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "loan_docs"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_cs_excellence",
+  "title": "Introduction to Customer Service Excellence",
+  "provider": "Alison",
+  "url": "https://alison.com/course/introduction-to-customer-service-excellence",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "customer_service"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_underwriting",
+  "title": "Insurance Underwriting Principles and Practices",
+  "provider": "Alison",
+  "url": "https://alison.com/course/insurance-underwriting-principles-and-practices",
+  "hours": 4,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "underwriting"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_claims",
+  "title": "Fundamentals of Insurance Claims Handling",
+  "provider": "Alison",
+  "url": "https://alison.com/course/fundamentals-of-insurance-claims-handling",
+  "hours": 4,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "claims"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_aml",
+  "title": "Diploma in Fraud Management and Anti-Money Laundering Awareness",
+  "provider": "Alison",
+  "url": "https://alison.com/course/diploma-in-fraud-management-and-anti-money-laundering-awareness",
+  "hours": 10,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "aml"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_purchasing",
+  "title": "Purchasing and Supplies Management",
+  "provider": "Alison",
+  "url": "https://alison.com/course/purchasing-and-supplies-management",
+  "hours": 4,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "procurement"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_scm",
+  "title": "Introduction to Supply Chain Management",
+  "provider": "Alison",
+  "url": "https://alison.com/course/an-introduction-to-supply-chain-management",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "supply_chain"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_comp_ben",
+  "title": "Professional in Compensation and Benefits",
+  "provider": "Alison",
+  "url": "https://alison.com/course/professional-in-compensation-and-benefits",
+  "hours": 10,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "comp_benefits"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_trainer",
+  "title": "Training of Trainers: Training Design",
+  "provider": "Alison",
+  "url": "https://alison.com/course/training-of-trainers-training-design",
+  "hours": 5,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "training_design"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_coding",
+  "title": "A Comprehensive Guide to Medical Coding",
+  "provider": "Alison",
+  "url": "https://alison.com/course/a-comprehensive-guide-to-clinical-coding",
+  "hours": 5,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "health_records"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_techwriting",
+  "title": "Technical Writing Essentials",
+  "provider": "Alison",
+  "url": "https://alison.com/course/technical-writing-essentials",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "tech_writing"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_autocad",
+  "title": "AutoCAD: From Beginner to Professional",
+  "provider": "Alison",
+  "url": "https://alison.com/course/autocad-beginner-to-professional-training",
+  "hours": 6,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "cad_design"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_structural",
+  "title": "Introduction to Structural Systems",
+  "provider": "Alison",
+  "url": "https://alison.com/course/introduction-to-structural-systems",
+  "hours": 4,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "structural_civil"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_surveying",
+  "title": "Introduction to Land Surveying",
+  "provider": "Alison",
+  "url": "https://alison.com/course/introduction-to-land-surveying",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "surveying"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_chemeng",
+  "title": "Chemical Engineering Overview",
+  "provider": "Alison",
+  "url": "https://alison.com/course/chemical-engineering-overview",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "process_eng"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_iso9001",
+  "title": "ISO 9001:2015 Quality Management System (QMS)",
+  "provider": "Alison",
+  "url": "https://alison.com/course/iso-9001-2015-quality-management-system-qms",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "quality_systems"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_hs_workplace",
+  "title": "Fundamentals of Health and Safety in the Workplace",
+  "provider": "Alison",
+  "url": "https://alison.com/course/fundamentals-of-health-and-safety-in-the-workplace-revised",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "hse_safety"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_constr_pm",
+  "title": "Basics of Construction Project Management",
+  "provider": "Alison",
+  "url": "https://alison.com/course/basics-of-construction-project-management",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "construction_mgmt"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_research",
+  "title": "Essentials of Research Methodology",
+  "provider": "Alison",
+  "url": "https://alison.com/course/essentials-of-research-methodology",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "research_methods"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_pharmacy",
+  "title": "Pharmacy Technician Training",
+  "provider": "Alison",
+  "url": "https://alison.com/course/pharmacy-technician-training",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "pharmacy_support"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_legal_office",
+  "title": "Legal Office Administration",
+  "provider": "Alison",
+  "url": "https://alison.com/course/legal-office-administration",
+  "hours": 6,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "legal_admin"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_pr",
+  "title": "Foundations of Public Relations",
+  "provider": "Alison",
+  "url": "https://alison.com/course/foundations-of-public-relations",
+  "hours": 4,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "communications_pr"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_hotel",
+  "title": "English for Tourism: Hotel Reception and Front Desk",
+  "provider": "Alison",
+  "url": "https://alison.com/course/english-for-tourism-hotel-reception-and-front-desk-revised",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "hospitality"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_warehouse",
+  "title": "Warehouse Management: Inventory, Stock and Supply Chains",
+  "provider": "Alison",
+  "url": "https://alison.com/course/warehouse-management-inventory-stock-and-supply-chains",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "warehouse_ops"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_ppc",
+  "title": "Introduction to Production Planning and Control",
+  "provider": "Alison",
+  "url": "https://alison.com/course/introduction-to-production-planning-and-control",
+  "hours": 5,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "dispatch_planning"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_wiring",
+  "title": "Introduction to Electrical Wiring Systems",
+  "provider": "Alison",
+  "url": "https://alison.com/course/introduction-to-electrical-wiring-systems-revised",
+  "hours": 3,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "electrical_work"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "alison_hvac_pro",
+  "title": "Becoming a HVAC Professional",
+  "provider": "Alison",
+  "url": "https://alison.com/course/becoming-a-hvac-professional",
+  "hours": 4,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "hvac"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "um_tax",
+  "title": "Malaysian Tax",
+  "provider": "Universiti Malaya (UM MOOC, on OpenLearning)",
+  "url": "https://www.openlearning.com/courses/malaysian-taxation/",
+  "hours": 5,
+  "cost": "Free (certificate of completion)",
+  "funding": "Free",
+  "skills": [
+   "tax"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200",
+  "note": "Malaysian course. Self-paced with no fixed length, so the hours are an estimate. It covers income tax and the goods and services tax, which Malaysia replaced with SST in 2018, so use LHDN for current rules."
+ },
+ {
+  "id": "usm_osh",
+  "title": "Occupational Safety & Health Induction",
+  "provider": "Universiti Sains Malaysia (USM MOOC, on OpenLearning)",
+  "url": "https://www.openlearning.com/usmmooc/courses/osh-induction/",
+  "hours": 4,
+  "cost": "Free to join (certificate of completion)",
+  "funding": "Free",
+  "skills": [
+   "hse_safety"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200",
+  "note": "Malaysian course. Self-paced with no fixed length, so the hours are an estimate. It covers OSH and environmental hazards within Malaysian legal requirements."
+ },
+ {
+  "id": "greatlearning_bookkeeping",
+  "title": "Bookkeeping Basics",
+  "provider": "Great Learning",
+  "url": "https://www.mygreatlearning.com/academy/learn-for-free/courses/bookkeeping",
+  "hours": 1.5,
+  "cost": "Free to enrol (sign-up needed; the certificate is paid)",
+  "funding": "Free",
+  "skills": [
+   "bookkeeping"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "greatlearning_accounting",
+  "title": "Basic Accounting",
+  "provider": "Great Learning",
+  "url": "https://www.mygreatlearning.com/academy/learn-for-free/courses/basic-accounting",
+  "hours": 2.25,
+  "cost": "Free to enrol (sign-up needed; the certificate is paid)",
+  "funding": "Free",
+  "skills": [
+   "accounting"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "greatlearning_quickbooks",
+  "title": "QuickBooks Essentials",
+  "provider": "Great Learning",
+  "url": "https://www.mygreatlearning.com/academy/learn-for-free/courses/quickbooks-essentials",
+  "hours": 1.5,
+  "cost": "Free to enrol (sign-up needed; the certificate is paid)",
+  "funding": "Free",
+  "skills": [
+   "billing",
+   "bookkeeping"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "greatlearning_customer_service",
+  "title": "Customer Service Essentials",
+  "provider": "Great Learning",
+  "url": "https://www.mygreatlearning.com/academy/learn-for-free/courses/customer-service-essentials",
+  "hours": 2.25,
+  "cost": "Free to enrol (sign-up needed; the certificate is paid)",
+  "funding": "Free",
+  "skills": [
+   "customer_service"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "greatlearning_retail",
+  "title": "Retail Management",
+  "provider": "Great Learning",
+  "url": "https://www.mygreatlearning.com/academy/learn-for-free/courses/retail-management",
+  "hours": 2,
+  "cost": "Free to enrol (sign-up needed; the certificate is paid)",
+  "funding": "Free",
+  "skills": [
+   "retail_ops",
+   "counter_service"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200",
+  "note": "Hours are an estimate; the page does not state a clear length."
+ },
+ {
+  "id": "greatlearning_supply_chain",
+  "title": "Supply Chain Management",
+  "provider": "Great Learning",
+  "url": "https://www.mygreatlearning.com/academy/learn-for-free/courses/supply-chain-management",
+  "hours": 2,
+  "cost": "Free to enrol (sign-up needed; the certificate is paid)",
+  "funding": "Free",
+  "skills": [
+   "supply_chain"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200",
+  "note": "Hours are an estimate; the page does not state a clear length."
+ },
+ {
+  "id": "greatlearning_demand_forecast",
+  "title": "Demand Forecasting in Supply Chain",
+  "provider": "Great Learning",
+  "url": "https://www.mygreatlearning.com/academy/learn-for-free/courses/demand-forecasting-in-supply-chain",
+  "hours": 2.25,
+  "cost": "Free to enrol (sign-up needed; the certificate is paid)",
+  "funding": "Free",
+  "skills": [
+   "dispatch_planning"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "greatlearning_finance",
+  "title": "Finance for Everyone",
+  "provider": "Great Learning",
+  "url": "https://www.mygreatlearning.com/academy/learn-for-free/courses/finance-for-everyone",
+  "hours": 2,
+  "cost": "Free to enrol (sign-up needed; the certificate is paid)",
+  "funding": "Free",
+  "skills": [
+   "budgeting"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200",
+  "note": "Hours are an estimate; the page does not state a clear length."
+ },
+ {
+  "id": "greatlearning_typing",
+  "title": "Touch Typing Essentials",
+  "provider": "Great Learning",
+  "url": "https://www.mygreatlearning.com/academy/learn-for-free/courses/touch-typing-essentials",
+  "hours": 4,
+  "cost": "Free to enrol (sign-up needed; the certificate is paid)",
+  "funding": "Free",
+  "skills": [
+   "data_entry"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "greatlearning_va",
+  "title": "Virtual Assistant Work Essentials",
+  "provider": "Great Learning",
+  "url": "https://www.mygreatlearning.com/academy/learn-for-free/courses/virtual-assistant-work-essentials",
+  "hours": 2.5,
+  "cost": "Free to enrol (sign-up needed; the certificate is paid)",
+  "funding": "Free",
+  "skills": [
+   "office_admin"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "coursera_tech_support",
+  "title": "Technical Support Fundamentals",
+  "provider": "Google, on Coursera",
+  "url": "https://www.coursera.org/learn/technical-support-fundamentals",
+  "hours": 20,
+  "cost": "Free to enrol where offered; the certificate and some full access are paid",
+  "funding": "Free (partly)",
+  "skills": [
+   "it_support"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "coursera_aml",
+  "title": "Mastering Financial Compliance and Anti-Money Laundering",
+  "provider": "Coursera",
+  "url": "https://www.coursera.org/learn/mastering-financial-compliance-and-anti-money-laundering",
+  "hours": 10,
+  "cost": "Free to enrol where offered; the certificate and some full access are paid",
+  "funding": "Free (partly)",
+  "skills": [
+   "aml"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "coursera_credit",
+  "title": "Corporate Credit Risk Analysis Certification",
+  "provider": "Coursera",
+  "url": "https://www.coursera.org/learn/credit-risk-analysis-and-underwriting",
+  "hours": 6,
+  "cost": "Free to enrol where offered; the certificate and some full access are paid",
+  "funding": "Free (partly)",
+  "skills": [
+   "loan_docs",
+   "underwriting"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "coursera_payroll",
+  "title": "Payroll, Expense Management, and QuickBooks Accounting",
+  "provider": "Coursera",
+  "url": "https://www.coursera.org/learn/payroll-expense-management-and-quickbooks-accounting",
+  "hours": 8,
+  "cost": "Free to enrol where offered; the certificate and some full access are paid",
+  "funding": "Free (partly)",
+  "skills": [
+   "payroll",
+   "billing"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "coursera_logistics",
+  "title": "Logistics and Inventory Management",
+  "provider": "Coursera",
+  "url": "https://www.coursera.org/specializations/logistics-inventory-management",
+  "hours": 40,
+  "cost": "Free to enrol where offered; the certificate and some full access are paid",
+  "funding": "Free (partly)",
+  "skills": [
+   "warehouse_ops",
+   "procurement"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200",
+  "note": "A six-course specialization. Hours are an estimate."
+ },
+ {
+  "id": "coursera_lean_white",
+  "title": "Lean Six Sigma White Belt: Analyze & Improve",
+  "provider": "Coursera",
+  "url": "https://www.coursera.org/learn/lean-six-sigma-white-belt-analyze-improve",
+  "hours": 8,
+  "cost": "Free to enrol where offered; the certificate and some full access are paid",
+  "funding": "Free (partly)",
+  "skills": [
+   "quality_systems"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "coursera_instr_design",
+  "title": "Fundamentals of Instructional Design",
+  "provider": "Coursera",
+  "url": "https://www.coursera.org/learn/fundamentals-of-instructional-design",
+  "hours": 5,
+  "cost": "Free to enrol where offered; the certificate and some full access are paid",
+  "funding": "Free (partly)",
+  "skills": [
+   "training_design"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "saylor_bus103",
+  "title": "BUS103: Introduction to Financial Accounting",
+  "provider": "Saylor Academy",
+  "url": "https://learn.saylor.org/course/bus103",
+  "hours": 63,
+  "cost": "Free (free certificate of completion)",
+  "funding": "Free",
+  "skills": [
+   "accounting"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "saylor_hr",
+  "title": "PRDV226: Introduction to Human Resource Management",
+  "provider": "Saylor Academy",
+  "url": "https://learn.saylor.org/course/prdv226",
+  "hours": 14,
+  "cost": "Free (free certificate of completion)",
+  "funding": "Free",
+  "skills": [
+   "hr_admin"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "saylor_sales",
+  "title": "PRDV217: Introduction to Sales",
+  "provider": "Saylor Academy",
+  "url": "https://learn.saylor.org/course/prdv217",
+  "hours": 22,
+  "cost": "Free (free certificate of completion)",
+  "funding": "Free",
+  "skills": [
+   "sales"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "saylor_scm",
+  "title": "PRDV304: Introduction to Supply Chain Management",
+  "provider": "Saylor Academy",
+  "url": "https://learn.saylor.org/course/prdv304",
+  "hours": 4,
+  "cost": "Free (free certificate of completion)",
+  "funding": "Free",
+  "skills": [
+   "supply_chain",
+   "procurement"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "openlearn_accounting",
+  "title": "Fundamentals of accounting",
+  "provider": "OpenLearn (The Open University)",
+  "url": "https://www.open.edu/openlearn/money-business/fundamentals-accounting/",
+  "hours": 8,
+  "cost": "Free (free statement of participation)",
+  "funding": "Free",
+  "skills": [
+   "accounting",
+   "bookkeeping"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "openlearn_bookkeeping",
+  "title": "Introduction to bookkeeping and accounting",
+  "provider": "OpenLearn (The Open University)",
+  "url": "https://www.open.edu/openlearn/money-business/introduction-bookkeeping-and-accounting/",
+  "hours": 8,
+  "cost": "Free (free statement of participation)",
+  "funding": "Free",
+  "skills": [
+   "bookkeeping"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "openlearn_hs_lab",
+  "title": "Health and safety in the laboratory and field",
+  "provider": "OpenLearn (The Open University)",
+  "url": "https://www.open.edu/openlearn/science-maths-technology/health-and-safety-the-laboratory-and-field/",
+  "hours": 1,
+  "cost": "Free (free statement of participation)",
+  "funding": "Free",
+  "skills": [
+   "hse_safety"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200",
+  "note": "UK law is used as the example."
+ },
+ {
+  "id": "openlearn_ishem",
+  "title": "Integrated safety, health and environmental management: An introduction",
+  "provider": "OpenLearn (The Open University)",
+  "url": "https://www.open.edu/openlearn/digital-computing/integrated-safety-health-and-environmental-management-an-introduction/",
+  "hours": 15,
+  "cost": "Free (free statement of participation)",
+  "funding": "Free",
+  "skills": [
+   "hse_safety"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "ocw_structural_design",
+  "title": "Structural Engineering Design (1.051)",
+  "provider": "MIT OpenCourseWare",
+  "url": "https://ocw.mit.edu/courses/1-051-structural-engineering-design-fall-2003/",
+  "hours": 40,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "structural_civil"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "ocw_project_mgmt",
+  "title": "Project Management (1.040)",
+  "provider": "MIT OpenCourseWare",
+  "url": "https://ocw.mit.edu/courses/1-040-project-management-spring-2009/",
+  "hours": 40,
+  "cost": "Free",
+  "funding": "Free",
+  "skills": [
+   "construction_mgmt",
+   "project_coordination"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "nptel_structural",
+  "title": "Structural Analysis I (IIT Bombay)",
+  "provider": "NPTEL (Indian Institutes of Technology)",
+  "url": "https://nptel.ac.in/courses/105101085",
+  "hours": 40,
+  "cost": "Free (recorded lectures)",
+  "funding": "Free",
+  "skills": [
+   "structural_civil"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200",
+  "note": "Recorded lectures; hours are an estimate."
+ },
+ {
+  "id": "autodesk_fusion",
+  "title": "Autodesk Fusion tutorials for beginners and students",
+  "provider": "Autodesk",
+  "url": "https://www.autodesk.com/solutions/design-manufacturing/fusion-tutorials",
+  "hours": 2,
+  "cost": "Free (the software is free for students, educators and hobbyists)",
+  "funding": "Free",
+  "skills": [
+   "cad_design"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "403 to automated checks; open it manually to confirm",
+  "note": "Opens in a browser; the site blocks automated link checks."
+ },
+ {
+  "id": "edx_circuits",
+  "title": "Principles of Electric Circuits (TsinghuaX)",
+  "provider": "edX (Tsinghua University)",
+  "url": "https://www.edx.org/learn/circuits/tsinghua-university-principles-of-electric-circuits-dian-lu-yuan-li",
+  "hours": 54,
+  "cost": "Free to audit (the certificate is paid)",
+  "funding": "Free (partly)",
+  "skills": [
+   "electrical_work",
+   "electronics"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200",
+  "note": "Listed as 18 weeks at 3 to 9 hours a week."
+ },
+ {
+  "id": "edx_health_informatics",
+  "title": "Health Informatics: The Cutting Edge (GTx)",
+  "provider": "edX (Georgia Institute of Technology)",
+  "url": "https://www.edx.org/learn/health-informatics/the-georgia-institute-of-technology-health-informatics-the-cutting-edge",
+  "hours": 50,
+  "cost": "Free to audit where offered (the certificate is paid)",
+  "funding": "Free (partly)",
+  "skills": [
+   "health_records"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200",
+  "note": "Listed as 5 weeks at 10 to 11 hours a week."
+ },
+ {
+  "id": "greatlearning_hotel",
+  "title": "Introduction to Hotel Management",
+  "provider": "Great Learning",
+  "url": "https://www.mygreatlearning.com/academy/learn-for-free/courses/introduction-to-hotel-management",
+  "hours": 2,
+  "cost": "Free to enrol (sign-up needed; the certificate is paid)",
+  "funding": "Free",
+  "skills": [
+   "hospitality"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200",
+  "note": "Hours are an estimate; the page does not state a clear length."
+ },
+ {
+  "id": "greatlearning_pr",
+  "title": "Public Relations and Strategic Communication",
+  "provider": "Great Learning",
+  "url": "https://www.mygreatlearning.com/academy/learn-for-free/courses/public-relations-and-strategic-communication",
+  "hours": 3.75,
+  "cost": "Free to enrol (sign-up needed; the certificate is paid)",
+  "funding": "Free",
+  "skills": [
+   "communications_pr"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "saylor_pr",
+  "title": "COMM411: Public Relations",
+  "provider": "Saylor Academy",
+  "url": "https://learn.saylor.org/course/COMM411",
+  "hours": 15,
+  "cost": "Free (free certificate of completion)",
+  "funding": "Free",
+  "skills": [
+   "communications_pr"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "coursera_pharmacy",
+  "title": "Pharmacy Dosages and Prescriptions Essentials",
+  "provider": "MedCerts, on Coursera",
+  "url": "https://www.coursera.org/learn/pharmacy-dosages-and-prescriptions-essentials",
+  "hours": 10,
+  "cost": "Free to enrol where offered; the certificate and some full access are paid",
+  "funding": "Free (partly)",
+  "skills": [
+   "pharmacy_support"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200"
+ },
+ {
+  "id": "danfoss_cooling",
+  "title": "Refrigeration and air conditioning eLessons",
+  "provider": "Danfoss Learning",
+  "url": "https://www.danfoss.com/en-in/service-and-support/learning/cooling-learning/",
+  "hours": 10,
+  "cost": "Free (an exam is needed for a certificate)",
+  "funding": "Free",
+  "skills": [
+   "hvac"
+  ],
+  "checked": "2026-10-31",
+  "linkStatus": "200",
+  "note": "Free lessons from an equipment maker for technicians and installers. Hours are an estimate."
  },
  {
   "id": "elatih",

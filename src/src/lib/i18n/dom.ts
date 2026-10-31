@@ -206,6 +206,8 @@ function applyComposite(el: Element, lang: Lang) {
   const children = Array.from(el.children);
   if (!children.some((c) => INLINE.has(c.tagName) && c.textContent?.trim())) return;
   if (children.some((c) => !INLINE.has(c.tagName))) return;
+  // A child drawn as its own line (a label with a sub-line under it) is a separate sentence, not part of this one.
+  if (children.some((c) => getComputedStyle(c).display === "block")) return;
   const nodes = textNodes(el);
   if (nodes.length < 2) return;
   const states = nodes.map((n) => {

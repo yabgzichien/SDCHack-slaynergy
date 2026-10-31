@@ -46,7 +46,7 @@ export function AnswersSummary({ cat, saved, onEdit, onStartOver, onContinue }: 
       { label: "Doing now", value: studying ? "Studying" : "Working, or looking for work" },
     ] },
     { step: "resume", title: STEP_LABEL.resume, facts: [
-      { label: "Resume score", value: resume ? <>{`${resume.score} out of 100`}<ResumeScoreExplain resume={resume} /></> : "Not scanned" },
+      { label: "Resume score", value: resume ? <>{`${resume.score} out of 100`}<ResumeScoreExplain resume={resume} className="ml-3 text-sm underline decoration-control underline-offset-2 hover:text-ink" /></> : "Not scanned" },
     ] },
     { step: "job", title: studying ? "Job or internship" : STEP_LABEL.job, facts: [
       { label: "Job", value: occ ? <>{occ.title}<span className="block text-sm text-muted">{sector(occ.sector)}</span></> : studying ? "None yet" : "Not picked yet" },

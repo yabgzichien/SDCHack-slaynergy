@@ -7,6 +7,12 @@ const SDG: Record<number, [string, string]> = {
   17: ["#19486A", "🤝"],
 };
 
+// The UN's own page for a goal.
+export const sdgUrl = (goal: number) => `https://sdgs.un.org/goals/goal${goal}`;
+
+// The official colour of a goal, for tinting anything that serves it.
+export const sdgColor = (goal: number) => (SDG[goal] ?? ["#64748b"])[0];
+
 export function SdgIcon({ goal, size = 44 }: { goal: number; size?: number }) {
   const [bg, glyph] = SDG[goal] ?? ["#64748b", "•"];
   return (
