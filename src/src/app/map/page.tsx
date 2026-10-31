@@ -81,7 +81,7 @@ export default function MapPage() {
 
   return (
     <div>
-      <PageTitle compact wide title={title}>Tap a state to compare it with {homeRow ? homeRow.short : "your state"}.</PageTitle>
+      <PageTitle compact wide title={title} titleStyle={{ fontSize: "clamp(1.5rem, 3.2vw, 1.75rem)", textWrap: "wrap" }}>Tap a state to compare it with {homeRow ? homeRow.short : "your state"}.</PageTitle>
 
       <Card tone="raised" className="min-w-0 p-3 sm:p-5">
         <div ref={pickerRef} className="scroll-mt-24 border-b border-line pb-3">

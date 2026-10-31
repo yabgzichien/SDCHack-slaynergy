@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { ExternalLink } from "lucide-react";
 import { sdgColor, sdgUrl } from "@/components/SdgIcon";
 
@@ -47,12 +47,12 @@ export function H({ children, sub, level = 2 }: { children: ReactNode; sub?: Rea
 }
 
 // The screen's title: one serif sentence that answers the screen's question, with one plain line under it.
-export function PageTitle({ title, titleAction, children, aside, compact = false, wide = false }: { step?: string; title: ReactNode; titleAction?: ReactNode; children?: ReactNode; aside?: ReactNode; compact?: boolean; wide?: boolean }) {
+export function PageTitle({ title, titleAction, titleStyle, children, aside, compact = false, wide = false }: { step?: string; title: ReactNode; titleAction?: ReactNode; titleStyle?: CSSProperties; children?: ReactNode; aside?: ReactNode; compact?: boolean; wide?: boolean }) {
   return (
     <header className={`${compact ? "mb-4" : "mb-8"} flex max-w-full flex-wrap items-end justify-between gap-4`}>
       <div className={`min-w-0 max-w-full flex-1 basis-[32rem] ${wide ? "" : "sm:max-w-3xl"}`}>
         <div className="flex items-start gap-2">
-          <h1 className={`greeting min-w-0 max-w-full flex-1 [overflow-wrap:anywhere] [text-wrap:balance] ${compact ? "text-[1.5rem] sm:text-[2rem]" : "text-[1.75rem] sm:text-[2.75rem]"}`}>{title}</h1>
+          <h1 style={titleStyle} className={`greeting min-w-0 max-w-full flex-1 [overflow-wrap:anywhere] [text-wrap:balance] ${compact ? "text-[1.5rem] sm:text-[2rem]" : "text-[1.75rem] sm:text-[2.75rem]"}`}>{title}</h1>
           {titleAction && <div className="relative mt-1 shrink-0 font-sans text-base leading-normal sm:mt-2">{titleAction}</div>}
         </div>
         {children && <p className={`${compact ? "mt-1.5 text-sm" : "mt-3 text-base"} text-muted`}>{children}</p>}
