@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useRef, useState } from "react";
-import { BriefcaseBusiness, Coins, MapPin, Plane, Users } from "lucide-react";
+import { BriefcaseBusiness, Coins, MapPin, Users } from "lucide-react";
 import { useApp } from "@/components/AppProvider";
 import { JobPicker, type PickKind } from "@/components/JobPicker";
 import { useSelectJob } from "@/components/useSelectJob";
@@ -29,7 +29,6 @@ export default function MapPage() {
   const [flash, setFlash] = useState(0);
   const pickerRef = useRef<HTMLDivElement>(null);
   const [measure, setMeasure] = useState<Measure>("jobs");
-  const [move, setMove] = useState(state?.profile?.move !== "stay");
   const [picked, setPicked] = useState<string | null>(null);
 
   const matches = view?.matches ?? [];
@@ -67,24 +66,22 @@ export default function MapPage() {
   const rows = fig.rows;
   const ranked = [...rows].sort((a, b) => b.workers - a.workers);
   const best = ranked.filter((r) => r.id !== home)[0];
-  const showMove = move || !home;
-  const sel = picked ?? (showMove ? best.id : home!);
+  const sel = picked ?? best.id;
   const selRow = rows.find((r) => r.id === sel)!;
   const homeRow = home ? rows.find((r) => r.id === home)! : null;
   const cmp = compareMove(sector, home, sel, group);
-  const job = role.title.toLowerCase();
+  // Keep the catalogue's sentence case so acronyms such as CAD, QA/QC and IT remain correct.
+  const job = role.title;
   const kindLabel = { suggested: "Suggested", current: "Your current job", other: "Not suggested", later: "Preview only" }[role.kind];
 
 
-  const title = !showMove && homeRow
-    ? `About ${people(homeRow.workers)} people in ${homeRow.short} do work like ${job}.`
-    : homeRow && best.workers > homeRow.workers
+  const title = homeRow && best.workers > homeRow.workers
     ? `${best.short} has ${times(best.workers / homeRow.workers)} as many jobs like ${job} as ${homeRow.short}.`
     : `${ranked[0].short} has the most jobs like ${job}: ${Math.round(ranked[0].share * 100)}% of Malaysia's.`;
 
   return (
     <div>
-      <PageTitle compact title={title}>Tap a state to compare it with {homeRow ? homeRow.short : "your state"}.</PageTitle>
+      <PageTitle compact wide title={title}>Tap a state to compare it with {homeRow ? homeRow.short : "your state"}.</PageTitle>
 
       <Card tone="raised" className="min-w-0 p-3 sm:p-5">
         <div ref={pickerRef} className="scroll-mt-24 border-b border-line pb-3">
@@ -118,21 +115,11 @@ export default function MapPage() {
                 {STATES.map((st) => <option key={st.id} value={st.id}>{st.name}</option>)}
               </Select>
             </label>
-            <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1.5 text-muted"><Plane size={15} aria-hidden />Would you move?</span>
-              <div role="radiogroup" aria-label="Would you move for work?" className="inline-grid grid-cols-2 gap-0.5 rounded-full bg-surface2 p-0.5">
-                {([[true, "Yes, anywhere"], [false, "No, stay home"]] as const).map(([v, l]) => (
-                  <button key={String(v)} role="radio" aria-checked={showMove === v} onClick={() => { setMove(v); setPicked(null); }} disabled={!v && !home}
-                    className={`press min-h-8 rounded-full px-3 text-sm ${showMove === v ? "bg-raised font-medium text-ink shadow-[0_1px_3px_rgb(0_0_0/0.12)]" : "text-muted"} disabled:opacity-40`}>{l}</button>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
-        <MalaysiaMap values={fig.values} bins={fig.bins} ramp={fig.ramp} selected={sel} home={home} dimOthers={!showMove} onSelect={setPicked}
+        <MalaysiaMap values={fig.values} bins={fig.bins} ramp={fig.ramp} selected={sel} home={home} dimOthers={false} onSelect={setPicked}
           ariaLabel={`Map of Malaysia's states shaded by ${fig.legend.toLowerCase()}. The table further down has the same figures.`} />
         <div className="mt-4"><MapLegend title={fig.legend} bins={fig.bins} ramp={fig.ramp} fmt={fig.fmt} home={!!home} /></div>
-        {!showMove && <p className="mt-3 text-sm text-muted">Showing your state only. Choose “Yes, anywhere” to compare all states.</p>}
       </Card>
 
       <div className="mt-4">
@@ -188,7 +175,7 @@ export default function MapPage() {
                 </tr>
               </thead>
               <tbody>
-                {(showMove ? ranked : ranked.filter((r) => r.id === home)).map((r) => (
+                {ranked.map((r) => (
                   <tr key={r.id} className={`border-t border-line ${r.id === sel ? "bg-accentsoft" : ""}`}>
                     <td className={`sticky left-0 z-10 py-2 pr-2 ${r.id === sel ? "bg-accentsoft" : "bg-surface"}`}>
                       <button onClick={() => setPicked(r.id)} className="inline-flex min-h-9 items-center gap-2 text-left">

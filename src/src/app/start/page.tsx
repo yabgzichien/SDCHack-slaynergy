@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   Award, BookOpen, BriefcaseBusiness, Calculator, CalendarClock, Clock, FlaskConical, GraduationCap, Hammer, HeartPulse,
-  Laptop, Leaf, Library, Microscope, Presentation, Scale, ScrollText, Sparkles, Users, Wrench, type LucideIcon,
+  Laptop, Leaf, Library, LoaderCircle, Microscope, Presentation, Scale, ScrollText, Sparkles, Users, Wrench, type LucideIcon,
 } from "lucide-react";
 import { useApp, type Catalog } from "@/components/AppProvider";
 import { StepBar } from "@/components/Journey";
@@ -190,7 +190,6 @@ function Wizard({ cat, edit, at, onExit }: { cat: Catalog; edit: boolean; at: nu
             </label>
             <div className="mt-8">
               <h2 className="text-lg font-medium">What are you doing now?</h2>
-              <p className="mb-3 mt-1 text-sm text-muted">Students plan towards graduation; everyone else towards a job deadline.</p>
               <Options value={d.status} cols={2} onPick={(v) => {
                 const st = v as Draft["status"];
                 set(st === "studying"
@@ -332,12 +331,14 @@ function Q({ title, help, children }: { title: string; help?: string; children: 
   useEffect(() => { if (!box.current?.contains(document.activeElement)) ref.current?.focus({ preventScroll: true }); }, [title]);
   return (
     <section ref={box}>
-      <div className="flex items-center justify-between gap-4">
-        <h1 ref={ref} tabIndex={-1} className="greeting text-[1.75rem] outline-none sm:text-[2.6rem]">{title}</h1>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0 pt-1">
+          <h1 ref={ref} tabIndex={-1} className="greeting text-[1.75rem] outline-none sm:text-[2.6rem]">{title}</h1>
+          {help && <p className="mt-1 text-base text-muted">{help}</p>}
+        </div>
         <Image src="/cockatiel-thinking.png" alt="" width={88} height={88} className="h-16 w-16 shrink-0 object-contain sm:h-20 sm:w-20" />
       </div>
-      {help && <p className="mt-3 text-base text-muted">{help}</p>}
-      <div className="about-you-information-frame mt-8">{children}</div>
+      <div className="about-you-information-frame mt-6">{children}</div>
     </section>
   );
 }
@@ -528,8 +529,18 @@ function ResumeStep({ d, setD, cat, report, setReport, onDone, autoSample }: { d
   }
   return (
     <Q title="Do you have a resume to scan?" help="It saves typing: we read your last job, years and skills from it, and score it out of 100. It is read in memory and never saved.">
-      {!paste ? (
-        <div className="grid gap-2">
+      <div className="relative" aria-busy={busy}>
+        {busy && (
+          <div className="absolute inset-0 z-10 grid place-items-center" role="status" aria-live="polite">
+            <span className="flex items-center gap-3 rounded-full bg-raised/95 px-5 py-3 font-medium text-ink shadow-lg ring-1 ring-line">
+              <LoaderCircle size={22} className="animate-spin text-accentink" aria-hidden />
+              {useAi ? "Reading and evaluating your resume…" : "Reading your resume…"}
+            </span>
+          </div>
+        )}
+        <fieldset disabled={busy} className={`min-w-0 border-0 p-0 transition-opacity duration-200 ${busy ? "opacity-40" : "opacity-100"}`}>
+        {!paste ? (
+          <div className="grid gap-2">
           <button type="button" onClick={() => fileRef.current?.click()} disabled={busy}
             onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) upload(f); }}
             className="press flex min-h-24 flex-col items-start justify-center rounded-2xl bg-surface px-5 text-left hover:bg-surface2 disabled:opacity-50">
@@ -544,9 +555,9 @@ function ResumeStep({ d, setD, cat, report, setReport, onDone, autoSample }: { d
             <span><span className="block text-base font-semibold">Use a demo resume</span><span className="block text-sm">New here? One click fills in every answer for you.</span></span>
           </button>
           <button type="button" onClick={onDone} className="press flex min-h-14 items-center rounded-2xl px-5 text-left underline decoration-control underline-offset-2">No resume, I will answer questions</button>
-        </div>
-      ) : (
-        <div>
+          </div>
+        ) : (
+          <div>
           <textarea value={text} onChange={(e) => setText(e.target.value)} rows={9} autoFocus aria-label="Resume text" placeholder="Paste your resume text here"
             className="w-full rounded-2xl border border-control bg-raised p-4 text-sm" />
           <div className="mt-3 flex flex-wrap gap-2">
@@ -554,13 +565,15 @@ function ResumeStep({ d, setD, cat, report, setReport, onDone, autoSample }: { d
             <Btn variant="ghost" onClick={() => setPaste(false)}>Back to upload</Btn>
           </div>
           <p className="mt-2 text-sm text-muted">At least about 40 words.</p>
-        </div>
-      )}
-      <label className="flex cursor-pointer items-start gap-3 mt-3 rounded-2xl px-5 py-3 text-sm">
-        <input type="checkbox" checked={useAi} onChange={(e) => setUseAi(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-[var(--accent)]" />
-        <span><b>Also let AI read it.</b> An AI model suggests extra skills and better wording. Nothing is changed for you; you choose what to use. If you allow AI, the text is sent once to an AI model (DeepSeek through our LLM gateway, or Qwen on RunPod or Groq as backups) to read it.</span>
-      </label>
-      {err && <p role="alert" className="mt-3 text-sm text-negative">{err}</p>}
+          </div>
+        )}
+        <label className="flex cursor-pointer items-start gap-3 mt-3 rounded-2xl px-5 py-3 text-sm">
+          <input type="checkbox" checked={useAi} onChange={(e) => setUseAi(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-[var(--accent)]" />
+          <span><b>Also let AI read it.</b> An AI model suggests extra skills and better wording. Nothing is changed for you; you choose what to use. If you allow AI, the text is sent once to an AI model (DeepSeek through our LLM gateway, or Qwen on RunPod or Groq as backups) to read it.</span>
+        </label>
+        {err && <p role="alert" className="mt-3 text-sm text-negative">{err}</p>}
+        </fieldset>
+      </div>
     </Q>
   );
 }

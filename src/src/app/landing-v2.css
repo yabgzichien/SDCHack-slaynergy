@@ -499,6 +499,9 @@
 /* Skills page title: heavy sans with the key phrase on a marker stripe */
 .app-page-main .greeting .skills-title { font-family:var(--font-sans); font-weight:800; letter-spacing:-.035em; line-height:1.14; color:#223d33; }
 .skills-title mark { color:#2f5d45; background:linear-gradient(transparent 58%, #f6c47f 58%, #f6c47f 94%, transparent 94%); border-radius:6px; padding:0 .18em; margin:0 -.1em; -webkit-box-decoration-break:clone; box-decoration-break:clone; }
+.skills-safe-highlight { color:var(--ink); background:rgb(245 221 163 / .48); border-radius:.35em; padding:.08em .3em; -webkit-box-decoration-break:clone; box-decoration-break:clone; }
+.skills-page > div:has(> .source-disclosure-toggle) .source-disclosure-toggle { position:relative; padding-right:80px; }
+.skills-page > div:has(> .source-disclosure-toggle) .source-disclosure-toggle::after { content:""; position:absolute; right:8px; bottom:3px; width:62px; height:62px; background:url("/cockatiel-peeking.png") center / contain no-repeat; pointer-events:none; }
 @media (min-width:900px) {
   .skills-page > header > div { max-width:none; flex-basis:100%; }
   .skills-page .greeting { white-space:nowrap; font-size:clamp(1.75rem,2.4vw,2.25rem); }

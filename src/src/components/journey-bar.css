@@ -1,6 +1,6 @@
 /* Journey bar: five segmented pills on one rounded track, the bird walking above. */
 .jbar { position:relative; z-index:1; border-bottom:1px solid var(--line); background:rgba(255,255,255,.72); font-family:var(--font-instrument-sans),sans-serif; }
-.jbar.is-inline { margin-bottom:36px; border-bottom:0; background:transparent; }
+.jbar.is-inline { margin-bottom:16px; border-bottom:0; background:transparent; }
 .jbar-inner { width:min(calc(100% - 48px),1120px); margin:0 auto; padding:4px 0 14px; }
 .jbar.is-inline .jbar-inner { width:100%; }
 .jbar-row { position:relative; padding-top:50px; }

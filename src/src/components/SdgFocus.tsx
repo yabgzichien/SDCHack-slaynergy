@@ -9,9 +9,9 @@ const ALL_GOALS = Array.from({ length: 17 }, (_, i) => i + 1);
 // A row of tiles for the UN goals that something on the page serves (a goal with a count of zero has nothing to reorder, so it is
 // left out, unless it is chosen, so it can still be switched off). A tile turns a whole goal on or off. serving counts what each tile stands for: "yours" is the person's own skills, "page" is
 // the jobs and skills listed on the page. showPlan adds the link to the plan's contribution (only useful with a profile).
-export function SdgFocus({ chosen, available, serving, busy, onToggle, onClear, count = "yours", showPlan = true }: {
+export function SdgFocus({ chosen, available, serving, busy, onToggle, onClear, count = "yours", showPlan = true, showInstruction = true }: {
   chosen: Set<number>; available: Set<number>; serving: Map<number, number>; busy: boolean; onToggle: (goal: number) => void; onClear: () => void;
-  count?: "yours" | "page"; showPlan?: boolean;
+  count?: "yours" | "page"; showPlan?: boolean; showInstruction?: boolean;
 }) {
   const { t } = useT();
   const names = [...chosen].sort((a, b) => a - b).join(", ");
@@ -41,11 +41,11 @@ export function SdgFocus({ chosen, available, serving, busy, onToggle, onClear, 
             {showPlan && <Link href="/plan#sdg-path" className="underline decoration-control underline-offset-2 hover:text-ink">See how your plan serves them</Link>}
             <button type="button" onClick={onClear} disabled={busy} className="min-h-11 text-muted underline decoration-control underline-offset-2 hover:text-ink">Clear my choice</button>
           </>
-        ) : (
+        ) : showInstruction ? (
           <p className="text-muted">{count === "page"
             ? "Pick none, one or several. The number on a tile is how many jobs and skills listed below serve that goal."
             : "Pick none, one or several. The number on a tile is how many of your skills serve that goal."}</p>
-        )}
+        ) : null}
       </div>
     </div>
   );

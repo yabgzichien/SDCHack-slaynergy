@@ -112,7 +112,7 @@ export default function TrendsPage() {
           </ul>
           <SourceDisclosure>
             <SourceChip {...r.sources[2]} />
-            <SourceChip name="UN Sustainable Development Goals icons" date="Goal numbers and pictograms" url="https://open-sdg.org/translations-un-sdg/" />
+            <SourceChip name="UN Sustainable Development Goals" date="Goal numbers and pictograms" url="https://www.un.org/sustainabledevelopment/" />
             <p className="text-xs text-muted">The content of this publication has not been approved by the United Nations and does not reflect the views of the United Nations or its officials or Member States.</p>
           </SourceDisclosure>
         </Card>
@@ -139,7 +139,7 @@ export default function TrendsPage() {
           <ul className="statistics-skill-list">{first(r.rising).map((s) => <li key={s.skillId} className="statistics-skill-row" style={tint(s)}><span className="min-w-0"><span className="block">{s.name}</span><span className="num mt-0.5 block text-xs text-muted">{s.durable ? "Safe past 2040" : `AI shift ${s.byFuture[speed]}`}</span></span><SdgTag target={s.sdgTarget} highlight={hit(s)} /></li>)}</ul>
           <SourceDisclosure>
             {r.sources.map((s) => <SourceChip key={s.name} name={s.name} date={s.date} url={s.url} />)}
-            <SourceChip name="UN Sustainable Development Goals icons" date="Goal numbers and pictograms" url="https://open-sdg.org/sdg-translations/icons/" />
+            <SourceChip name="UN Sustainable Development Goals" date="Goal numbers and pictograms" url="https://www.un.org/sustainabledevelopment/" />
             <p className="text-xs text-muted">The content of this publication has not been approved by the United Nations and does not reflect the views of the United Nations or its officials or Member States.</p>
           </SourceDisclosure>
         </Card>

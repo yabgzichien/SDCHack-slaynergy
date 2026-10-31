@@ -3,7 +3,7 @@
 import sharp from "sharp";
 import { fileURLToPath } from "node:url";
 
-for (const goal of [6, 7, 8, 9, 12, 16]) {
+for (const goal of Array.from({ length: 17 }, (_, i) => i + 1)) {
   const input = fileURLToPath(new URL(`../public/sdg-icons/goal-${goal}-original.png`, import.meta.url));
   const output = fileURLToPath(new URL(`../public/sdg-icons/goal-${goal}.png`, import.meta.url));
   const { data } = await sharp(input).extract({ left: 0, top: 0, width: 1, height: 1 }).raw().toBuffer({ resolveWithObject: true });

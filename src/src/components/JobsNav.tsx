@@ -7,7 +7,7 @@ export function JobsNav({ showOthers }: { showOthers: boolean }) {
     { id: "best-job", label: "Your best job" },
     ...(showOthers ? [{ id: "others", label: "Other good matches" }] : []),
     { id: "where", label: "Where in Malaysia" },
-    { id: "keep-job", label: "Or keep your job for now" },
+    { id: "keep-job", label: "Not ready to change jobs?" },
   ], [showOthers]);
   const [active, setActive] = useState(sections[0].id);
 

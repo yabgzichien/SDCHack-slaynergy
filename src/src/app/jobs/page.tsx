@@ -154,22 +154,21 @@ export default function JobsPage() {
         </Stop>
 
         <section id="keep-job">
-          <h2 className="mb-4 text-xl font-bold sm:text-2xl">Or keep your job for now</h2>
-          <div className="grid gap-4 lg:grid-cols-12">
-            <div className="lg:col-span-8">{stayCard}</div>
-            <div className="space-y-4 lg:col-span-4">
-              {bridge && view.stay?.status !== "fast" && (
-                <Card>
-                  <h3 className="text-base font-semibold">Need income sooner?</h3>
-                  <p className="mt-1 text-sm"><b className="font-medium">{bridge.title}</b> needs about {bridge.weeks} weeks. AI may take over its skills sooner, so use it to earn money while you train for {best.title.toLowerCase()}.</p>
-                  <Link href={`/jobs/${bridge.roleId}`} className="mt-2 inline-block text-sm underline decoration-control underline-offset-2 hover:text-ink">See this short-term job</Link>
-                </Card>
-              )}
-              <LinkRow href="/goals" aside={<ChevronRight size={18} className="text-muted" aria-hidden />}>
-                <p className="flex items-center gap-2 font-medium"><HandHeart size={18} strokeWidth={1.8} aria-hidden />Causes you care about</p>
-                <p className="text-sm text-muted">{goals ? goals : "Jobs that serve them move up your list"}</p>
-              </LinkRow>
-            </div>
+          <h2 className="text-xl font-bold sm:text-2xl">Not ready to change jobs yet?</h2>
+          <p className="mb-4 mt-1 text-sm text-muted">Keep your current job for now, or shape your future recommendations around what matters to you.</p>
+          {stayCard}
+          <div className={`mt-4 grid gap-4 ${bridge && view.stay?.status !== "fast" ? "md:grid-cols-2" : ""}`}>
+            {bridge && view.stay?.status !== "fast" && (
+              <Card>
+                <h3 className="text-base font-semibold">Need income sooner?</h3>
+                <p className="mt-1 text-sm"><b className="font-medium">{bridge.title}</b> needs about {bridge.weeks} weeks. AI may take over its skills sooner, so use it to earn money while you train for {best.title.toLowerCase()}.</p>
+                <Link href={`/jobs/${bridge.roleId}`} className="mt-2 inline-block text-sm underline decoration-control underline-offset-2 hover:text-ink">See this short-term job</Link>
+              </Card>
+            )}
+            <LinkRow href="/goals" aside={<ChevronRight size={18} className="text-muted" aria-hidden />}>
+              <p className="flex items-center gap-2 font-semibold"><HandHeart size={18} strokeWidth={1.8} aria-hidden />Choose causes you care about</p>
+              <p className="text-sm text-muted">{goals ? goals : "We’ll move jobs that support those causes higher in your recommendations."}</p>
+            </LinkRow>
           </div>
         </section>
         </div>

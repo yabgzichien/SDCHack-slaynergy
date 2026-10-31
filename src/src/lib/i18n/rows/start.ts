@@ -73,7 +73,6 @@ export const START: Row[] = [
   ["Including if you lost your job", "Termasuk jika anda kehilangan pekerjaan", "包括刚失业的情况", "வேலை இழந்திருந்தாலும் அடங்கும்"],
   ["Studying", "Belajar", "在学习", "படிக்கிறேன்"],
   ["Diploma, degree, master's, PhD or postdoc", "Diploma, ijazah, sarjana, PhD atau pasca doktoral", "文凭、学士、硕士、博士或博士后", "பட்டயம், பட்டம், முதுகலை, முனைவர் அல்லது முனைவர் பட்டத்திற்குப் பிந்தையது"],
-  ["Students plan towards graduation; everyone else towards a job deadline.", "Pelajar merancang ke arah tamat pengajian; yang lain ke arah tarikh akhir pekerjaan.", "学生围绕毕业来规划；其他人围绕找工作的期限来规划。", "மாணவர்கள் பட்டம் பெறுவதை நோக்கித் திட்டமிடுகிறார்கள்; மற்றவர்கள் வேலை காலக்கெடுவை நோக்கி."],
   ["What was your last job?", "Apakah pekerjaan terakhir anda?", "你上一份工作是什么？", "உங்கள் கடைசி வேலை என்ன?"],
   ["Any part-time job or internship?", "Ada kerja separuh masa atau latihan industri?", "有兼职工作或实习吗？", "ஏதேனும் பகுதிநேர வேலை அல்லது பயிற்சி உண்டா?"],
   ["Pick the closest one, or choose none. It tells us which skills you probably have.", "Pilih yang paling hampir, atau tiada. Ia memberitahu kami kemahiran yang mungkin anda ada.", "选最接近的一项，或者都不选。它能让我们知道你可能具备哪些技能。", "மிக நெருக்கமானதைத் தேர்ந்தெடுங்கள், அல்லது எதுவும் இல்லை. உங்களிடம் எந்தத் திறன்கள் இருக்கக்கூடும் என்பதை இது எங்களுக்குச் சொல்கிறது."],

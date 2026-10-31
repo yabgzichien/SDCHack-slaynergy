@@ -5,7 +5,7 @@ import type { Finding, ResumeAnalysis } from "@/lib/engine/resume";
 import type { AiRead } from "@/lib/server/ai-resume";
 import { ResumeGraphic } from "@/components/ResumeGraphic";
 import { ResumeOriginal, type ResumeSource } from "@/components/ResumeOriginal";
-import { ResumeBaseline, ResumeScoreExplain } from "@/components/ResumeScoreExplain";
+import { ResumeScoreExplain } from "@/components/ResumeScoreExplain";
 import { ScoreRing } from "@/components/ScoreRing";
 import { Btn, Card, Chip } from "@/components/ui";
 
@@ -28,17 +28,23 @@ export function ResumeReport({ analysis: a, ai, aiStatus, fileName, source, onAg
 
   return (
     <div className="space-y-5">
-      <Card className="grid items-center gap-6 sm:grid-cols-[auto_1fr]">
+      <Card className="relative grid items-center gap-6 sm:grid-cols-[auto_1fr]">
+        <details className="group absolute right-4 top-4 z-20">
+          <summary className="press grid h-9 w-9 cursor-pointer list-none place-items-center rounded-full bg-surface2 font-bold text-ink ring-1 ring-line hover:bg-control/60 [&::-webkit-details-marker]:hidden" aria-label="Resume score benchmark">
+            !
+          </summary>
+          <p className="absolute right-0 top-11 w-[min(19rem,calc(100vw-4rem))] rounded-2xl bg-raised p-4 text-sm font-normal text-muted shadow-lg ring-1 ring-line">
+            Aim for 75 out of 100 or more. We count 55 as good and 75 as strong. These marks are our own rules, not a hiring standard.
+          </p>
+        </details>
         <div className="mx-auto"><ScoreRing value={a.score} label="resume score" color={bandColor} /></div>
-        <div>
+        <div className="pr-8 sm:pr-10">
           <Chip tone={a.band === "strong" ? "rise" : a.band === "good" ? "accent" : "fall"}>{a.band === "needs work" ? "Needs work" : a.band === "good" ? "Good start" : "Strong"}</Chip>
-          <h2 className="mt-2 text-2xl font-bold">{a.headline}</h2>
-          <ResumeBaseline className="mt-2" />
-          <p className="mt-2 text-muted">
+          <h2 className="mt-3 text-xl font-bold leading-snug text-ink">
             {a.occupation && <>{`Reads as: ${a.occupation.title}.`}{" "}</>}
             {a.years !== null && a.years > 0 && <>{a.years === 1 ? "1 year of experience." : `${a.years} years of experience.`}{" "}</>}
             {skillCount === 1 ? "1 skill found; you confirm it next." : `${skillCount} skills found; you confirm them next.`}
-          </p>
+          </h2>
           {potential > 0 && high.length > 0 && <p className="mt-1 text-muted">Fixing the high-impact items could add up to <b className="num text-ink">{potential} points</b>.</p>}
           <p className="mt-3 text-xs text-muted">
             Scanned: {fileName}.

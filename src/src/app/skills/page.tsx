@@ -8,6 +8,8 @@ import { useSpeed } from "@/components/useSpeed";
 import { ExpiryAxis, ExpiryTrack } from "@/components/ExpiryTrack";
 import { Btn, Card, Chip, Estimate, FUTURE_COLOR, More, NextRow, PageTitle, Skeleton, SourceChip, sdgName } from "@/components/ui";
 import { SdgFocus } from "@/components/SdgFocus";
+import { ReleaseInfo } from "@/components/ReleaseInfo";
+import { SourceDisclosure } from "@/components/SourceDisclosure";
 import { SdgIcon, sdgColor, sdgUrl } from "@/components/SdgIcon";
 import { sdg as SDG_TARGETS } from "@/lib/engine/data";
 import { focusGoals, goalOf, goalTint, orderByGoals, targetsByGoal, toggleGoal } from "@/lib/sdgFocus";
@@ -64,15 +66,13 @@ export default function SkillsPage() {
     <div className="skills-page">
       <PageTitle title={<span className="skills-title">{fading.length
         ? (lang === "en" ? <>AI could do most of <mark>{fading.length} of your {mine.length} skills</mark> before 2031.</> : `AI could do most of ${fading.length} of your ${mine.length} skills before 2031.`)
-        : (lang === "en" ? <>AI is unlikely to take over <mark>any of your {mine.length} skills</mark> before 2031.</> : `AI is unlikely to take over any of your ${mine.length} skills before 2031.`)}</span>}>
-        Each date below is roughly when AI could do most of the work for that skill{previewing ? `, if AI improves ${SPEED[speed].name.toLowerCase()}` : ""}. After that date, the skill alone is less likely to get you hired. {lasting.length ? `Your safest skills: ${lasting.slice(0, 2).map((s) => s.name.toLowerCase()).join(" and ")}.` : ""}
+        : (lang === "en" ? <>AI is unlikely to take over <mark>any of your {mine.length} skills</mark> before 2031.</> : `AI is unlikely to take over any of your ${mine.length} skills before 2031.`)}</span>}
+        titleAction={<ReleaseInfo label="About these skill dates">Each date below is roughly when AI could do most of the work for that skill{previewing ? `, if AI improves ${SPEED[speed].name.toLowerCase()}` : ""}. After that date, the skill alone is less likely to get you hired.</ReleaseInfo>}>
+        {lasting.length ? <>Your safest skills: {lasting.slice(0, 2).map((s, i) => <span key={s.skillId}>{i > 0 && " and "}<mark className="skills-safe-highlight">{s.name}</mark></span>)}.</> : null}
       </PageTitle>
 
       <Card tone="raised">
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="text-base font-semibold">How fast is AI getting better?</h2>
-          <SourceChip name={pace.source.name} date={`to ${pace.asOf.replace("Q", " Q")}`} url={pace.source.url} />
-        </div>
+        <h2 className="text-xl font-bold sm:text-2xl">How fast is AI getting better?</h2>
         <p className="mt-1 text-sm text-muted">We measure this by how long a task AI can finish without help. Nobody knows the future speed: Our forecast blends the three, or pick one to see how your dates change. Your pick also re-ranks your jobs.</p>
         <div role="radiogroup" aria-label="Speed of AI progress" className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
           {options.map((f) => {
@@ -87,7 +87,7 @@ export default function SkillsPage() {
                 <span className="min-w-0 flex-1">
                   {/* translated here: the page translator would read the name and "44% likely" as one sentence */}
                   <span className="flex items-baseline justify-between gap-2" data-no-translate>
-                    <span className="font-medium">{t(SPEED[f.id].name)}</span>
+                    <span className="text-lg font-bold">{t(SPEED[f.id].name)}</span>
                     <span className={`num text-sm ${on ? "opacity-80" : "text-muted"}`}>{f.likely}</span>
                   </span>
                   <span className="mt-0.5 block text-sm"><span className="num text-lg font-medium">AI gets twice as capable every {months(f.doublingMonths)} months</span></span>
@@ -103,9 +103,15 @@ export default function SkillsPage() {
       </Card>
 
       <Card className="mt-4">
-        <h2 className="text-base font-semibold">Which UN goals do you want to build your working life around?</h2>
-        <p className="mb-4 mt-1 text-sm text-muted">Each skill serves one of the UN Sustainable Development Goals. Pick the goals you care about and the skills that serve them move to the top of your list, in the goal&apos;s colour. Jobs that serve them move up too.</p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-bold sm:text-2xl">Which UN goals do you want to build your working life around?</h2>
+            <p className="mb-4 mt-1 text-sm text-muted">Pick none, one or several. The number on a tile is how many of your skills serve that goal.</p>
+          </div>
+          <ReleaseInfo label="How UN goals affect your results">Each skill serves one of the UN Sustainable Development Goals. Pick the goals you care about and the skills that serve them move to the top of your list, in the goal&apos;s colour. Jobs that serve them move up too.</ReleaseInfo>
+        </div>
         <SdgFocus chosen={chosen} available={new Set(byGoal.keys())} serving={serving} busy={busy}
+          showInstruction={false}
           onToggle={(g) => saveGoals(toggleGoal(state.goals, g, byGoal.get(g) ?? []))}
           onClear={() => saveGoals([])} />
       </Card>
@@ -146,11 +152,13 @@ export default function SkillsPage() {
         </ul>
         <div className="mt-1 px-4"><ExpiryAxis /></div>
         <p className="mt-3 text-xs text-muted">{previewing ? "The date on the right: when AI could do most of this skill. Big dot: the speed you picked. Small dots: the other two speeds." : "The date on the right: when AI could do most of this skill under Our forecast. Dots: the three speeds."}</p>
-        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
-          {view.radar.sources.slice(0, 2).map((x) => <SourceChip key={x.name} name={x.name} date={x.date} url={x.url} />)}
-        </div>
         <div className="mt-2"><Estimate /></div>
       </Card>
+
+      <SourceDisclosure>
+        <SourceChip name={pace.source.name} date={`to ${pace.asOf.replace("Q", " Q")}`} url={pace.source.url} />
+        {view.radar.sources.slice(0, 2).map((x) => <SourceChip key={x.name} name={x.name} date={x.date} url={x.url} />)}
+      </SourceDisclosure>
 
       <NextRow back="/start" next="/jobs" nextLabel="Next: jobs for you" />
     </div>
