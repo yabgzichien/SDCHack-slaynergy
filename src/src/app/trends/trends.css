@@ -17,6 +17,16 @@
     opacity: 0;
     transform: translateY(14px);
   }
+
+  .statistics-page.statistics-motion-ready .statistics-reveal-item {
+    transition: opacity 340ms ease-out, transform 340ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition-delay: var(--statistics-reveal-delay, 0ms);
+  }
+
+  .statistics-page.statistics-motion-ready .statistics-reveal-item:not(.is-visible):not(:focus-within) {
+    opacity: 0;
+    transform: translateY(10px);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -278,6 +288,58 @@
   pointer-events: none;
 }
 
+.statistics-job-list > li {
+  min-height: 68px;
+}
+
+.statistics-job-sdg {
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 5px;
+  object-fit: cover;
+}
+
+.statistics-skill-list {
+  display: grid;
+  gap: 2px;
+}
+
+.statistics-skill-row {
+  display: flex;
+  min-height: 54px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: 14px;
+  padding: 4px 8px;
+  font-size: 0.875rem;
+  line-height: 1.35;
+  transition: background-color 140ms ease;
+}
+
+.statistics-skill-row:hover {
+  background: rgb(255 255 255 / 72%);
+}
+
+.statistics-skill-sdg {
+  width: 42px;
+  height: 42px;
+  flex: none;
+  border-radius: 5px;
+}
+
+@media (max-width: 440px) {
+  .statistics-job-sdg {
+    width: 38px;
+    height: 38px;
+  }
+
+  .statistics-job-list > li {
+    min-height: 64px;
+  }
+}
+
 .statistics-page .job-group-card {
   padding: 16px 14px 10px;
   border: 1px solid color-mix(in srgb, var(--exposure-color) 30%, var(--raised));
@@ -327,3 +389,84 @@
   .counsellor-hero-art { top: 0; width: 140px; height: 98px; }
   .counsellor-hero-mascot { right: 20px; bottom: -18px; width: 116px; filter: none; }
 }
+
+/* Keep the Trends illustration beside its description, independent of the shared Courses hero. */
+.statistics-trends-page > .statistics-hero {
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.statistics-trends-page .statistics-trends-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  max-width: none;
+}
+
+.statistics-trends-page .statistics-trends-heading h1 {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.statistics-trends-page h1.statistics-hero-title {
+  padding-right: 0;
+}
+
+.statistics-trends-page .statistics-hero-banner {
+  position: relative;
+  align-items: center;
+  min-height: 0;
+  padding-right: 310px;
+}
+
+.statistics-trends-page .statistics-hero-art {
+  top: auto;
+  right: 0;
+  bottom: -16px;
+  width: 290px;
+  height: 218px;
+}
+
+.statistics-trends-page .statistics-hero-mascot {
+  right: 0;
+  width: 290px;
+}
+
+@media (max-width: 700px) {
+  .statistics-trends-page .statistics-trends-heading h1 {
+    max-width: calc(100% - 210px);
+  }
+
+  .statistics-trends-page .statistics-hero-banner {
+    padding: 16px;
+  }
+
+  .statistics-trends-page .statistics-hero-art {
+    top: -110px;
+    right: 0;
+    bottom: auto;
+    width: 160px;
+    height: 120px;
+  }
+
+  .statistics-trends-page .statistics-hero-mascot {
+    width: 160px;
+  }
+}
+
+@media (max-width: 440px) {
+  .statistics-trends-page .statistics-trends-heading h1 {
+    max-width: calc(100% - 160px);
+  }
+
+  .statistics-trends-page .statistics-hero-art,
+  .statistics-trends-page .statistics-hero-mascot {
+    width: 110px;
+  }
+
+  .statistics-trends-page .statistics-hero-art {
+    top: -70px;
+    height: 83px;
+  }
+}
+

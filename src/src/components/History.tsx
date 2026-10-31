@@ -86,15 +86,15 @@ function PastNote() {
 // A question that was open on the picked day, shown the way the Forecast page shows any answered question.
 export function PastQuestionCard({ q }: { q: OpenThen }) {
   return (
-    <div className="flex h-full flex-col rounded-[22px] border border-[#cfd6df] bg-[#eef1f5] p-5 text-[#3c4655]">
-      <div className="flex items-center justify-between gap-2"><AnsweredBadge /><span className="text-xs text-[#6b7686]">{topicOf(q.id).tag}</span></div>
-      <div className="mt-3 flex items-start gap-3">
-        <span className="grayscale"><EventIcon eventId={q.id} size={36} /></span>
-        <p className="min-w-0 font-medium leading-snug">{q.title}</p>
+    <div className="question-card question-card--answered">
+      <div className="question-card-status"><AnsweredBadge /><span className="question-card-topic">{topicOf(q.id).tag}</span></div>
+      <div className="question-card-heading">
+        <EventIcon eventId={q.id} size={36} />
+        <p>{q.title}</p>
       </div>
-      <p className="mt-2 text-sm">{q.text}</p>
-      {q.answer && <div className="mt-3"><AnswerStamp yes={q.answer.outcome} /></div>}
-      <p className="mt-auto pt-4 text-xs text-[#6b7686]">{q.answer ? `Settled ${dayLabel(q.answer.day)} with the real figures.` : "Not answered yet."}</p>
+      <p className="question-card-question">{q.text}</p>
+      {q.answer && <div className="question-card-result"><AnswerStamp yes={q.answer.outcome} /></div>}
+      <p className="question-card-footnote">{q.answer ? `Settled ${dayLabel(q.answer.day)} with the real figures.` : "Not answered yet."}</p>
     </div>
   );
 }

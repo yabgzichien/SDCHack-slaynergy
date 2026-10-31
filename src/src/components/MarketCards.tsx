@@ -1,12 +1,14 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Briefcase, Bug, Check, ChevronLeft, ChevronRight, GraduationCap, Lock, Terminal, Timer, X, type LucideIcon } from "lucide-react";
+import { Briefcase, Bug, Check, ChevronLeft, ChevronRight, CircleAlert, GraduationCap, Lock, Terminal, Timer, X, type LucideIcon } from "lucide-react";
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { EventView, StrikeView } from "@/lib/engine/world";
 import { sourceById } from "@/lib/engine/data";
 import { epochSettleDay } from "@/lib/engine/questions";
 import { Chip } from "./ui";
+import { MarketOddsBar } from "./MarketOddsBar";
+import "./MarketCards.css";
 
 // Market cards: each question is one event with three answers (easier to harder), each with its own
 // chance and colour. The colours are shared with the question page so a line means the same thing everywhere.
@@ -25,7 +27,7 @@ export function EventIcon({ eventId, size = 40 }: { eventId: string; size?: numb
   const t = topicOf(eventId);
   const Icon = t.icon;
   return (
-    <span className="inline-flex shrink-0 items-center justify-center rounded-xl text-white" style={{ width: size, height: size, background: `linear-gradient(135deg, ${t.tint}, ${t.tint}bb)` }} aria-hidden>
+    <span className="market-event-icon inline-flex shrink-0 items-center justify-center" style={{ width: size, height: size }} aria-hidden>
       <Icon size={size * 0.5} strokeWidth={1.9} />
     </span>
   );
@@ -38,12 +40,12 @@ function OddsPill({ s }: { s: StrikeView }) {
   return <span className="num inline-flex min-w-[4.5rem] items-center justify-center rounded-xl border border-rise/60 px-3 py-1.5 text-base font-medium text-rise">{Math.round(s.price * 100)}%</span>;
 }
 
-function OptionRow({ s, i, compact }: { s: StrikeView; i: number; compact?: boolean }) {
+function OptionRow({ s, compact }: { s: StrikeView; compact?: boolean }) {
   return (
     <div className="flex items-center gap-3">
       <div className="min-w-0 flex-1">
         <p className={`leading-snug ${compact ? "text-sm" : ""}`}>{s.label}</p>
-        <div className="mt-1 h-0.5 rounded-full" style={{ width: `${Math.max(6, yesOf(s) * 100)}%`, background: STRIKE_COLORS[i] }} aria-hidden />
+        <div className="mt-2"><MarketOddsBar yes={yesOf(s)} compact /></div>
       </div>
       <OddsPill s={s} />
     </div>
@@ -83,40 +85,44 @@ export function MarketCard({ e }: { e: EventView }) {
   const held = e.strikes.some((s) => s.position.yes > 1e-6 || s.position.no > 1e-6);
   const main = e.strikes[1] ?? e.strikes[0];
   const href = `/market/${encodeURIComponent(e.id)}`;
+  const answerSource = `Answer comes from: ${e.settles.replace(/ \(.*\)$/, "")}`;
   if (e.settled) {
     const pnl = e.strikes.reduce((a, s) => a + (s.settled?.pnl ?? 0), 0);
     return (
-      <Link href={href} className="press flex h-full flex-col rounded-[22px] border border-[#cfd6df] bg-[#eef1f5] p-5 text-[#3c4655] hover:bg-[#e6eaf0]">
-        <div className="flex items-center justify-between gap-2"><AnsweredBadge /><span className="text-xs text-[#6b7686]">{topicOf(e.id).tag}</span></div>
-        <div className="mt-3 flex items-start gap-3">
-          <span className="grayscale"><EventIcon eventId={e.id} size={36} /></span>
-          <p className="min-w-0 font-medium leading-snug">{e.title}</p>
+      <Link href={href} className="question-card question-card--answered press">
+        <div className="question-card-status"><AnsweredBadge /><span className="question-card-topic">{topicOf(e.id).tag}</span></div>
+        <div className="question-card-heading">
+          <EventIcon eventId={e.id} size={36} />
+          <p>{e.title}</p>
         </div>
-        <p className="mt-2 text-sm">{main.label}</p>
-        <div className="mt-3"><AnswerStamp yes={!!main.settled?.outcome} /></div>
-        {e.fact && <p className="num mt-3 text-xs">{e.fact}</p>}
-        <p className="mt-auto pt-4 text-xs text-[#6b7686]">{held ? `Your result: ${pnl >= 0 ? "+" : ""}${pnl.toFixed(0)} points` : "Closed. No more predictions."}</p>
+        <p className="question-card-question">{main.label}?</p>
+        <div className="question-card-result"><AnswerStamp yes={!!main.settled?.outcome} /></div>
+        {e.fact && <p className="question-card-fact num">{e.fact}</p>}
+        <p className="question-card-footnote">{held ? `Your result: ${pnl >= 0 ? "+" : ""}${pnl.toFixed(0)} points` : "Closed. No more predictions."}</p>
       </Link>
     );
   }
   return (
-    <Link href={href} className={`press flex h-full flex-col rounded-[22px] bg-raised p-5 shadow-[0_1px_3px_rgb(0_0_0/0.06)] hover:bg-surface ${held ? "border border-line" : "ring-2 ring-cue"}`}>
-      <div className="flex items-center justify-between gap-2">
+    <div className={`question-card question-card--open press ${held ? "is-predicted" : "is-pending"}`}>
+      <Link href={href} className="absolute inset-0 z-10 rounded-[22px]" aria-label={`Make a prediction: ${e.title}. ${main.label}`} />
+      <div className="question-card-status">
         <OpenBadge event={e} />
-        {held ? <span className="text-xs font-medium text-rise">You predicted here</span> : <span className="rounded-full bg-cuesoft px-2 py-0.5 text-xs font-semibold text-cueink">Not predicted yet</span>}
+        {held ? <span className="question-card-state is-complete">You predicted here</span> : <span className="question-card-state">Not predicted yet</span>}
       </div>
-      <div className="mt-3 flex items-start gap-3">
+      <div className="question-card-heading">
         <EventIcon eventId={e.id} size={36} />
-        <div className="min-w-0"><p className="font-medium leading-snug">{e.title}</p><p className="text-xs text-muted">{topicOf(e.id).tag}</p></div>
+        <div><p>{e.title}</p><span className="question-card-topic">{topicOf(e.id).tag}</span></div>
       </div>
-      <p className="mt-3 text-sm">{main.label}?</p>
-      <div className="mt-2 flex items-end justify-between gap-3">
-        <p><span className="num text-3xl font-semibold leading-none">{Math.round(main.price * 100)}%</span> <span className="text-sm text-muted">think Yes</span></p>
-        <span className="inline-flex min-h-10 shrink-0 items-center gap-1 rounded-full bg-primary px-4 text-sm font-medium text-primaryink">Make a prediction <ChevronRight size={16} aria-hidden /></span>
+      <p className="question-card-question">{main.label}?</p>
+      <div className="question-card-odds"><MarketOddsBar yes={main.price} /></div>
+      <div className="question-card-actions">
+        <details className="relative z-20 shrink-0">
+          <summary className="inline-flex size-7 cursor-pointer list-none items-center justify-center rounded-full border border-line text-muted hover:bg-surface2 focus-visible:outline-2 [&::-webkit-details-marker]:hidden" aria-label={`Answer source for ${e.title}`} title="Answer source"><CircleAlert size={17} strokeWidth={1.8} aria-hidden /></summary>
+          <p className="absolute bottom-full left-0 z-30 mb-2 rounded-xl border border-line bg-raised p-3 text-xs leading-relaxed text-ink shadow-lg" style={{ width: "min(17rem, calc(100vw - 4rem))", maxWidth: "none" }}>{answerSource}</p>
+        </details>
+        <span className="question-card-cta">Make a prediction <ChevronRight size={16} aria-hidden /></span>
       </div>
-      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface2" aria-hidden><div className="h-full rounded-full bg-rise" style={{ width: `${Math.round(main.price * 100)}%` }} /></div>
-      <p className="mt-auto pt-4 text-xs text-muted">Answer comes from: {e.settles.replace(/ \(.*\)$/, "")}</p>
-    </Link>
+    </div>
   );
 }
 
@@ -141,7 +147,7 @@ export function FeaturedMarkets({ events }: { events: EventView[] }) {
   const go = (d: number) => setK((x) => (x + d + events.length) % events.length);
 
   return (
-    <section className="rounded-[22px] bg-surface p-5 sm:p-6">
+    <section className="featured-question">
       <div className="flex items-center justify-between gap-3">
         <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted"><EventIcon eventId={e.id} size={22} />{topicOf(e.id).tag}</p>
         {events.length > 1 && (
@@ -159,9 +165,9 @@ export function FeaturedMarkets({ events }: { events: EventView[] }) {
       <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
         <div>
           <div className="mb-2 flex justify-between text-xs text-muted"><span>Answer</span><span className="w-[4.5rem] text-center">Think Yes</span></div>
-          <div className="space-y-4">{e.strikes.map((s, i) => <OptionRow key={s.marketId} s={s} i={i} />)}</div>
+          <div className="space-y-4">{e.strikes.map((s) => <OptionRow key={s.marketId} s={s} />)}</div>
           <div className="mt-5 flex items-center justify-between">
-            <p className="num text-xs text-muted">{e.strikes.reduce((a, s) => a + s.trades, 0).toLocaleString()} predictions, mostly computer-made</p>
+            <p className="num text-xs text-muted">{e.strikes.reduce((a, s) => a + s.trades, 0).toLocaleString()} predictions</p>
             <Link href={`/market/${encodeURIComponent(e.id)}`} className="press inline-flex min-h-10 items-center gap-1 rounded-full bg-primary px-4 text-sm font-medium text-primaryink">Make a prediction <ChevronRight size={16} aria-hidden /></Link>
           </div>
         </div>

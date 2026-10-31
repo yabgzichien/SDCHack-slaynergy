@@ -1,0 +1,118 @@
+.question-card {
+  position: relative;
+  display: flex;
+  height: 100%;
+  min-width: 0;
+  flex-direction: column;
+  padding: 1rem;
+  border: 1px solid #e1e8df;
+  border-radius: 20px;
+  background: #fffdf9;
+  color: var(--ink);
+  box-shadow: 0 7px 22px rgb(49 76 64 / 0.065);
+  transition: transform 180ms cubic-bezier(.22,.8,.35,1), border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.question-card--open:hover {
+  border-color: #cbdcc9;
+  box-shadow: 0 11px 28px rgb(49 76 64 / 0.1);
+  transform: translateY(-2px);
+}
+
+.question-card--open.is-pending { border-color: #e9c88f; }
+.question-card--open.is-predicted { border-color: #c7dfc8; }
+.question-card--answered { background: #f4f5f0; color: #46584f; box-shadow: none; }
+
+.question-card-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+
+.question-card-state,
+.question-card-topic {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.question-card-state { padding: 0.2rem 0.55rem; border-radius: 999px; background: #fff0d8; color: #8b570d; }
+.question-card-state.is-complete { background: #eef8ec; color: #377b47; }
+
+.question-card-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 0.8rem;
+}
+
+.question-card-heading > p,
+.question-card-heading > div > p {
+  min-width: 0;
+  color: var(--ink);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.28;
+  letter-spacing: -0.018em;
+}
+
+.market-event-icon {
+  border: 1px solid #d7e8d5;
+  border-radius: 12px;
+  background: #edf7ea;
+  color: #4c8a59;
+}
+
+.question-card-question { margin-top: 0.8rem; color: #485f55; font-size: 0.83rem; line-height: 1.42; }
+.question-card-odds { margin-top: 0.7rem; }
+.question-card-result { margin-top: 0.8rem; }
+.question-card-result > p { border-width: 1px; border-radius: 999px; font-size: 0.72rem; }
+.question-card-fact { margin-top: 0.75rem; font-size: 0.74rem; }
+.question-card-footnote { margin-top: auto; padding-top: 0.9rem; color: #6b7b73; font-size: 0.72rem; }
+
+.question-card-actions {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: auto;
+  padding-top: 0.85rem;
+}
+
+.question-card-cta {
+  display: inline-flex;
+  min-height: 2.5rem;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0 0.9rem;
+  border-radius: 999px;
+  background: #f4bd61;
+  color: #43351e;
+  font-size: 0.78rem;
+  font-weight: 700;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .4);
+}
+
+.featured-question {
+  padding: clamp(1rem, 2vw, 1.5rem);
+  border: 1px solid #e1e8df;
+  border-radius: 22px;
+  background: #fffdf9;
+  box-shadow: 0 8px 26px rgb(49 76 64 / .07);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .question-card { transition: none; }
+  .question-card--open:hover { transform: none; }
+}
+
+@media (prefers-contrast: more) {
+  .question-card,
+  .featured-question,
+  .market-event-icon { border-color: var(--ink); }
+}

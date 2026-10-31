@@ -1,0 +1,131 @@
+.forecast-outlook-card {
+  padding: 1.4rem 1.6rem 1.2rem;
+}
+
+.forecast-outlook-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.4rem 1rem;
+}
+
+.forecast-outlook-heading h3 {
+  color: var(--ink);
+  letter-spacing: -0.025em;
+}
+
+.forecast-outlook-bar {
+  margin-top: 1rem;
+}
+
+.forecast-outlook-scenarios {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 1.25rem;
+}
+
+.forecast-outlook-scenario {
+  min-width: 0;
+  padding: 0.1rem 1.15rem 0.15rem;
+}
+
+.forecast-outlook-scenario:first-child {
+  padding-left: 0;
+}
+
+.forecast-outlook-scenario + .forecast-outlook-scenario {
+  border-left: 1px solid #e2ebe1;
+}
+
+.forecast-outlook-scenario-medium::before,
+.forecast-outlook-scenario-fast::before {
+  content: "";
+  display: block;
+  width: 4px;
+  height: 3.7rem;
+  position: absolute;
+  border-radius: 999px;
+  transform: translateX(-1.15rem);
+}
+
+.forecast-outlook-scenario {
+  position: relative;
+}
+
+.forecast-outlook-scenario-medium::before {
+  background: #b6ea58;
+}
+
+.forecast-outlook-scenario-fast::before {
+  background: #ff856b;
+}
+
+.forecast-outlook-visual {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.35rem, 1.2vw, 1rem);
+  min-height: 6.4rem;
+}
+
+.forecast-outlook-mascot {
+  flex: 0 1 auto;
+  width: clamp(5rem, 8vw, 8rem);
+  height: 6.2rem;
+  object-fit: contain;
+  object-position: center;
+}
+
+.forecast-outlook-percent {
+  color: #122c23;
+  font-size: clamp(2rem, 3vw, 2.9rem);
+  font-weight: 750;
+  line-height: 1;
+  letter-spacing: -0.045em;
+  white-space: nowrap;
+}
+
+.forecast-outlook-name {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--ink);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.forecast-outlook-dot {
+  flex: 0 0 0.65rem;
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 50%;
+}
+
+.forecast-outlook-description {
+  margin-top: 0.4rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.forecast-outlook-note {
+  margin-top: 1.2rem;
+}
+
+@media (max-width: 800px) {
+  .forecast-outlook-card { padding: 1.2rem; }
+  .forecast-outlook-scenarios { grid-template-columns: 1fr; margin-top: 0.7rem; }
+  .forecast-outlook-scenario,
+  .forecast-outlook-scenario:first-child { padding: 0.75rem 0; }
+  .forecast-outlook-scenario + .forecast-outlook-scenario { border-left: 0; border-top: 1px solid #e2ebe1; }
+  .forecast-outlook-scenario-medium::before,
+  .forecast-outlook-scenario-fast::before { display: none; }
+  .forecast-outlook-visual { min-height: 5.2rem; }
+  .forecast-outlook-mascot { width: 6.2rem; height: 5.1rem; }
+}
+
+@media (prefers-contrast: more) {
+  .forecast-outlook-scenario + .forecast-outlook-scenario { border-color: var(--ink); }
+  .forecast-outlook-description { color: var(--ink); }
+}

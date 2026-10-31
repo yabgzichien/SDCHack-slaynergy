@@ -1,0 +1,17 @@
+.market-odds { width: 100%; min-width: 0; }
+.market-odds-labels { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 7px; font-size: 13px; font-weight: 600; line-height: 1.2; }
+.market-odds-labels strong { font-size: 22px; font-weight: 750; letter-spacing: -.035em; }
+.market-odds-yes, .market-odds-no { display: inline-flex; align-items: baseline; gap: 5px; white-space: nowrap; }
+.market-odds-yes { color: var(--accent-ink); }
+.market-odds-no { color: #855b31; }
+.market-odds-track { position: relative; display: flex; width: 100%; height: 8px; border-radius: 999px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); }
+.market-odds-segment { display: block; height: 100%; transition: width 700ms cubic-bezier(.22,1,.36,1); }
+.market-odds-segment-yes { border-radius: 999px 0 0 999px; background: #94bf8f; }
+.market-odds-segment-no { border-radius: 0 999px 999px 0; background: #dfbd96; }
+.market-odds-spark { position: absolute; top: 50%; width: 5px; height: 5px; border-radius: 50%; background: #fffdf8; box-shadow: 0 0 0 2px #ffffffb8, 0 0 7px 2px #fff8dd; transform: translate(-50%,-50%); transition: left 700ms cubic-bezier(.22,1,.36,1); animation: market-odds-twinkle 3.2s ease-in-out infinite; }
+.market-odds-compact .market-odds-labels { margin-bottom: 5px; font-size: 12px; }
+.market-odds-compact .market-odds-labels strong { font-size: 18px; }
+.market-odds-compact .market-odds-track { height: 6px; }
+.market-odds-compact .market-odds-spark { width: 4px; height: 4px; }
+@keyframes market-odds-twinkle { 0%, 100% { opacity: .65; box-shadow: 0 0 0 1px #ffffff99, 0 0 4px 1px #fff8dd; } 50% { opacity: 1; box-shadow: 0 0 0 3px #ffffffb8, 0 0 9px 3px #fff8dd; } }
+@media (prefers-reduced-motion: reduce) { .market-odds-segment, .market-odds-spark { transition: none; animation: none; } }

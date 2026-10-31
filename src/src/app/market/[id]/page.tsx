@@ -1,15 +1,11 @@
 "use client";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { CircleAlert } from "lucide-react";
 import { useApp } from "@/components/AppProvider";
 import { MarketBoard } from "@/components/MarketBoard";
-import { AnsweredBadge, EventIcon, OpenBadge, topicOf } from "@/components/MarketCards";
+import { AnsweredBadge } from "@/components/MarketCards";
 import { Btn, PageTitle, Skeleton } from "@/components/ui";
-
-// One question: should I buy Yes or No on this release?
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const day = (iso: string) => { const [y, m, d] = iso.split("-").map(Number); return `${d} ${MONTHS[m - 1]} ${y}`; };
-const today = () => new Date(Date.now() + 8 * 3600_000).toISOString().slice(0, 10); // Malaysian calendar day
 
 export default function MarketEventPage() {
   const { view } = useApp();
@@ -28,20 +24,14 @@ export default function MarketEventPage() {
   return (
     <div>
       <Link href="/market" className="mb-4 inline-block text-sm text-muted underline decoration-control underline-offset-2 hover:text-ink">All questions</Link>
-      <div className="mb-2 flex items-center gap-3"><EventIcon eventId={ev.id} size={44} /><p className="text-sm text-muted"><span className="font-medium uppercase tracking-wide">{topicOf(ev.id).tag}</span><br />{ev.title}</p></div>
-      <PageTitle title={ev.text} />
+      <PageTitle title={ev.text} titleAction={<details className="group relative"><summary className="grid size-8 cursor-pointer list-none place-items-center rounded-full border border-control text-muted hover:bg-surface focus-visible:outline-2 [&::-webkit-details-marker]:hidden" aria-label="About these predictions" title="About these predictions"><CircleAlert size={18} aria-hidden /></summary><span className="absolute right-0 z-30 mt-2 block w-72 max-w-[calc(100vw-2rem)] rounded-2xl border border-line bg-raised p-4 text-left text-sm font-normal leading-6 text-ink shadow-lg">Most activity here is simulated by computer players. Official releases—not player predictions—determine the answer.</span></details>} wide />
       {ev.settled ? (
         <div className="-mt-4 mb-5 flex flex-wrap items-center gap-3 rounded-2xl border border-[#cfd6df] bg-[#eef1f5] px-4 py-3 text-sm text-[#3c4655]">
           <AnsweredBadge />
           <span>This is a <b>past question</b>. The {ev.settles} answered it{ev.fact ? `: ${ev.fact}` : "."}</span>
           {ev.practice && ev.strikes.some((x) => x.executions.length > 0) && <span>Your predictions here are practice: the numbers were already out when you made them, so they are not scored.</span>}
         </div>
-      ) : (
-        <div className="-mt-4 mb-5 flex flex-wrap items-center gap-3 rounded-2xl bg-risesoft px-4 py-3 text-sm">
-          <OpenBadge event={ev} />
-          <span>{ev.closesAt && today() > ev.closesAt ? `Closed for new predictions on ${day(ev.closesAt)}.` : ev.closesAt ? `Open for predictions until ${day(ev.closesAt)}.` : "Open for predictions."} The answer comes from the {ev.settles}.</span>
-        </div>
-      )}
+      ) : null}
       <MarketBoard key={`${ev.id}-${ev.settled}`} event={ev} />
     </div>
   );

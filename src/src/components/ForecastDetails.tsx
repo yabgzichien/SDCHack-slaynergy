@@ -1,7 +1,15 @@
 "use client";
+import Image from "next/image";
 import { useApp } from "@/components/AppProvider";
 import { dayLabel } from "@/components/History";
 import { Card, Estimate, FUTURE_COLOR, FUTURE_PLAIN, FutureBar, More, pct } from "@/components/ui";
+import "./ForecastDetails.css";
+
+const FUTURE_MASCOT: Record<string, { src: string; alt: string }> = {
+  slow: { src: "/cockatiel-forecast-slow-cycling.png", alt: "Cockatiel cycling" },
+  medium: { src: "/cockatiel-forecast-medium-driving.png", alt: "Cockatiel driving a car" },
+  fast: { src: "/cockatiel-forecast-fast-rocket.png", alt: "Cockatiel riding a flying rocket" },
+};
 
 // How the three AI speeds get their chances. Shown on the market page.
 // While a past release is picked, the outlook shows that day's chances (from the answers public then).
@@ -16,24 +24,25 @@ export function ForecastDetails() {
       <div className="forecast-section-heading"><h2 id="forecast-purpose-title">Why forecasts matter</h2></div>
       <p className="mb-3 text-sm text-muted">Nobody knows how fast AI will change jobs. Jobbery keeps three possible speeds in mind and uses the predictions and the real numbers to decide which is most likely. That decides the dates you see for your skills and jobs.</p>
 
-      <Card tone="raised">
-        <div className="flex flex-wrap items-center justify-between gap-2">
+      <Card tone="raised" className="forecast-outlook-card">
+        <div className="forecast-outlook-heading">
           <h3 className="text-base font-semibold">The AI outlook</h3>
           <span className="text-sm text-muted">{w.past ? `As it stood on ${dayLabel(w.past.day)}, from the answers public that day` : w.release ? `Updated with the ${w.latestLabel} numbers` : `Using numbers up to ${w.asOfQuarter.replace("Q", " Q")}`}</span>
         </div>
-        <div className="mt-4"><FutureBar futures={w.futures} height={16} /></div>
-        <div className="mt-5 grid gap-4 md:grid-cols-3">
+        <div className="forecast-outlook-bar"><FutureBar futures={w.futures} height={12} /></div>
+        <div className="forecast-outlook-scenarios">
           {w.futures.map((f) => (
-            <div key={f.id}>
-              <div className="flex items-baseline justify-between gap-2">
-                <p className="inline-flex items-center gap-2 font-medium"><span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: FUTURE_COLOR[f.id] }} />{f.name}</p>
-                <p className="num text-[1.75rem] leading-none">{pct(f.weight)}</p>
+            <div key={f.id} className={`forecast-outlook-scenario forecast-outlook-scenario-${f.id}`}>
+              <div className="forecast-outlook-visual">
+                <Image src={FUTURE_MASCOT[f.id].src} alt={FUTURE_MASCOT[f.id].alt} width={160} height={120} className="forecast-outlook-mascot" />
+                <p className="forecast-outlook-percent num">{pct(f.weight)}</p>
               </div>
-              <p className="mt-2 text-sm text-muted">{FUTURE_PLAIN[f.id]}</p>
+              <p className="forecast-outlook-name"><span className="forecast-outlook-dot" style={{ background: FUTURE_COLOR[f.id] }} />{f.name}</p>
+              <p className="forecast-outlook-description">{FUTURE_PLAIN[f.id]}</p>
             </div>
           ))}
         </div>
-        <div className="mt-4"><Estimate /></div>
+        <div className="forecast-outlook-note"><Estimate /></div>
         <More summary="How we calculate this">
           <ol className="list-decimal space-y-2 pl-5">
           <li>Each speed (slow, medium, fast) predicts what the next official numbers will be: Malaysian job ads and AI test scores.</li>
@@ -45,7 +54,7 @@ export function ForecastDetails() {
             {w.futures.map((f) => <li key={f.id}><span className="text-ink">{f.name}:</span> {f.blurb}</li>)}
           </ul>
           <p>The sources are DOSM Job Market Insights (job ads) and Epoch AI benchmark results (AI test scores). Replaying {r.questions} past releases set today&apos;s starting chances. Until the next release, the market&apos;s prices tilt them a little.</p>
-          <p>In this demo the other players are made by the computer, and most of them read the three futures themselves, so their prices mostly echo them. The new information comes from the real releases. Your predictions are scored the same way, but one player can only move the Yes % a little.</p>
+          <p>The new information comes from official releases. Predictions are scored consistently, and one player can only move the Yes % a little.</p>
           <p className="text-ink">How accurate was it on the {r.questions} replayed questions? (error score: 0 is perfect, lower is better)</p>
           <dl className="num max-w-md space-y-1.5">
             {[

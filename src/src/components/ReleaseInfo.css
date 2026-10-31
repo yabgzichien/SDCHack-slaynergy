@@ -1,0 +1,62 @@
+.release-info {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+}
+
+.release-info:has(:hover), .release-info:focus-within { z-index: 10; }
+
+.release-info-trigger {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid rgb(37 75 55 / .2);
+  border-radius: 12px;
+  color: var(--accent-ink);
+  cursor: help;
+  background: var(--raised);
+}
+
+.release-info:hover .release-info-trigger,
+.release-info:focus-within .release-info-trigger {
+  background: rgb(245 221 163 / .45);
+}
+
+.release-info-trigger:focus-visible {
+  outline: 2px solid var(--accent-ink);
+  outline-offset: 3px;
+}
+
+.release-info-popup {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: min(320px, 80vw);
+  padding-top: 8px;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.release-info:hover .release-info-popup,
+.release-info:focus-within .release-info-popup {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.release-info-popup > span {
+  display: block;
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid rgb(37 75 55 / .15);
+  border-radius: 14px;
+  background: var(--raised);
+  box-shadow: 0 12px 30px rgb(31 55 40 / .12);
+  color: var(--muted);
+  font-size: .875rem;
+  line-height: 1.5;
+}
+
+

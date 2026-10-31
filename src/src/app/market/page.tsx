@@ -1,22 +1,23 @@
 "use client";
 import { useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight, Coins, Sparkles, Trophy, Vote } from "lucide-react";
+import { ArrowRight, ClipboardPenLine, Coins, Sparkles, Trophy } from "lucide-react";
 import { useApp } from "@/components/AppProvider";
-import { PageTitle, Skeleton } from "@/components/ui";
+import { Skeleton } from "@/components/ui";
 import { AnsweredBadge, MarketCard } from "@/components/MarketCards";
 import { ForecastDetails } from "@/components/ForecastDetails";
 import { MarketTabs } from "@/components/MarketTabs";
 import { ForecastNav } from "@/components/ForecastNav";
+import { ReleaseInfo } from "@/components/ReleaseInfo";
 import { YourPredictions } from "@/components/YourPredictions";
 import "./market.css";
 import { nextAnswersLine } from "@/components/ui";
 import { PastQuestionCard, ReleasePicker, dayLabel } from "@/components/History";
 
 const HOW = [
-  { icon: Vote, title: "Choose a question", text: "Explore the questions below. Pick an answer, then forecast Yes or No." },
-  { icon: Coins, title: "Back your prediction", text: "Put free points on your answer. A correct prediction on a less likely answer wins more." },
-  { icon: Trophy, title: "See the result", text: "When official figures arrive, correct predictions earn points and a bigger vote in the forecast." },
+  { icon: ClipboardPenLine, title: "Choose a question", text: "Explore the questions below and pick one that interests you." },
+  { icon: Coins, title: "Back your prediction", text: "Put free points on your answer." },
+  { icon: Trophy, title: "See the result", text: "When official figures arrive, earn points and a bigger vote." },
 ];
 
 // One question: what can I forecast right now? Layout from the home-page branch; the cards keep the Open / Answered styling.
@@ -30,16 +31,17 @@ export default function MarketPage() {
   const showResults = released && w.settledEvents.length > 0 && !past;
   return (
     <div className="forecast-page">
-      <MarketTabs />
-      <PageTitle title={<span className="statistics-headline-highlight">The Forecast</span>}>
-        Free points, never money. The better your predictions, the more your vote counts in Jobbery&apos;s forecast of how fast AI changes jobs.
-      </PageTitle>
-      <p className="mb-6 text-sm text-muted">We automatically check for new releases and update these figures when new data is available. Open questions move the forecast slightly, based on all players, mostly simulated (computer-made).</p>
-
-      <div className="forecast-layout">
-        <ForecastNav showResults={showResults} showYours={!past} />
-        <div className="forecast-content">
-          <section id="forecast-guide" className="forecast-guide forecast-section" aria-labelledby="forecast-guide-title">
+      <div className="forecast-hero">
+        <div className="forecast-hero-inner">
+          <div className="forecast-tabs-row">
+            <MarketTabs />
+            <ReleaseInfo label="How the forecast is updated">We automatically check for new releases and update these figures when new data is available. Open questions move the forecast slightly, based on current predictions.</ReleaseInfo>
+          </div>
+          <header className="forecast-hero-title">
+            <h1>The Forecast</h1>
+            <p>Free points, never money. The better your predictions, the more your vote counts in Jobbery&apos;s forecast of how fast AI changes jobs.</p>
+          </header>
+          <section id="forecast-guide" className="forecast-guide" aria-labelledby="forecast-guide-title">
             <div className="forecast-guide-heading">
               <h2 id="forecast-guide-title"><Sparkles size={17} aria-hidden />How to forecast</h2>
               <div className="forecast-points-box">
@@ -53,17 +55,22 @@ export default function MarketPage() {
             <ol className="forecast-steps">
               {HOW.map((h, i) => (
                 <li key={h.title} className={`forecast-step forecast-step-${i + 1}`}>
-                  <div className="forecast-step-heading">
-                    <span className="forecast-step-number" aria-hidden>{i + 1}</span>
+                  <h.icon className="forecast-step-icon" size={40} aria-hidden />
+                  <div className="forecast-step-body">
                     <h3>{h.title}</h3>
-                    <h.icon className="forecast-step-icon" size={21} aria-hidden />
+                    <p className="forecast-step-copy">{h.text}</p>
                   </div>
-                  <p className="forecast-step-copy">{h.text}</p>
                   {i < HOW.length - 1 && <span className="forecast-step-arrow" aria-hidden><ArrowRight size={16} /></span>}
                 </li>
               ))}
             </ol>
           </section>
+        </div>
+      </div>
+
+      <div className="forecast-layout">
+        <ForecastNav showResults={showResults} showYours={!past} />
+        <div className="forecast-content">
 
           {!past && <YourPredictions events={w.events} settled={w.settledEvents} />}
 
@@ -82,7 +89,7 @@ export default function MarketPage() {
               <>
                 <p className="forecast-section-description">{released ? `Make your prediction before the next release. ${nextAnswersLine(w.nextAnswers)}` : "Choose a question about Malaysian jobs or AI progress and make your prediction."} The ones outlined in amber are waiting for your prediction.</p>
                 <ul className="grid gap-4 md:grid-cols-2">{w.events.map((e) => <li key={e.id}><MarketCard e={e} /></li>)}</ul>
-                <p className="mt-3 text-sm text-muted">About 200 computer-made players predict alongside you, so the % moves while you watch. <Link href="/leaderboard" className="underline decoration-control underline-offset-2 hover:text-ink">See who predicts best</Link>.</p>
+                <p className="mt-3 text-sm text-muted">The % updates as predictions are made. <Link href="/leaderboard" className="underline decoration-control underline-offset-2 hover:text-ink">See who predicts best</Link>.</p>
               </>
             )}
           </section>

@@ -52,7 +52,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <main id="main" className="app-page-main">{children}</main>
           <footer className="app-page-footer">
             <ReleaseNotice />
-            <p>{t("Estimates, not certainties. You decide; an advisor is there if you want one. The prediction game uses points, never money, and the other players are computer-made.")}</p>
+            <p>{t("Estimates, not certainties. You decide; an advisor is there if you want one.")}</p>
             <p>{t("SDC Hackathon 2026, Domain 1. Apache-2.0.")} · <Link href="/trends">{t("Job market trends")}</Link> · <Link href="/trust">{t("How we keep this honest")}</Link></p>
           </footer>
         </>
