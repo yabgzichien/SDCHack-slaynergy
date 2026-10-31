@@ -22,6 +22,10 @@ export function CustomCursor() {
         hide();
         return;
       }
+      // An open modal dialog sits in the browser's top layer, above everything in the page, so the cursor has to live
+      // inside it while it is open; otherwise it is drawn behind the dialog and the native cursor is already hidden.
+      const host = document.querySelector("dialog[open]") ?? document.body;
+      if (cursor.parentElement !== host) host.appendChild(cursor);
       cursor.style.transform = `translate3d(${event.clientX - 30}px, ${event.clientY - 3}px, 0)`;
       cursor.style.visibility = "visible";
       document.body.classList.add("has-site-cursor");

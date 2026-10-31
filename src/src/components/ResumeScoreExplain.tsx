@@ -46,7 +46,7 @@ export function ResumeScoreExplain({ resume }: { resume: ResumeSummary }) {
   return (
     <>
       <button type="button" onClick={() => ref.current?.showModal()}
-        className="mt-1 text-sm underline decoration-control underline-offset-2 hover:text-ink">
+        className="ml-3 text-sm underline decoration-control underline-offset-2 hover:text-ink">
         Learn how it&apos;s scored
       </button>
       <dialog ref={ref} aria-labelledby="resume-score-title" onClick={(e) => { if (e.target === ref.current) ref.current?.close(); }}
