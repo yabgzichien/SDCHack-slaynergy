@@ -168,7 +168,7 @@ export const START: Row[] = [
   // Resume page
   ["Scan your resume", "Imbas resume anda", "扫描你的简历", "உங்கள் résumé-ஐ ஸ்கேன் செய்யுங்கள்"],
   ["never saved", "tidak pernah disimpan", "从不保存", "ஒருபோதும் சேமிக்கப்படாது"],
-  ["If you allow AI, the text is sent once to an AI model (Qwen, run by RunPod, or by Groq as a backup) to read it.", "Jika anda membenarkan AI, teks dihantar sekali kepada model AI (Qwen, dikendalikan oleh RunPod, atau Groq sebagai sandaran) untuk membacanya.", "如果你允许使用 AI，文本会被发送一次给 AI 模型（Qwen，由 RunPod 运行，或由 Groq 作为备用）来阅读。", "நீங்கள் AI-ஐ அனுமதித்தால், உரை ஒருமுறை ஒரு AI மாதிரிக்கு (Qwen, RunPod இயக்குகிறது, காப்புக்கு Groq) படிக்க அனுப்பப்படும்."],
+  ["If you allow AI, the text is sent once to an AI model (DeepSeek through our LLM gateway, or Qwen on RunPod or Groq as backups) to read it.", "Jika anda membenarkan AI, teks dihantar sekali kepada model AI (DeepSeek melalui gerbang LLM kami, atau Qwen di RunPod atau Groq sebagai sandaran) untuk membacanya.", "如果你允许使用 AI，文本会发送一次给 AI 模型（通过我们的 LLM 网关使用 DeepSeek，或以 RunPod、Groq 上的 Qwen 作为备用）进行读取。", "AI-ஐ அனுமதித்தால், உரை படிக்கப்பட ஒருமுறை AI மாதிரிக்கு அனுப்பப்படும் (எங்கள் LLM நுழைவாயில் வழியாக DeepSeek, அல்லது மாற்றாக RunPod அல்லது Groq-இல் Qwen)."],
   ["Here is what we found", "Ini yang kami temui", "这是我们的发现", "நாங்கள் கண்டறிந்தவை இதோ"],
   ["Your score, what to fix first, and the skills we found. Check the details, then build your plan.", "Skor anda, apa yang perlu dibetulkan dahulu, dan kemahiran yang kami temui. Semak butirannya, kemudian bina pelan anda.", "你的分数、优先修改的内容，以及我们找到的技能。核对细节后，就可以制定计划。", "உங்கள் மதிப்பெண், முதலில் எதைச் சரிசெய்ய வேண்டும், நாங்கள் கண்டறிந்த திறன்கள். விவரங்களைச் சரிபார்த்து, பிறகு உங்கள் திட்டத்தை உருவாக்குங்கள்."],
   ["Scan another", "Imbas yang lain", "再扫描一份", "மற்றொன்றை ஸ்கேன் செய்"],
@@ -363,4 +363,5 @@ export const START: Row[] = [
   ["Open your file", "Buka fail anda", "打开你的文件", "உங்கள் கோப்பைத் திறக்கவும்"],
   ["1 year of experience.", "1 tahun pengalaman.", "1 年经验。", "1 ஆண்டு அனுபவம்."],
   ["1 skill found; you confirm it next.", "1 kemahiran ditemui; anda mengesahkannya seterusnya.", "找到 1 项技能；接下来由你确认。", "1 திறன் கண்டறியப்பட்டது; அடுத்து நீங்கள் உறுதிசெய்வீர்கள்."],
+  ["Suggested by AI.", "Dicadangkan oleh AI.", "由 AI 建议。", "AI பரிந்துரைத்தது."],
 ];

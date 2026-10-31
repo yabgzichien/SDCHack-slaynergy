@@ -558,7 +558,7 @@ function ResumeStep({ d, setD, cat, report, setReport, onDone, autoSample }: { d
       )}
       <label className="flex cursor-pointer items-start gap-3 mt-3 rounded-2xl px-5 py-3 text-sm">
         <input type="checkbox" checked={useAi} onChange={(e) => setUseAi(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-[var(--accent)]" />
-        <span><b>Also let AI read it.</b> An AI model suggests extra skills and better wording. Nothing is changed for you; you choose what to use. If you allow AI, the text is sent once to an AI model (Qwen, run by RunPod, or by Groq as a backup) to read it.</span>
+        <span><b>Also let AI read it.</b> An AI model suggests extra skills and better wording. Nothing is changed for you; you choose what to use. If you allow AI, the text is sent once to an AI model (DeepSeek through our LLM gateway, or Qwen on RunPod or Groq as backups) to read it.</span>
       </label>
       {err && <p role="alert" className="mt-3 text-sm text-negative">{err}</p>}
     </Q>

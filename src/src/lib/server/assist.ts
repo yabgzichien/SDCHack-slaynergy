@@ -14,7 +14,7 @@ import type { DosmQuarter } from "../engine/data";
 export type Ask = (system: string, user: string) => Promise<unknown | null>;
 export type AssistLog = (entry: Record<string, unknown>) => Promise<void> | void;
 
-const DEFAULT_BASE = "https://litellm.rapidscreen.io/v1";
+export const DEFAULT_BASE = "https://litellm.rapidscreen.io/v1";
 export const DEFAULT_MODEL = "deepseek-v4.1-flash";
 const TIMEOUT_MS = 40_000;
 

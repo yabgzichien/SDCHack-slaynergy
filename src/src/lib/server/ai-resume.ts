@@ -1,7 +1,9 @@
 import { skills } from "@/lib/engine/data";
+import { DEFAULT_BASE, DEFAULT_MODEL } from "@/lib/server/assist";
 
 // GenAI resume reader. It only proposes; the worker chooses what to use.
-// Runs on RunPod Serverless (Qwen2.5 14B Instruct, vLLM) first; if that is not set up, fails or times out, Groq (Qwen3.8 27B) is the backup.
+// Tries the LLM gateway first (LLM_API_KEY, the same one as the data-source finder), then RunPod Serverless (Qwen2.5 14B Instruct, vLLM),
+// then Groq (Qwen3.8 27B). A provider that is not set up, fails or times out is skipped.
 // Guards so the model cannot invent anything:
 //  - skills must be ids from Jobbery's own list, and the quoted evidence must appear in the resume
 //  - skills outside the list ("unlisted") are only reported, never matched; their name and quote must appear in the resume
@@ -11,16 +13,23 @@ import { skills } from "@/lib/engine/data";
 export const AI_MODEL = "qwen/qwen3.8-27b";
 export const RUNPOD_MODEL = "Qwen/Qwen2.5-14B-Instruct";
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
-const RUNPOD_TIMEOUT_MS = 25000; // a cold worker can take longer; then Groq answers instead
-const GROQ_TIMEOUT_MS = 30000;
+// Together these stay under the route's 60 s limit, so the rule scan can still answer if all three fail.
+const LLM_TIMEOUT_MS = 20000;
+const RUNPOD_TIMEOUT_MS = 20000; // a cold worker can take longer; then Groq answers instead
+const GROQ_TIMEOUT_MS = 15000;
 const MAX_CHARS = 12000;
 
 type Env = Record<string, string | undefined>;
-type Provider = { name: "runpod" | "groq"; url: string; key: string; model: string; timeout: number; tokenParam: "max_tokens" | "max_completion_tokens" };
+type Provider = { name: "llm" | "runpod" | "groq"; url: string; key: string; model: string; timeout: number; tokenParam: "max_tokens" | "max_completion_tokens" };
 
-// RunPod needs both RUNPOD_API_KEY and RUNPOD_ENDPOINT_ID. Groq needs GROQ_API_KEY. Order = order tried.
+// The gateway needs LLM_API_KEY (DATA_ASSIST only switches off the data-source finder). RunPod needs both RUNPOD_API_KEY and
+// RUNPOD_ENDPOINT_ID. Groq needs GROQ_API_KEY. Order = order tried.
 export function aiProviders(env: Env = process.env): Provider[] {
   const out: Provider[] = [];
+  if (env.LLM_API_KEY) {
+    out.push({ name: "llm", url: `${(env.LLM_BASE_URL || DEFAULT_BASE).replace(/\/+$/, "")}/chat/completions`,
+      key: env.LLM_API_KEY, model: env.LLM_MODEL || DEFAULT_MODEL, timeout: LLM_TIMEOUT_MS, tokenParam: "max_tokens" });
+  }
   if (env.RUNPOD_API_KEY && env.RUNPOD_ENDPOINT_ID) {
     out.push({ name: "runpod", url: `https://api.runpod.ai/v2/${encodeURIComponent(env.RUNPOD_ENDPOINT_ID)}/openai/v1/chat/completions`,
       key: env.RUNPOD_API_KEY, model: env.RUNPOD_MODEL || RUNPOD_MODEL, timeout: RUNPOD_TIMEOUT_MS, tokenParam: "max_tokens" });
@@ -86,7 +95,8 @@ async function callProvider(p: Provider, resume: string): Promise<AiRead | null>
     if (!r.ok) return null;
     const d = (await r.json()) as { choices?: { message?: { content?: string } }[] };
     const content = d.choices?.[0]?.message?.content ?? "";
-    return checkAiRead(JSON.parse(content.replace(/<think>[\s\S]*?<\/think>/g, "").trim()), resume, p.model);
+    const answer = content.replace(/<think>[\s\S]*?<\/think>/g, "");
+    return checkAiRead(JSON.parse(answer.slice(answer.indexOf("{"), answer.lastIndexOf("}") + 1)), resume, p.model);
   } catch {
     return null;
   } finally {

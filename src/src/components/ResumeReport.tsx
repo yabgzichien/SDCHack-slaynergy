@@ -86,7 +86,7 @@ function SuggestedFixes({ high, low, rewrites }: { high: Finding[]; low: Finding
             {rewrites.length > 0 && (
               <li className="rounded-2xl border-l-4 border-gold bg-goldsoft/60 p-4">
                 <h5 className="font-bold leading-snug">Better wording</h5>
-                <p className="mt-0.5 text-xs text-muted">Suggested by AI (Qwen). Fill in the [brackets] with real figures only.</p>
+                <p className="mt-0.5 text-xs text-muted">Suggested by AI. Fill in the [brackets] with real figures only.</p>
                 <ul className="mt-2 space-y-2">
                   {rewrites.map((w, i) => <li key={i} className="text-sm"><BeforeAfter before={w.before} after={w.after} /></li>)}
                 </ul>

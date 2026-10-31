@@ -57,6 +57,10 @@ describe("AI resume reader guards", () => {
 
   it("tries RunPod first (needs key and endpoint id), then Groq", () => {
     expect(aiProviders({})).toEqual([]);
+    const all = aiProviders({ LLM_API_KEY: "l", LLM_BASE_URL: "https://gw.test/v1/", DATA_ASSIST: "off", RUNPOD_API_KEY: "k", RUNPOD_ENDPOINT_ID: "abc", GROQ_API_KEY: "g" });
+    expect(all.map((p) => p.name)).toEqual(["llm", "runpod", "groq"]);
+    expect(all[0].url).toBe("https://gw.test/v1/chat/completions");
+    expect(all.reduce((t, p) => t + p.timeout, 0)).toBeLessThan(60000);
     expect(aiProviders({ RUNPOD_API_KEY: "k" })).toEqual([]);
     expect(aiProviders({ GROQ_API_KEY: "g" }).map((p) => p.name)).toEqual(["groq"]);
     const both = aiProviders({ RUNPOD_API_KEY: "k", RUNPOD_ENDPOINT_ID: "abc", GROQ_API_KEY: "g" });

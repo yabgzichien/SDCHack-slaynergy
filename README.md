@@ -20,7 +20,7 @@ SDC Hackathon 2026 · Domain 1: Aiversecity Future-Ready Workforce · Licence: A
 |---|---|
 | **GitHub repository** | https://github.com/yabgzichien/SDCHack-slaynergy |
 | **Live demo** | https://sdc-runway.vercel.app/ |
-| **RunPod endpoint** | Not used |
+| **RunPod endpoint** | Used: a serverless Qwen model (Qwen2.5 14B Instruct) for the AI resume reader, alongside the KrackedDev AI API |
 | **Slide deck** | [PDF](submission/Jobbery%20pitch%20deck.pdf) · [PowerPoint](submission/Jobbery%20pitch%20deck.pptx) |
 | **Demo video** | https://www.youtube.com/watch?v=pRHKh5LNF-s |
 | **Preliminary proposal** | [PDF](submission/SDC2026_slaynergy_Preliminary.pdf) |
@@ -95,8 +95,8 @@ Open http://localhost:3000. See [section 15](#15-run-it) for tests and other com
 - **Every number shows its source.** Each forecast, demand figure and course has a source and date chip. Explanations are filled in from templates, so the app can't invent jobs, courses or statistics.
 - **Plain language.** Pages are written for someone who has never read a chart like these: "about 14 in every 100 job ads", not "14.2% share".
 - **Multilingual interface.** Already available in English, Bahasa Malaysia, Chinese and Tamil. Use the language picker in the header to switch languages.
-- **Private by default.** A scanned resume is read in memory and never stored. If the user leaves AI on, the text is also sent once to the AI model (RunPod, with Groq as backup) to read it. Only the score, the fixes and the skill IDs are kept.
-- **AI suggests, the user decides.** The one GenAI feature is an optional resume reader (Qwen on RunPod, with Groq as backup). It proposes extra skills, each quoting the resume line it is based on, and better wording for weak lines. The user decides what to use: nothing is changed for them. Server checks drop any skill that is not on Jobbery's list or not backed by a real line, and any rewrite that adds a number the original line does not have. Scores, forecasts, matching and plans are computed by tested, readable code (`src/src/lib/engine/`), so the same inputs always give the same answer.
+- **Private by default.** A scanned resume is read in memory and never stored. If the user leaves AI on, the text is also sent once to the AI model (DeepSeek through the KrackedDev AI API, with RunPod and then Groq as backups) to read it. Only the score, the fixes and the skill IDs are kept.
+- **AI suggests, the user decides.** The one GenAI feature is an optional resume reader (DeepSeek through the KrackedDev AI API, with Qwen on RunPod and then Groq as backups). It proposes extra skills, each quoting the resume line it is based on, and better wording for weak lines. The user decides what to use: nothing is changed for them. Server checks drop any skill that is not on Jobbery's list or not backed by a real line, and any rewrite that adds a number the original line does not have. Scores, forecasts, matching and plans are computed by tested, readable code (`src/src/lib/engine/`), so the same inputs always give the same answer.
 
 ---
 
@@ -205,7 +205,7 @@ When someone uses the app and the last check is old enough, the server checks fo
 - **How often:** daily, and hourly around DOSM's release day.
 - **Updated automatically:** DOSM Job Market Insights, Epoch AI benchmark results, and OpenDOSM's state labour force and wages.
 - **Checked first:** new numbers must pass checks against the numbers they replace. If a check fails, the last good data stays and nothing settles.
-- **When DOSM changes its website or workbook:** the plain rules go first. Only if they cannot find or read the DOSM release does a model (DeepSeek V4.1 Flash through a LiteLLM gateway, `src/lib/server/assist.ts`) help in two ways: it picks the right release page from DOSM's own list of releases, and it says where the occupation table now sits in a changed workbook. It only proposes. It never supplies a number: the figures are read from the workbook by the same code as before, and must pass the same checks plus one stricter one (the proposed layout must give back every quarter already held). It can only name a page from that list, anything it says is checked against what is really in the file, and each use is written to the tamper-evident log as `assist`. It is off without `LLM_API_KEY`, or with `DATA_ASSIST=off`, and then nothing changes.
+- **When DOSM changes its website or workbook:** the plain rules go first. Only if they cannot find or read the DOSM release does a model (DeepSeek V4.1 Flash through the KrackedDev AI API, `src/lib/server/assist.ts`) help in two ways: it picks the right release page from DOSM's own list of releases, and it says where the occupation table now sits in a changed workbook. It only proposes. It never supplies a number: the figures are read from the workbook by the same code as before, and must pass the same checks plus one stricter one (the proposed layout must give back every quarter already held). It can only name a page from that list, anything it says is checked against what is really in the file, and each use is written to the tamper-evident log as `assist`. It is off without `LLM_API_KEY`, or with `DATA_ASSIST=off`, and then nothing changes.
 - **Pinned, alert only:** the ILO exposure scores, the Anthropic Economic Index and DOSM's yearly Labour Force Survey tables. A new edition changes how they are measured, so the Sources page flags it for a person to review. Once reviewed, `npm run data:repin-aei` rebuilds the index into the starting data, and the server then saves one new, logged snapshot with only that source swapped. Nothing settles. The index was re-pinned this way to its 2026-06-26 release on 29 Oct 2026.
 - **Pinned, no alert:** DOSM's spending per person by state (Household Expenditure Survey 2024). It is published only as a spreadsheet on dosm.gov.my, not on OpenDOSM, so the server cannot check it. It stays at the 2024 edition until someone downloads the next one and runs `npm run data:build`.
 
@@ -561,10 +561,10 @@ The user always confirms a new plan before it replaces the old one.
 | **Engine** | Pure TypeScript in `src/lib/engine/`: LMSR market, simulated forecasters, history replay, futures weights, expiry dates, matching, planning |
 | **Storage** | PostgreSQL (`pg`) when `DATABASE_URL` is set; SQLite (`better-sqlite3`) when running locally |
 | **Sessions and trust** | Signed session cookie; SHA-256 hash-chained log, with its fingerprint committed to Git |
-| **Resume scan** | `unpdf` (PDF) and `mammoth` (Word), with rule-based scoring. Optional AI reader: Qwen2.5 14B Instruct on RunPod Serverless, Qwen3.8 27B on Groq as backup (`src/lib/server/ai-resume.ts`), with server-side checks and a rule-only fallback. |
+| **Resume scan** | `unpdf` (PDF) and `mammoth` (Word), with rule-based scoring. Optional AI reader: DeepSeek V4.1 Flash through the KrackedDev AI API, then Qwen2.5 14B Instruct on RunPod Serverless, then Qwen3.8 27B on Groq (`src/lib/server/ai-resume.ts`), with server-side checks and a rule-only fallback. |
 | **Data pipeline** | The server fetches DOSM, Epoch AI and OpenDOSM itself, checks them and saves hashed snapshots (`src/lib/server/refresh.ts`); build scripts (`build-series.ts`, `build-geo.ts`) make the starting snapshot from raw downloads |
 | **Tests** | Vitest: fairness, LMSR, futures weights, replay, matching, planning, log |
-| **Hosting** | Vercel. No GPU on the web host: the AI model runs on RunPod Serverless (Groq as backup). |
+| **Hosting** | Vercel. No GPU on the web host: the AI models run on hosted services (the KrackedDev AI API, then a serverless Qwen model on RunPod, then Groq). |
 
 ---
 
@@ -878,7 +878,7 @@ Local dependencies, build output, databases, logs and raw data downloads are exc
 
 **Replit.** We used Replit for code generation only.
 
-**RunPod.** The AI resume reader is the only part that needs a GPU. It calls Qwen2.5 14B Instruct on a RunPod Serverless vLLM endpoint (billed per millisecond, only while a worker runs), with Groq as backup. Resume scoring is rule-based and the forecasting engine is plain TypeScript.
+**RunPod.** The serverless Qwen model behind the AI resume reader runs on RunPod, and it is the only part that needs a GPU. The reader first calls the KrackedDev AI API. If that fails, it calls our serverless Qwen model, Qwen2.5 14B Instruct, on a RunPod Serverless vLLM endpoint (billed per millisecond, only while a worker runs), with Groq as the last backup. Resume scoring is rule-based and the forecasting engine is plain TypeScript.
 
 ## 18. How we use AI
 
@@ -888,7 +888,7 @@ Jobbery uses AI in two ways: one GenAI model that reads resumes, and a forecasti
 
 | | |
 |---|---|
-| **Model** | Qwen2.5 14B Instruct (`Qwen/Qwen2.5-14B-Instruct`), an open-weight model, on RunPod Serverless (vLLM). Backup: Qwen3.8 27B (`qwen/qwen3.8-27b`) through the Groq API |
+| **Model** | DeepSeek V4.1 Flash (`deepseek-v4.1-flash`) through the KrackedDev AI API. Backups: Qwen2.5 14B Instruct (`Qwen/Qwen2.5-14B-Instruct`) on RunPod Serverless (vLLM), then Qwen3.8 27B (`qwen/qwen3.8-27b`) through the Groq API |
 | **Code** | `src/src/lib/server/ai-resume.ts`, called from `src/src/app/api/resume/route.ts` |
 | **Must-have it serves** | Skills profile intake |
 | **Switch** | "Also let AI read it" checkbox on the resume question of the onboarding (on by default) |
@@ -909,11 +909,11 @@ Jobbery uses AI in two ways: one GenAI model that reads resumes, and a forecasti
 
 The prompt also tells the model not to add purposes or overstate the role ("helped with" becomes "Supported", never "Led"), and to ignore instructions written inside the resume. We tested this with a resume that tried to inject a fake skill and fake numbers; both were ignored.
 
-**Privacy.** The text is read in memory for that request and never stored or logged. If AI is on, it is sent once to RunPod (or to Groq, if RunPod is unavailable) to be read. Only counts (how many AI skills and rewrites) go in the event log.
+**Privacy.** The text is read in memory for that request and never stored or logged. If AI is on, it is sent to the KrackedDev AI API to be read, and to RunPod or then Groq only if the one before fails. Only counts (how many AI skills and rewrites) go in the event log.
 
-**Which model.** The reader runs `Qwen/Qwen2.5-14B-Instruct` on a RunPod Serverless vLLM endpoint (set `RUNPOD_API_KEY` and `RUNPOD_ENDPOINT_ID`). A cold worker can take a while to wake, so RunPod gets 25 s; after an error or a timeout the server tries Groq (`qwen/qwen3.8-27b`, set `GROQ_API_KEY`, 30 s). Keep one RunPod worker active before a demo to avoid the cold start.
+**Which model.** The reader first calls the KrackedDev AI API (`LLM_API_KEY`, `LLM_BASE_URL`, model `LLM_MODEL` or `deepseek-v4.1-flash`, 20 s). After an error or a timeout it tries `Qwen/Qwen2.5-14B-Instruct` on a RunPod Serverless vLLM endpoint (`RUNPOD_API_KEY`, `RUNPOD_ENDPOINT_ID`, 20 s), then Groq (`qwen/qwen3.8-27b`, `GROQ_API_KEY`, 15 s). A cold RunPod worker can take longer than its 20 s, and then Groq answers.
 
-**Fallback.** With no key set, or if both providers fail or time out, the rule scan runs alone and the page says so. With AI switched off, the page says it only recognises skills from the list. Groq's free tier allows about 1,000 output tokens a minute (about two scans). After a rate-limit reply, the server waits once if the wait is short, and otherwise falls back to the rules.
+**Fallback.** With no key set, or if every provider fails or times out, the rule scan runs alone and the page says so. With AI switched off, the page says it only recognises skills from the list. Groq's free tier allows about 1,000 output tokens a minute (about two scans). After a rate-limit reply, the server waits once if the wait is short, and otherwise falls back to the rules.
 
 ### 18.2 A forecast that learns
 
