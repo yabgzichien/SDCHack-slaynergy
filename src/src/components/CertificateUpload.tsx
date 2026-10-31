@@ -9,7 +9,8 @@ type Result = { status: "verified" | "rejected" | "unreadable" | "unavailable"; 
 const ACCEPT = ".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf";
 
 // A course step is done when its certificate is uploaded and our AI check confirms it is for this course. The file is
-// read once and not kept. The dashed button is the developer shortcut that skips the check, the same as the other demo buttons.
+// read once and not kept. The dashed button is the developer shortcut: it finishes every step before the resume in one click, so the
+// plan lands on the resume step, the same as the other demo buttons.
 export function CertificateUpload({ step }: { step: PlanStep }) {
   const { act, refresh, busy } = useApp();
   const input = useRef<HTMLInputElement>(null);
@@ -47,9 +48,9 @@ export function CertificateUpload({ step }: { step: PlanStep }) {
       </div>
       {file && <p className="mt-2 flex items-center gap-1.5 break-all text-xs text-muted"><FileCheck2 size={14} aria-hidden className="shrink-0" />{file.name}</p>}
       {result && <p role="status" className={`mt-2 text-sm ${result.status === "verified" ? "text-rise" : "text-fall"}`}>{result.message}</p>}
-      <button type="button" onClick={() => act("certificateDemo", { stepId: step.id })} disabled={busy || checking}
+      <button type="button" onClick={() => act("certificateDemoAll")} disabled={busy || checking}
         className="mt-3 inline-flex min-h-10 items-center gap-1.5 rounded-full border border-dashed border-cue px-3 text-xs font-medium text-cueink hover:bg-cuesoft disabled:opacity-40">
-        Demo: skip the certificate check (for developers)
+        Demo: skip all courses and go to the resume step (for developers)
       </button>
     </div>
   );

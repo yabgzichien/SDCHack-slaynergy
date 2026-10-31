@@ -214,6 +214,25 @@ export async function POST(req: Request) {
       state = { ...state, pathway: { ...state.pathway, quiz: { attempts: (prev?.attempts ?? 0) + 1, passed: true, found: g.found, wrong: [] } } };
       break;
     }
+    case "certificateDemoAll": {
+      // Developer shortcut, labelled as such in the app: every step before the resume step done (courses without certificates,
+      // the AI quiz passed, plain practice steps ticked), so the plan lands on the resume step.
+      const plan = computeView(state).plan;
+      if (!plan) return bad("There is no plan yet.");
+      const at = new Date().toISOString();
+      const resume = plan.steps.findIndex((s) => s.activity === "resume");
+      const before = plan.steps.slice(0, resume < 0 ? undefined : resume).filter((s) => !s.activity);
+      const steps = before.filter(needsCertificate);
+      const card = cardById(plan.steps.find((s) => s.activity === "task")?.cardId ?? "");
+      const g = card && gradeQuiz(card, card.sampleAnswer.filter((a) => a.mistake).map((a) => a.id));
+      state = {
+        ...state,
+        progress: { ...state.progress, ...Object.fromEntries(before.map((s) => [s.id, true])) },
+        certificates: { ...state.certificates, ...Object.fromEntries(steps.map((s) => [s.id, { how: "demo" as const, at, title: s.title }])) },
+        pathway: g ? { ...state.pathway, quiz: { attempts: (state.pathway.quiz?.attempts ?? 0) + 1, passed: true, found: g.found, wrong: [] } } : state.pathway,
+      };
+      break;
+    }
     case "claimBadge": {
       // Every step done, the advisor meeting included: the badge is logged and issued straight away.
       const r = issueBadge(state, computeView(state).plan, new Date().toISOString(), crypto.randomBytes(9).toString("base64url"));

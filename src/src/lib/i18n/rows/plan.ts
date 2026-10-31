@@ -15,7 +15,7 @@ export const PLAN: Row[] = [
   ["Choose another file","Pilih fail lain","选择其他文件","வேறு கோப்பைத் தேர்ந்தெடுக்கவும்"],
   ["Check my certificate","Semak sijil saya","检查我的证书","எனது சான்றிதழைச் சரிபார்க்கவும்"],
   ["Checking…","Sedang menyemak…","正在检查…","சரிபார்க்கிறது…"],
-  ["Demo: skip the certificate check (for developers)","Demo: langkau semakan sijil (untuk pembangun)","演示：跳过证书检查（供开发者使用）","டெமோ: சான்றிதழ் சரிபார்ப்பைத் தவிர்க்கவும் (உருவாக்குநர்களுக்கு)"],
+  ["Demo: skip all courses and go to the resume step (for developers)","Demo: langkau semua kursus dan ke langkah resume (untuk pembangun)","演示：跳过所有课程，直接进入简历步骤（供开发者使用）","டெமோ: அனைத்துப் படிப்புகளையும் தவிர்த்து ரெஸ்யூம் படிக்குச் செல்லவும் (உருவாக்குநர்களுக்கு)"],
   ["Upload your certificate to finish this step","Muat naik sijil anda untuk menyelesaikan langkah ini","上传你的证书以完成此步骤","இந்த படியை முடிக்க உங்கள் சான்றிதழைப் பதிவேற்றுங்கள்"],
   ["Certificate verified. This step is marked as done.","Sijil disahkan. Langkah ini ditandakan selesai.","证书已验证。此步骤已标记为完成。","சான்றிதழ் சரிபார்க்கப்பட்டது. இந்த படி முடிந்ததாகக் குறிக்கப்பட்டது."],
   ["That does not look like a certificate of completion.","Itu tidak kelihatan seperti sijil tamat kursus.","这看起来不是结业证书。","இது படிப்பு முடிவு சான்றிதழ் போலத் தெரியவில்லை."],
