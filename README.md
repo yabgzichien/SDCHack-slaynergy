@@ -24,6 +24,7 @@ SDC Hackathon 2026 · Domain 1: Aiversecity Future-Ready Workforce · Licence: A
 | **Slide deck** | [PDF](submission/Jobbery%20pitch%20deck.pdf) · [PowerPoint](submission/Jobbery%20pitch%20deck.pptx) |
 | **Demo video** | https://www.youtube.com/watch?v=pRHKh5LNF-s |
 | **Preliminary proposal** | [PDF](submission/SDC2026_slaynergy_Preliminary.pdf) |
+| **Revised PRD** | [PRD.md](submission/PRD.md) · [Section 19](#19-revised-prd), with [what changed and why](#192-what-changed-since-the-preliminary-round-and-why) |
 | **Technical and tools declaration** | [PDF](submission/SDC2026_slaynergy_TechDeclaration.pdf) |
 | **Replit proof of use** | [PDF](submission/Replit%20Proof%20Of%20Use.pdf) |
 | **How to run** | [Section 15](#15-run-it) |
@@ -64,6 +65,7 @@ Open http://localhost:3000. See [section 15](#15-run-it) for tests and other com
 16. [Project structure](#16-project-structure)
 17. [How we used Replit and RunPod](#17-how-we-used-replit-and-runpod)
 18. [How we use AI](#18-how-we-use-ai)
+19. [Revised PRD, and what changed since the preliminary round](#19-revised-prd)
 
 ---
 
@@ -95,8 +97,9 @@ Open http://localhost:3000. See [section 15](#15-run-it) for tests and other com
 - **Every number shows its source.** Each forecast, demand figure and course has a source and date chip. Explanations are filled in from templates, so the app can't invent jobs, courses or statistics.
 - **Plain language.** Pages are written for someone who has never read a chart like these: "about 14 in every 100 job ads", not "14.2% share".
 - **Multilingual interface.** Already available in English, Bahasa Malaysia, Chinese and Tamil. Use the language picker in the header to switch languages.
-- **Private by default.** A scanned resume is read in memory and never stored. If the user leaves AI on, the text is also sent once to the AI model (DeepSeek through the KrackedDev AI API, with RunPod and then Groq as backups) to read it. Only the score, the fixes and the skill IDs are kept.
-- **AI suggests, the user decides.** The one GenAI feature is an optional resume reader (DeepSeek through the KrackedDev AI API, with Qwen on RunPod and then Groq as backups). It proposes extra skills, each quoting the resume line it is based on, and better wording for weak lines. The user decides what to use: nothing is changed for them. Server checks drop any skill that is not on Jobbery's list or not backed by a real line, and any rewrite that adds a number the original line does not have. Scores, forecasts, matching and plans are computed by tested, readable code (`src/src/lib/engine/`), so the same inputs always give the same answer.
+- **Private by default.** A scanned resume is read in memory and never stored. If the user leaves AI on, the text is also sent once to the AI model (DeepSeek through the KrackedDev AI API, with RunPod and then Groq as backups) to read it. Only the score, the fixes and the skill IDs are kept. A course certificate is read the same way, once, and the file is never kept: the plan remembers only that the step was verified.
+- **AI suggests, the user decides.** The resume reader is optional (DeepSeek through the KrackedDev AI API, with Qwen on RunPod and then Groq as backups). It proposes extra skills, each quoting the resume line it is based on, and better wording for weak lines. The user decides what to use: nothing is changed for them. The same models also read a course certificate, but only to copy down what is printed on it; plain code decides whether it counts (see [section 18](#18-how-we-use-ai)). Server checks drop any skill that is not on Jobbery's list or not backed by a real line, and any rewrite that adds a number the original line does not have. Scores, forecasts, matching and plans are computed by tested, readable code (`src/src/lib/engine/`), so the same inputs always give the same answer.
+- **Every method cites its sources.** The two pages that show the working behind the forecast (the Skills page's "How we worked this out" and the "twice as capable every N months" panel) end each step with **What backs this up** and a numbered reference list of published studies. A study backs the method, not the values we chose, and values with no study behind them (for example the 0.6 and 1.6 speed multipliers) are stated as such.
 
 ---
 
@@ -113,11 +116,11 @@ flowchart TD
     E --> F
     F --> G[Skills: each skill's expiry date<br/>under slow / medium / fast AI futures]
     G --> H[Jobs: reachable roles ranked<br/>match score + skills gap]
-    H --> H2[Optional: pick SDG goals<br/>to re-rank jobs]
+    G --> H2[Jobs page, first stop: pick SDG goals<br/>optional, re-ranks jobs]
     H2 --> H
     H -->|Select job| M[Map: where jobs like this are<br/>compare states]
     M --> I[Plan: week-by-week pathway<br/>job · AI at work · people skills]
-    I --> J[Do the steps<br/>courses, AI quiz,<br/>update resume with new skills,<br/>one advisor meeting]
+    I --> J[Do the steps<br/>courses finished with a certificate<br/>checked by AI, AI quiz,<br/>update resume with new skills,<br/>one advisor meeting]
     J --> K{All steps done, quiz passed<br/>and advisor met?}
     K -->|Not yet| J
     K -->|Yes| N([Shareable LinkedIn badge<br/>verifiable from the hash log])
@@ -157,7 +160,7 @@ All data is public or synthetic. Every source is a **dated snapshot** saved in t
 | **DOSM Household Expenditure Survey 2024** (released 8 Oct 2025, Table 1.4) | Median monthly spending per person, by state | Living costs on the job map ("left after typical spending") |
 | **geoBoundaries** (OpenStreetMap, ODbL) | State boundaries | Drawing the map |
 | **UN SDG target text** (sdgs.un.org) | Official wording of each target | SDG tags |
-| **Course list** (96 courses, every link opened in a browser on 30 Oct 2026, each with a checked date and link status) | Khan Academy, Microsoft Learn, Coursera, Kaggle, freeCodeCamp, HRD Corp, PERKESO and others | The reskilling plan |
+| **Course list** (175 courses from 49 providers, at least 2 for every skill; each has a checked date and link status: the first 95 were opened in a browser on 30 Oct 2026, the 79 added on 31 Oct were checked by `scripts/check-links.mjs`; 173 load, 2 are marked "open manually") | Alison, Khan Academy, Great Learning, Coursera, Microsoft Learn, Kaggle, freeCodeCamp, HRD Corp, PERKESO and others | The reskilling plan |
 | **Synthetic** | Demo personas and about 200 simulated forecasters | Demo only, always labelled |
 
 ### How it gets into the app
@@ -202,7 +205,7 @@ These four signals combine into a **skill expiry date**: the year AI is expected
 *Official source cards show the latest figures and when the next releases are due.*
 
 When someone uses the app and the last check is old enough, the server checks for new data in the background:
-- **How often:** daily, and hourly around DOSM's release day.
+- **How often:** daily, and hourly around DOSM's release day. A daily Vercel Cron call (`/api/cron/refresh`, set in `vercel.json`, protected by `CRON_SECRET`) makes sure a check runs even on a day nobody visits.
 - **Updated automatically:** DOSM Job Market Insights, Epoch AI benchmark results, and OpenDOSM's state labour force and wages.
 - **Checked first:** new numbers must pass checks against the numbers they replace. If a check fails, the last good data stays and nothing settles.
 - **When DOSM changes its website or workbook:** the plain rules go first. Only if they cannot find or read the DOSM release does a model (DeepSeek V4.1 Flash through the KrackedDev AI API, `src/lib/server/assist.ts`) help in two ways: it picks the right release page from DOSM's own list of releases, and it says where the occupation table now sits in a changed workbook. It only proposes. It never supplies a number: the figures are read from the workbook by the same code as before, and must pass the same checks plus one stricter one (the proposed layout must give back every quarter already held). It can only name a page from that list, anything it says is checked against what is really in the file, and each use is written to the tamper-evident log as `assist`. It is off without `LLM_API_KEY`, or with `DATA_ASSIST=off`, and then nothing changes.
@@ -240,22 +243,25 @@ Jobbery has **89 roles in 10 sectors** and **80 skills**. Each role lists the sk
 
 ### The match score
 
-Every role gets a score from five parts. The user can open the score and see each part.
+Every role gets a score from six parts. The user can open the score and see each part.
 
 | Part | Weight | What it measures |
 |---|---|---|
 | **Skill overlap** | 25% | How much of the role's skill list (weighted by importance) the user already has |
-| **Future outlook** | 30% | How long the role's skills are expected to last before AI does most of the work |
-| **Job demand** | 20% | Whether DOSM job ads for this job group are rising or falling |
+| **Future outlook** | 28% | How long the role's skills are expected to last before AI does most of the work |
+| **Job demand** | 18% | Whether DOSM job ads for this job group are rising or falling |
 | **Reachable in time** | 15% | How much room the plan leaves before the user's deadline |
-| **Interests and field** | 10% | Fit with the user's interests and their last job's sector |
+| **Qualifications and experience** | 10% | Half education fit, half experience fit (below) |
+| **Interests** | 4% | How many of the role's themes match the interests the user picked |
+
+**Qualifications and experience.** *Education fit* is 0.6 for meeting the level the role asks for, plus 0.2 for going beyond it and 0.2 for having studied the role's field. *Experience fit* is the user's years of work divided by the years the role's O\*NET Job Zone usually expects (0.5, 2, 3 or 5 years), never above 1; years in another field count for half. Each of the 89 roles carries its O\*NET Job Zone. The entry checks below are unchanged: this part only adds credit.
 
 Adjustments:
 - **Skills at risk:** a role whose skills mostly expire soon loses up to 8 points.
 - **Few jobs nearby:** if the user says where they can work, a role that is scarce there loses up to 6 points. It is moved down, never hidden.
 - **SDG goal bonus:** +12 points if the role serves a goal the user picked.
 
-**Why this score, and what would raise it.** The job page shows each part as points out of its weight (for example "Skill overlap 13 of 25"), then the adjustments, rounded so the lines add up exactly to the score shown. Below, **What would raise it** lists each missing skill and two more hours a week, with the points each would add, for example "Learn procurement and vendor management: +12 points · Alison, 4 hours". The engine works each one out again, so learning that skill gives exactly the predicted score (tested). The points follow the AI speed picker and say which speed they assume. Pointing at a raiser draws its points as a faint striped extension on the bars it would move.
+**Why this score, and what would raise it.** The job page shows each part as points out of its weight (for example "Skill overlap 13 of 25"), then the adjustments, rounded so the lines add up exactly to the score shown. Below, **What would raise it** lists each missing skill and two more hours a week, with the points each would add, for example "Learn procurement and vendor management: +12 points · Alison, 4 hours". The engine works each one out again, so learning that skill gives exactly the predicted score (tested). The points follow the AI speed picker and say which speed they assume. Pointing at a raiser draws its points as a faint striped extension on the bars it would move. Right under the total, a folded **equation** shows the same score as a sum (each part's value times its weight, then the adjustments). The header score, the bars, the raisers and the equation all follow the AI speed picker, so they always agree.
 
 ### Which roles are ranked
 
@@ -273,7 +279,7 @@ The more skills the user already has, the fewer weeks of practice the role needs
 
 ### Why this job: the explanation the user sees
 
-The Jobs page reads as three numbered stops: **① your best job → ② other good matches → ③ where in Malaysia**, with an amber highlight and a "Next: compare 4 other jobs" cue to guide a first-time user. Each job has its own icon, and every card shows the same three short reasons as chips:
+The Jobs page reads as four numbered stops: **① causes you care about → ② your best job → ③ other good matches → ④ where in Malaysia**, with an amber highlight and a "Next: compare 4 other jobs" cue to guide a first-time user. Below them, one card lets the user keep their current job for now. Each job has its own icon, and every card shows the same three short reasons as chips:
 
 | Reason | Built from |
 |---|---|
@@ -316,14 +322,25 @@ Steps run in this order. Each strand has its own colour across the plan, the pro
 
 | Strand | Steps | Estimated time |
 |---|---|---|
-| **Job** | Gap courses, e.g. Khan Academy, Microsoft Learn, Coursera, Kaggle, freeCodeCamp, HRD Corp | From each course's listed hours |
-| **AI at work** | Free AI courses, then a **short quiz**: find the planted mistakes in a sample AI answer about a real task from the user's field. Optional portfolio piece: a reusable prompt + a "how I do this task" sheet | Course hours + 1 h |
-| **People** | Free interview and workplace-communication courses | From each course's listed hours |
+| **Job** | Gap courses, e.g. Khan Academy, Microsoft Learn, Coursera, Kaggle, freeCodeCamp, HRD Corp. Each is finished with its certificate (below) | From each course's listed hours |
+| **AI at work** | Free AI courses (finished with a certificate), then a **short quiz**: find the planted mistakes in a sample AI answer about a real task from the user's field. Optional portfolio piece: a reusable prompt + a "how I do this task" sheet | Course hours + 1 h |
+| **People** | Free interview and workplace-communication courses (finished with a certificate) | From each course's listed hours |
 | **People** | **Update your resume with your new skills.** No new upload: the resume is rebuilt from the profile, the skills from the start-up resume scan, finished courses (marked *New*) and the portfolio piece, beside a checklist of the scan's fixes | 2 h |
 | **People** | Meet an advisor (a mock interview, the resume, or anything else) | 1 h |
 | **Job** | Apply for roles | Final weeks |
 
 The resume update comes **after** the courses, so it can show the new skills, and **before** the advisor, who can review it.
+
+### Finishing a course: the certificate
+
+A course step is not ticked by hand. The user opens the course, does it, then uploads the certificate (a JPG or PNG screenshot, or a PDF, up to 5 MB) on the Plan page.
+
+1. **The AI only reads.** For a PDF, the text is pulled out with `unpdf` and sent as text; a picture is sent as an image. The model returns four things copied from the document: whether it is a certificate, whether it says the course was completed, the course title and the issuer.
+2. **Plain code decides** (`checkCertificate` in `src/src/lib/engine/certificate.ts`). It must be a finished-course certificate; at least 60% of the step's title words must be in the certificate's course title; the issuer must not contradict the step's provider; and for a PDF, every word of the course title the model claims must really be in the file's text. Anything the model adds beyond those four fields is dropped.
+3. **The server refuses to tick the step without it.** The checkbox is locked until the step is verified (un-ticking is always allowed). If the user swaps to another course, the new course needs its own certificate. The reader is the same provider chain as the resume reader; a picture needs a model that can see, set with `LLM_VISION_MODEL`. With no working provider the page says it cannot verify, rather than letting the step through.
+4. **Nothing is kept.** The file is read once, in memory. The session keeps that the step was verified, and the event log keeps only the step and pass or fail.
+
+Tests: `src/tests/certificate.test.ts`. A dashed **Demo** button (see [section 15](#15-run-it)) skips the check for developers and judges.
 
 **Example (synthetic):** Hafiz, 27, a bank operations executive, has 5 months and 10 hours a week. His plan lists every step with a date range, hours, cost (free) and funding label (*Free*, *PERKESO training support* or *HRD Corp once re-employed*).
 
@@ -348,7 +365,7 @@ The quiz result, prompt and sheet become a **portfolio** the user can show an em
 
 ### SDGs change choices, not just labels
 
-- **A goal picker re-ranks jobs.** The user picks the goals they care about. Matching roles get a bonus, and the trade-off is shown, e.g. "+3 weeks of training, but this role fights financial crime (SDG 16.4)".
+- **A goal picker re-ranks jobs.** It is the first stop on the Jobs page: five goals are shown (the ones the user's own reachable jobs serve come first), any other goal is found by search, and picking none is fine. The list never reorders while the user clicks. Matching roles get a bonus, and the trade-off is shown, e.g. "+3 weeks of training, but this role fights financial crime (SDG 16.4)".
 - **Every plan step shows its SDG**, taken from the skill it teaches.
 - **The Plan page shows each goal as an official-colour UN SDG tile** with its target numbers and the official target text, nothing hidden, including the new job's own goal.
 - **The path contribution is added up from the plan itself.** The plan's hours are totalled by the SDG target of each skill they teach; a step that teaches several skills splits its hours evenly, so the totals add up to the plan's hours. For Hafiz: 58 hours toward **8.2** and 39 toward **8.5**. Every hour of learning (courses and practice) also counts, separately, toward **4.4** (skills for work): 74 hours. The card also says what share of course hours is free, and which target the new job serves.
@@ -392,6 +409,8 @@ The date shown is the average of the three futures, weighted by how likely each 
 
 On the **Skills** page, the button **How we worked this out** opens `/skills/how`, which shows the working behind the headline "AI could do most of N of your M skills before 2031": your own skills in one table (exposure, coverage, the date under each speed, whether it is counted), then each step with a labelled formula and your numbers filled in (exposure, coverage, adoption rate, adoption curve, readiness, the date, Our forecast, the count and the likelihood of each speed), a readiness chart for any skill you pick, and what the numbers do not mean. The formulas are MathML and every number comes from the engine (`skillMath` in the view, built by `src/src/lib/engine/skill-math.ts` from `expiry-math.ts`, the same functions that make the dates). `src/tests/skill-math.test.ts` works the formulas out again by hand from the raw data and checks that the engine agrees, and that every sentence on the page is translated.
 
+**What backs each step.** Every step on that page ends with a **What backs this up** box: plain sentences, each followed by numbered links to the published work behind the method. These are the ILO exposure index, the Anthropic Economic Index papers, the Bass model of how a technology spreads, opinion pools and Bayesian model averaging for blending the three futures, and proper scoring rules for the likelihoods. A reference list closes the page. The citations live in one file (`src/src/components/studies.ts`, 23 sources, kept in English in every language) and are shown by `References.tsx`. A source backs the method it is cited for, not the values we chose, and where nothing backs a value the page says so: "No study gives the 0.15 + 0.6K rate or the 0.45 line."
+
 ### Previewing an AI speed
 
 One **AI speed** picker on Skills, Jobs, each job's page and Plan offers **Our forecast** (the default: the three futures, weighted) or **Slow**, **Medium** or **Fast** taken as certain. Picking a speed:
@@ -400,7 +419,7 @@ One **AI speed** picker on Skills, Jobs, each job's page and Plan offers **Our f
 - **Shows what moved.** Jobs shows the best job under that speed ("If AI is Fast, your best job would be ESG and sustainability reporting assistant, instead of Procurement officer"), and each card shows "▲ up 4 under Fast". Each job's page shows its rank and score under that speed.
 - **Never changes the plan by itself.** Plan lists the best job under each speed with a "Plan for … instead" button. The pick is kept in the browser only and never saves the forecast's weights.
 
-AI benchmark pace is a stated part of each future too. It drives the Skills page's "twice as capable every N months" and the prediction market's questions, but not the job ranking. A test checks that Slow and Fast change the suggested job or the top five for at least three of the four demo profiles.
+AI benchmark pace is a stated part of each future too. It drives the Skills page's "twice as capable every N months" and the prediction market's questions, but not the job ranking. The button **See the full calculation** on that page opens the working in seven steps (what is measured, the recent pace, Slow/Medium/Fast, Our forecast, how likely each speed is, what the speed changes on screen, what to keep in mind), with the formulas filled in with the live numbers and the same **What backs this up** boxes and reference list (`PaceExplain.tsx`). A test checks that Slow and Fast change the suggested job or the top five for at least three of the four demo profiles.
 
 ### The prediction market
 
@@ -563,10 +582,10 @@ The user always confirms a new plan before it replaces the old one.
 | **Engine** | Pure TypeScript in `src/lib/engine/`: LMSR market, simulated forecasters, history replay, futures weights, expiry dates, matching, planning |
 | **Storage** | PostgreSQL (`pg`) when `DATABASE_URL` is set; SQLite (`better-sqlite3`) when running locally |
 | **Sessions and trust** | Signed session cookie; SHA-256 hash-chained log, with its fingerprint committed to Git |
-| **Resume scan** | `unpdf` (PDF) and `mammoth` (Word), with rule-based scoring. Optional AI reader: DeepSeek V4.1 Flash through the KrackedDev AI API, then Qwen2.5 14B Instruct on RunPod Serverless, then Qwen3.8 27B on Groq (`src/lib/server/ai-resume.ts`), with server-side checks and a rule-only fallback. |
+| **Resume scan** | `unpdf` (PDF) and `mammoth` (Word), with rule-based scoring. Optional AI reader: DeepSeek V4.1 Flash through the KrackedDev AI API, then Qwen2.5 14B Instruct on RunPod Serverless, then Qwen3.8 27B on Groq (`src/lib/server/ai-resume.ts`), with server-side checks and a rule-only fallback. The same providers read course certificates (`src/lib/server/ai-certificate.ts`; `unpdf` pulls the text from a PDF). |
 | **Data pipeline** | The server fetches DOSM, Epoch AI and OpenDOSM itself, checks them and saves hashed snapshots (`src/lib/server/refresh.ts`); build scripts (`build-series.ts`, `build-geo.ts`) make the starting snapshot from raw downloads |
-| **Tests** | Vitest: fairness, LMSR, futures weights, replay, matching, planning, log |
-| **Hosting** | Vercel. No GPU on the web host: the AI models run on hosted services (the KrackedDev AI API, then a serverless Qwen model on RunPod, then Groq). |
+| **Tests** | Vitest (`src/tests/`): fairness, LMSR, futures weights, replay, matching, planning, log, data refresh and its AI helper, history, living costs, skill-date maths, AI resume reader, certificate check, SDG focus, translations. Playwright checks pages for layout overflow. |
+| **Hosting** | Vercel, with a daily Vercel Cron call for the data refresh. No GPU on the web host: the AI models run on hosted services (the KrackedDev AI API, then a serverless Qwen model on RunPod, then Groq). |
 
 ---
 
@@ -582,13 +601,17 @@ The app runs at http://localhost:3000. Other commands:
 
 | Command | What it does |
 |---|---|
-| `npm test` | Runs the engine tests |
+| `npm test` | Runs the unit tests |
+| `npm run test:layout` | Runs the Playwright page-layout checks |
 | `npm run typecheck` | Checks types |
-| `npm run data:build` | Rebuilds the starting data snapshot from `data/raw/` |
+| `npm run lint` | Runs ESLint |
+| `npm run data:build` | Rebuilds the starting data snapshot from `data/raw/` (series, map and living costs) |
 | `npm run data:refresh` | Checks the sources for new data now (the app also does this by itself) |
+| `npm run data:repin-aei` | After a person has reviewed a new Anthropic Economic Index release, rebuilds the index into the starting data |
 | `npm run anchor` | Writes the hash log's fingerprint to `anchors/` |
+| `npm run anchor:forecasts` | Hashes the crowd's forecasts for the open questions into `anchors/` |
 
-Without `DATABASE_URL`, sessions are kept in `.data/jobbery.db` (SQLite). For a deployment with PostgreSQL, set `DATABASE_URL` and a random `SESSION_SECRET` in the Vercel project environment. Add `RUNPOD_API_KEY` and `RUNPOD_ENDPOINT_ID` there for the AI resume reader, and optionally `GROQ_API_KEY` as the backup (locally, use `src/.env.local`, which is gitignored). With none of them, the rule scan runs alone. Add `LLM_API_KEY` (and optionally `LLM_BASE_URL`, `LLM_MODEL`) for the data-source finder described under "Does it update?"; never commit it.
+Without `DATABASE_URL`, sessions are kept in `.data/jobbery.db` (SQLite). For a deployment with PostgreSQL, set `DATABASE_URL` and a random `SESSION_SECRET` in the Vercel project environment. Add `RUNPOD_API_KEY` and `RUNPOD_ENDPOINT_ID` there for the AI resume reader, and optionally `GROQ_API_KEY` as the backup (locally, use `src/.env.local`, which is gitignored). With none of them, the rule scan runs alone. Add `LLM_API_KEY` (and optionally `LLM_BASE_URL`, `LLM_MODEL`) for the data-source finder described under "Does it update?"; never commit it. Add `LLM_VISION_MODEL` (the gateway's model that can read images) so JPG and PNG certificates can be checked; PDF certificates need only the providers above. Add `CRON_SECRET` so the daily refresh call is accepted (without it `/api/cron/refresh` refuses everything). `src/.env.example` lists every variable.
 
 ### Demo shortcuts
 
@@ -596,6 +619,7 @@ Steps that normally need the user to stop and think have a dashed amber **"Demo:
 
 | Where | Button | What it does |
 |---|---|---|
+| Course steps (`/plan`) | Demo: skip all courses and go to the resume step (for developers) | Finishes every course step with no certificate, passes the AI quiz if the plan has one and ticks the plain practice steps, so the plan lands on the resume step. These steps are marked as skipped in the session, not verified. |
 | AI quiz (`/plan/task`) | Demo: mark every mistake correctly | Passes the quiz |
 | Portfolio piece (`/plan/task`) | Demo: fill in a sample and save | Saves a sample prompt and sheet |
 | Resume update (`/plan/resume`) | Demo: apply every fix and finish | Ticks every fix and finishes the step |
@@ -627,6 +651,7 @@ For the advisor passcode and a judge's walkthrough, see [`src/README.md`](src/RE
 │   ├── playwright.config.ts  # Browser-test configuration
 │   ├── README.md
 │   ├── tsconfig.json  # TypeScript configuration
+│   ├── vercel.json  # Daily data-refresh cron
 │   ├── vitest.config.mts  # Unit-test configuration
 │   ├── anchors/
 │   │   └── forecasts-2026Q4.json
@@ -652,11 +677,16 @@ For the advisor passcode and a judge's walkthrough, see [`src/README.md`](src/RE
 │   │   ├── build-geo.ts
 │   │   ├── build-map.mjs
 │   │   ├── build-series.ts
+│   │   ├── build-spending.ts
+│   │   ├── check-links.mjs
 │   │   ├── data-refresh.ts
 │   │   ├── extract-state-occupation.mjs
 │   │   ├── fetch-logos.mjs
-│   │   └── fetch-sources.sh
+│   │   ├── fetch-sources.sh
+│   │   ├── prepare-sdg-icons.mjs
+│   │   └── repin-aei.ts
 │   ├── src/  # Application source code
+│   │   ├── mathml.d.ts
 │   │   ├── app/  # Pages, layouts, styles and API routes
 │   │   │   ├── globals.css
 │   │   │   ├── landing-v2.css
@@ -669,11 +699,18 @@ For the advisor passcode and a judge's walkthrough, see [`src/README.md`](src/RE
 │   │   │   ├── api/
 │   │   │   │   ├── action/
 │   │   │   │   │   └── route.ts
+│   │   │   │   ├── certificate/
+│   │   │   │   │   └── route.ts  # Reads a course certificate
 │   │   │   │   ├── counsellor/
 │   │   │   │   │   └── route.ts
+│   │   │   │   ├── cron/
+│   │   │   │   │   └── refresh/
+│   │   │   │   │       └── route.ts
 │   │   │   │   ├── data/
 │   │   │   │   │   └── route.ts
 │   │   │   │   ├── fairness/
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── history/
 │   │   │   │   │   └── route.ts
 │   │   │   │   ├── leaderboard/
 │   │   │   │   │   └── route.ts
@@ -682,6 +719,8 @@ For the advisor passcode and a judge's walkthrough, see [`src/README.md`](src/RE
 │   │   │   │   ├── market/
 │   │   │   │   │   └── route.ts
 │   │   │   │   ├── meetings/
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── raise/
 │   │   │   │   │   └── route.ts
 │   │   │   │   ├── resume/
 │   │   │   │   │   └── route.ts
@@ -697,6 +736,8 @@ For the advisor passcode and a judge's walkthrough, see [`src/README.md`](src/RE
 │   │   │   ├── courses/
 │   │   │   │   ├── courses.css
 │   │   │   │   └── page.tsx
+│   │   │   ├── employer/
+│   │   │   │   └── page.tsx  # Illustrative employer view (demo data)
 │   │   │   ├── forecast/
 │   │   │   │   └── page.tsx
 │   │   │   ├── futures/
@@ -732,13 +773,15 @@ For the advisor passcode and a judge's walkthrough, see [`src/README.md`](src/RE
 │   │   │   ├── resume/
 │   │   │   │   └── page.tsx
 │   │   │   ├── skills/
-│   │   │   │   ├── how/
-│   │   │   │   │   └── page.tsx
-│   │   │   │   └── page.tsx
+│   │   │   │   ├── page.tsx
+│   │   │   │   └── how/
+│   │   │   │       └── page.tsx
 │   │   │   ├── sources/
 │   │   │   │   └── page.tsx
 │   │   │   ├── start/
-│   │   │   │   └── page.tsx
+│   │   │   │   ├── page.tsx
+│   │   │   │   ├── steps.ts
+│   │   │   │   └── summary.tsx
 │   │   │   ├── trends/
 │   │   │   │   ├── page.tsx
 │   │   │   │   └── trends.css
@@ -748,10 +791,15 @@ For the advisor passcode and a judge's walkthrough, see [`src/README.md`](src/RE
 │   │   │   ├── AiTrendCharts.tsx
 │   │   │   ├── AppProvider.tsx
 │   │   │   ├── AppShell.tsx
+│   │   │   ├── CertificateUpload.tsx  # Certificate upload on the Plan page
 │   │   │   ├── CustomCursor.tsx
 │   │   │   ├── ExpiryTrack.tsx
+│   │   │   ├── ForecastDetails.css
 │   │   │   ├── ForecastDetails.tsx
 │   │   │   ├── ForecastNav.tsx
+│   │   │   ├── GoalsPicker.tsx  # SDG goal picker on the Jobs page
+│   │   │   ├── history.css
+│   │   │   ├── History.tsx
 │   │   │   ├── I18nProvider.tsx
 │   │   │   ├── JobberyStrip.tsx
 │   │   │   ├── JobBits.tsx
@@ -767,50 +815,76 @@ For the advisor passcode and a judge's walkthrough, see [`src/README.md`](src/RE
 │   │   │   ├── LandingSdgAnimation.tsx
 │   │   │   ├── LanguageSwitcher.tsx
 │   │   │   ├── MalaysiaMap.tsx
+│   │   │   ├── market-odds-bar.css
+│   │   │   ├── MarketBoard.css
 │   │   │   ├── MarketBoard.tsx
+│   │   │   ├── MarketCards.css
 │   │   │   ├── MarketCards.tsx
+│   │   │   ├── MarketOddsBar.tsx
 │   │   │   ├── MarketTabs.tsx
 │   │   │   ├── mathml.tsx
 │   │   │   ├── Meetings.tsx
+│   │   │   ├── pace-text.ts
+│   │   │   ├── PaceExplain.tsx
 │   │   │   ├── PageTransition.tsx
 │   │   │   ├── Pathway.tsx
+│   │   │   ├── References.tsx  # "What backs this up" boxes and reference lists
+│   │   │   ├── ReleaseInfo.css
+│   │   │   ├── ReleaseInfo.tsx
 │   │   │   ├── ReleaseOverlay.tsx
-│   │   │   ├── ResumePaper.tsx
+│   │   │   ├── ResumeGraphic.tsx
+│   │   │   ├── ResumeOriginal.tsx
+│   │   │   ├── ResumeReport.tsx
+│   │   │   ├── ResumeScoreExplain.tsx
 │   │   │   ├── ResumeSheet.tsx
+│   │   │   ├── ScoreBreakdown.tsx
 │   │   │   ├── ScoreRing.tsx
+│   │   │   ├── SdgFocus.tsx
 │   │   │   ├── SdgIcon.tsx
 │   │   │   ├── Segmented.tsx
 │   │   │   ├── SiteHeader.tsx
-│   │   │   ├── SkillMathExplain.tsx
 │   │   │   ├── skill-math-text.ts
+│   │   │   ├── SkillMathExplain.tsx
 │   │   │   ├── SkipLink.tsx
 │   │   │   ├── SourceDisclosure.tsx
+│   │   │   ├── SourceDown.tsx
+│   │   │   ├── SpeedBar.tsx
 │   │   │   ├── StepNav.tsx
 │   │   │   ├── strands.ts
+│   │   │   ├── studies.ts  # Published sources cited by the explainer pages
 │   │   │   ├── ui.tsx
 │   │   │   ├── useSelectJob.ts
-│   │   │   └── useSpeed.ts
+│   │   │   ├── useSpeed.ts
+│   │   │   └── YourPredictions.tsx
 │   │   └── lib/
 │   │       ├── build-resume.ts
+│   │       ├── last-good.ts
 │   │       ├── legacy.ts
 │   │       ├── logo-domain.mjs
 │   │       ├── malaysia-map.json
 │   │       ├── map-figures.ts
 │   │       ├── map-scale.ts
 │   │       ├── market-math.ts
+│   │       ├── positions.ts
 │   │       ├── sample-resume.ts
+│   │       ├── sdgFocus.ts
+│   │       ├── speed.ts
 │   │       ├── suggested.ts
 │   │       ├── datasrc/
+│   │       │   ├── aei.ts
+│   │       │   ├── mapping.ts
 │   │       │   ├── parse.ts
 │   │       │   └── validate.ts
 │   │       ├── engine/  # Forecasting, matching, learning plans and market logic
 │   │       │   ├── calendar.ts
+│   │       │   ├── certificate.ts  # Decides whether a certificate counts
 │   │       │   ├── data.ts
 │   │       │   ├── expiry-math.ts
 │   │       │   ├── expiry.ts
 │   │       │   ├── futures-def.ts
 │   │       │   ├── futures.ts
 │   │       │   ├── geo.ts
+│   │       │   ├── history.ts
 │   │       │   ├── lmsr.ts
 │   │       │   ├── market.ts
 │   │       │   ├── matching.ts
@@ -820,6 +894,7 @@ For the advisor passcode and a judge's walkthrough, see [`src/README.md`](src/RE
 │   │       │   ├── plan.ts
 │   │       │   ├── questions.ts
 │   │       │   ├── replay.ts
+│   │       │   ├── resume-layout.ts
 │   │       │   ├── resume.ts
 │   │       │   ├── review.ts
 │   │       │   ├── skill-math.ts
@@ -835,25 +910,33 @@ For the advisor passcode and a judge's walkthrough, see [`src/README.md`](src/RE
 │   │       │   ├── ta.ts
 │   │       │   ├── zh.ts
 │   │       │   └── rows/
+│   │       │       ├── coverage.ts
 │   │       │       ├── forecast.ts
+│   │       │       ├── history.ts
 │   │       │       ├── humanedge.ts
 │   │       │       ├── index.ts
 │   │       │       ├── jobs.ts
 │   │       │       ├── map.ts
 │   │       │       ├── misc.ts
 │   │       │       ├── misc2.ts
+│   │       │       ├── pace.ts
 │   │       │       ├── plan.ts
+│   │       │       ├── resumescore.ts
 │   │       │       ├── roles.ts
 │   │       │       ├── sdg.ts
+│   │       │       ├── skillmath.ts
 │   │       │       ├── skills.ts
 │   │       │       ├── skillspage.ts
 │   │       │       ├── sources.ts
+│   │       │       ├── speed.ts
 │   │       │       ├── start.ts
 │   │       │       ├── taskcard.ts
 │   │       │       ├── trust.ts
 │   │       │       └── updates.ts
-│   │       └── server/  # Storage, sessions, data refresh and AI resume reader
-│   │           ├── ai-resume.ts
+│   │       └── server/  # Storage, sessions, data refresh and AI readers
+│   │           ├── ai-certificate.ts  # Reads what a certificate says
+│   │           ├── ai-resume.ts  # Reads a resume
+│   │           ├── assist.ts  # Data-source finder (proposes only)
 │   │           ├── counsellor.ts
 │   │           ├── meetings.ts
 │   │           ├── refresh.ts
@@ -862,22 +945,33 @@ For the advisor passcode and a judge's walkthrough, see [`src/README.md`](src/RE
 │   │           ├── sources.ts
 │   │           └── store.ts
 │   └── tests/  # Unit tests and browser layout checks
+│       ├── aei-repin.test.ts
 │       ├── ai-resume.test.ts
+│       ├── certificate.test.ts
+│       ├── client-bundle.test.ts
+│       ├── cron-refresh.test.ts
+│       ├── data-assist.test.ts
 │       ├── data-refresh.test.ts
 │       ├── engine.test.ts
+│       ├── history.test.ts
 │       ├── i18n.test.ts
 │       ├── layout-overflow.spec.ts
+│       ├── living-costs.test.ts
 │       ├── rename.test.ts
-│       └── skill-math.test.ts
+│       ├── scenarios.test.ts
+│       ├── sdg-focus.test.ts
+│       ├── skill-math.test.ts
+│       └── spot-checks.test.ts
 └── submission/  # Submission documents and pitch deck
     ├── Jobbery pitch deck.pdf
     ├── Jobbery pitch deck.pptx
+    ├── PRD.md  # Revised PRD (the same text as section 19)
     ├── Replit Proof Of Use.pdf
     ├── SDC2026_slaynergy_Preliminary.pdf
     └── SDC2026_slaynergy_TechDeclaration.pdf
 ```
 
-This tree lists the tracked code, configuration, datasets and submission files. Individual images in `src/public/` and `src/public/screenshots/` are grouped under their folders.
+This tree lists the code, configuration, datasets and submission files. Individual images in `src/public/` and `src/public/screenshots/` are grouped under their folders.
 
 The outer `src/` is the application root; `src/src/` contains its Next.js source code.
 Local dependencies, build output, databases, logs and raw data downloads are excluded from Git.
@@ -892,7 +986,7 @@ Local dependencies, build output, databases, logs and raw data downloads are exc
 
 ## 18. How we use AI
 
-Jobbery uses AI in two ways: one GenAI model that reads resumes, and a forecasting engine that learns from data. Neither one makes decisions for the user.
+Jobbery uses AI in two ways: GenAI models that read documents (a resume, a course certificate and, rarely, a changed DOSM page), and a forecasting engine that learns from data. Neither one makes decisions for the user.
 
 ### 18.1 GenAI resume reader
 
@@ -908,7 +1002,7 @@ Jobbery uses AI in two ways: one GenAI model that reads resumes, and a forecasti
 2. **Skills outside the list** (for example *SAP FICO* or *Tally ERP*). These are never used in matching and are not shown in the report. The name must appear in the resume as a whole word, with a quote.
 3. **Better wording** for up to 5 weak lines (for example "Responsible for processing loan applications" becomes "Processed [how many] loan applications and verified supporting documents").
 
-**The user stays in control.** AI skills start unticked at the skills question, so each one counts only if the user ticks it. Better wording appears under Suggested fixes in the report, for the user to copy into their own resume if they want it. Nothing changes unless the user chooses it. The resume score always comes from the rules, never from the AI.
+**The user stays in control.** AI skills come ticked at the skills question, with a note to untick any that are not true, so each one counts only if the user leaves it ticked. Better wording appears under Suggested fixes in the report, for the user to copy into their own resume if they want it. Nothing changes unless the user chooses it. The resume score always comes from the rules, never from the AI.
 
 **How the resume score is worked out, on screen.** The score is seven rule-based parts that add up to 100: clear sections (15), contact details (8), results with numbers (22), strong action words (15), length and clarity (10), skills a recruiter can find (12) and readiness for AI-era jobs (18). Under each bar the page shows the rule with the resume's own counts, for example "1 of 4 bullets have a number. 22 × (1 ÷ 4 ÷ 50%), at most 22." A last line adds the parts up: "15 + 8 + 11 + 13.5 + 4 + 12 + 10.8 = 74.3 → 74".
 
@@ -925,17 +1019,173 @@ The prompt also tells the model not to add purposes or overstate the role ("help
 
 **Fallback.** With no key set, or if every provider fails or times out, the rule scan runs alone and the page says so. With AI switched off, the page says it only recognises skills from the list. Groq's free tier allows about 1,000 output tokens a minute (about two scans). After a rate-limit reply, the server waits once if the wait is short, and otherwise falls back to the rules.
 
-### 18.2 A forecast that learns
+### 18.2 GenAI certificate reader
+
+| | |
+|---|---|
+| **Model** | The same chain as the resume reader: DeepSeek V4.1 Flash through the KrackedDev AI API, then Qwen2.5 14B Instruct on RunPod, then Groq. A JPG or PNG needs a model that can see images (`LLM_VISION_MODEL` on the gateway) |
+| **Code** | `src/src/lib/server/ai-certificate.ts` reads; `src/src/lib/engine/certificate.ts` decides; called from `src/src/app/api/certificate/route.ts` |
+| **Must-have it serves** | Personalised reskilling pathway (proof that a step is done) |
+| **Switch** | None. A course step is finished with a certificate, unless the developer **Demo** button is used |
+
+**What it does.** The model reads a finished-course certificate (a PDF's text, or a picture) and returns four fields as JSON: whether it is a certificate, whether it says the course was completed, the course title and the issuer, copied as printed. It never says whether the certificate is good enough. That is `checkCertificate`, plain code: the course title must share at least 60% of the step's title words, the issuer must not contradict the step's provider, and for a PDF every word of the course title must really be in the file's text. Any other field the model adds is dropped (`parseCertRead`). The prompt tells it to ignore instructions written inside the document.
+
+**Privacy.** The file (up to 5 MB) is read in memory for that one request, never stored or logged. The session keeps that the step was verified, and the event log keeps only the step and pass or fail.
+
+**Fallback.** If no provider answers, the page says it could not read or verify the certificate, and the step stays open. It never ticks a step it could not check.
+
+### 18.3 A forecast that learns
 
 The forecasting engine (`src/src/lib/engine/`) is statistical learning, not a language model. It keeps three possible speeds of AI change (slow, medium, fast) and weights them by how well each one predicted past official releases (DOSM job ads, Epoch AI benchmarks): log-likelihood scoring with fading memory, a form of Bayesian model averaging. A prediction market (LMSR, points only) adds the crowd's view of the next release. When a release settles the questions, the weights update, and so do every user's skill dates, job ranking and plan. See [section 8](#8-handling-uncertainty-how-the-forecasting-works).
 
-### 18.3 What is not AI
+### 18.4 What is not AI
 
-Matching, the resume score, plans and every explanation are computed by readable rules and templates, so the same inputs always give the same answer and nothing invents jobs, courses or statistics. There is no chatbot.
+Matching, the resume score, plans and every explanation are computed by readable rules and templates, so the same inputs always give the same answer and nothing invents jobs, courses or statistics. Whether a certificate counts is decided by code, not by the model. The data-source finder (section 4) only proposes where to look; it never supplies a number. There is no chatbot.
 
-### 18.4 AI used to build Jobbery
+### 18.5 AI used to build Jobbery
 
 We used Claude Code (Anthropic) as a coding assistant while writing this repository. All code was reviewed and tested by the team.
+
+---
+
+## 19. Revised PRD
+
+The revised Product Requirements Document for the final round. It says what Jobbery must do and how, and in **19.2** what changed since the preliminary round (25 October 2026) and why. The same text is in [`submission/PRD.md`](submission/PRD.md). Version 2.0, 31 October 2026.
+
+### 19.1 Summary
+
+Jobbery gives fresh graduates and people already in work a **deadline-based career plan**. It forecasts which skills and jobs AI will change, from public, dated data. It ranks the jobs the person can reach before their deadline, with a score they can open up. It then builds a week-by-week plan from real free courses, with every step tagged to a UN SDG. A **points-only prediction market**, whose questions settle on real data releases, decides how likely each of three AI futures is.
+
+- **Problem:** people do not know which of their skills AI will take over, which jobs are growing, or what to learn first. Existing "AI job risk" tools give one fixed score from old research.
+- **Approach:** public, dated data → three possible AI futures, weighted by real releases and a points-only market → ranked reachable jobs with a skills gap → an SDG-tagged plan that fits the person's deadline, with one meeting with an advisor.
+- **Outcome:** the person gets from "who I am today" to a sourced plan in minutes. They choose; nothing is decided for them, and a person (the advisor) is there to ask.
+
+### 19.2 What changed since the preliminary round, and why
+
+The product idea, the six must-haves, the three AI futures and the points-only market did not change. What changed is how well each part stands up to the checks that judges are told to run: switch the AI speed, change the trend data, open a course link, ask "why this score, and what would raise it?", and find where a number comes from. The reasons below come from the Finalist Guide, the marking rubric and our own audit of the app against them.
+
+| Area | Preliminary proposal (25 Oct 2026) | Final round | Why |
+|---|---|---|---|
+| **AI speeds** (uncertainty) | Slow, medium and fast gave different skill dates only. | One **AI speed** picker (Our forecast, Slow, Medium, Fast) re-ranks the jobs and shows the best job under each speed. Plan offers "Plan for … instead". A preview never changes the plan by itself. | The rubric tests uncertainty by asking whether the recommendations shift between scenarios. Ours did not. |
+| **Changing the data** (trend layer) | Dated public files, downloaded and parsed to JSON. | The server checks DOSM, Epoch AI and OpenDOSM by itself (daily, hourly around a DOSM release), checks new numbers before saving them and keeps the last good data if a check fails. A **history picker** shows the app as it stood on each of four real DOSM releases (read-only). | The guide asks for a refresh that can be shown live. The next DOSM release (17 Nov) is after the final, so we replay real past releases and never invent figures. |
+| **Job score** | Skill overlap, future outlook, job demand, time to reach, interests. | Six parts: adds **qualifications and experience** (10%). The job page shows the score as points that add up exactly, an equation, and **what would raise it** (each missing skill, two more hours a week), all following the AI speed. | Judges are told to ask "why this score, and what would raise it?". A job also depends on whether the person has the education and the years of work it asks for. |
+| **SDG mapping** | Every role and skill tagged. Focus targets named: 9.2, 10.3, 4.4, 5.7, 8.5. | Still tagged. The plan's hours are **totalled by SDG target** (for Hafiz: 58 h toward 8.2, 39 h toward 8.5, 74 h of learning toward 4.4). The goal picker is the first stop on the Jobs page. Targets Jobbery itself advances: 4.3, 4.4, 8.5, 8.6, 1.3, 10.2. | A fixed list of goals shown to every user was decoration, and the rubric asks for the contribution to be added up. We now claim only the targets the product acts on. |
+| **Prediction market** | Free tokens; accurate forecasters earn a bigger vote. | Points only, never money. Three strike levels per question, priced by LMSR; forecasters scored with the Brier score. One person moves an answer by a fixed 0.1% however many points they use, and the page confirms the prediction. The crowd is simulated, labelled, and calms down as a session ages. Wording is "predict". | One user must not be able to swing a market, and a prediction needs clear feedback. A week-old session took 13 s to load and now takes about 0.4 s, which matters for a live demo. |
+| **Course steps** | AI courses and quizzes; KPI 3 counts courses completed and quizzes passed. | A course step is finished by uploading its **certificate**. The AI only reads it; plain code checks it matches the course, and the file is never stored. The course list grew to 175 courses from 49 providers, at least two for every skill, each with a checked date and link status. | KPI 3 needs evidence, not a tick. Judges open course links. |
+| **AI models** | Groq (Qwen3.8 27B) used only to read resumes. RunPod not used. | A chain: KrackedDev AI API (DeepSeek V4.1 Flash), then Qwen2.5 14B on RunPod, then Groq, then rules alone. The same chain reads certificates. A model also helps find a changed DOSM release page, and never supplies a number. AI-found skills come ticked for the person to confirm. | Groq's free tier allows only about two resume scans a minute. Every AI use is limited, checked by code and explainable. |
+| **Validation** (promised for Phase 2) | The proposal said the AI resume reader and the prediction market needed validation. | The server drops any skill with no quoted resume line and any rewrite that adds a number (tested; we also tried a resume that carries injected instructions, and the model ignored them). The market is replayed on real past releases and reported honestly (Brier 0.242 against 0.25 for a coin flip). A test shows that age and gender never change the matches. | The proposal named these as the open risks. |
+| **Resume report** | Résumé analysis and course recommendations. | A score out of 100 from seven rule-based parts, each shown with the resume's own counts and a worked sum, plus suggested fixes. Skills outside our list are named, not used. The page says when the AI or a source is down. | Anything that scores a person must be explainable, and unknown skills were being dropped without a word. |
+| **Explanation pages** | Not in the proposal. | **How we worked this out** (skill dates) and **See the full calculation** (AI speeds) show the formulas with the person's own numbers. Each step has a **What backs this up** box and a reference list of 23 published sources. Tests recompute the numbers by hand. | Judges ask where a number comes from, and new AI-assisted parts must be explainable. |
+| **Job map** | Jobs, pay and unemployment by state. | Adds pay **left after typical living costs** (DOSM Household Expenditure Survey 2024) and a "would you move for work?" comparison, with the limits stated on the page. | A pay gap with no living costs misleads: "move to KL, earn RM1,300 more" says nothing about rent. |
+| **Employers** | Employers and educators named in the problem. | An illustrative **employer page** (a team skills-gap heatmap) on demo data, not computed from real staff data. | The problem statement names employers, HR and learning managers, and educators as affected. |
+| **Running live** | Hosted on Vercel. | Background refreshes do not block requests, long routes have a 60 s limit, a daily Vercel Cron makes sure the data check runs, and a test fails if a browser file imports the heavy engine modules. | "The most important feature runs live" is part of the feasibility score. Vercel's free plan rejects hourly cron jobs. |
+
+**What we did not do.** The proposal said Phase 2 would gather user feedback; we have not run a user study. The impact counters and the "delete my data" button are not built (see Not built yet). The Phase 1 KPIs are unchanged and are restated honestly under How we will know it works.
+
+### 19.3 Problem
+
+**Domain 1 brief:** how might we build an AI-powered solution that tracks AI advancement to predict which skills and jobs will emerge or decline, matches today's workforce and tomorrow's talent to the right future roles, and generates personalised reskilling pathways, while showing how each role and skill connects to the UN Sustainable Development Goals?
+
+Evidence, as cited in the preliminary proposal:
+- **The scale:** 1.6 million workers were projected to be replaced by AI by 2026, mostly in high- and middle-skill jobs (Mohd Arshad, 2024). On 24 June 2026 the Human Resources Minister said 697,000 jobs are highly affected by AI, digitalisation and the green economy if workers do not upskill within three to five years.
+- **Graduates:** graduate unemployment looks healthy at 3.2% (DOSM, 2024), but many graduates take non-technical jobs, and finding a job that uses their degree gets harder as AI displaces skilled roles.
+- **The training gap:** Malaysia ranked 83rd of 130 countries in digital skills (World Economic Forum, 2023), and 68% of Malaysian firms lack training in AI adaptation (MDEC, 2022).
+- **The forecasting gap:** existing tools score a job title once, from fixed research. They do not show several futures, do not update when new data arrives, and do not plan around the person's own deadline.
+
+### 19.4 Users
+
+| User | Need |
+|---|---|
+| **Fresh graduates** | To understand their skills, explore reachable first jobs and build a weekly learning plan. |
+| **Everyone in the workforce**: employed people, career changers, jobseekers and people returning to work | To keep skills relevant, explore growing roles and plan the next step around their own deadline. |
+| **Advisor** (for example an employment officer) | To meet each user once (a mock interview, advice, or anything else they ask), seeing their profile and plan. |
+| **Forecasters** (simulated now, real people later) | To make checkable predictions about upcoming data and build a track record. |
+| **Employers and HR** (illustrative page only) | To see a team's skills gap. Demo data; not built on real staff data. |
+
+**Demo persona (synthetic):** Hafiz, 27, a bank operations executive, with 5 months and 10 hours a week. A judge sees the whole journey with the **Try as Hafiz** button.
+
+### 19.5 What Jobbery must do: the six must-haves
+
+| Must-have | How it is met |
+|---|---|
+| **1. Skills profile intake** | A short step-by-step questionnaire (it also supports students), or a resume scan (PDF, Word or text) that fills it in. The resume is read in memory and never stored. An optional AI reader proposes extra skills, each quoting a resume line; skills outside our 80 are named but not used. |
+| **2. AI-trend signal layer** | Four dated signals: capability (Epoch AI), adoption (Anthropic Economic Index), exposure (ILO) and hiring (DOSM job ads). Each is a numbered, hashed snapshot with a source and date chip on every screen. Checked automatically; the history picker shows any of four real past releases. |
+| **3. Future-role matching and skills gap** | 89 roles in 10 sectors and 80 skills. Only roles reachable before the deadline are ranked, with a six-part score the person can open, what would raise it, and a gap list showing each missing skill's importance, expiry date and covering course. |
+| **4. Personalised reskilling pathway** | A week-by-week plan from the skills gap, the person's weekly hours and deadline. It uses real free or low-cost courses (175, none invented), in three strands: job skills, AI at work and people skills, ending with an advisor meeting and the application. Course steps finish with a certificate. |
+| **5. SDG mapping** | Every role and skill carries an SDG target, a one-line reason and the official UN text. The goal picker re-ranks jobs (+12 points) and shows the trade-off. Each plan step shows its SDG, and the plan's hours are added up by target. |
+| **6. Handling uncertainty** | Three futures (Slow, Medium, Fast) with stated assumptions, weighted by how well each predicted real past releases and by a points-only market. Each skill gets an expiry date per future. The AI speed picker re-ranks jobs. Every screen says these are estimates. |
+
+**The main differentiator: a prediction market that settles on real data.** Questions are checkable ("Will clerical job ads rise by more than 3 points in the next DOSM release?"). When the release is published, the questions settle, the futures that matched reality gain weight, and every user's dates, job ranking and plan update. Rules we hold ourselves to:
+- **Points only, never money.** Gambling law, Muslim users and financially vulnerable users all rule out real money.
+- **No future is ever ruled out.** None falls below 5%.
+- **One person cannot swing a market.** A prediction moves an answer by a fixed 0.1%.
+- **Simulated forecasters are always labelled.** About 200 of them earned track records by replaying real past releases. Real forecasters are for a later version.
+- **Honest results.** In the replay the market only just beats a coin flip (Brier 0.242 against 0.25). Its main job is to score the futures in public against official numbers.
+- **Forecasts are fixed before the data comes out.** The crowd's forecasts for open questions are hashed into the repository, so nobody, including us, can change them afterwards.
+
+### 19.6 Also in the product
+
+- **A person to ask.** The user can book a 30-minute meeting with an advisor at any time. Every plan has one meeting step. Nothing waits on an advisor's approval, and no automated decision is made about anyone.
+- **Trust.** Every prediction, settlement, advice note and badge goes into a hash-chained log, and its fingerprint is committed to the repository. A fairness test shows that age, gender and background never change the matches. Simulated people and forecasters are always labelled.
+- **Privacy.** The resume and any certificate are read once, in memory, and never stored. The session keeps only the score, the fixes, the skill IDs, and that a certificate was verified.
+- **Motivation.** A visible timeline against the deadline, badges for finished steps, a leaderboard, and a LinkedIn badge at the end that anyone can check against the log.
+- **Language and plain wording.** English, Bahasa Malaysia, Chinese and Tamil, and pages written for someone who has never read a chart like these.
+- **Where to work.** A map of Malaysia that shows where jobs like the chosen one are, with pay left after typical living costs.
+
+### 19.7 Data sources
+
+All data is public or synthetic. Every source is a dated snapshot. DOSM Job Market Insights (2026 Q2), Epoch AI benchmarking data, the Anthropic Economic Index (release of 26 June 2026), ILO 2025 generative AI exposure scores, O\*NET, OpenDOSM (employment, unemployment and wages by state), the DOSM Household Expenditure Survey 2024, geoBoundaries and the UN SDG target text. The course list has 175 courses from 49 providers. Demo personas and about 200 simulated forecasters are synthetic and labelled. The full table with dates and licences is in the README, section 4.
+
+### 19.8 SDG alignment
+
+- **Targets Jobbery itself advances:** 4.3 (affordable lifelong learning, through free courses), 4.4 (skills for decent work), 8.5 (full employment and decent work), 8.6 (youth not in employment), 1.3 (social protection) and 10.2 (inclusion).
+- **Tags on everything:** all 89 roles and 80 skills carry a target, a one-line reason and the official UN wording.
+- **SDGs change choices, not just labels:** the goal picker re-ranks jobs and shows what it costs (for example "+3 weeks of training, but this role fights financial crime, SDG 16.4"), and the path contribution is added up from the plan's own hours.
+- **SDG-positive roles a finance worker can reach** are deliberately included, such as ESG reporting assistant (12.6), anti-money-laundering analyst (16.4), healthcare claims administrator (3.8) and microfinance officer (8.10).
+
+### 19.9 Technical approach and AI use
+
+- **App:** Next.js 16 and React 19 in TypeScript, Tailwind CSS, Recharts and a hand-drawn SVG map. Hosted on Vercel. PostgreSQL (SQLite locally). Code written with Replit and Claude Code, and reviewed and tested by the team.
+- **Engine:** plain, tested TypeScript, with no model in the loop. It holds the LMSR market, the simulated forecasters, history replay, futures weights, expiry dates, matching and planning, so the same inputs always give the same answer.
+- **Generative AI** is limited to three jobs, and in each the model only reads or proposes, and code checks it:
+  - **Resume reader:** proposes skills (each with a quoted line) and better wording for weak lines.
+  - **Certificate reader:** copies down what a certificate says; plain code decides whether it counts.
+  - **Data-source finder:** proposes where a changed DOSM release page or table now sits; it never supplies a number.
+- **Providers:** KrackedDev AI API (DeepSeek V4.1 Flash), then Qwen2.5 14B on RunPod Serverless, then Groq, then rules alone.
+- **Guardrails:** jobs, skills and courses come from fixed, hand-checked lists. Explanations are filled in from templates. There is no chatbot, and the app cannot invent a job, a course or a statistic.
+
+### 19.10 How we will know it works
+
+The Phase 1 KPIs and 5-year targets are unchanged. What we can show now is a leading indicator for each; the 5-year numbers need real users over time.
+
+| Phase 1 KPI | 5-year target | What we can show now |
+|---|---|---|
+| Growth in website users | 35,000 users | The site is live. Sessions and profiles are recorded in the event log, but no counters page is built yet. |
+| Users still relying on the AI resources | 90% | Not measured yet. |
+| Users who complete the AI courses and pass the AI quiz | 50% | A course step now finishes only with a verified certificate, and the quiz result is kept per user. The share who finish is not yet counted. |
+| Users who find employment within 3 years | 40% | Needs a follow-up study. It cannot be measured in a hackathon. |
+
+Things we can already show: the share of a plan's hours that are free (shown on the Plan page), the fairness test, and the market's replay score against a coin flip.
+
+### 19.11 Risks and fallbacks
+
+| Risk | Fallback |
+|---|---|
+| **Hardest: the market looks like random numbers.** | Questions settle only on real releases. Track records come from replaying real past releases. Open forecasts are hashed into the repository before the data comes out. We report the Brier score honestly against a coin flip. Simulated forecasters are labelled. |
+| A source changes its website or file layout. | New numbers are checked against the old ones before they are saved, and the last good data stays if a check fails. A model may help find the new page, but never supplies a number. Pinned sources raise an alert for a person to review. |
+| An AI provider is down or slow. | Three providers in turn, then the rule-based scan alone. A certificate that cannot be read leaves its step open, and the page says so; it never ticks a step it could not check. A labelled demo button lets a judge skip the check. |
+| The model makes something up. | Closed lists, server checks on every AI answer, computed scores and templated explanations. |
+| A course link goes stale. | Every course has a checked date and link status, and `scripts/check-links.mjs` re-checks them. |
+| The live demo fails. | A recorded backup video, and the app runs from one hosted URL. |
+
+### 19.12 Not built yet
+
+- **Impact counters** for the KPIs above, and a script that runs every starting profile through the engine to report the share of profiles with a reachable job and the share of free hours.
+- **A "delete my data" button** (the reset action exists, but is not shown as a privacy control).
+- **Real forecasters** (judges, advisors, employers), real recruitment or PERKESO connections, payments, and anything with real money.
+- **An accessibility pass** (a full screen-reader and keyboard check, larger text, high contrast), a low-bandwidth mode, and task cards for the nine sectors beyond finance.
+- **Automatic re-planning** when a person falls behind or a release shortens a skill's life. Today the plan is rebuilt when they change their job, hours or course, or when new data moves the futures.
+- **An employer view on real data** instead of the illustrative page.
 
 ---
 

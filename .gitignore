@@ -11,6 +11,8 @@ src/design-references/
 *.md
 !README.md
 !**/README.md
+# The revised PRD is a submission document
+!submission/PRD.md
 docs/
 *.docx
 
@@ -91,5 +93,9 @@ next-env.d.ts
 # Retired app directory: local caches and reference material only
 /jobbery/
 
-# Pitch deck: kept local (built from slides outside the repo; the PDF goes in the submission)
+# Pitch deck: kept local, HTML slides included (built outside the repo; the PDF and the one .pptx go in the submission)
 pitch-deck/
+
+# PowerPoint files: only the final pitch deck is committed; drafts and copies stay local
+*.pptx
+!submission/Jobbery pitch deck.pptx
